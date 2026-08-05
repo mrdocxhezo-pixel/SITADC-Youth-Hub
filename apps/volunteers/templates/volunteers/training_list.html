@@ -1,0 +1,44 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Trainings & Certifications | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-journal-bookmark me-2"></i>Training History</h1>
+            <a href="{% url 'volunteers:training_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Record Training</a>
+        </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Volunteer</th>
+                                <th>Training Title</th>
+                                <th>Provider</th>
+                                <th>Start Date</th>
+                                <th>Completion Date</th>
+                                <th>Certificate Issued</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in trainings %}
+                                <tr>
+                                    <td class="fw-bold">{{ t.profile.user.full_name }}</td>
+                                    <td>{{ t.title }}</td>
+                                    <td>{{ t.provider|default:"SITADC Internal" }}</td>
+                                    <td>{{ t.start_date }}</td>
+                                    <td>{{ t.completion_date|default:"In Progress" }}</td>
+                                    <td><span class="badge {% if t.certificate_issued %}bg-success{% else %}bg-secondary{% endif %}">{% if t.certificate_issued %}Yes{% else %}No{% endif %}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No training records found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block navbar %}
+    {% include 'components/public_navbar.html' %}
+{% endblock %}
+{% block layout_content %}
+    <!-- Edge to edge container without container bounds -->
+    <div class="container-fluid p-0 m-0">
+        {% include 'components/messages.html' %}
+        {% block content %}{% endblock %}
+    </div>
+{% endblock %}
+{% block footer %}
+    {% include 'components/footer.html' %}
+{% endblock %}

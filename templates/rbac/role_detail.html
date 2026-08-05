@@ -1,0 +1,226 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{{ role.name }} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:role_list' %}" class="text-decoration-none">Roles</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ role.name }}</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>{{ role.name }}</h1>
+            <p class="page-subtitle mb-0">
+                <span class="text-muted">{{ role.slug }}</span>
+                {% if role.is_system %}<span class="badge bg-secondary ms-2">System</span>{% endif %}
+                {% if role.is_archived %}<span class="badge badge-status badge-archived ms-1">Archived</span>{% endif %}
+                {% if role.status == 'ACTIVE' %}
+                    <span class="badge badge-status badge-approved ms-1">Active</span>
+                {% else %}
+                    <span class="badge badge-status badge-rejected ms-1">Inactive</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'core:role_update' slug=role.slug %}"
+               class="btn btn-outline-primary-brand btn-sm">
+                <i class="bi bi-pencil me-1"></i> Edit
+            </a>
+            <form method="post"
+                  action="{% url 'core:role_clone' slug=role.slug %}"
+                  class="d-inline"
+                  onsubmit="return promptClone(this);">
+                {% csrf_token %}
+                <input type="hidden" name="new_name" id="clone-name">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-copy me-1"></i> Clone
+                </button>
+            </form>
+            {% if role.is_archived %}
+                <form method="post" action="{% url 'core:role_restore' slug=role.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
+                    </button>
+                </form>
+            {% else %}
+                <form method="post" action="{% url 'core:role_archive' slug=role.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-warning btn-sm">
+                        <i class="bi bi-archive me-1"></i> Archive
+                    </button>
+                </form>
+            {% endif %}
+            {% if role.status == 'ACTIVE' %}
+                <form method="post"
+                      action="{% url 'core:role_deactivate' slug=role.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-pause-circle me-1"></i> Deactivate
+                    </button>
+                </form>
+            {% else %}
+                <form method="post" action="{% url 'core:role_activate' slug=role.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-play-circle me-1"></i> Activate
+                    </button>
+                </form>
+            {% endif %}
+            <form method="post"
+                  action="{% url 'core:role_delete' slug=role.slug %}"
+                  onsubmit="return confirm('Delete this role permanently? This cannot be undone.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm">
+                    <i class="bi bi-trash me-1"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(0,86,179,0.1);">
+                            <i class="bi bi-key fs-4 text-primary-brand"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Permissions</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ permissions|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(25,135,84,0.1);">
+                            <i class="bi bi-people fs-4 text-success"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Assignments</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ assignments|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(253,126,20,0.1);">
+                            <i class="bi bi-sort-numeric-down fs-4"
+                               style="color: var(--sitadc-action)"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Priority</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ role.priority }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(102,16,242,0.1);">
+                            <i class="bi bi-clock-history fs-4"
+                               style="color: var(--sitadc-accent-indigo)"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">History Events</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ history|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">Role Permissions</h6>
+                    <a href="{% url 'core:role_update' slug=role.slug %}"
+                       class="btn btn-sm btn-outline-secondary">Edit</a>
+                </div>
+                <div class="card-body">
+                    {% if permissions %}
+                        <ul class="list-group list-group-flush">
+                            {% for permission in permissions %}
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-check-circle text-success me-2"></i>{{ permission.name }}</span>
+                                    <span class="badge bg-light text-dark border text-muted">{{ permission.codename }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="empty-state py-4">
+                            <div class="empty-state-icon">
+                                <i class="bi bi-key"></i>
+                            </div>
+                            <h3 class="h6 fw-semibold mb-1">No permissions assigned</h3>
+                            <p class="text-muted small mb-0">Assign permissions by editing this role.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">User Assignments</h6>
+                    <a href="{% url 'core:role_assignments' slug=role.slug %}"
+                       class="btn btn-sm btn-outline-secondary">Manage</a>
+                </div>
+                <div class="card-body">
+                    {% if assignments %}
+                        <ul class="list-group list-group-flush">
+                            {% for assignment in assignments %}
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="bi bi-person me-2"></i>{{ assignment.user.get_full_name|default:assignment.user.email }}
+                                        {% if assignment.is_primary %}<span class="badge bg-primary-brand ms-1">Primary</span>{% endif %}
+                                    </span>
+                                    <span class="text-muted small">{{ assignment.access_scope.name|default:"National" }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="empty-state py-4">
+                            <div class="empty-state-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h3 class="h6 fw-semibold mb-1">No users assigned</h3>
+                            <p class="text-muted small mb-0">Assign this role to users to grant access.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card border-0 mt-3">
+        <div class="card-header bg-white border-0 pt-3 pb-0">
+            <h6 class="fw-bold mb-0">Description</h6>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-0">{{ role.description|default:"No description provided." }}</p>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+    function promptClone(form) {
+        var name = window.prompt('Name for the cloned role:');
+        if (!name) { return false; }
+        document.getElementById('clone-name').value = name;
+        return true;
+    }
+    </script>
+{% endblock %}

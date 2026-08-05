@@ -1,0 +1,39 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% load rbac_tags %}
+{% block title %}{% trans "Permissions" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Permissions</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header mb-4">
+        <div>
+            <h1>Permission Catalogue</h1>
+            <p class="page-subtitle mb-0">All permissions are organized into categories and granted through roles</p>
+        </div>
+    </div>
+    {% for category in categories %}
+        <div class="card border-0 mb-4">
+            <div class="card-header bg-white border-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0">{{ category.name }}</h6>
+                <span class="badge bg-light text-dark border">{{ permission_map|get_item:category.code|length }} permissions</span>
+            </div>
+            <div class="card-body py-2">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for permission in permission_map|get_item:category.code %}
+                        <span class="badge bg-light text-dark border py-2 px-3"
+                              title="{{ permission.name }}">
+                            <i class="bi bi-key text-muted me-1"></i>{{ permission.codename }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="p-4">
+            {% include 'components/empty_state.html' with icon='bi-key' title='No permissions found' message='Permissions will be seeded during setup.' %}
+        </div>
+    {% endfor %}
+{% endblock %}

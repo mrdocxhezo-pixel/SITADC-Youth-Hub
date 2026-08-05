@@ -1,0 +1,91 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "New Acting Appointment" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+   class="text-decoration-none">Organization</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:position_list' %}" class="text-decoration-none">Positions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:position_detail' slug=position.slug %}"
+   class="text-decoration-none">{{ position.title }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">New Acting Appointment</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>New Acting Appointment</h1>
+            <p class="page-subtitle mb-0">Temporarily appoint an officer to act in {{ position.title }}</p>
+        </div>
+        <div>
+            <a href="{% url 'core:position_detail' slug=position.slug %}"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Position
+            </a>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+                {% endif %}
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.acting_officer.id_for_label }}" class="form-label">Acting officer <span class="text-danger">*</span></label>
+                        {{ form.acting_officer }}
+                        {% if form.acting_officer.errors %}<div class="invalid-feedback d-block">{% for error in form.acting_officer.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.position.id_for_label }}" class="form-label">Position <span class="text-danger">*</span></label>
+                        {{ form.position }}
+                        {% if form.position.errors %}<div class="invalid-feedback d-block">{% for error in form.position.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.original_assignee.id_for_label }}" class="form-label">Original assignee</label>
+                        {{ form.original_assignee }}
+                        <div class="form-text">The person normally holding the position (if any).</div>
+                        {% if form.original_assignee.errors %}<div class="invalid-feedback d-block">{% for error in form.original_assignee.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.approval_authority.id_for_label }}" class="form-label">Approval authority</label>
+                        {{ form.approval_authority }}
+                        {% if form.approval_authority.errors %}<div class="invalid-feedback d-block">{% for error in form.approval_authority.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.effective_from.id_for_label }}" class="form-label">Effective start date <span class="text-danger">*</span></label>
+                        {{ form.effective_from }}
+                        {% if form.effective_from.errors %}<div class="invalid-feedback d-block">{% for error in form.effective_from.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.end_date.id_for_label }}" class="form-label">End date <span class="text-danger">*</span></label>
+                        {{ form.end_date }}
+                        <div class="form-text">Acting appointments expire automatically after this date.</div>
+                        {% if form.end_date.errors %}<div class="invalid-feedback d-block">{% for error in form.end_date.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.reason.id_for_label }}" class="form-label">Reason</label>
+                    {{ form.reason }}
+                    {% if form.reason.errors %}<div class="invalid-feedback d-block">{% for error in form.reason.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.supporting_document.id_for_label }}" class="form-label">Supporting document</label>
+                    {{ form.supporting_document }}
+                    {% if form.supporting_document.errors %}<div class="invalid-feedback d-block">{% for error in form.supporting_document.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                    <a href="{% url 'core:position_detail' slug=position.slug %}"
+                       class="btn btn-light">Cancel</a>
+                    <button type="submit" class="btn btn-primary-brand px-4">
+                        <i class="bi bi-person-plus me-1"></i> Create Acting Appointment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

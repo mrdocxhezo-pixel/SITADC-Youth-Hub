@@ -1,0 +1,100 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Roles" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Roles</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Roles</h1>
+            <p class="page-subtitle mb-0">Roles group permissions that define what users can do</p>
+        </div>
+        <div>
+            <a href="{% url 'core:role_create' %}"
+               class="btn btn-primary-brand btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> New Role
+            </a>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-0">
+            {% if roles %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Role</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Priority</th>
+                                <th scope="col" class="text-center">Permissions</th>
+                                <th scope="col" class="text-center">Assignments</th>
+                                <th scope="col">Type</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for role in roles %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'core:role_detail' slug=role.slug %}"
+                                           class="fw-semibold text-decoration-none">{{ role.name }}</a>
+                                        {% if role.is_archived %}
+                                            <span class="badge badge-status badge-archived ms-1">Archived</span>
+                                        {% endif %}
+                                        <div class="text-muted small">{{ role.slug }}</div>
+                                    </td>
+                                    <td>
+                                        {% if role.status == 'ACTIVE' %}
+                                            <span class="badge badge-status badge-approved">Active</span>
+                                        {% else %}
+                                            <span class="badge badge-status badge-rejected">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ role.priority }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border">{{ role.permissions.count }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border">{{ role.assignment_count }}</span>
+                                    </td>
+                                    <td>
+                                        {% if role.is_system %}
+                                            <span class="badge bg-secondary">System</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark border">Custom</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'core:role_detail' slug=role.slug %}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'core:role_assignments' slug=role.slug %}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="Assignments">
+                                            <i class="bi bi-people"></i>
+                                        </a>
+                                        <a href="{% url 'core:role_history' slug=role.slug %}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="History">
+                                            <i class="bi bi-journal-text"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-4">
+                    {% url 'core:role_create' as role_create_url %}
+                    {% include 'components/empty_state.html' with icon='bi-shield-lock' title='No roles found' message='Roles will appear here once created.' action_url=role_create_url action_label='Create Role' %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Member Directory | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800"><i class="bi bi-people me-2"></i>Member Directory</h1>
+                <p class="text-muted small mb-0">Search and filter registered members across SITADC.</p>
+            </div>
+            <a href="{% url 'memberships:apply' %}" class="btn btn-primary">
+                <i class="bi bi-person-plus-fill me-1"></i>Apply for Membership
+            </a>
+        </div>
+        <!-- Search & Filters -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text"
+                               name="q"
+                               class="form-control"
+                               placeholder="Search by name, member ID, phone..."
+                               value="{{ request.GET.q }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="status" class="form-select">
+                            <option value="">-- Filter Status --</option>
+                            {% for code, label in status_codes %}
+                                <option value="{{ code }}"
+                                        {% if request.GET.status == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="category" class="form-select">
+                            <option value="">-- Filter Category --</option>
+                            {% for code, label in category_codes %}
+                                <option value="{{ code }}"
+                                        {% if request.GET.category == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Search</button>
+                        <a href="{% url 'memberships:directory' %}"
+                           class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Directory Table -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Membership ID</th>
+                                <th>Member Name</th>
+                                <th>Category</th>
+                                <th>Type / Level</th>
+                                <th>District</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in members %}
+                                <tr>
+                                    <td><span class="badge bg-light text-dark border">{{ member.membership_id }}</span></td>
+                                    <td>
+                                        <div class="fw-bold">{{ member.user.full_name }}</div>
+                                        <div class="text-muted small">{{ member.email_personal|default:member.user.email }}</div>
+                                    </td>
+                                    <td>{{ member.category_display }}</td>
+                                    <td>{{ member.membership_type_display }} / {{ member.level.name|default:"--" }}</td>
+                                    <td>{{ member.district|default:"--" }}</td>
+                                    <td><span class="badge bg-success">{{ member.status_display }}</span></td>
+                                    <td>
+                                        <a href="{% url 'memberships:detail' member.pk %}"
+                                           class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                        <a href="{% url 'memberships:id_card' member.pk %}"
+                                           class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-qr-code"></i> ID Card
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">No member records matching the criteria.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% if is_paginated %}
+            <nav class="mt-4" aria-label="Member directory pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

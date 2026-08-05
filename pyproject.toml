@@ -1,0 +1,124 @@
+[project]
+name = "sitadc-youth-hub"
+version = "0.1.0-dev"
+description = "SITADC Youth Hub Web Application"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "Django>=5.0",
+    "python-dotenv>=1.0.1",
+    "qrcode[pil]>=7.4.2",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.tox
+  | venv
+  | env
+  | node_modules
+  | staticfiles
+  | media
+  | build
+  | dist
+  | fix.*\.py
+  | migrations
+)/
+'''
+extend-exclude = '''/fix.*\.py$'''
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "env",
+    "node_modules",
+    "staticfiles",
+    "media",
+    "htmlcov",
+    "dist",
+    "build",
+    "fix.py",
+    "fix2.py",
+    "fix_blocks.py",
+    "fix_perms.py",
+    "migrations",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "DJ", "C4", "PIE", "RUF"]
+ignore = []
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+# Django declarative namespaces intentionally use mutable class attributes.
+"apps/leadership/forms.py" = ["RUF012"]
+"apps/memberships/admin.py" = ["RUF012"]
+"apps/memberships/forms.py" = ["RUF012"]
+"apps/memberships/models.py" = ["RUF012"]
+"apps/leadership/tests/test_models.py" = ["B017"]
+"apps/memberships/tests/test_models.py" = ["B017"]
+"apps/memberships/tests/test_services.py" = ["B017"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known_first_party = ["apps", "config"]
+skip_glob = [
+    "**/.venv/*",
+    "**/venv/*",
+    "**/env/*",
+    "**/node_modules/*",
+    "**/migrations/*",
+    "fix*.py"
+]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main"]
+check_untyped_defs = true
+disallow_untyped_defs = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+no_implicit_optional = true
+exclude = [
+    "\\.venv",
+    "venv",
+    "env",
+    "node_modules",
+    "migrations",
+    "tests",
+    "apps/leadership"
+]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.development"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.development"
+python_files = ["test_*.py", "*_test.py"]
+testpaths = ["apps", "tests"]
+addopts = "--reuse-db --strict-markers -v"
+
+[tool.coverage.run]
+source = ["apps"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "manage.py"
+]
+
+[tool.djlint]
+profile = "django"
+# H015/H023 are presentation-style rules; existing templates use compact
+# heading blocks and escaped punctuation without changing rendered semantics.
+ignore = "H015,H023,H031"

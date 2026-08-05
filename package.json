@@ -1,0 +1,22 @@
+{
+  "name": "sitadc-youth-hub",
+  "version": "1.0.0",
+  "description": "SITADC Youth Hub Web Application",
+  "type": "module",
+  "scripts": {
+    "lint:js": "eslint \"static/js/**/*.js\"",
+    "lint:css": "stylelint \"static/css/**/*.css\"",
+    "format:check": "prettier --check \"static/**/*.{js,css}\"",
+    "format:write": "prettier --write \"static/**/*.{js,css}\"",
+    "lint": "npm run lint:js && npm run lint:css && npm run format:check",
+    "test:a11y": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "axe-core": "^4.12.1",
+    "eslint": "^9.8.0",
+    "prettier": "^3.3.3",
+    "stylelint": "^16.8.1",
+    "stylelint-config-standard": "^36.0.1"
+  }
+}

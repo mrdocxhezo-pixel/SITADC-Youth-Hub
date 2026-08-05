@@ -1,0 +1,149 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ stakeholder.display_name|default:stakeholder.legal_name }} | Stakeholders{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "stakeholders/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div><p class="text-uppercase small fw-semibold text-muted mb-1">{{ stakeholder.reference_number }}</p><h1 class="h2 mb-1">{{ stakeholder.display_name|default:stakeholder.legal_name }}</h1><p class="text-muted mb-0">{{ stakeholder.get_entity_type_display }}{% if stakeholder.relationship_type %} &middot; {{ stakeholder.relationship_type.name }}{% endif %}</p></div>
+            <div class="d-flex flex-wrap gap-2">{% if can_update %}<a class="btn btn-outline-primary"
+   href="{% url 'stakeholders:edit' stakeholder.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a><a class="btn btn-primary"
+   href="{% url 'stakeholders:status' stakeholder.pk %}"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Change status</a>{% endif %}{% if can_archive %}<a class="btn btn-outline-danger"
+   href="{% url 'stakeholders:archive' stakeholder.pk %}"><i class="bi bi-archive me-1" aria-hidden="true"></i>Archive</a>{% endif %}</div>
+        </header>
+        <div class="alert alert-light border d-flex flex-wrap gap-4" role="status"><span><strong>Status:</strong> {{ stakeholder.get_status_display }}</span><span><strong>Confidentiality:</strong> {{ stakeholder.get_confidentiality_display }}</span><span><strong>Responsible unit:</strong> {{ stakeholder.organization_unit|default:"Not assigned" }}</span></div>
+        <nav class="mb-3" aria-label="Profile sections">
+            <div class="nav nav-tabs" role="tablist">
+                <button class="nav-link active"
+                        id="overview-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#overview"
+                        type="button"
+                        role="tab"
+                        aria-controls="overview"
+                        aria-selected="true">Overview</button>
+                <button class="nav-link"
+                        id="relationship-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#relationship"
+                        type="button"
+                        role="tab"
+                        aria-controls="relationship"
+                        aria-selected="false">Relationship</button>
+                <button class="nav-link"
+                        id="activity-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#activity"
+                        type="button"
+                        role="tab"
+                        aria-controls="activity"
+                        aria-selected="false">Activity</button>
+                <button class="nav-link"
+                        id="governance-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#governance"
+                        type="button"
+                        role="tab"
+                        aria-controls="governance"
+                        aria-selected="false">Governance</button>
+            </div>
+        </nav>
+        <div class="tab-content">
+            <section class="tab-pane fade show active"
+                     id="overview"
+                     role="tabpanel"
+                     aria-labelledby="overview-tab"
+                     tabindex="0"><div class="row g-4"><div class="col-lg-7"><div class="card shadow-sm border-0 h-100"><div class="card-body"><h2 class="h5">Profile summary</h2><p>{{ stakeholder.description|default:"No profile description has been recorded."|linebreaksbr }}</p><dl class="row mb-0"><dt class="col-sm-4">Legal or full name</dt><dd class="col-sm-8">{{ stakeholder.legal_name }}</dd><dt class="col-sm-4">Trading name</dt><dd class="col-sm-8">{{ stakeholder.trading_name|default:"Not recorded" }}</dd><dt class="col-sm-4">Registration</dt><dd class="col-sm-8">{{ stakeholder.registration_number|default:"Not recorded" }}</dd><dt class="col-sm-4">Established</dt><dd class="col-sm-8">{{ stakeholder.date_established|default:"Not recorded" }}</dd><dt class="col-sm-4">Categories</dt><dd class="col-sm-8">{% for item in stakeholder.categories.all %}<span class="badge text-bg-light border me-1">{{ item.name }}</span>{% empty %}Not classified{% endfor %}</dd><dt class="col-sm-4">Sectors</dt><dd class="col-sm-8">{% for item in stakeholder.sectors.all %}{{ item.name }}{% if not forloop.last %}, {% endif %}{% empty %}Not recorded{% endfor %}</dd></dl></div></div></div><div class="col-lg-5"><div class="card shadow-sm border-0 h-100"><div class="card-body"><h2 class="h5">Location and public channels</h2><address>{{ stakeholder.physical_address|default:"Address not recorded"|linebreaksbr }}{% if stakeholder.district %}<br>{{ stakeholder.district }}{% endif %}{% if stakeholder.province_or_region %}, {{ stakeholder.province_or_region }}{% endif %}{% if stakeholder.country %}<br>{{ stakeholder.country }}{% endif %}</address><dl class="row mb-0"><dt class="col-4">Email</dt><dd class="col-8">{{ stakeholder.general_email|default:"Not recorded" }}</dd><dt class="col-4">Phone</dt><dd class="col-8">{{ stakeholder.general_phone|default:"Not recorded" }}</dd><dt class="col-4">Website</dt><dd class="col-8">{% if stakeholder.website %}<a href="{{ stakeholder.website }}" rel="noopener noreferrer">Visit website</a>{% else %}Not recorded{% endif %}</dd></dl></div></div></div></div></section>
+            <section class="tab-pane fade"
+                     id="relationship"
+                     role="tabpanel"
+                     aria-labelledby="relationship-tab"
+                     tabindex="0">
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h2 class="h5">Relationship brief</h2>
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4">Classification</dt>
+                                    <dd class="col-sm-8">
+                                        {{ stakeholder.classification.name|default:"Not classified" }}
+                                    </dd>
+                                    <dt class="col-sm-4">Priority</dt>
+                                    <dd class="col-sm-8">
+                                        {{ stakeholder.priority.name|default:"Not set" }}
+                                    </dd>
+                                    <dt class="col-sm-4">Relationship level</dt>
+                                    <dd class="col-sm-8">
+                                        {{ stakeholder.relationship_level.name|default:"Not set" }}
+                                    </dd>
+                                    <dt class="col-sm-4">Relationship period</dt>
+                                    <dd class="col-sm-8">
+                                        {{ stakeholder.relationship_start_date|default:"Not recorded" }} to {{ stakeholder.relationship_end_date|default:"open" }}
+                                    </dd>
+                                    <dt class="col-sm-4">Areas of interest</dt>
+                                    <dd class="col-sm-8">
+                                        {{ stakeholder.areas_of_interest|default:"Not recorded"|linebreaksbr }}
+                                    </dd>
+                                    <dt class="col-sm-4">Collaboration potential</dt>
+                                    <dd class="col-sm-8">
+                                        {{ stakeholder.potential_collaboration_areas|default:"Not recorded"|linebreaksbr }}
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h2 class="h5">Responsibility</h2>
+                                <dl class="row mb-0">
+                                    <dt class="col-5">Officer</dt>
+                                    <dd class="col-7">
+                                        {{ stakeholder.primary_responsible_officer|default:"Unassigned" }}
+                                    </dd>
+                                    <dt class="col-5">Leadership</dt>
+                                    <dd class="col-7">
+                                        {{ stakeholder.responsible_leadership|default:"Unassigned" }}
+                                    </dd>
+                                    <dt class="col-5">Directorate</dt>
+                                    <dd class="col-7">
+                                        {{ stakeholder.responsible_directorate|default:"Unassigned" }}
+                                    </dd>
+                                    <dt class="col-5">Next engagement</dt>
+                                    <dd class="col-7">
+                                        {{ stakeholder.next_engagement_date|default:"Not scheduled" }}
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if can_contacts %}<div class="card shadow-sm border-0 mt-4"><div class="card-header bg-body d-flex justify-content-between"><h2 class="h5 mb-0">Private contacts</h2><a href="{% url 'stakeholders:contacts' stakeholder.pk %}">Manage contacts</a></div><div class="table-responsive"><table class="table mb-0"><caption class="visually-hidden">Authorized private contact records</caption><thead><tr><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Email or phone</th><th scope="col">Status</th></tr></thead><tbody>{% for item in contacts %}<tr><td>{{ item.full_name }}</td><td>{{ item.designation|default:item.title }}</td><td>{{ item.email|default:item.phone_primary }}</td><td>{% if item.is_primary %}Primary contact{% elif item.is_active %}Active{% else %}Inactive{% endif %}</td></tr>{% empty %}<tr><td colspan="4" class="text-muted text-center">No contacts recorded.</td></tr>{% endfor %}</tbody></table></div></div>{% endif %}
+            </section>
+            <section class="tab-pane fade"
+                     id="activity"
+                     role="tabpanel"
+                     aria-labelledby="activity-tab"
+                     tabindex="0"><div class="row g-4"><div class="col-lg-6"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body d-flex justify-content-between"><h2 class="h5 mb-0">Recent engagements</h2><a href="{% url 'stakeholders:engagements' stakeholder.pk %}">All engagements</a></div><ul class="list-group list-group-flush">{% for item in recent_engagements %}<li class="list-group-item"><div class="d-flex justify-content-between gap-2"><strong>{{ item.title }}</strong><span>{{ item.get_status_display }}</span></div><small class="text-muted">{{ item.scheduled_at }}</small></li>{% empty %}<li class="list-group-item text-muted">No engagements recorded.</li>{% endfor %}</ul></div></div><div class="col-lg-6"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body d-flex justify-content-between"><h2 class="h5 mb-0">Action items</h2><a href="{% url 'stakeholders:actions' stakeholder.pk %}">All actions</a></div><ul class="list-group list-group-flush">{% for item in action_items %}<li class="list-group-item"><div class="d-flex justify-content-between gap-2"><strong>{{ item.title }}</strong><span>{{ item.get_status_display }}</span></div><small class="text-muted">Due {{ item.due_date }} &middot; {{ item.assigned_to|default:"Unassigned" }}</small></li>{% empty %}<li class="list-group-item text-muted">No action items recorded.</li>{% endfor %}</ul></div></div></div></section>
+            <section class="tab-pane fade"
+                     id="governance"
+                     role="tabpanel"
+                     aria-labelledby="governance-tab"
+                     tabindex="0"><div class="row g-3 mb-4"><div class="col-md-6 col-xl-3"><a class="card card-body shadow-sm border-0 h-100 text-decoration-none"
+   href="{% url 'stakeholders:assessments' stakeholder.pk %}"><strong>Assessments</strong><span class="text-muted small">{{ assessments|length }} recent record{{ assessments|length|pluralize }}</span></a></div><div class="col-md-6 col-xl-3"><a class="card card-body shadow-sm border-0 h-100 text-decoration-none"
+   href="{% url 'stakeholders:engagement_plans' stakeholder.pk %}"><strong>Engagement plans</strong><span class="text-muted small">Plan relationship activity</span></a></div><div class="col-md-6 col-xl-3"><a class="card card-body shadow-sm border-0 h-100 text-decoration-none"
+   href="{% url 'stakeholders:agreements' stakeholder.pk %}"><strong>Agreements</strong><span class="text-muted small">{{ agreements|length }} recent record{{ agreements|length|pluralize }}</span></a></div><div class="col-md-6 col-xl-3"><a class="card card-body shadow-sm border-0 h-100 text-decoration-none"
+   href="{% url 'stakeholders:performance' stakeholder.pk %}"><strong>Performance</strong><span class="text-muted small">Weighted reviews</span></a></div></div>
+                <div class="d-flex flex-wrap gap-2 mb-4"><a class="btn btn-outline-secondary"
+   href="{% url 'stakeholders:communications' stakeholder.pk %}">Communications</a><a class="btn btn-outline-secondary"
+   href="{% url 'stakeholders:commitments' stakeholder.pk %}">Commitments</a>{% if can_financial %}<a class="btn btn-outline-secondary"
+   href="{% url 'stakeholders:contributions' stakeholder.pk %}">Contributions</a>{% endif %}{% if can_due_diligence %}<a class="btn btn-outline-secondary"
+   href="{% url 'stakeholders:due_diligence' stakeholder.pk %}">Due diligence</a>{% endif %}{% if can_risk %}<a class="btn btn-outline-secondary"
+   href="{% url 'stakeholders:risks' stakeholder.pk %}">Conflict and risk</a>{% endif %}{% if can_notes %}<a class="btn btn-outline-secondary"
+   href="{% url 'stakeholders:notes' stakeholder.pk %}">Notes</a>{% endif %}{% if can_documents %}<a class="btn btn-outline-secondary"
+   href="{% url 'stakeholders:documents' stakeholder.pk %}">Documents</a>{% endif %}</div>
+                <div id="status-history" class="card shadow-sm border-0"><div class="card-header bg-body"><h2 class="h5 mb-0">Status history</h2></div><div class="table-responsive"><table class="table mb-0"><caption class="visually-hidden">Stakeholder status transition history</caption><thead><tr><th scope="col">Date</th><th scope="col">Transition</th><th scope="col">Changed by</th><th scope="col">Reason</th></tr></thead><tbody>{% for item in status_history %}<tr><td>{{ item.created_at }}</td><td>{{ item.from_status|title }} to {{ item.to_status|title }}</td><td>{{ item.changed_by|default:"System" }}</td><td>{{ item.reason|default:"No reason recorded" }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted">No status history.</td></tr>{% endfor %}</tbody></table></div></div>
+            </section>
+        </div>
+    </div>
+{% endblock dashboard_content %}

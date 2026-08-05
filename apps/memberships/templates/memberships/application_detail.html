@@ -1,0 +1,118 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Application {{ application.reference_number }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800">Application {{ application.reference_number }}</h1>
+                <p class="text-muted small mb-0">{{ application.first_name }} {{ application.last_name }} | Status: <span class="badge bg-info">{{ application.get_status_display }}</span></p>
+            </div>
+            <div class="btn-group">
+                <a href="{% url 'memberships:application_list' %}"
+                   class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-person-lines-fill me-2"></i>Applicant Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>First Name:</strong> {{ application.first_name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Last Name:</strong> {{ application.last_name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Email:</strong> {{ application.email }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Phone:</strong> {{ application.phone|default:"--" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Gender:</strong> {{ application.get_gender_display|default:"--" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Date of Birth:</strong> {{ application.date_of_birth|default:"--" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>National ID:</strong> {{ application.national_id|default:"--" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Occupation:</strong> {{ application.occupation|default:"--" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Province:</strong> {{ application.province|default:"--" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>District:</strong> {{ application.district|default:"--" }}</p>
+                            </div>
+                            <div class="col-12">
+                                <p class="mb-1"><strong>Community:</strong> {{ application.community|default:"--" }}</p>
+                            </div>
+                            <div class="col-12">
+                                <p class="mb-1"><strong>Skills:</strong> {{ application.skills|default:"--" }}</p>
+                            </div>
+                            <div class="col-12">
+                                <p class="mb-1"><strong>Interests:</strong> {{ application.interests|default:"--" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if application.decision_notes %}
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="m-0 font-weight-bold text-warning"><i class="bi bi-sticky me-2"></i>Decision Notes</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">{{ application.decision_notes }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-file-earmark-check me-2"></i>Workflow Actions</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="post"
+                              action="{% url 'memberships:application_review' application.pk %}"
+                              class="d-grid gap-2">
+                            {% csrf_token %}
+                            <div class="mb-1">
+                                <label class="form-label fw-bold" for="notes">Decision Notes</label>
+                                <textarea name="notes" id="notes" class="form-control" rows="3"></textarea>
+                            </div>
+                            {% if application.status == "SUBMITTED" or application.status == "RETURNED" %}
+                                <button type="submit"
+                                        name="action"
+                                        value="review"
+                                        class="btn btn-outline-primary">Start Review</button>
+                            {% endif %}
+                            {% if application.status == "UNDER_REVIEW" %}
+                                <button type="submit" name="action" value="approve" class="btn btn-success">Approve &amp; Register Member</button>
+                                <button type="submit" name="action" value="return" class="btn btn-warning">Return for Correction</button>
+                            {% endif %}
+                            {% if application.status == "SUBMITTED" or application.status == "UNDER_REVIEW" %}
+                                <button type="submit"
+                                        name="action"
+                                        value="reject"
+                                        class="btn btn-outline-danger">Reject Application</button>
+                            {% endif %}
+                            {% if application.status == "RETURNED" %}
+                                <button type="submit"
+                                        name="action"
+                                        value="review"
+                                        class="btn btn-outline-primary">Re-open for Review</button>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

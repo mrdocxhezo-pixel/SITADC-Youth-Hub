@@ -1,0 +1,227 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n rbac_tags %}
+{% block title %}{{ scheme.name }} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:references_index' %}" class="text-decoration-none">Reference Numbering</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:scheme_list' %}" class="text-decoration-none">Schemes</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ scheme.name }}</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>{{ scheme.name }}</h1>
+            <p class="page-subtitle mb-0">
+                <span class="badge bg-light text-dark border font-monospace">{{ scheme.prefix }}</span>
+                <span class="badge bg-light text-dark border">{{ scheme.get_module_display }}</span>
+                {% if scheme.is_usable %}
+                    <span class="badge badge-status badge-approved">Active</span>
+                {% elif scheme.status == 'ARCHIVED' %}
+                    <span class="badge bg-secondary">Archived</span>
+                {% else %}
+                    <span class="badge badge-status badge-rejected">Inactive</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'core:scheme_edit' scheme_id=scheme.pk %}"
+               class="btn btn-outline-primary-brand btn-sm">
+                <i class="bi bi-pencil me-1"></i> Edit
+            </a>
+            <a href="{% url 'core:scheme_reset' scheme_id=scheme.pk %}"
+               class="btn btn-outline-warning btn-sm">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+            </a>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-lg-7">
+            <div class="card border-0 h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Scheme Details</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted small">Code</dt>
+                        <dd class="col-sm-8 font-monospace">
+                            {{ scheme.code }}
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Record type</dt>
+                        <dd class="col-sm-8">
+                            {{ scheme.record_type|default:"-" }}
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Pattern</dt>
+                        <dd class="col-sm-8 font-monospace">
+                            {{ scheme.pattern }}
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Organization code</dt>
+                        <dd class="col-sm-8 font-monospace">
+                            {{ scheme.organization_code }}
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Sequence width</dt>
+                        <dd class="col-sm-8">
+                            {{ scheme.sequence_length }} digits
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Start value</dt>
+                        <dd class="col-sm-8">
+                            {{ scheme.start_value }}
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Reset period</dt>
+                        <dd class="col-sm-8">
+                            {{ scheme.get_reset_period_display }}
+                            {% if scheme.reset_period == 'FISCAL' %}(starts {{ scheme.fiscal_start_month }}){% endif %}
+                            {% if scheme.reset_period == 'CUSTOM' %}({{ scheme.custom_reset_interval_days }} days){% endif %}
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Defaults</dt>
+                        <dd class="col-sm-8">
+                            {% if scheme.is_default_for_record_type %}<span class="badge bg-light text-dark border">record type</span>{% endif %}
+                            {% if scheme.is_default_for_module %}<span class="badge bg-light text-dark border">module</span>{% endif %}
+                            {% if scheme.is_fallback %}<span class="badge bg-light text-dark border">fallback</span>{% endif %}
+                        </dd>
+                    </dl>
+                    {% if scheme.description %}<p class="text-muted mt-3 mb-0">{{ scheme.description }}</p>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-5">
+            <div class="card border-0 h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Actions</h6>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'core:scheme_preview' %}"
+                           class="btn btn-outline-primary-brand btn-sm text-start">
+                            <i class="bi bi-eye me-2"></i> Preview Next Number
+                        </a>
+                        <a href="{% url 'core:sequence_list' %}?scheme={{ scheme.pk }}"
+                           class="btn btn-outline-primary-brand btn-sm text-start">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i> View Sequences
+                        </a>
+                        <a href="{% url 'core:reference_registry' %}?scheme={{ scheme.pk }}"
+                           class="btn btn-outline-primary-brand btn-sm text-start">
+                            <i class="bi bi-journal-text me-2"></i> View Issued Numbers
+                        </a>
+                        {% if request.user|has_perm:'reference_numbers.update' %}
+                            {% if scheme.is_usable %}
+                                <form method="post"
+                                      action="{% url 'core:scheme_deactivate' scheme_id=scheme.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-warning btn-sm w-100 text-start"><i class="bi bi-pause-circle me-2"></i> Deactivate Scheme</button>
+                                </form>
+                            {% elif scheme.status != 'ARCHIVED' %}
+                                <form method="post"
+                                      action="{% url 'core:scheme_activate' scheme_id=scheme.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-success btn-sm w-100 text-start"><i class="bi bi-play-circle me-2"></i> Activate Scheme</button>
+                                </form>
+                            {% endif %}
+                            {% if scheme.status == 'ARCHIVED' %}
+                                <form method="post"
+                                      action="{% url 'core:scheme_restore' scheme_id=scheme.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-outline-secondary btn-sm w-100 text-start"><i class="bi bi-arrow-counterclockwise me-2"></i> Restore Scheme</button>
+                                </form>
+                            {% else %}
+                                <form method="post"
+                                      action="{% url 'core:scheme_archive' scheme_id=scheme.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-outline-secondary btn-sm w-100 text-start"><i class="bi bi-archive me-2"></i> Archive Scheme</button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0">Sequences</h6>
+                </div>
+                <div class="card-body p-0">
+                    {% if sequences %}
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Period</th>
+                                        <th scope="col">Start</th>
+                                        <th scope="col">Current</th>
+                                        <th scope="col">Next</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sequence in sequences %}
+                                        <tr>
+                                            <td class="font-monospace small">{{ sequence.period_key }}</td>
+                                            <td>{{ sequence.start_value }}</td>
+                                            <td>{{ sequence.current_value }}</td>
+                                            <td class="fw-semibold">{{ sequence.next_value }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted small p-4 mb-0">No numbers issued yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0">Recent Numbers</h6>
+                </div>
+                <div class="card-body p-0">
+                    {% if generated %}
+                        <ul class="list-group list-group-flush">
+                            {% for record in generated %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span class="font-monospace small">{{ record.reference_number }}</span>
+                                    <span class="small text-muted">{{ record.get_status_display }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted small p-4 mb-0">No issued numbers yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-header bg-white border-0 pt-3 pb-0">
+            <h6 class="fw-bold mb-0">Audit History</h6>
+        </div>
+        <div class="card-body p-0">
+            {% if history %}
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Action</th>
+                                <th scope="col">Changed by</th>
+                                <th scope="col">Notes</th>
+                                <th scope="col">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in history %}
+                                <tr>
+                                    <td>{{ record.get_action_display }}</td>
+                                    <td>{{ record.changed_by|default:"-" }}</td>
+                                    <td class="small text-muted">{{ record.notes }}</td>
+                                    <td class="small text-muted">{{ record.created_at }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted small p-4 mb-0">No audit records for this scheme.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

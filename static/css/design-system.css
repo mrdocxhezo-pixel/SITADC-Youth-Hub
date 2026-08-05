@@ -1,0 +1,279 @@
+/* SITADC Youth Hub - Design System */
+
+:root {
+    /* Brand Colors */
+    --sitadc-primary: #0056b3;
+    --sitadc-primary-light: #4d94ff;
+    --sitadc-primary-dark: #003d82;
+    --sitadc-accent-indigo: #6610f2;
+    --sitadc-accent-purple: #6f42c1;
+    --sitadc-accent-cyan: #17a2b8;
+    --sitadc-success: #198754; /* Emerald */
+    --sitadc-action: #fd7e14; /* Orange */
+    --sitadc-error: #dc3545; /* Red */
+    --sitadc-warning: #ffc107;
+
+    /* Neutrals */
+    --sitadc-white: #ffffff;
+    --sitadc-gray-100: #f8f9fa;
+    --sitadc-gray-200: #e9ecef;
+    --sitadc-gray-300: #dee2e6;
+    --sitadc-gray-800: #343a40;
+    --sitadc-gray-900: #212529;
+
+    /* Typography */
+    --font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Spacing & Layout */
+    --sidebar-width: 260px;
+    --topbar-height: 60px;
+
+    /* Shadows */
+    --shadow-sm: 0 0.125rem 0.25rem rgb(0 0 0 / 7.5%);
+    --shadow-md: 0 0.5rem 1rem rgb(0 0 0 / 15%);
+    --shadow-lg: 0 1rem 3rem rgb(0 0 0 / 17.5%);
+
+    /* Borders */
+    --border-radius-sm: 0.25rem;
+    --border-radius-md: 0.5rem;
+    --border-radius-lg: 1rem;
+}
+
+body {
+    font-family: var(--font-family-base);
+    background-color: var(--sitadc-gray-100);
+    color: var(--sitadc-gray-900);
+}
+
+/* Custom Utilities based on Brand Colors */
+.bg-primary-brand {
+    background-color: var(--sitadc-primary) !important;
+    color: var(--sitadc-white);
+}
+
+.text-primary-brand {
+    color: var(--sitadc-primary) !important;
+}
+
+.btn-action {
+    background-color: var(--sitadc-action);
+    color: var(--sitadc-white);
+    border-color: var(--sitadc-action);
+}
+
+.btn-action:hover {
+    background-color: #e67300;
+    color: var(--sitadc-white);
+    border-color: #e67300;
+}
+
+/* Dashboard Layout Overrides */
+.dashboard-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.dashboard-sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--sitadc-white);
+    border-right: 1px solid var(--sitadc-gray-200);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s;
+    z-index: 1000;
+}
+
+.dashboard-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--sitadc-gray-100);
+}
+
+.dashboard-topbar {
+    height: var(--topbar-height);
+    background-color: var(--sitadc-white);
+    border-bottom: 1px solid var(--sitadc-gray-200);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    z-index: 900;
+}
+
+/* Card Overrides */
+.card {
+    border: none;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+/* Sidebar Toggle State */
+@media (width <= 768px) {
+    .dashboard-sidebar {
+        margin-left: calc(var(--sidebar-width) * -1);
+        position: fixed;
+    }
+
+    .dashboard-sidebar.show {
+        margin-left: 0;
+    }
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.btn-primary-brand {
+    background-color: var(--sitadc-primary);
+    border-color: var(--sitadc-primary);
+    color: var(--sitadc-white);
+}
+
+.btn-primary-brand:hover,
+.btn-primary-brand:focus {
+    background-color: var(--sitadc-primary-dark);
+    border-color: var(--sitadc-primary-dark);
+    color: var(--sitadc-white);
+}
+
+.btn-outline-primary-brand {
+    color: var(--sitadc-primary);
+    border-color: var(--sitadc-primary);
+    background-color: transparent;
+}
+
+.btn-outline-primary-brand:hover,
+.btn-outline-primary-brand:focus {
+    background-color: var(--sitadc-primary);
+    border-color: var(--sitadc-primary);
+    color: var(--sitadc-white);
+}
+
+/* ============================================
+   Forms
+   ============================================ */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--sitadc-primary-light);
+    box-shadow: 0 0 0 0.2rem rgb(0 86 179 / 25%);
+}
+
+.form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.375rem;
+}
+
+/* ============================================
+   Tables
+   ============================================ */
+.table-sitadc thead {
+    background-color: var(--sitadc-gray-100);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--sitadc-gray-800);
+}
+
+.table-sitadc td {
+    vertical-align: middle;
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   Status Badges
+   ============================================ */
+.badge-status {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.35em 0.75em;
+    border-radius: var(--border-radius-lg);
+}
+
+.badge-draft {
+    background-color: var(--sitadc-gray-300);
+    color: var(--sitadc-gray-800);
+}
+
+.badge-pending {
+    background-color: var(--sitadc-warning);
+    color: var(--sitadc-gray-900);
+}
+
+.badge-approved {
+    background-color: var(--sitadc-success);
+    color: var(--sitadc-white);
+}
+
+.badge-rejected {
+    background-color: var(--sitadc-error);
+    color: var(--sitadc-white);
+}
+
+.badge-archived {
+    background-color: var(--sitadc-gray-800);
+    color: var(--sitadc-white);
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+.empty-state {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--sitadc-gray-800);
+}
+
+.empty-state .empty-state-icon {
+    font-size: 3rem;
+    color: var(--sitadc-gray-300);
+    margin-bottom: 1rem;
+}
+
+/* ============================================
+   Accessibility: Focus Indicators
+   ============================================ */
+*:focus-visible {
+    outline: 2px solid var(--sitadc-primary);
+    outline-offset: 2px;
+}
+
+a:focus-visible {
+    outline: 2px solid var(--sitadc-primary);
+    outline-offset: 2px;
+    border-radius: var(--border-radius-sm);
+}
+
+/* ============================================
+   Toast Container
+   ============================================ */
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1100;
+}
+
+/* ============================================
+   Page Header
+   ============================================ */
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.page-header .page-subtitle {
+    font-size: 0.875rem;
+    color: var(--sitadc-gray-800);
+}

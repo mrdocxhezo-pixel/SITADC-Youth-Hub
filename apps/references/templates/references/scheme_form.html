@@ -1,0 +1,155 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% if mode == 'create' %}{% trans "New Scheme" %}{% else %}{% trans "Edit Scheme" %}{% endif %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:references_index' %}" class="text-decoration-none">Reference Numbering</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:scheme_list' %}" class="text-decoration-none">Schemes</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% if mode == 'create' %}New Scheme{% else %}Edit {{ scheme.name }}{% endif %}</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>{% if mode == 'create' %}Create New Scheme{% else %}Edit Scheme{% endif %}</h1>
+            <p class="page-subtitle mb-0">Define the prefix, pattern and sequence policy</p>
+        </div>
+        <div>
+            <a href="{% url 'core:scheme_list' %}"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Schemes
+            </a>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-4">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+                {% endif %}
+                <h5 class="h6 text-muted border-bottom pb-2 mb-3">Identity</h5>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Name <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        <div class="form-text">e.g. Project, Report, Member.</div>
+                        {% if form.name.errors %}<div class="invalid-feedback d-block">{% for error in form.name.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <label for="{{ form.code.id_for_label }}" class="form-label">Code <span class="text-danger">*</span></label>
+                        {{ form.code }}
+                        <div class="form-text">Unique machine name, e.g. <code>project</code>.</div>
+                        {% if form.code.errors %}<div class="invalid-feedback d-block">{% for error in form.code.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="{{ form.module.id_for_label }}" class="form-label">Module <span class="text-danger">*</span></label>
+                        {{ form.module }}
+                        {% if form.module.errors %}<div class="invalid-feedback d-block">{% for error in form.module.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.record_type.id_for_label }}" class="form-label">Record type</label>
+                        {{ form.record_type }}
+                        <div class="form-text">Optional narrower type within the module.</div>
+                        {% if form.record_type.errors %}<div class="invalid-feedback d-block">{% for error in form.record_type.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}<div class="invalid-feedback d-block">{% for error in form.description.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <h5 class="h6 text-muted border-bottom pb-2 mb-3">Format</h5>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <label for="{{ form.prefix.id_for_label }}" class="form-label">Prefix <span class="text-danger">*</span></label>
+                        {{ form.prefix }}
+                        <div class="form-text">2-10 uppercase letters, e.g. <code>PRJ</code>.</div>
+                        {% if form.prefix.errors %}<div class="invalid-feedback d-block">{% for error in form.prefix.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <label for="{{ form.pattern.id_for_label }}" class="form-label">Pattern</label>
+                        {{ form.pattern }}
+                        <div class="form-text">Tokens: {PREFIX} {ORG} {MODULE} {TYPE} {UNIT} {DIRECTORATE} {REGION} {DISTRICT} {COMMUNITY} {TEAM} {PROGRAM} {PROJECT} {YEAR} {YEAR_SHORT} {MONTH} {DAY} {FY} {SEQUENCE}.</div>
+                        {% if form.pattern.errors %}<div class="invalid-feedback d-block">{% for error in form.pattern.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="{{ form.organization_code.id_for_label }}" class="form-label">Organization code</label>
+                        {{ form.organization_code }}
+                        <div class="form-text">e.g. SITADC, NAT, REG, DST, COM.</div>
+                        {% if form.organization_code.errors %}<div class="invalid-feedback d-block">{% for error in form.organization_code.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <h5 class="h6 text-muted border-bottom pb-2 mb-3">Sequence</h5>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <label for="{{ form.sequence_length.id_for_label }}" class="form-label">Sequence width</label>
+                        {{ form.sequence_length }}
+                        <div class="form-text">Zero-padded digits (1-12).</div>
+                        {% if form.sequence_length.errors %}<div class="invalid-feedback d-block">{% for error in form.sequence_length.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <label for="{{ form.start_value.id_for_label }}" class="form-label">Start value</label>
+                        {{ form.start_value }}
+                        {% if form.start_value.errors %}<div class="invalid-feedback d-block">{% for error in form.start_value.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="{{ form.reset_period.id_for_label }}" class="form-label">Reset period</label>
+                        {{ form.reset_period }}
+                        {% if form.reset_period.errors %}<div class="invalid-feedback d-block">{% for error in form.reset_period.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.fiscal_start_month.id_for_label }}" class="form-label">Fiscal start month</label>
+                        {{ form.fiscal_start_month }}
+                        <div class="form-text">Only used when reset period is Fiscal.</div>
+                        {% if form.fiscal_start_month.errors %}<div class="invalid-feedback d-block">{% for error in form.fiscal_start_month.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.custom_reset_interval_days.id_for_label }}"
+                               class="form-label">Custom reset interval (days)</label>
+                        {{ form.custom_reset_interval_days }}
+                        <div class="form-text">Only used when reset period is Custom.</div>
+                        {% if form.custom_reset_interval_days.errors %}<div class="invalid-feedback d-block">{% for error in form.custom_reset_interval_days.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <h5 class="h6 text-muted border-bottom pb-2 mb-3">Resolution</h5>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-4">
+                        <div class="form-check">
+                            {{ form.is_default_for_record_type }}
+                            <label class="form-check-label"
+                                   for="{{ form.is_default_for_record_type.id_for_label }}">Default for record type</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-check">
+                            {{ form.is_default_for_module }}
+                            <label class="form-check-label"
+                                   for="{{ form.is_default_for_module.id_for_label }}">Default for module</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-check">
+                            {{ form.is_fallback }}
+                            <label class="form-check-label" for="{{ form.is_fallback.id_for_label }}">Organizational fallback</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}<div class="invalid-feedback d-block">{% for error in form.notes.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                    <a href="{% url 'core:scheme_list' %}" class="btn btn-light">Cancel</a>
+                    <button type="submit" class="btn btn-primary-brand px-4">
+                        <i class="bi bi-check-lg me-1"></i> {% if mode == 'create' %}Create Scheme{% else %}Save Changes{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

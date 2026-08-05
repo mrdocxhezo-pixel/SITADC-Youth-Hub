@@ -1,0 +1,125 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Roles & Permissions" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Roles &amp; Permissions</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Roles &amp; Permissions</h1>
+            <p class="page-subtitle mb-0">Manage roles, permissions and organizational access scopes</p>
+        </div>
+        <div>
+            <a href="{% url 'core:role_create' %}"
+               class="btn btn-primary-brand btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> New Role
+            </a>
+        </div>
+    </div>
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(0,86,179,0.1);">
+                            <i class="bi bi-shield-lock fs-4 text-primary-brand"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Roles</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ role_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(25,135,84,0.1);">
+                            <i class="bi bi-check-circle fs-4 text-success"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Active Roles</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ active_role_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(253,126,20,0.1);">
+                            <i class="bi bi-diagram-3 fs-4" style="color: var(--sitadc-action);"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Access Scopes</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ scope_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(102,16,242,0.1);">
+                            <i class="bi bi-key fs-4" style="color: var(--sitadc-accent-indigo);"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Permissions</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ category_count }} categories</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-12 col-lg-4">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <a href="{% url 'core:role_list' %}"
+                       class="btn btn-outline-primary-brand btn-sm text-start">
+                        <i class="bi bi-shield-lock me-2"></i> Manage Roles
+                    </a>
+                    <a href="{% url 'core:permission_list' %}"
+                       class="btn btn-outline-primary-brand btn-sm text-start">
+                        <i class="bi bi-key me-2"></i> Permission Catalogue
+                    </a>
+                    <a href="{% url 'core:access_scope_list' %}"
+                       class="btn btn-outline-primary-brand btn-sm text-start">
+                        <i class="bi bi-diagram-3 me-2"></i> Access Scopes
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-8">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0">Overview</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-2">
+                        The RBAC framework governs authorization across the entire SITADC Youth Hub platform.
+                        Permissions are organized into categories and assigned to roles; users inherit permissions
+                        through role assignments scoped to organizational levels.
+                    </p>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-journal-text me-1"></i>
+                        {{ history_count }} role history events have been recorded for audit purposes.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

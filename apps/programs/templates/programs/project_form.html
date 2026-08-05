@@ -1,0 +1,13 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{% if object %}Edit Project{% else %}Register Project{% endif %} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "programs/includes/module_nav.html" with project=object %}
+        <header class="mb-4"><h1 class="h2">{% if object %}Edit project profile{% else %}Register project{% endif %}</h1>{% if program %}<p class="text-muted mb-0">Under program {{ program.reference_number }} &middot; {{ program.title }}</p>{% else %}<p class="text-muted">Fields marked with an asterisk are required. Status changes use the separate audited transition workflow.</p>{% endif %}</header>
+        <form method="post"
+              enctype="multipart/form-data"
+              class="card shadow-sm border-0"
+              novalidate>{% csrf_token %}<div class="card-body p-4"><div class="row g-3">{% include "programs/includes/form_fields.html" %}</div></div><div class="card-footer bg-body d-flex justify-content-end gap-2"><a class="btn btn-outline-secondary"
+   href="{% if object %}{% url 'programs:project_profile' object.pk %}{% elif program %}{% url 'programs:program_profile' program.pk %}{% else %}{% url 'programs:project_directory' %}{% endif %}">Cancel</a><button class="btn btn-primary" type="submit"><i class="bi bi-check-lg me-1" aria-hidden="true"></i>Save project</button></div></form>
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,137 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% if mode == 'create' %}{% trans "New Unit" %}{% else %}{% trans "Edit Unit" %}{% endif %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+   class="text-decoration-none">Organization</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:unit_list' %}" class="text-decoration-none">Units</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% if mode == 'create' %}New Unit{% else %}Edit {{ unit.name }}{% endif %}</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>{% if mode == 'create' %}Create New Unit{% else %}Edit Unit{% endif %}</h1>
+            <p class="page-subtitle mb-0">Define the organizational unit and its place in the hierarchy</p>
+        </div>
+        <div>
+            <a href="{% url 'core:unit_list' %}"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Units
+            </a>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-4">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+                {% endif %}
+                <h5 class="h6 text-muted border-bottom pb-2 mb-3">Identity</h5>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <label for="{{ form.identifier.id_for_label }}" class="form-label">Identifier <span class="text-danger">*</span></label>
+                        {{ form.identifier }}
+                        <div class="form-text">Stable identifier; it should never change.</div>
+                        {% if form.identifier.errors %}<div class="invalid-feedback d-block">{% for error in form.identifier.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Name <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="invalid-feedback d-block">{% for error in form.name.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="{{ form.short_name.id_for_label }}" class="form-label">Short name</label>
+                        {{ form.short_name }}
+                        {% if form.short_name.errors %}<div class="invalid-feedback d-block">{% for error in form.short_name.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}<div class="invalid-feedback d-block">{% for error in form.description.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <h5 class="h6 text-muted border-bottom pb-2 mb-3">Hierarchy</h5>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.unit_type.id_for_label }}" class="form-label">Unit type <span class="text-danger">*</span></label>
+                        {{ form.unit_type }}
+                        {% if form.unit_type.errors %}<div class="invalid-feedback d-block">{% for error in form.unit_type.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.level.id_for_label }}" class="form-label">Organizational level</label>
+                        {{ form.level }}
+                        <div class="form-text">Leave blank to inherit the parent unit's level.</div>
+                        {% if form.level.errors %}<div class="invalid-feedback d-block">{% for error in form.level.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.parent.id_for_label }}" class="form-label">Parent unit</label>
+                        {{ form.parent }}
+                        {% if form.parent.errors %}<div class="invalid-feedback d-block">{% for error in form.parent.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.unit_head.id_for_label }}" class="form-label">Unit head</label>
+                        {{ form.unit_head }}
+                        {% if form.unit_head.errors %}<div class="invalid-feedback d-block">{% for error in form.unit_head.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.access_scope.id_for_label }}" class="form-label">Access scope</label>
+                        {{ form.access_scope }}
+                        {% if form.access_scope.errors %}<div class="invalid-feedback d-block">{% for error in form.access_scope.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}<div class="invalid-feedback d-block">{% for error in form.status.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <h5 class="h6 text-muted border-bottom pb-2 mb-3">Contact &amp; Dates</h5>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.office_location.id_for_label }}" class="form-label">Office location</label>
+                        {{ form.office_location }}
+                        {% if form.office_location.errors %}<div class="invalid-feedback d-block">{% for error in form.office_location.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-3 mb-3 mb-md-0">
+                        <label for="{{ form.contact_email.id_for_label }}" class="form-label">Contact email</label>
+                        {{ form.contact_email }}
+                        {% if form.contact_email.errors %}<div class="invalid-feedback d-block">{% for error in form.contact_email.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="{{ form.contact_phone.id_for_label }}" class="form-label">Contact phone</label>
+                        {{ form.contact_phone }}
+                        {% if form.contact_phone.errors %}<div class="invalid-feedback d-block">{% for error in form.contact_phone.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.effective_date.id_for_label }}" class="form-label">Effective date</label>
+                        {{ form.effective_date }}
+                        {% if form.effective_date.errors %}<div class="invalid-feedback d-block">{% for error in form.effective_date.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.established_date.id_for_label }}" class="form-label">Date established</label>
+                        {{ form.established_date }}
+                        {% if form.established_date.errors %}<div class="invalid-feedback d-block">{% for error in form.established_date.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}<div class="invalid-feedback d-block">{% for error in form.notes.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                    <a href="{% url 'core:unit_list' %}" class="btn btn-light">Cancel</a>
+                    <button type="submit" class="btn btn-primary-brand px-4">
+                        <i class="bi bi-check-lg me-1"></i> {% if mode == 'create' %}Create Unit{% else %}Save Changes{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

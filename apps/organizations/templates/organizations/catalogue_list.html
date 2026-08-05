@@ -1,0 +1,85 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n rbac_tags %}
+{% block title %}{% trans "Organization Catalogues" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+   class="text-decoration-none">Organization</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Catalogues</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Organization Catalogues</h1>
+            <p class="page-subtitle mb-0">Manage organizational levels and position classifications</p>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0">Organizational Levels</h5>
+                    {% if request.user|has_perm:'organizations.manage' %}
+                        <a href="{% url 'core:level_create' %}"
+                           class="btn btn-primary-brand btn-sm">
+                            <i class="bi bi-plus-lg me-1"></i> New Level
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body p-0">
+                    {% if levels %}
+                        <ul class="list-group list-group-flush">
+                            {% for level in levels %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="fw-semibold">{{ level.name }}</span>
+                                        <span class="badge bg-secondary-subtle text-secondary ms-2">{{ level.code }}</span>
+                                        {% if not level.is_active %}<span class="badge badge-status badge-archived ms-1">Inactive</span>{% endif %}
+                                    </div>
+                                    <span class="text-muted small">Sort {{ level.sort_order }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="p-4">
+                            {% include 'components/empty_state.html' with icon='bi-diagram-3' title='No levels' message='Organizational levels will appear here.' %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0">Position Classifications</h5>
+                    {% if request.user|has_perm:'organizations.manage' %}
+                        <a href="{% url 'core:classification_create' %}"
+                           class="btn btn-primary-brand btn-sm">
+                            <i class="bi bi-plus-lg me-1"></i> New Classification
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body p-0">
+                    {% if classifications %}
+                        <ul class="list-group list-group-flush">
+                            {% for classification in classifications %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="fw-semibold">{{ classification.name }}</span>
+                                        <span class="badge bg-secondary-subtle text-secondary ms-2">{{ classification.code }}</span>
+                                        {% if not classification.is_active %}<span class="badge badge-status badge-archived ms-1">Inactive</span>{% endif %}
+                                    </div>
+                                    <span class="text-muted small">Sort {{ classification.sort_order }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="p-4">
+                            {% include 'components/empty_state.html' with icon='bi-tags' title='No classifications' message='Position classifications will appear here.' %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,14 @@
+<!-- Empty State – include when a listing or table has no data -->
+<!-- Usage: include 'components/empty_state.html' with icon, title, message, action_url, action_label -->
+<div class="empty-state">
+    <div class="empty-state-icon">
+        <i class="bi {{ icon|default:'bi-inbox' }}"></i>
+    </div>
+    <h3 class="h5 fw-semibold mb-2">{{ title|default:"No records found" }}</h3>
+    <p class="text-muted mb-3">{{ message|default:"There are no items to display at this time." }}</p>
+    {% if action_url %}
+        <a href="{{ action_url }}" class="btn btn-primary-brand btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>{{ action_label|default:"Create New" }}
+        </a>
+    {% endif %}
+</div>

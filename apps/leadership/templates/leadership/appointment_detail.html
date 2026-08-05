@@ -1,0 +1,22 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Appointment Detail | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Appointment Detail</h1>
+            <a href="{% url 'leadership:appointment_update' appointment.pk %}"
+               class="btn btn-outline-primary">Edit Appointment</a>
+        </div>
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{{ appointment.profile.user.get_full_name }} - {{ appointment.role }}</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Position:</strong> {{ appointment.position }}</p>
+                <p><strong>Unit:</strong> {{ appointment.organization_unit }}</p>
+                <p><strong>Term:</strong> {{ appointment.start_date }} to {{ appointment.end_date|default:"Present" }}</p>
+                <p><strong>Status:</strong> {{ appointment.status }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

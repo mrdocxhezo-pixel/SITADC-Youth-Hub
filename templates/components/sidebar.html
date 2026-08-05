@@ -1,0 +1,101 @@
+{% load rbac_tags %}
+<nav id="sidebar"
+     class="dashboard-sidebar py-3 shadow-sm d-flex flex-column h-100 bg-white">
+    <!-- Brand Area -->
+    <div class="px-4 mb-4 mt-3 position-relative text-center">
+        <a href="{% url 'core:home' %}"
+           class="text-decoration-none text-dark d-flex flex-column align-items-center gap-2"
+           aria-label="Go to SITADC Youth Hub homepage">
+            {% include 'components/branding/logo.html' with logo_class="sidebar-logo" %}
+            <span class="fs-5 fw-bold text-primary-brand text-wrap px-2 text-center brand-font">SITADC Youth Hub</span>
+        </a>
+        <button id="sidebarToggle"
+                class="btn btn-link d-md-none text-dark p-0 position-absolute top-0 end-0 me-3 mt-1">
+            <i class="bi bi-x-lg fs-5"></i>
+        </button>
+    </div>
+    <!-- Navigation Links -->
+    <div class="px-3 flex-grow-1 overflow-auto">
+        <ul class="nav nav-pills flex-column mb-auto gap-1">
+            <li class="nav-item">
+                <a href="#"
+                   class="nav-link active bg-primary-brand text-white rounded-3 d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-speedometer2 me-3 fs-5"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'leadership:dashboard' %}"
+                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-people me-3 fs-5 text-muted"></i> Leadership
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'memberships:dashboard' %}"
+                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-person-badge me-3 fs-5 text-muted"></i> Membership
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'volunteers:dashboard' %}"
+                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-heart me-3 fs-5 text-muted"></i> Volunteers
+                </a>
+            </li>
+            {% if request.user|has_perm:"partners.view" or request.user|has_perm:"partners.view_directory" or request.user|has_perm:"partners.manage" %}
+                <li class="nav-item">
+                    <a href="{% url 'stakeholders:dashboard' %}"
+                       class="nav-link {% if request.resolver_match.namespace == 'stakeholders' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                       {% if request.resolver_match.namespace == 'stakeholders' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-building-gear me-3 fs-5"></i> Stakeholders
+                    </a>
+                </li>
+            {% endif %}
+            {% if request.user|has_perm:"programmes.view" or request.user|has_perm:"projects.view" or request.user|has_perm:"programmes.manage" or request.user|has_perm:"projects.manage" %}
+                <li class="nav-item">
+                    <a href="{% url 'programs:dashboard' %}"
+                       class="nav-link {% if request.resolver_match.namespace == 'programs' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                       {% if request.resolver_match.namespace == 'programs' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-kanban me-3 fs-5"></i> Programs
+                    </a>
+                </li>
+            {% endif %}
+            <li class="nav-item">
+                <a href="#"
+                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-graph-up me-3 fs-5 text-muted"></i> MEAL
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#"
+                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-file-earmark-bar-graph me-3 fs-5 text-muted"></i> Reports
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'core:organizations_index' %}"
+                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-diagram-3 me-3 fs-5 text-muted"></i> Organization
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'core:references_index' %}"
+                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-hash me-3 fs-5 text-muted"></i> Reference Numbers
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'core:rbac_index' %}"
+                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
+                    <i class="bi bi-shield-lock me-3 fs-5 text-muted"></i> Roles &amp; Permissions
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- Bottom Settings Link -->
+    <div class="mt-auto px-3 pb-2 pt-3 border-top">
+        <a href="#"
+           class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
+            <i class="bi bi-gear me-3 fs-5 text-muted"></i> Settings
+        </a>
+    </div>
+</nav>

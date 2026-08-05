@@ -1,0 +1,81 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+{% block title %}Leadership Dashboard | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Leadership Dashboard</h1>
+            <a href="{% url 'leadership:profile_create' %}"
+               class="btn btn-primary-brand">
+                <i class="bi bi-person-plus-fill me-2"></i>Add Leader
+            </a>
+        </div>
+        <!-- Analytics Cards -->
+        <div class="row">
+            <div class="col-xl-4 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Active Leaders</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_leaders }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-people fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Appointments</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_appointments }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-hourglass-split fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Recent Appointments -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Appointments</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Leader</th>
+                                <th>Role</th>
+                                <th>Position</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appt in recent_appointments %}
+                                <tr>
+                                    <td>{{ appt.profile.user.get_full_name }}</td>
+                                    <td>{{ appt.role }}</td>
+                                    <td>{{ appt.position }}</td>
+                                    <td>{{ appt.status }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No recent appointments found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

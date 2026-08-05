@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Volunteer Application Form | SITADC Youth Hub{% endblock title %}
+{% block content %}
+    <div class="row justify-content-center py-5">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white p-4 text-center rounded-top-4">
+                    <h3 class="mb-1 fw-bold">SITADC Youth Hub</h3>
+                    <p class="mb-0">Volunteer Membership & Service Application Form</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row g-3">{% include "volunteers/includes/form_fields.html" %}</div>
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5"><i class="bi bi-send me-2"></i>Submit Application</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

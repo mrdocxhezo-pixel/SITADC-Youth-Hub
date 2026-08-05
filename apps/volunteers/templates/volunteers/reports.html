@@ -1,0 +1,48 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Volunteer Reports | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800"><i class="bi bi-file-earmark-bar-graph me-2"></i>Volunteer Reports & Exports</h1>
+                <p class="text-muted small mb-0">Generate, view, and export volunteer registers, attendance, and activity summary reports.</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Volunteer Register Export</h5>
+                        <p class="card-text text-muted small">Download complete volunteer master list with contact, region, status, and category metadata.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="?export=csv" class="btn btn-outline-success btn-sm"><i class="bi bi-download me-1"></i>CSV</a>
+                            <a href="?export=xlsx" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-excel me-1"></i>Excel</a>
+                            <a href="?export=docx" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-word me-1"></i>Word</a>
+                            <a href="?export=pdf" class="btn btn-outline-danger btn-sm"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-clock-history text-primary me-2"></i>Attendance & Service Hours</h5>
+                        <p class="card-text text-muted small">Comprehensive breakdown of total volunteer hours, activity categories, and attendance records.</p>
+                        <a href="{% url 'volunteers:attendance_list' %}"
+                           class="btn btn-outline-primary btn-sm"><i class="bi bi-eye me-1"></i>View Attendance</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-star text-warning me-2"></i>Performance & Recognition</h5>
+                        <p class="card-text text-muted small">Summary of volunteer evaluations, awards, years of service, and recognition history.</p>
+                        <a href="{% url 'volunteers:recognition_list' %}"
+                           class="btn btn-outline-warning btn-sm"><i class="bi bi-eye me-1"></i>View Recognitions</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

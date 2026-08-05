@@ -1,0 +1,72 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Reporting Line" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+   class="text-decoration-none">Organization</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:position_list' %}" class="text-decoration-none">Positions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:position_detail' slug=position.slug %}"
+   class="text-decoration-none">{{ position.title }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Reporting Line</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Reporting Line</h1>
+            <p class="page-subtitle mb-0">Set who {{ position.title }} reports to directly</p>
+        </div>
+        <div>
+            <a href="{% url 'core:position_detail' slug=position.slug %}"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Position
+            </a>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-12 col-lg-7">
+            <div class="card border-0">
+                <div class="card-body p-4">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                        <div class="mb-3">
+                            <label for="{{ form.supervisor.id_for_label }}" class="form-label">Primary supervisor</label>
+                            {{ form.supervisor }}
+                            <div class="form-text">{{ form.supervisor.help_text }}</div>
+                            {% if form.supervisor.errors %}<div class="invalid-feedback d-block">{% for error in form.supervisor.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                            <a href="{% url 'core:position_detail' slug=position.slug %}"
+                               class="btn btn-light">Cancel</a>
+                            <button type="submit" class="btn btn-primary-brand px-4">
+                                <i class="bi bi-check-lg me-1"></i> Save Reporting Line
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-5">
+            <div class="card border-0 h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Current Reporting Chain</h6>
+                    <ol class="mb-0">
+                        {% for node in position.get_reporting_chain %}
+                            <li>
+                                <a href="{% url 'core:position_detail' slug=node.slug %}"
+                                   class="text-decoration-none {% if node.pk == position.pk %}fw-bold{% endif %}">{{ node.title }}</a>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                    <p class="text-muted small mt-3 mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Circular reporting relationships are automatically prevented.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Organizational Units" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+   class="text-decoration-none">Organization</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Units</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Organizational Units</h1>
+            <p class="page-subtitle mb-0">Directorates, departments, regions, districts, communities and teams</p>
+        </div>
+        <div>
+            <a href="{% url 'core:unit_create' %}"
+               class="btn btn-primary-brand btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> New Unit
+            </a>
+        </div>
+    </div>
+    <div class="card border-0 mb-3">
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-12 col-md-4">
+                    <label for="type-filter" class="visually-hidden">Unit type</label>
+                    <select name="type" id="type-filter" class="form-select form-select-sm">
+                        <option value="">All unit types</option>
+                        {% for value, label in unit_types %}
+                            <option value="{{ value }}" {% if active_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-funnel me-1"></i> Filter
+                    </button>
+                    {% if active_type %}
+                        <a href="{% url 'core:unit_list' %}" class="btn btn-light btn-sm">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-0">
+            {% if units %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Unit</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Level</th>
+                                <th scope="col">Parent</th>
+                                <th scope="col" class="text-center">Positions</th>
+                                <th scope="col" class="text-center">Members</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for unit in units %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'core:unit_detail' unit_id=unit.pk %}"
+                                           class="fw-semibold text-decoration-none">{{ unit.name }}</a>
+                                        {% if unit.is_archived %}<span class="badge badge-status badge-archived ms-1">Archived</span>{% endif %}
+                                        <div class="text-muted small">{{ unit.identifier }}</div>
+                                    </td>
+                                    <td>{{ unit.get_unit_type_display }}</td>
+                                    <td>{{ unit.level.name|default:"-" }}</td>
+                                    <td>{{ unit.parent.name|default:"-" }}</td>
+                                    <td class="text-center"><span class="badge bg-light text-dark border">{{ unit.position_count }}</span></td>
+                                    <td class="text-center"><span class="badge bg-light text-dark border">{{ unit.member_count }}</span></td>
+                                    <td>
+                                        {% if unit.status == 'ACTIVE' %}
+                                            <span class="badge badge-status badge-approved">Active</span>
+                                        {% else %}
+                                            <span class="badge badge-status badge-rejected">{{ unit.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'core:unit_detail' unit_id=unit.pk %}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'core:unit_update' unit_id=unit.pk %}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-4">
+                    {% url 'core:unit_create' as unit_create_url %}
+                    {% include 'components/empty_state.html' with icon='bi-diagram-3' title='No units found' message='Organizational units will appear here once created.' action_url=unit_create_url action_label='Create Unit' %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

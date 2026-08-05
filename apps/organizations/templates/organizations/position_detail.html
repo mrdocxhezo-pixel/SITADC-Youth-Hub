@@ -1,0 +1,317 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n rbac_tags %}
+{% block title %}{{ position.title }} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+   class="text-decoration-none">Organization</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:position_list' %}" class="text-decoration-none">Positions</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ position.title }}</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>{{ position.title }}</h1>
+            <p class="page-subtitle mb-0">
+                {% if position.is_protected %}<span class="badge bg-danger-subtle text-danger me-1">Protected</span>{% endif %}
+                {% if position.status == 'ACTIVE' %}
+                    <span class="badge badge-status badge-approved">Active</span>
+                {% else %}
+                    <span class="badge badge-status badge-rejected">{{ position.get_status_display }}</span>
+                {% endif %}
+                {% if position.is_vacant %}
+                    <span class="badge bg-warning-subtle text-warning">Vacant</span>
+                {% else %}
+                    <span class="badge bg-success-subtle text-success">Occupied</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'core:position_reporting' slug=position.slug %}"
+               class="btn btn-outline-primary-brand btn-sm">
+                <i class="bi bi-diagram-2 me-1"></i> Reporting
+            </a>
+            <a href="{% url 'core:acting_create' slug=position.slug %}"
+               class="btn btn-outline-primary-brand btn-sm">
+                <i class="bi bi-person-plus me-1"></i> Acting
+            </a>
+            <a href="{% url 'core:position_assign' slug=position.slug %}"
+               class="btn btn-primary-brand btn-sm">
+                <i class="bi bi-person-check me-1"></i> Appoint
+            </a>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-lg-7">
+            <div class="card border-0 h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Position Details</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted small">Organizational unit</dt>
+                        <dd class="col-sm-8">
+                            <a href="{% url 'core:unit_detail' unit_id=position.organizational_unit.pk %}"
+                               class="text-decoration-none">{{ position.organizational_unit.name }}</a>
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Classification</dt>
+                        <dd class="col-sm-8">
+                            {{ position.classification.name|default:"-" }}
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Appointment type</dt>
+                        <dd class="col-sm-8">
+                            {{ position.get_appointment_type_display }}
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Effective date</dt>
+                        <dd class="col-sm-8">
+                            {{ position.effective_date|default:"-" }}
+                        </dd>
+                        <dt class="col-sm-4 text-muted small">Primary supervisor</dt>
+                        <dd class="col-sm-8">
+                            {% if position.primary_supervisor %}
+                                <a href="{% url 'core:position_detail' slug=position.primary_supervisor.slug %}"
+                                   class="text-decoration-none">{{ position.primary_supervisor.title }}</a>
+{% else %}—{% endif %}
+    </dd>
+<dt class="col-sm-4 text-muted small">Direct subordinates</dt>
+<dd class="col-sm-8">
+    {{ subordinates.count }}
+    </dd>
+    </dl>
+{% if position.responsibilities %}
+    <h6 class="h6 text-muted border-bottom pb-2 mt-3 mb-2">Responsibilities</h6>
+    <p class="text-muted small mb-0">{{ position.responsibilities|linebreaksbr }}</p>
+{% endif %}
+{% if position.required_competencies %}
+    <h6 class="h6 text-muted border-bottom pb-2 mt-3 mb-2">Required competencies</h6>
+    <p class="text-muted small mb-0">{{ position.required_competencies|linebreaksbr }}</p>
+{% endif %}
+    </div>
+    </div>
+    </div>
+<div class="col-12 col-lg-5">
+    <div class="card border-0 h-100">
+        <div class="card-body">
+            <h6 class="fw-bold mb-3">Reporting Chain</h6>
+            <ol class="mb-3">
+                {% for node in chain %}
+                    <li>
+                        <a href="{% url 'core:position_detail' slug=node.slug %}"
+                           class="text-decoration-none {% if node.pk == position.pk %}fw-bold{% endif %}">{{ node.title }}</a>
+                        {% if node.is_protected %}<span class="badge bg-danger-subtle text-danger">Protected</span>{% endif %}
+                    </li>
+                {% endfor %}
+            </ol>
+            <h6 class="fw-bold mb-3">Quick Actions</h6>
+            <div class="d-grid gap-2">
+                <a href="{% url 'core:position_update' slug=position.slug %}"
+                   class="btn btn-outline-primary-brand btn-sm text-start">
+                    <i class="bi bi-pencil me-2"></i> Edit Position
+                </a>
+                {% if request.user|has_perm:'organizations.manage' %}
+                    {% if position.is_archived %}
+                        <form method="post"
+                              action="{% url 'core:position_restore' slug=position.slug %}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn btn-outline-secondary btn-sm w-100 text-start"><i class="bi bi-arrow-counterclockwise me-2"></i> Restore Position</button>
+                        </form>
+                    {% else %}
+                        <form method="post"
+                              action="{% url 'core:position_archive' slug=position.slug %}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn btn-outline-secondary btn-sm w-100 text-start"><i class="bi bi-archive me-2"></i> Archive Position</button>
+                        </form>
+                        {% if position.status == 'ACTIVE' %}
+                            <form method="post"
+                                  action="{% url 'core:position_status' slug=position.slug %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="INACTIVE">
+                                <button type="submit" class="btn btn-outline-warning btn-sm w-100 text-start"><i class="bi bi-pause-circle me-2"></i> Deactivate Position</button>
+                            </form>
+                        {% else %}
+                            <form method="post"
+                                  action="{% url 'core:position_status' slug=position.slug %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="ACTIVE">
+                                <button type="submit" class="btn btn-outline-success btn-sm w-100 text-start"><i class="bi bi-play-circle me-2"></i> Activate Position</button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-6">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0">Appointments</h6>
+                <a href="{% url 'core:position_assign' slug=position.slug %}"
+                   class="small text-decoration-none">New appointment</a>
+            </div>
+            <div class="card-body p-0">
+                {% if assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Person</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Effective</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in assignments %}
+                                    <tr>
+                                        <td>{{ assignment.person.full_name }}</td>
+                                        <td>{{ assignment.get_appointment_type_display }}</td>
+                                        <td class="small">{{ assignment.effective_date }}</td>
+                                        <td>
+                                            {% if assignment.status == 'ACTIVE' %}
+                                                <span class="badge badge-status badge-approved">Active</span>
+                                            {% else %}
+                                                <span class="badge badge-status badge-rejected">{{ assignment.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if assignment.status == 'ACTIVE' and request.user|has_perm:'organizations.assign' %}
+                                                <form method="post"
+                                                      action="{% url 'core:assignment_end' assignment_id=assignment.pk %}"
+                                                      class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                            title="End appointment">
+                                                        <i class="bi bi-stop-circle"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted small p-4 mb-0">No appointments recorded for this position.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0">Acting Appointments</h6>
+                <a href="{% url 'core:acting_create' slug=position.slug %}"
+                   class="small text-decoration-none">New acting</a>
+            </div>
+            <div class="card-body p-0">
+                {% if acting %}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Officer</th>
+                                    <th scope="col">Start</th>
+                                    <th scope="col">End</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in acting %}
+                                    <tr>
+                                        <td>{{ appointment.acting_officer.full_name }}</td>
+                                        <td class="small">{{ appointment.effective_from }}</td>
+                                        <td class="small">{{ appointment.end_date }}</td>
+                                        <td>
+                                            {% if appointment.status == 'ACTIVE' %}
+                                                <span class="badge badge-status badge-approved">Active</span>
+                                            {% else %}
+                                                <span class="badge badge-status badge-rejected">{{ appointment.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if appointment.status == 'ACTIVE' and request.user|has_perm:'organizations.assign' %}
+                                                <form method="post"
+                                                      action="{% url 'core:acting_end' acting_id=appointment.pk %}"
+                                                      class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                            title="End acting">
+                                                        <i class="bi bi-stop-circle"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted small p-4 mb-0">No acting appointments for this position.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    </div>
+<div class="card border-0 mb-4">
+    <div class="card-header bg-white border-0 pt-3 pb-0">
+        <h6 class="fw-bold mb-0">Direct Subordinates</h6>
+    </div>
+    <div class="card-body p-0">
+        {% if subordinates %}
+            <ul class="list-group list-group-flush">
+                {% for subordinate in subordinates %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{% url 'core:position_detail' slug=subordinate.slug %}"
+                           class="text-decoration-none">{{ subordinate.title }}</a>
+                        <span class="small text-muted">{{ subordinate.organizational_unit.name }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted small p-4 mb-0">No positions report directly to this position.</p>
+        {% endif %}
+    </div>
+    </div>
+<div class="card border-0">
+    <div class="card-header bg-white border-0 pt-3 pb-0">
+        <h6 class="fw-bold mb-0">Audit History</h6>
+    </div>
+    <div class="card-body p-0">
+        {% if history %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Action</th>
+                            <th scope="col">Changed by</th>
+                            <th scope="col">Notes</th>
+                            <th scope="col">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in history %}
+                            <tr>
+                                <td>{{ record.get_action_display }}</td>
+                                <td>{{ record.changed_by|default:"-" }}</td>
+                                <td class="small text-muted">{{ record.notes }}</td>
+                                <td class="small text-muted">{{ record.created_at }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted small p-4 mb-0">No audit records for this position.</p>
+        {% endif %}
+    </div>
+    </div>
+{% endblock %}

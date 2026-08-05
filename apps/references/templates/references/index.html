@@ -1,0 +1,143 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Reference Numbering" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Reference Numbering</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Reference Numbering</h1>
+            <p class="page-subtitle mb-0">Centralized, configurable reference numbers for every record</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'core:scheme_preview' %}"
+               class="btn btn-outline-primary-brand btn-sm">
+                <i class="bi bi-eye me-1"></i> Preview
+            </a>
+            <a href="{% url 'core:scheme_create' %}"
+               class="btn btn-primary-brand btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> New Scheme
+            </a>
+        </div>
+    </div>
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(0,86,179,0.1);">
+                            <i class="bi bi-tags fs-4 text-primary-brand"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Active Schemes</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ summary.active_schemes }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(25,135,84,0.1);">
+                            <i class="bi bi-hash fs-4 text-success"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Numbers Issued</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ summary.total_generated }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(253,126,20,0.1);">
+                            <i class="bi bi-person-check fs-4" style="color: var(--sitadc-action);"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Assigned</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ summary.assigned }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(220,53,69,0.1);">
+                            <i class="bi bi-boxes fs-4 text-danger"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Sequence Rows</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ summary.sequence_rows }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-12 col-lg-4">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <a href="{% url 'core:scheme_list' %}"
+                       class="btn btn-outline-primary-brand btn-sm text-start">
+                        <i class="bi bi-tags me-2"></i> Schemes
+                    </a>
+                    <a href="{% url 'core:reference_registry' %}"
+                       class="btn btn-outline-primary-brand btn-sm text-start">
+                        <i class="bi bi-journal-text me-2"></i> Reference Registry
+                    </a>
+                    <a href="{% url 'core:sequence_list' %}"
+                       class="btn btn-outline-primary-brand btn-sm text-start">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i> Sequences
+                    </a>
+                    <a href="{% url 'core:scheme_preview' %}"
+                       class="btn btn-outline-primary-brand btn-sm text-start">
+                        <i class="bi bi-eye me-2"></i> Preview Next Number
+                    </a>
+                    <a href="{% url 'core:audit_list' %}"
+                       class="btn btn-outline-primary-brand btn-sm text-start">
+                        <i class="bi bi-journal-check me-2"></i> Audit Trail
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-8">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0">Recent Schemes</h6>
+                </div>
+                <div class="card-body p-0">
+                    {% if schemes %}
+                        <ul class="list-group list-group-flush">
+                            {% for scheme in schemes %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'core:scheme_detail' scheme_id=scheme.pk %}"
+                                       class="text-decoration-none">
+                                        <span class="badge bg-light text-dark border me-2 font-monospace">{{ scheme.prefix }}</span>{{ scheme.name }}
+                                    </a>
+                                    <span class="small text-muted">{{ scheme.get_module_display }} · {{ scheme.get_reset_period_display }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted small p-4 mb-0">No schemes configured yet. Run <code>manage.py seed_reference_schemes</code> or create one.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

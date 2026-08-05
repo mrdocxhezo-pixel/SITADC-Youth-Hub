@@ -1,0 +1,90 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Preview Reference Number" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:references_index' %}" class="text-decoration-none">Reference Numbering</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Preview</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Preview Next Reference Number</h1>
+            <p class="page-subtitle mb-0">See the next number without consuming the sequence</p>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-12 col-lg-6">
+            <div class="card border-0">
+                <div class="card-body p-4">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6 mb-3 mb-md-0">
+                                <label for="{{ form.module.id_for_label }}" class="form-label">Module <span class="text-danger">*</span></label>
+                                {{ form.module }}
+                                {% if form.module.errors %}<div class="invalid-feedback d-block">{% for error in form.module.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="{{ form.record_type.id_for_label }}" class="form-label">Record type</label>
+                                {{ form.record_type }}
+                                {% if form.record_type.errors %}<div class="invalid-feedback d-block">{% for error in form.record_type.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6 mb-3 mb-md-0">
+                                <label for="{{ form.scheme.id_for_label }}" class="form-label">Scheme</label>
+                                {{ form.scheme }}
+                                <div class="form-text">Leave blank to resolve automatically.</div>
+                                {% if form.scheme.errors %}<div class="invalid-feedback d-block">{% for error in form.scheme.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="{{ form.year.id_for_label }}" class="form-label">Year</label>
+                                {{ form.year }}
+                                <div class="form-text">Leave blank for the current year.</div>
+                                {% if form.year.errors %}<div class="invalid-feedback d-block">{% for error in form.year.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.organization_code.id_for_label }}" class="form-label">Organization code</label>
+                            {{ form.organization_code }}
+                            <div class="form-text">Leave blank for the scheme's code.</div>
+                            {% if form.organization_code.errors %}<div class="invalid-feedback d-block">{% for error in form.organization_code.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="submit" class="btn btn-primary-brand px-4">
+                                <i class="bi bi-eye me-1"></i> Preview
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="card border-0">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3">Result</h6>
+                    {% if error %}
+                        <div class="alert alert-danger mb-0" role="alert"><i class="bi bi-x-circle me-2"></i>{{ error }}</div>
+                    {% elif result %}
+                        <div class="bg-light rounded-3 p-4 text-center">
+                            <p class="text-muted small mb-1">Next reference number</p>
+                            <p class="display-6 font-monospace fw-bold mb-0">{{ result.reference_number }}</p>
+                            <p class="text-muted small mt-3 mb-0">
+                                Scheme: <strong>{{ result.scheme.name }}</strong> · Next value: <strong>{{ result.next_value }}</strong>
+                            </p>
+                        </div>
+                        <div class="alert alert-info mt-3 mb-0" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>Previewing never advances the sequence.
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Choose a module and submit the form to preview the next reference number.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

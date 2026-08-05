@@ -1,0 +1,195 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Membership Dashboard | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800"><i class="bi bi-person-badge-fill text-primary me-2"></i>Membership Management Dashboard</h1>
+                <p class="text-muted small mb-0">Overview of membership, applications, renewals, fees and engagement.</p>
+            </div>
+            <div class="btn-group">
+                <a href="{% url 'memberships:member_create' %}" class="btn btn-primary">
+                    <i class="bi bi-person-plus-fill me-1"></i>New Profile
+                </a>
+                <a href="{% url 'memberships:payment_create' %}"
+                   class="btn btn-outline-primary">
+                    <i class="bi bi-cash-coin me-1"></i>Record Payment
+                </a>
+                <a href="{% url 'memberships:reports' %}"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-file-earmark-bar-graph me-1"></i>Reports
+                </a>
+            </div>
+        </div>
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm border-start border-primary border-4 h-100">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Members</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total_members }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm border-start border-success border-4 h-100">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active Members</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800">{{ active_members }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm border-start border-warning border-4 h-100">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Applications</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800">{{ pending_applications }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm border-start border-info border-4 h-100">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Renewals Due (30d)</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800">{{ renewals_due }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <!-- Recent Members -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-person-lines-fill me-2"></i>Recently Registered Members</h6>
+                        <a href="{% url 'memberships:directory' %}" class="btn btn-sm btn-link">View All</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Membership ID</th>
+                                        <th>Member Name</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for member in recent_members %}
+                                        <tr>
+                                            <td><span class="badge bg-light text-dark border">{{ member.membership_id }}</span></td>
+                                            <td class="fw-bold">{{ member.user__first_name }} {{ member.user__last_name }}</td>
+                                            <td>{{ member.category__name|default:"--" }}</td>
+                                            <td><span class="badge bg-success">{{ member.status__name|default:"--" }}</span></td>
+                                            <td>
+                                                <a href="{% url 'memberships:detail' member.id %}"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> Profile
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-3 text-muted">No members recorded yet.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Category Distribution -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-pie-chart-fill me-2"></i>Category Distribution</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            {% for item in category_distribution %}
+                                <div class="col-md-4">
+                                    <div class="d-flex justify-content-between align-items-center border rounded p-2">
+                                        <span>{{ item.category__name }}</span>
+                                        <span class="badge bg-primary">{{ item.count }}</span>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="col-12 text-muted text-center py-3">No category data available.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Quick Links & Actions -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-grid-fill me-2"></i>Membership Modules</h6>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'memberships:directory' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-folder2-open text-primary me-2"></i>Member Directory</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'memberships:application_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-file-earmark-text text-success me-2"></i>Applications</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'memberships:renewal_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-arrow-repeat text-info me-2"></i>Renewals</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'memberships:payment_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-cash-coin text-warning me-2"></i>Fees &amp; Payments</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'memberships:transfer_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-arrow-left-right text-secondary me-2"></i>Transfers</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'memberships:card_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-credit-card text-danger me-2"></i>Membership Cards</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'memberships:leave_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-calendar-event text-primary me-2"></i>Member Leave</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'memberships:exit_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-box-arrow-right text-dark me-2"></i>Exit &amp; Alumni</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 font-weight-bold text-success"><i class="bi bi-cash-stack me-2"></i>Fee Collection</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Collected</span>
+                            <strong>{{ fee_summary.total_collected }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Payments Count</span>
+                            <strong>{{ fee_summary.payment_count }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Pending Payments</span>
+                            <strong>{{ fee_summary.pending_payments }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

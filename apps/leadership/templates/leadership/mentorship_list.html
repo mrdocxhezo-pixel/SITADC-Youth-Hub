@@ -1,0 +1,45 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Mentorship Records | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Mentorship Records</h1>
+            <a href="{% url 'leadership:mentorship_create' %}"
+               class="btn btn-primary-brand">
+                <i class="bi bi-plus-circle me-1"></i>Add Mentorship
+            </a>
+        </div>
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mentee</th>
+                                <th>Mentor</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in mentorship_records %}
+                                <tr>
+                                    <td>{{ rec.mentee.user.get_full_name }}</td>
+                                    <td>{{ rec.mentor.user.get_full_name }}</td>
+                                    <td>{{ rec.start_date }}</td>
+                                    <td>{{ rec.end_date|default:"Ongoing" }}</td>
+                                    <td><span class="badge bg-secondary">{{ rec.get_status_display }}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No mentorship records found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

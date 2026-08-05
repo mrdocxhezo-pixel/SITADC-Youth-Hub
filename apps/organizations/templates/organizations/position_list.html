@@ -1,0 +1,125 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Positions" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+   class="text-decoration-none">Organization</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Positions</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Positions</h1>
+            <p class="page-subtitle mb-0">Official positions across the organizational structure</p>
+        </div>
+        <div>
+            <a href="{% url 'core:position_create' %}"
+               class="btn btn-primary-brand btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> New Position
+            </a>
+        </div>
+    </div>
+    <div class="card border-0 mb-3">
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-12 col-md-4">
+                    <label for="unit-filter" class="visually-hidden">Unit</label>
+                    <select name="unit" id="unit-filter" class="form-select form-select-sm">
+                        <option value="">All units</option>
+                        {% for unit in units %}
+                            <option value="{{ unit.pk }}"
+                                    {% if active_unit == unit.pk|stringformat:'s' %}selected{% endif %}>{{ unit.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label for="vacancy-filter" class="visually-hidden">Occupancy</label>
+                    <select name="vacancy" id="vacancy-filter" class="form-select form-select-sm">
+                        <option value="">All positions</option>
+                        <option value="1" {% if vacancy_filter == '1' %}selected{% endif %}>Vacant</option>
+                        <option value="0" {% if vacancy_filter == '0' %}selected{% endif %}>Occupied</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-funnel me-1"></i> Filter</button>
+                    {% if active_unit or vacancy_filter %}
+                        <a href="{% url 'core:position_list' %}" class="btn btn-light btn-sm">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-0">
+            {% if positions %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Position</th>
+                                <th scope="col">Unit</th>
+                                <th scope="col">Classification</th>
+                                <th scope="col">Primary Supervisor</th>
+                                <th scope="col" class="text-center">Occupancy</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for position in positions %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'core:position_detail' slug=position.slug %}"
+                                           class="fw-semibold text-decoration-none">{{ position.title }}</a>
+                                        {% if position.is_protected %}<span class="badge bg-danger-subtle text-danger ms-1">Protected</span>{% endif %}
+                                        {% if position.is_archived %}<span class="badge badge-status badge-archived ms-1">Archived</span>{% endif %}
+                                    </td>
+                                    <td>{{ position.organizational_unit.name }}</td>
+                                    <td>{{ position.classification.name|default:"-" }}</td>
+                                    <td>
+                                        {% if position.primary_supervisor %}
+                                            <a href="{% url 'core:position_detail' slug=position.primary_supervisor.slug %}"
+                                               class="text-decoration-none">{{ position.primary_supervisor.title }}</a>
+                            {% else %}-{% endif %}
+                                </td>
+                            <td class="text-center">
+                                {% if position.active_assignment_count %}
+                                    <span class="badge bg-success-subtle text-success">Occupied</span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-warning">Vacant</span>
+                                {% endif %}
+                                </td>
+                            <td>
+                                {% if position.status == 'ACTIVE' %}
+                                    <span class="badge badge-status badge-approved">Active</span>
+                                {% else %}
+                                    <span class="badge badge-status badge-rejected">{{ position.get_status_display }}</span>
+                                {% endif %}
+                                </td>
+                            <td class="text-end">
+                                <a href="{% url 'core:position_detail' slug=position.slug %}"
+                                   class="btn btn-sm btn-outline-secondary"
+                                   title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'core:position_update' slug=position.slug %}"
+                                   class="btn btn-sm btn-outline-secondary"
+                                   title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                </td>
+                                </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            {% else %}
+                <div class="p-4">
+                    {% url 'core:position_create' as position_create_url %}
+                    {% include 'components/empty_state.html' with icon='bi-person-badge' title='No positions found' message='Positions will appear here once created.' action_url=position_create_url action_label='Create Position' %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

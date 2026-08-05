@@ -1,0 +1,71 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Numbering Audit Trail" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:references_index' %}" class="text-decoration-none">Reference Numbering</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Audit Trail</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Numbering Audit Trail</h1>
+            <p class="page-subtitle mb-0">Immutable record of every numbering event</p>
+        </div>
+    </div>
+    <div class="card border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <label for="entity_type" class="visually-hidden">Entity type</label>
+                    <select id="entity_type"
+                            name="entity_type"
+                            class="form-select form-select-sm">
+                        <option value="">All entity types</option>
+                        {% for value, label in entity_types %}
+                            <option value="{{ value }}" {% if active_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-outline-primary-brand btn-sm"><i class="bi bi-funnel me-1"></i> Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-0">
+            {% if history %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Action</th>
+                                <th scope="col">Entity</th>
+                                <th scope="col">Changed by</th>
+                                <th scope="col">Details</th>
+                                <th scope="col">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in history %}
+                                <tr>
+                                    <td><span class="badge bg-light text-dark border">{{ record.get_action_display }}</span></td>
+                                    <td class="small">{{ record.entity_type }} · <span class="font-monospace">{{ record.entity_id }}</span></td>
+                                    <td>{{ record.changed_by|default:"-" }}</td>
+                                    <td class="small text-muted">
+                                        {{ record.notes }}
+                                        {% if record.to_data %}<div class="font-monospace small">{{ record.to_data }}</div>{% endif %}
+                                    </td>
+                                    <td class="small text-muted">{{ record.created_at|date:"Y-m-d H:i:s" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted small p-4 mb-0">No audit records found.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

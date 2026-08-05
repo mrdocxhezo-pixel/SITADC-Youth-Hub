@@ -1,0 +1,6 @@
+{% load static %}
+<span class="brand-logo-wrapper {{ wrapper_class|default:'' }}">
+    <img src="{% static organization_logo|default:'images/app_logo.png' %}"
+         alt="SITADC Youth Hub"
+         class="brand-logo {{ logo_class|default:'' }}">
+</span>

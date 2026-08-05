@@ -1,0 +1,16 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ title }} | {{ stakeholder.display_name|default:stakeholder.legal_name }}{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "stakeholders/includes/module_nav.html" %}
+        <header class="mb-4">
+            <h1 class="h2 mb-1">{{ title }}</h1>
+            <p class="text-muted mb-0">{{ description }}</p>
+        </header>
+        <section class="card shadow-sm border-0 mb-4"
+                 aria-labelledby="records-heading"><div class="card-header bg-body"><h2 id="records-heading" class="h5 mb-0">Recorded items</h2></div><div class="table-responsive"><table class="table table-hover align-middle mb-0"><caption class="visually-hidden">{{ title }} for {{ stakeholder.display_name|default:stakeholder.legal_name }}</caption><thead><tr>{% for column in columns %}<th scope="col">{{ column }}</th>{% endfor %}<th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>{% for row in rows %}<tr>{% for cell in row.cells %}<td>{{ cell|default:"Not recorded"|linebreaksbr }}</td>{% endfor %}<td><div class="d-flex flex-wrap gap-1">{% for action in row.actions %}{% if action.link %}<a class="btn btn-sm btn-{{ action.style|default:'outline-primary' }}"
+   href="{{ action.url }}">{{ action.label }}</a>{% else %}<form method="post" action="{{ action.url }}">{% csrf_token %}<button class="btn btn-sm btn-{{ action.style|default:'outline-primary' }}"
+        type="submit">{{ action.label }}</button></form>{% endif %}{% endfor %}</div></td></tr>{% if row.details %}<tr><td colspan="99" class="small text-muted bg-body-tertiary"><strong>Current content:</strong> {{ row.details|linebreaksbr }}</td></tr>{% endif %}{% empty %}<tr><td colspan="99" class="text-center text-muted py-4">No records have been added.</td></tr>{% endfor %}</tbody></table></div></section>
+        {% if can_write and form %}<section class="card shadow-sm border-0" aria-labelledby="add-record-heading"><div class="card-header bg-body"><h2 id="add-record-heading" class="h5 mb-0">Add record</h2></div><form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}<div class="card-body"><div class="row g-3">{% include "stakeholders/includes/form_fields.html" %}</div></div><div class="card-footer bg-body text-end"><button class="btn btn-primary" type="submit">Save record</button></div></form></section>{% endif %}
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,302 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ member.full_name }} | Member Profile{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800">{{ member.full_name }}</h1>
+                <p class="text-muted small mb-0">Membership ID: <span class="fw-bold">{{ member.membership_id }}</span> | Status: <span class="badge bg-success">{{ member.status_display }}</span></p>
+            </div>
+            <div class="btn-group">
+                <a href="{% url 'memberships:update' member.pk %}"
+                   class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i>Edit Profile</a>
+                <a href="{% url 'memberships:id_card' member.pk %}"
+                   class="btn btn-outline-info"><i class="bi bi-qr-code me-1"></i>ID Card</a>
+                <a href="{% url 'memberships:directory' %}"
+                   class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+            </div>
+        </div>
+        <!-- Status actions -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body py-2">
+                <form method="post"
+                      action="{% url 'memberships:status_action' member.pk %}"
+                      class="d-flex flex-wrap align-items-center gap-2">
+                    {% csrf_token %}
+                    <span class="fw-bold me-2">Lifecycle Actions:</span>
+                    <button type="submit"
+                            name="action"
+                            value="activate"
+                            class="btn btn-sm btn-success">Activate</button>
+                    <button type="submit"
+                            name="action"
+                            value="deactivate"
+                            class="btn btn-sm btn-warning">Deactivate</button>
+                    <button type="submit"
+                            name="action"
+                            value="suspend"
+                            class="btn btn-sm btn-secondary">Suspend</button>
+                    <button type="submit"
+                            name="action"
+                            value="archive"
+                            class="btn btn-sm btn-outline-dark">Archive</button>
+                    <button type="submit"
+                            name="action"
+                            value="restore"
+                            class="btn btn-sm btn-outline-success">Restore</button>
+                    <a href="{% url 'memberships:card_issue' member.pk %}"
+                       class="btn btn-sm btn-outline-primary">Issue Card</a>
+                </form>
+            </div>
+        </div>
+        <div class="row g-4">
+            <!-- Personal Summary Card -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body text-center">
+                        {% if member.photo %}
+                            <img src="{{ member.photo.url }}"
+                                 class="rounded-circle img-thumbnail mb-3"
+                                 style="width: 120px;
+                                        height: 120px;
+                                        object-fit: cover">
+                        {% else %}
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
+                                 style="width: 120px;
+                                        height: 120px;
+                                        font-size: 2.5rem">
+                                {{ member.user.first_name|slice:":1" }}{{ member.user.last_name|slice:":1" }}
+                            </div>
+                        {% endif %}
+                        <h5 class="mb-1">{{ member.full_name }}</h5>
+                        <p class="text-muted small mb-2">{{ member.category_display }} ({{ member.membership_type_display }})</p>
+                        <span class="badge bg-primary mb-3">{{ member.level.name|default:"--" }}</span>
+                        <hr>
+                        <div class="text-start">
+                            <p class="mb-1"><strong>Email:</strong> {{ member.email_personal|default:member.user.email }}</p>
+                            <p class="mb-1"><strong>Phone:</strong> {{ member.phone_primary|default:"N/A" }}</p>
+                            <p class="mb-1"><strong>Province / District:</strong> {{ member.province|default:"--" }} / {{ member.district|default:"--" }}</p>
+                            <p class="mb-1"><strong>Community:</strong> {{ member.community|default:"N/A" }}</p>
+                            <p class="mb-1"><strong>Date Joined:</strong> {{ member.date_joined|default:"--" }}</p>
+                            <p class="mb-1"><strong>Expiry Date:</strong> {{ member.expiry_date|default:"--" }}</p>
+                        </div>
+                        <hr>
+                        {% if card %}
+                            <p class="mb-1"><strong>Card:</strong> <span class="badge bg-info">{{ card.card_number }}</span></p>
+                            <p class="mb-1"><strong>Card Status:</strong> <span class="badge {% if card.status == 'ACTIVE' %}bg-success{% else %}bg-secondary{% endif %}">{{ card.get_status_display }}</span></p>
+                        {% else %}
+                            <p class="text-muted small mb-0">No membership card issued.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Status History -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-clock-history me-2"></i>Status History</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            {% for history in status_history %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ history.from_status.name|default:"--" }} → <strong>{{ history.to_status.name }}</strong></span>
+                                    <span class="text-muted small">{{ history.created_at|date:"Y-m-d" }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item text-muted text-center py-3">No status history.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- Tabs: history & engagement -->
+            <div class="col-lg-8">
+                <ul class="nav nav-tabs mb-4" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active"
+                                data-bs-toggle="tab"
+                                data-bs-target="#tab-payments"
+                                type="button">Payments</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#tab-renewals"
+                                type="button">Renewals</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#tab-participation"
+                                type="button">Participation</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#tab-committees"
+                                type="button">Committees</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#tab-recognition"
+                                type="button">Recognition</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#tab-documents"
+                                type="button">Documents</button>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <!-- Payments -->
+                    <div class="tab-pane fade show active" id="tab-payments">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Fee Payments</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Receipt #</th>
+                                                <th>Amount</th>
+                                                <th>Method</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for payment in payments %}
+                                                <tr>
+                                                    <td>{{ payment.receipt_number }}</td>
+                                                    <td>{{ payment.currency }} {{ payment.amount }}</td>
+                                                    <td>{{ payment.get_payment_method_display }}</td>
+                                                    <td>{{ payment.payment_date }}</td>
+                                                    <td><span class="badge bg-success">{{ payment.get_status_display }}</span></td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-3 text-muted">No payments recorded.</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Renewals -->
+                    <div class="tab-pane fade" id="tab-renewals">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Membership Renewals</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for renewal in renewals %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>{{ renewal.previous_expiry }} → <strong>{{ renewal.new_expiry|default:"Pending" }}</strong></span>
+                                            <span class="badge {% if renewal.status == 'APPROVED' %}bg-success{% else %}bg-warning{% endif %}">{{ renewal.get_status_display }}</span>
+                                        </li>
+                                    {% empty %}
+                                        <li class="list-group-item text-muted text-center py-3">No renewals.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Participation -->
+                    <div class="tab-pane fade" id="tab-participation">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Participation Records</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for record in participation_records %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">{{ record.activity_name }}</h6>
+                                                <span class="text-muted small">{{ record.get_participation_type_display }} | {{ record.start_date }} - {{ record.end_date|default:"Present" }}</span>
+                                            </div>
+                                            <span class="badge bg-info">{{ record.get_status_display }}</span>
+                                        </li>
+                                    {% empty %}
+                                        <li class="list-group-item text-muted text-center py-3">No participation records.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Committees -->
+                    <div class="tab-pane fade" id="tab-committees">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Committee Assignments</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for assignment in committee_assignments %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">{{ assignment.committee.name }}</h6>
+                                                <span class="text-muted small">{{ assignment.position|default:"Member" }} | {{ assignment.appointment_date }}</span>
+                                            </div>
+                                            <span class="badge bg-info">{{ assignment.get_status_display }}</span>
+                                        </li>
+                                    {% empty %}
+                                        <li class="list-group-item text-muted text-center py-3">No committee assignments.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Recognition -->
+                    <div class="tab-pane fade" id="tab-recognition">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Recognition & Awards</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for recognition in recognitions %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">{{ recognition.title }}</h6>
+                                                <span class="text-muted small">{{ recognition.get_recognition_type_display }} | {{ recognition.award_date }}</span>
+                                            </div>
+                                        </li>
+                                    {% empty %}
+                                        <li class="list-group-item text-muted text-center py-3">No recognition records.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Documents -->
+                    <div class="tab-pane fade" id="tab-documents">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Documents</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for document in documents %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>{{ document.title }} <span class="text-muted small">(v{{ document.version }})</span></span>
+                                            <span class="badge bg-secondary">{{ document.get_status_display }}</span>
+                                        </li>
+                                    {% empty %}
+                                        <li class="list-group-item text-muted text-center py-3">No documents uploaded.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

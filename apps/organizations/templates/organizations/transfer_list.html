@@ -1,0 +1,93 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n rbac_tags %}
+{% block title %}{% trans "Transfers" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+   class="text-decoration-none">Organization</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Transfers</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Personnel Transfers</h1>
+            <p class="page-subtitle mb-0">Track the movement of staff between units and positions</p>
+        </div>
+        <div>
+            <a href="{% url 'core:transfer_create' %}"
+               class="btn btn-primary-brand btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> New Transfer
+            </a>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-0">
+            {% if transfers %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Person</th>
+                                <th scope="col">From</th>
+                                <th scope="col">To</th>
+                                <th scope="col">Effective date</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transfer in transfers %}
+                                <tr>
+                                    <td class="fw-semibold">{{ transfer.person.get_full_name|default:transfer.person }}</td>
+                                    <td class="small">{{ transfer.previous_position.title }} ({{ transfer.previous_organizational_unit.name }})</td>
+                                    <td class="small">{{ transfer.new_position.title }} ({{ transfer.new_organizational_unit.name }})</td>
+                                    <td class="small">{{ transfer.effective_date }}</td>
+                                    <td>
+                                        {% if transfer.status == 'PENDING' %}
+                                            <span class="badge badge-status badge-pending">Pending</span>
+                                        {% elif transfer.status == 'APPROVED' %}
+                                            <span class="badge badge-status badge-approved">Approved</span>
+                                        {% elif transfer.status == 'COMPLETED' %}
+                                            <span class="badge badge-status badge-approved">Completed</span>
+                                        {% elif transfer.status == 'REJECTED' %}
+                                            <span class="badge badge-status badge-rejected">Rejected</span>
+                                        {% else %}
+                                            <span class="badge badge-status badge-archived">{{ transfer.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if request.user|has_perm:'organizations.assign' and transfer.status == 'PENDING' %}
+                                            <form method="post"
+                                                  action="{% url 'core:transfer_approve' transfer_id=transfer.pk %}"
+                                                  class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Approve">
+                                                    <i class="bi bi-check2-circle"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if request.user|has_perm:'organizations.assign' and transfer.status == 'APPROVED' %}
+                                            <form method="post"
+                                                  action="{% url 'core:transfer_complete' transfer_id=transfer.pk %}"
+                                                  class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Complete">
+                                                    <i class="bi bi-arrow-right-circle"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-4">
+                    {% url 'core:transfer_create' as transfer_create_url %}
+                    {% include 'components/empty_state.html' with icon='bi-arrow-left-right' title='No transfers' message='Personnel transfers will appear here once recorded.' action_url=transfer_create_url action_label='New Transfer' %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

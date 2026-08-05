@@ -1,0 +1,63 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Volunteer ID Card - {{ profile.user.full_name }}{% endblock title %}
+{% block dashboard_content %}
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-person-badge me-2"></i>Official Volunteer Identity Card</h1>
+            <div>
+                <button onclick="window.print()" class="btn btn-outline-primary me-2"><i class="bi bi-printer me-1"></i>Print ID Card</button>
+                <a href="{% url 'volunteers:detail' profile.pk %}"
+                   class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back to Profile</a>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center">
+            <!-- Badge Card Container -->
+            <div class="card shadow-lg border-2 border-primary rounded-4 overflow-hidden"
+                 style="max-width: 420px;
+                        width: 100%">
+                <!-- Header Branding -->
+                <div class="bg-primary text-white p-3 text-center position-relative">
+                    <h5 class="mb-0 fw-bold">SITADC YOUTH HUB</h5>
+                    <small class="text-white-50 text-uppercase tracking-wider">Official Volunteer Identification</small>
+                </div>
+                <div class="card-body text-center p-4">
+                    {% if profile.profile_photo %}
+                        <img src="{{ profile.profile_photo.url }}"
+                             class="rounded-3 img-thumbnail mb-3 border-2 border-primary"
+                             style="width: 130px;
+                                    height: 130px;
+                                    object-fit: cover">
+                    {% else %}
+                        <div class="rounded-3 bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm"
+                             style="width: 130px;
+                                    height: 130px;
+                                    font-size: 3rem">
+                            {{ profile.user.first_name|slice:":1" }}{{ profile.user.last_name|slice:":1" }}
+                        </div>
+                    {% endif %}
+                    <h4 class="fw-bold mb-1 text-dark">{{ profile.user.full_name }}</h4>
+                    <p class="text-primary fw-semibold mb-2">{{ profile.category.name|default:"-" }}</p>
+                    <div class="badge bg-success px-3 py-2 rounded-pill mb-3 fs-6">{{ profile.reference_number }}</div>
+                    <div class="row g-2 text-start bg-light p-3 rounded-3 mb-3 small">
+                        <div class="col-6"><strong>Region:</strong> {{ profile.region|default:"National" }}</div>
+                        <div class="col-6"><strong>District:</strong> {{ profile.district|default:"Central" }}</div>
+                        <div class="col-6"><strong>Level:</strong> {{ profile.volunteer_level.name|default:"-" }}</div>
+                        <div class="col-6"><strong>Status:</strong> {{ profile.get_status_display }}</div>
+                    </div>
+                    <!-- QR Code Verification -->
+                    <div class="text-center pt-2">
+                        <img src="{{ qr_code }}"
+                             alt="QR Verification"
+                             class="img-fluid mb-1"
+                             style="width: 100px">
+                        <div class="text-muted extra-small">Scan QR code for instant identity verification</div>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="card-footer bg-dark text-white text-center py-2 extra-small">
+                    Sustainable Initiatives Through Transformative Actions for Development in Communities
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

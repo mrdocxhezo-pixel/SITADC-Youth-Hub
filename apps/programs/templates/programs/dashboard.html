@@ -1,0 +1,128 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Programs &amp; Projects Dashboard | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "programs/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Program and project management</h1>
+                <p class="text-muted mb-0">A scoped view of program and project portfolios, delivery, risk, and results.</p>
+            </div>
+            <div class="d-flex gap-2">
+                {% if can_create_program %}<a class="btn btn-primary" href="{% url 'programs:program_create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Register program</a>{% endif %}
+                {% if can_create_project %}<a class="btn btn-outline-primary"
+   href="{% url 'programs:project_create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Register project</a>{% endif %}
+            </div>
+        </header>
+        <section aria-labelledby="headline-metrics" class="mb-4">
+            <h2 id="headline-metrics" class="visually-hidden">Headline metrics</h2>
+            <div class="row g-3">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-primary border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Visible programs</p>
+                            <p class="display-6 mb-0">{{ metrics.total }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-success border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Active programs</p>
+                            <p class="display-6 mb-0">{{ metrics.active }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-info border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Visible projects</p>
+                            <p class="display-6 mb-0">{{ project_metrics.total }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-danger border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Open risks</p>
+                            <p class="display-6 mb-0">{{ open_risks }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="row g-4">
+            <section class="col-xl-7" aria-labelledby="recent-programs-heading">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center"><h2 id="recent-programs-heading" class="h5 mb-0">Recently registered programs</h2><a href="{% url 'programs:program_directory' %}">View all</a></div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Recently registered program records</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Reference</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in recent_programs %}<tr><td>{{ item.reference_number }}</td><td class="fw-semibold">{{ item.title }}</td><td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td><td><a class="btn btn-sm btn-outline-primary"
+   href="{% url 'programs:program_profile' item.pk %}">View</a></td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-4">No visible program records.</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-5" aria-labelledby="attention-heading">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h2 id="attention-heading" class="h5">Needs attention</h2>
+                        <dl class="row mb-0">
+                            <dt class="col-8 fw-normal">Open or monitored risks</dt>
+                            <dd class="col-4 text-end fw-bold">
+                                {{ open_risks }}
+                            </dd>
+                            <dt class="col-8 fw-normal">Open issues</dt>
+                            <dd class="col-4 text-end fw-bold">
+                                {{ open_issues }}
+                            </dd>
+                            <dt class="col-8 fw-normal">Pending change requests</dt>
+                            <dd class="col-4 text-end fw-bold">
+                                {{ pending_changes }}
+                            </dd>
+                            <dt class="col-8 fw-normal">Projects in execution</dt>
+                            <dd class="col-4 text-end fw-bold">
+                                {{ project_metrics.execution }}
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0"><div class="card-body"><h2 class="h5">Program status summary</h2><ul class="list-group list-group-flush">{% for item in status_summary %}<li class="list-group-item px-0 d-flex justify-content-between"><span>{{ item.status|title }}</span><span class="fw-bold">{{ item.total }}</span></li>{% empty %}<li class="list-group-item px-0 text-muted">No data available.</li>{% endfor %}</ul></div></div>
+            </aside>
+        </div>
+        <section class="mt-4" aria-labelledby="recent-projects-heading">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-body d-flex justify-content-between align-items-center"><h2 id="recent-projects-heading" class="h5 mb-0">Recently registered projects</h2><a href="{% url 'programs:project_directory' %}">View all</a></div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Recently registered project records</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Reference</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Program</th>
+                                <th scope="col">Status</th>
+                                <th scope="col"><span class="visually-hidden">Action</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in recent_projects %}<tr><td>{{ item.reference_number }}</td><td class="fw-semibold">{{ item.title }}</td><td>{{ item.program.reference_number }}</td><td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td><td><a class="btn btn-sm btn-outline-primary"
+   href="{% url 'programs:project_profile' item.pk %}">View</a></td></tr>{% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No visible project records.</td></tr>{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,23 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Review Detail | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Review Detail</h1>
+        </div>
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{{ review.leader.user.get_full_name }} - {{ review.review_period }}</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Reviewer:</strong> {{ review.reviewer.user.get_full_name }}</p>
+                <p><strong>Type:</strong> {{ review.review_type }}</p>
+                <p><strong>Rating:</strong> {{ review.overall_rating }}</p>
+                <p><strong>Status:</strong> {{ review.status }}</p>
+                <hr>
+                <p><strong>Strengths:</strong> {{ review.strengths }}</p>
+                <p><strong>Areas for Improvement:</strong> {{ review.areas_for_improvement }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

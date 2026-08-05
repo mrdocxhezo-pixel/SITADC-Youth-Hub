@@ -1,0 +1,66 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Access Scopes" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Access Scopes</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header mb-4">
+        <div>
+            <h1>Access Scopes</h1>
+            <p class="page-subtitle mb-0">Organizational levels that bound role assignments</p>
+        </div>
+    </div>
+    <div class="row g-3">
+        {% for scope in scopes %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="rounded-3 p-2" style="background-color: rgba(0,86,179,0.1);">
+                                    <i class="bi bi-diagram-3 text-primary-brand"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0">{{ scope.name }}</h6>
+                                <span class="badge bg-light text-dark border">{{ scope.code }}</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">{{ scope.description|default:"No description." }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Level {{ scope.level }}</span>
+                            {% if scope.is_active %}
+                                <span class="badge badge-status badge-approved">Active</span>
+                            {% else %}
+                                <span class="badge badge-status badge-rejected">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="card border-0">
+                    <div class="card-body">
+                        {% include 'components/empty_state.html' with icon='bi-diagram-3' title='No access scopes found' message='Access scopes will be seeded during setup.' %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="card border-0 mt-4">
+        <div class="card-header bg-white border-0 pt-3 pb-0">
+            <h6 class="fw-bold mb-0">How scope inheritance works</h6>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-0">
+                A scope grants access to its own level and all narrower levels below it. For example, a
+                <strong>National</strong> assignment covers Regional, District, Community, Team, Programme and Project scopes,
+                while a <strong>District</strong> assignment only covers District and narrower scopes.
+            </p>
+        </div>
+    </div>
+{% endblock %}

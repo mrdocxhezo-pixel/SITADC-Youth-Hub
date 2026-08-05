@@ -1,0 +1,17 @@
+<nav class="mb-4" aria-label="Stakeholder module">
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'stakeholders:dashboard' %}"><i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>Dashboard</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'stakeholders:directory' %}"><i class="bi bi-building me-1" aria-hidden="true"></i>Directory</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'stakeholders:mapping_matrix' %}"><i class="bi bi-grid-3x3-gap me-1" aria-hidden="true"></i>Mapping matrix</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'stakeholders:reports' %}"><i class="bi bi-bar-chart me-1" aria-hidden="true"></i>Reports</a>
+        {% if stakeholder %}
+            <span class="border-start mx-1" aria-hidden="true"></span>
+            <a class="btn btn-sm btn-outline-primary"
+               href="{% url 'stakeholders:profile' stakeholder.pk %}">Profile: {{ stakeholder.reference_number }}</a>
+        {% endif %}
+    </div>
+</nav>

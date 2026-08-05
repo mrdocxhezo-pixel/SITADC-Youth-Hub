@@ -1,0 +1,65 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ project.title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "programs/includes/module_nav.html" with project=project %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ project.title }}</h1>
+                <p class="text-muted mb-0">{{ project.reference_number }} &middot; Program <a href="{% url 'programs:program_profile' project.program.pk %}">{{ project.program.reference_number }}</a> &middot; <span class="badge text-bg-secondary">{{ project.get_status_display }}</span></p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if can_update %}<a class="btn btn-outline-primary"
+   href="{% url 'programs:project_edit' project.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a>
+                <a class="btn btn-outline-secondary"
+                   href="{% url 'programs:project_status' project.pk %}"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Change status</a>{% endif %}
+            {% if can_archive %}<a class="btn btn-outline-danger"
+   href="{% url 'programs:project_archive' project.pk %}"><i class="bi bi-archive me-1" aria-hidden="true"></i>Archive</a>{% endif %}
+        </div>
+    </header>
+    <div class="row g-4 mb-4">
+        <div class="col-xl-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    {% if project.description %}<p>{{ project.description }}</p>{% endif %}
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Category</dt>
+                        <dd class="col-sm-8">
+                            {{ project.category.name|default:"Uncategorized" }}
+                        </dd>
+                        <dt class="col-sm-4">Project manager</dt><dd class="col-sm-8">{% if project.project_manager %}{{ project.project_manager.get_full_name|default:project.project_manager.email }}{% else %}Unassigned{% endif %}</dd>
+                        <dt class="col-sm-4">Timeline</dt>
+                        <dd class="col-sm-8">
+                            {{ project.start_date|default:"Open" }} to {{ project.end_date|default:"Open" }}
+                        </dd>
+                        <dt class="col-sm-4">Budget</dt>
+                        <dd class="col-sm-8">
+                            {{ project.budget_approved }} {{ project.currency }} approved, {{ project.budget_utilized }} utilized
+                        </dd>
+                        <dt class="col-sm-4">Budget utilization</dt>
+                        <dd class="col-sm-8">
+                            {{ project.budget_utilization_percentage }}%
+                        </dd>
+                        <dt class="col-sm-4">Target beneficiaries</dt>
+                        <dd class="col-sm-8">
+                            {{ project.target_beneficiary_count|default:"Not set" }}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <aside class="col-xl-4">
+            <div class="card shadow-sm border-0"><div class="card-body"><h3 class="h5">Status history</h3><ul class="list-group list-group-flush">{% for item in status_history %}<li class="list-group-item px-0 py-2"><small class="text-muted">{{ item.created_at|date:"Y-m-d H:i" }}</small><div class="fw-semibold">{{ item.get_from_status_display }} &rarr; {{ item.get_to_status_display }}</div>{% if item.reason %}<small>{{ item.reason }}</small>{% endif %}</li>{% empty %}<li class="list-group-item px-0 text-muted">No status transitions recorded.</li>{% endfor %}</ul></div></div>
+        </aside>
+    </div>
+    <section class="row g-4" aria-labelledby="project-records-heading">
+        <h2 id="project-records-heading" class="visually-hidden">Project records</h2>
+        <div class="col-xl-6"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body"><h3 class="h5 mb-0">Work plans</h3></div><div class="table-responsive"><table class="table table-hover align-middle mb-0"><caption class="visually-hidden">Project work plans</caption><thead><tr><th scope="col">Reference</th><th scope="col">Title</th><th scope="col">Period</th><th scope="col">Status</th></tr></thead><tbody>{% for item in work_plans %}<tr><td>{{ item.reference_number }}</td><td>{{ item.title }}</td><td>{{ item.reporting_period }}</td><td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No work plans.</td></tr>{% endfor %}</tbody></table></div></div></div>
+        <div class="col-xl-6"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body"><h3 class="h5 mb-0">Milestones</h3></div><div class="table-responsive"><table class="table table-hover align-middle mb-0"><caption class="visually-hidden">Project milestones</caption><thead><tr><th scope="col">Title</th><th scope="col">Target date</th><th scope="col">Status</th></tr></thead><tbody>{% for item in milestones %}<tr><td>{{ item.title }}</td><td>{{ item.target_date }}</td><td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td></tr>{% empty %}<tr><td colspan="3" class="text-center text-muted py-3">No milestones.</td></tr>{% endfor %}</tbody></table></div></div></div>
+    </section>
+    <section class="row g-4 mt-1" aria-labelledby="deliverables-heading">
+        <div class="col-xl-6"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body"><h3 id="deliverables-heading" class="h5 mb-0">Deliverables</h3></div><div class="table-responsive"><table class="table table-hover align-middle mb-0"><caption class="visually-hidden">Project deliverables</caption><thead><tr><th scope="col">Reference</th><th scope="col">Title</th><th scope="col">Due date</th><th scope="col">Status</th></tr></thead><tbody>{% for item in deliverables %}<tr><td>{{ item.reference_number }}</td><td>{{ item.title }}</td><td>{{ item.due_date|default:"Open" }}</td><td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No deliverables.</td></tr>{% endfor %}</tbody></table></div></div></div>
+        <div class="col-xl-6"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body"><h3 class="h5 mb-0">Open issues</h3></div><div class="table-responsive"><table class="table table-hover align-middle mb-0"><caption class="visually-hidden">Project issues</caption><thead><tr><th scope="col">Reference</th><th scope="col">Title</th><th scope="col">Priority</th><th scope="col">Status</th></tr></thead><tbody>{% for item in issues %}<tr><td>{{ item.reference_number }}</td><td>{{ item.title }}</td><td>{{ item.get_priority_display }}</td><td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No issues.</td></tr>{% endfor %}</tbody></table></div></div></div>
+    </section>
+</div>
+{% endblock dashboard_content %}

@@ -1,0 +1,108 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n rbac_tags %}
+{% block title %}{% trans "Vacancies" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+   class="text-decoration-none">Organization</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Vacancies</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Vacancies</h1>
+            <p class="page-subtitle mb-0">Track vacant positions and recruitment</p>
+        </div>
+        <div>
+            <a href="{% url 'core:vacancy_create' %}"
+               class="btn btn-primary-brand btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> New Vacancy
+            </a>
+        </div>
+    </div>
+    <div class="card border-0 mb-3">
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-12 col-md-4">
+                    <label for="unit-filter" class="visually-hidden">Unit</label>
+                    <select name="unit" id="unit-filter" class="form-select form-select-sm">
+                        <option value="">All units</option>
+                        {% for unit in units %}
+                            <option value="{{ unit.pk }}"
+                                    {% if active_unit == unit.pk|stringformat:'s' %}selected{% endif %}>{{ unit.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-funnel me-1"></i> Filter</button>
+                    {% if active_unit %}
+                        <a href="{% url 'core:vacancy_list' %}" class="btn btn-light btn-sm">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-0">
+            {% if vacancies %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Position</th>
+                                <th scope="col">Unit</th>
+                                <th scope="col">Date vacant</th>
+                                <th scope="col">Expected appointment</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vacancy in vacancies %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'core:position_detail' slug=vacancy.position.slug %}"
+                                           class="fw-semibold text-decoration-none">{{ vacancy.position.title }}</a>
+                                        {% if vacancy.acting_appointment %}
+                                            <span class="badge bg-info-subtle text-info ms-1">Acting cover</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ vacancy.organizational_unit.name }}</td>
+                                    <td class="small">{{ vacancy.date_vacant }}</td>
+                                    <td class="small">{{ vacancy.expected_appointment_date|default:"-" }}</td>
+                                    <td>
+                                        {% if vacancy.recruitment_status == 'OPEN' %}
+                                            <span class="badge badge-status badge-approved">Open</span>
+                                        {% else %}
+                                            <span class="badge badge-status badge-rejected">{{ vacancy.get_recruitment_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if request.user|has_perm:'organizations.manage' and vacancy.recruitment_status != 'FILLED' %}
+                                            <form method="post"
+                                                  action="{% url 'core:vacancy_status' vacancy_id=vacancy.pk %}"
+                                                  class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="status" value="FILLED">
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-success"
+                                                        title="Mark filled">
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-4">
+                    {% url 'core:vacancy_create' as vacancy_create_url %}
+                    {% include 'components/empty_state.html' with icon='bi-briefcase' title='No vacancies' message='Vacancies will appear here once opened.' action_url=vacancy_create_url action_label='Open Vacancy' %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

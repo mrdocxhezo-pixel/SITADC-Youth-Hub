@@ -1,0 +1,162 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+{% block title %}Volunteer Dashboard | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800"><i class="bi bi-people-fill text-primary me-2"></i>Volunteer Management Dashboard</h1>
+                <p class="text-muted small mb-0">Overview of volunteer recruitment, deployments, attendance, and analytics.</p>
+            </div>
+            <div class="btn-group">
+                <a href="{% url 'volunteers:create' %}" class="btn btn-primary">
+                    <i class="bi bi-person-plus-fill me-1"></i>New Profile
+                </a>
+                <a href="{% url 'volunteers:assignment_create' %}"
+                   class="btn btn-outline-primary">
+                    <i class="bi bi-person-badge-fill me-1"></i>Deploy Volunteer
+                </a>
+                <a href="{% url 'volunteers:reports' %}"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-file-earmark-bar-graph me-1"></i>Reports
+                </a>
+            </div>
+        </div>
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm border-start border-primary border-4 h-100">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Registered Volunteers</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total_volunteers }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm border-start border-success border-4 h-100">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active / Deployed Volunteers</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800">{{ active_volunteers }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm border-start border-warning border-4 h-100">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Applications</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800">{{ pending_apps }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm border-start border-info border-4 h-100">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Service Hours</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total_hours }} hrs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <!-- Recent Profiles -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-person-lines-fill me-2"></i>Recently Registered Volunteers</h6>
+                        <a href="{% url 'volunteers:directory' %}" class="btn btn-sm btn-link">View All</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ref Number</th>
+                                        <th>Volunteer Name</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for volunteer in recent_volunteers %}
+                                        <tr>
+                                            <td><span class="badge bg-light text-dark border">{{ volunteer.reference_number }}</span></td>
+                                            <td class="fw-bold">{{ volunteer.user.full_name }}</td>
+                                            <td>{{ volunteer.category.name|default:"-" }}</td>
+                                            <td><span class="badge bg-success">{{ volunteer.get_status_display }}</span></td>
+                                            <td>
+                                                <a href="{% url 'volunteers:detail' volunteer.pk %}"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> Profile
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-3 text-muted">No volunteer profiles recorded yet.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Quick Links & Actions -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-grid-fill me-2"></i>Volunteer Management Modules</h6>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'volunteers:directory' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-folder2-open text-primary me-2"></i>Volunteer Directory</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'volunteers:recruitment_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-megaphone text-success me-2"></i>Recruitment & Applications</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'volunteers:assignment_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-briefcase text-info me-2"></i>Assignments & Deployments</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'volunteers:attendance_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-clock-history text-warning me-2"></i>Attendance & Hours</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'volunteers:training_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-award text-secondary me-2"></i>Trainings & Certifications</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'volunteers:performance_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-graph-up-arrow text-danger me-2"></i>Performance Reviews</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'volunteers:recognition_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-star-fill text-warning me-2"></i>Recognition & Awards</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'volunteers:leave_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-calendar-event text-primary me-2"></i>Leave Applications</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'volunteers:exit_list' %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div><i class="bi bi-box-arrow-right text-dark me-2"></i>Exit & Alumni</div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

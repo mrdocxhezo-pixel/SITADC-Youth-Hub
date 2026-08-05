@@ -1,0 +1,160 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Assignments" %} - {{ role.name }} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:role_list' %}" class="text-decoration-none">Roles</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:role_detail' slug=role.slug %}"
+   class="text-decoration-none">{{ role.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Assignments</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>{{ role.name }} - Assignments</h1>
+            <p class="page-subtitle mb-0">Users currently assigned to this role</p>
+        </div>
+        <div>
+            <a href="{% url 'core:role_detail' slug=role.slug %}"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Role
+            </a>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-12 col-lg-4">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0">Assign Role to User</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post"
+                          action="{% url 'core:role_assignment_create' slug=role.slug %}"
+                          novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="role" value="{{ role.pk }}">
+                        <div class="mb-3">
+                            <label for="assignment-user" class="form-label">User <span class="text-danger">*</span></label>
+                            <select name="user" id="assignment-user" class="form-select" required>
+                                <option value="">Select a user...</option>
+                                {% for user in active_users %}
+                                    <option value="{{ user.pk }}">{{ user.get_full_name|default:user.email }} ({{ user.email }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="assignment-scope" class="form-label">Access scope</label>
+                            <select name="access_scope" id="assignment-scope" class="form-select">
+                                <option value="">National (default)</option>
+                                {% for scope in active_scopes %}
+                                    <option value="{{ scope.pk }}">{{ scope.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Leave blank to grant the default (National) scope.</div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox"
+                                   class="form-check-input"
+                                   name="is_primary"
+                                   id="assignment-primary"
+                                   value="on">
+                            <label class="form-check-label" for="assignment-primary">Primary role</label>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12 mb-3 mb-md-0">
+                                <label for="assignment-from" class="form-label">Effective from</label>
+                                <input type="datetime-local"
+                                       name="effective_from"
+                                       id="assignment-from"
+                                       class="form-control">
+                            </div>
+                            <div class="col-12 mt-3">
+                                <label for="assignment-expires" class="form-label">Expires at</label>
+                                <input type="datetime-local"
+                                       name="expires_at"
+                                       id="assignment-expires"
+                                       class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="assignment-notes" class="form-label">Notes</label>
+                            <textarea name="notes" id="assignment-notes" class="form-control" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary-brand w-100">
+                            <i class="bi bi-person-plus me-1"></i> Assign Role
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-8">
+            <div class="card border-0">
+                <div class="card-body p-0">
+                    {% if assignments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">User</th>
+                                        <th scope="col">Scope</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Effective</th>
+                                        <th scope="col">Expires</th>
+                                        <th scope="col" class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for assignment in assignments %}
+                                        <tr>
+                                            <td>
+                                                <span class="fw-semibold">{{ assignment.user.get_full_name|default:assignment.user.email }}</span>
+                                                {% if assignment.is_primary %}<span class="badge bg-primary-brand ms-1">Primary</span>{% endif %}
+                                                <div class="text-muted small">{{ assignment.user.email }}</div>
+                                            </td>
+                                            <td>
+                                                {% if assignment.access_scope %}
+                                                    <span class="badge bg-light text-dark border">{{ assignment.access_scope.name }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-light text-dark border">National</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if assignment.status == 'ACTIVE' %}
+                                                    <span class="badge badge-status badge-approved">Active</span>
+                                                {% elif assignment.status == 'EXPIRED' %}
+                                                    <span class="badge badge-status badge-rejected">Expired</span>
+                                                {% else %}
+                                                    <span class="badge badge-status badge-archived">Revoked</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="small text-muted">{{ assignment.effective_from|date:"Y-m-d"|default:"Immediate" }}</td>
+                                            <td class="small text-muted">{{ assignment.expires_at|date:"Y-m-d"|default:"—" }}</td>
+                                            <td class="text-end">
+                                                {% if assignment.status == 'ACTIVE' %}
+                                                    <form method="post"
+                                                          action="{% url 'core:role_assignment_revoke' assignment_id=assignment.pk %}"
+                                                          onsubmit="return confirm('Revoke this role assignment?');"
+                                                          class="d-inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Revoke">
+                                                            <i class="bi bi-person-dash"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="p-4">
+                            {% include 'components/empty_state.html' with icon='bi-people' title='No assignments' message='No users are currently assigned to this role.' %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

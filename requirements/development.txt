@@ -1,0 +1,24 @@
+-r base.txt
+
+# Formatting
+black==24.4.2
+isort==5.13.2
+
+# Linting
+ruff==0.5.5
+djlint==1.43.2
+
+# Type Checking
+mypy==1.11.1
+django-stubs==5.0.4
+
+# Testing
+pytest==8.3.2
+pytest-django==4.8.0
+coverage==7.6.0
+
+# Security
+bandit==1.9.4
+
+# Git Hooks
+pre-commit==3.7.1

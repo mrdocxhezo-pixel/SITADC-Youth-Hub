@@ -1,0 +1,53 @@
+{% extends "layouts/dashboard.html" %}
+{% load rbac_tags %}
+{% block title %}Volunteer Recruitment Campaigns | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-megaphone me-2"></i>Recruitment Campaigns</h1>
+            <div class="d-flex gap-2">
+                {% if request.user|has_perm:"volunteers.create" %}
+                    <a href="{% url 'volunteers:recruitment_create' %}"
+                       class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>New Campaign</a>
+                {% endif %}
+                <a href="{% url 'volunteers:apply' %}" class="btn btn-success"><i class="bi bi-file-earmark-text me-1"></i>Public Application Form</a>
+            </div>
+        </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Volunteer recruitment campaigns</caption>
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Campaign Ref</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Vacancies</th>
+                                <th scope="col">Deadline</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for campaign in campaigns %}
+                                <tr>
+                                    <td><span class="badge bg-light text-dark border">{{ campaign.reference_number }}</span></td>
+                                    <td class="fw-bold">{{ campaign.title }}</td>
+                                    <td>{{ campaign.category.name|default:"-" }}</td>
+                                    <td>{{ campaign.vacancies }}</td>
+                                    <td>{{ campaign.application_deadline }}</td>
+                                    <td><span class="badge bg-info">{{ campaign.get_status_display }}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No active recruitment campaigns at present.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% include "components/pagination.html" %}
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block navbar %}
+    {% include 'components/public_navbar.html' %}
+{% endblock %}
+{% block layout_content %}
+    <div class="d-flex align-items-center justify-content-center min-vh-75 mt-5">
+        <div class="text-center p-5 bg-white shadow-sm rounded-4 w-100"
+             style="max-width: 600px">
+            <div class="mb-4 text-primary-brand">
+                <i class="bi {% block error_icon %}bi-exclamation-triangle{% endblock %} display-1"></i>
+            </div>
+            <h1 class="display-5 fw-bold mb-3">{% block error_code %}Error{% endblock %}</h1>
+            <h2 class="h4 text-muted mb-4">{% block error_title %}Something went wrong{% endblock %}</h2>
+            <p class="mb-4 text-secondary">
+                {% block error_message %}We encountered an unexpected error. Please try again later.{% endblock %}
+            </p>
+            <div>
+                <a href="{% url 'core:home' %}" class="btn btn-action px-4 py-2 me-2">
+                    <i class="bi bi-house-door me-2"></i>Return Home
+                </a>
+                {% block extra_actions %}{% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block footer %}
+    {% include 'components/footer.html' %}
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "New Position Classification" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+   class="text-decoration-none">Organization</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:catalogue_list' %}" class="text-decoration-none">Catalogues</a></li>
+    <li class="breadcrumb-item active" aria-current="page">New Classification</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Create Position Classification</h1>
+            <p class="page-subtitle mb-0">Add a classification category for positions</p>
+        </div>
+        <div>
+            <a href="{% url 'core:catalogue_list' %}"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Catalogues
+            </a>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-4">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+                {% endif %}
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Name <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="invalid-feedback d-block">{% for error in form.name.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.code.id_for_label }}" class="form-label">Code <span class="text-danger">*</span></label>
+                        {{ form.code }}
+                        <div class="form-text">A short slug used to identify the classification, e.g. senior-management.</div>
+                        {% if form.code.errors %}<div class="invalid-feedback d-block">{% for error in form.code.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.sort_order.id_for_label }}" class="form-label">Sort order</label>
+                        {{ form.sort_order }}
+                        {% if form.sort_order.errors %}<div class="invalid-feedback d-block">{% for error in form.sort_order.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="form-check mt-4">
+                            {{ form.is_active }}
+                            <label for="{{ form.is_active.id_for_label }}" class="form-check-label">Is active</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}<div class="invalid-feedback d-block">{% for error in form.description.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                    <a href="{% url 'core:catalogue_list' %}" class="btn btn-light">Cancel</a>
+                    <button type="submit" class="btn btn-primary-brand px-4">
+                        <i class="bi bi-check-lg me-1"></i> Create Classification
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

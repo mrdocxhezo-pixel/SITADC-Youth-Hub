@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Application Received | SITADC Youth Hub{% endblock title %}
+{% block content %}
+    <div class="row justify-content-center py-5">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5 text-center">
+                    <i class="bi bi-check-circle-fill text-success display-4"
+                       aria-hidden="true"></i>
+                    <h1 class="h3 mt-3">Application received</h1>
+                    <p class="text-muted">Your volunteer application was submitted securely.</p>
+                    {% if reference_number %}
+                        <p class="mb-0">Keep this reference for future enquiries:</p>
+                        <p class="fs-5 fw-bold">{{ reference_number }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

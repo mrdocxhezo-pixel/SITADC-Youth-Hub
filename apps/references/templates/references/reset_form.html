@@ -1,0 +1,61 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Reset Sequence" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:references_index' %}" class="text-decoration-none">Reference Numbering</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:scheme_list' %}" class="text-decoration-none">Schemes</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:scheme_detail' scheme_id=scheme.pk %}"
+   class="text-decoration-none">{{ scheme.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Reset Sequence</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Reset Sequence</h1>
+            <p class="page-subtitle mb-0">{{ scheme.name }} · <span class="font-monospace">{{ scheme.prefix }}</span></p>
+        </div>
+        <div>
+            <a href="{% url 'core:scheme_detail' scheme_id=scheme.pk %}"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Scheme
+            </a>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-4">
+            <div class="alert alert-warning d-flex" role="alert">
+                <i class="bi bi-exclamation-triangle me-2 fs-5"></i>
+                <div>
+                    <strong>Sequence values are never reused.</strong> A reset resumes one past the highest value
+                    already issued, so previously generated references remain immutable and unique.
+                </div>
+            </div>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+                {% endif %}
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.start_value.id_for_label }}" class="form-label">Start value <span class="text-danger">*</span></label>
+                        {{ form.start_value }}
+                        {% if form.start_value.errors %}<div class="invalid-feedback d-block">{% for error in form.start_value.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label">Reason</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}<div class="invalid-feedback d-block">{% for error in form.notes.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                    <a href="{% url 'core:scheme_detail' scheme_id=scheme.pk %}"
+                       class="btn btn-light">Cancel</a>
+                    <button type="submit" class="btn btn-warning px-4">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Sequence
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

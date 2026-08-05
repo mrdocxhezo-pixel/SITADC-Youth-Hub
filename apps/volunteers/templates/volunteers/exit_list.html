@@ -1,0 +1,42 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Volunteer Exit & Alumni Management | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-box-arrow-right me-2"></i>Exit & Alumni Records</h1>
+            <a href="{% url 'volunteers:exit_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Initiate Exit Process</a>
+        </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Volunteer</th>
+                                <th>Exit Reason</th>
+                                <th>Effective Date</th>
+                                <th>Clearance Approved</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exit in exits %}
+                                <tr>
+                                    <td class="fw-bold">{{ exit.profile.user.full_name }}</td>
+                                    <td>{{ exit.get_reason_display }}</td>
+                                    <td>{{ exit.effective_date }}</td>
+                                    <td><span class="badge {% if exit.clearance_approved %}bg-success{% else %}bg-warning{% endif %}">{% if exit.clearance_approved %}Cleared{% else %}Pending{% endif %}</span></td>
+                                    <td><span class="badge bg-dark">{{ exit.get_status_display }}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No volunteer exits recorded.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

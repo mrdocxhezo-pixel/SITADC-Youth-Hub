@@ -1,0 +1,15 @@
+{% extends "layouts/auth.html" %}
+{% load i18n %}
+{% block title %}{% trans "Authentication Error" %} - SITADC Youth Hub{% endblock %}
+{% block auth_content %}
+    <div class="text-center py-4">
+        <i class="bi bi-exclamation-triangle-fill text-danger fs-1 mb-3 d-block"></i>
+        <h2 class="h5 fw-bold text-danger mb-3">{% trans "Invalid Registration Link" %}</h2>
+        <p class="text-muted small mb-4">
+            {{ error_message|default:_("The invitation link you have used is invalid, expired, or has already been accepted.") }}
+        </p>
+        <div class="d-grid gap-2">
+            <a href="{% url 'core:login' %}" class="btn btn-outline-secondary">{% trans "Go to Sign In" %}</a>
+        </div>
+    </div>
+{% endblock %}

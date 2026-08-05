@@ -1,0 +1,45 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Volunteer Assignments | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-briefcase me-2"></i>Volunteer Assignments & Deployments</h1>
+            <a href="{% url 'volunteers:assignment_create' %}"
+               class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>New Deployment</a>
+        </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Volunteer</th>
+                                <th>Role / Assignment Title</th>
+                                <th>Program / Project</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Active</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assign in assignments %}
+                                <tr>
+                                    <td class="fw-bold">{{ assign.profile.user.full_name }} ({{ assign.profile.reference_number }})</td>
+                                    <td>{{ assign.title }}</td>
+                                    <td>{{ assign.program_name|default:assign.project_name|default:"General Service" }}</td>
+                                    <td>{{ assign.start_date }}</td>
+                                    <td>{{ assign.end_date|default:"Ongoing" }}</td>
+                                    <td><span class="badge {% if assign.is_active %}bg-success{% else %}bg-secondary{% endif %}">{% if assign.is_active %}Active{% else %}Ended{% endif %}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No volunteer assignments recorded yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

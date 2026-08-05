@@ -1,0 +1,45 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Coaching Records | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Coaching Records</h1>
+            <a href="{% url 'leadership:coaching_create' %}"
+               class="btn btn-primary-brand">
+                <i class="bi bi-plus-circle me-1"></i>Add Session
+            </a>
+        </div>
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Leader</th>
+                                <th>Coach</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th>Confidential</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in coaching_records %}
+                                <tr>
+                                    <td>{{ rec.leader.user.get_full_name }}</td>
+                                    <td>{{ rec.coach }}</td>
+                                    <td>{{ rec.get_category_display }}</td>
+                                    <td>{{ rec.session_date }}</td>
+                                    <td>{% if rec.is_confidential %}<span class="badge bg-danger">Yes</span>{% else %}No{% endif %}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No coaching records found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

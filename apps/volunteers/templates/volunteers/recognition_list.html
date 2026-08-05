@@ -1,0 +1,41 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Recognition & Awards | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-star-fill text-warning me-2"></i>Volunteer Recognition & Awards</h1>
+            <a href="{% url 'volunteers:recognition_create' %}"
+               class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Award Recognition</a>
+        </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Volunteer</th>
+                                <th>Award / Title</th>
+                                <th>Category</th>
+                                <th>Award Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in recognitions %}
+                                <tr>
+                                    <td class="fw-bold">{{ rec.profile.user.full_name }}</td>
+                                    <td>{{ rec.title }}</td>
+                                    <td>{{ rec.get_category_display }}</td>
+                                    <td>{{ rec.award_date }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No awards or recognition recorded yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

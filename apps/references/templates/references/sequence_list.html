@@ -1,0 +1,73 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "Reference Sequences" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:references_index' %}" class="text-decoration-none">Reference Numbering</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Sequences</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Reference Sequences</h1>
+            <p class="page-subtitle mb-0">Per-period counters for every scheme</p>
+        </div>
+    </div>
+    <div class="card border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <label for="scheme" class="visually-hidden">Scheme</label>
+                    <select id="scheme" name="scheme" class="form-select form-select-sm">
+                        <option value="">All schemes</option>
+                        {% for option in schemes %}
+                            <option value="{{ option.pk }}"
+                                    {% if active_scheme == option.pk|stringformat:'s' %}selected{% endif %}>{{ option.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-outline-primary-brand btn-sm"><i class="bi bi-funnel me-1"></i> Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body p-0">
+            {% if sequences %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Scheme</th>
+                                <th scope="col">Period</th>
+                                <th scope="col">Start</th>
+                                <th scope="col">Current</th>
+                                <th scope="col">Next</th>
+                                <th scope="col">Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sequence in sequences %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'core:scheme_detail' scheme_id=sequence.scheme.pk %}"
+                                           class="text-decoration-none">{{ sequence.scheme.name }}</a>
+                                        <span class="small text-muted"> · <span class="font-monospace">{{ sequence.scheme.prefix }}</span></span>
+                                    </td>
+                                    <td class="font-monospace small">{{ sequence.period_key }}</td>
+                                    <td>{{ sequence.start_value }}</td>
+                                    <td>{{ sequence.current_value }}</td>
+                                    <td class="fw-semibold">{{ sequence.next_value }}</td>
+                                    <td class="small text-muted">{{ sequence.updated_at|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted small p-4 mb-0">No sequence rows found.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

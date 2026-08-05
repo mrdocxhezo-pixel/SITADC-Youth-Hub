@@ -1,0 +1,103 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ program.title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "programs/includes/module_nav.html" with program=program %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ program.title }}</h1>
+                <p class="text-muted mb-0">{{ program.reference_number }} &middot; <span class="badge text-bg-secondary">{{ program.get_status_display }}</span></p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if can_update %}<a class="btn btn-outline-primary"
+   href="{% url 'programs:program_edit' program.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a>
+                <a class="btn btn-outline-secondary"
+                   href="{% url 'programs:program_status' program.pk %}"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Change status</a>{% endif %}
+            {% if can_archive %}<a class="btn btn-outline-danger"
+   href="{% url 'programs:program_archive' program.pk %}"><i class="bi bi-archive me-1" aria-hidden="true"></i>Archive</a>{% endif %}
+            {% if can_create_project %}<a class="btn btn-primary"
+   href="{% url 'programs:project_create_for_program' program.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New project</a>{% endif %}
+        </div>
+    </header>
+    <section class="row g-4 mb-4" aria-labelledby="overview-heading">
+        <h2 id="overview-heading" class="visually-hidden">Overview</h2>
+        <div class="col-xl-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    {% if program.description %}<p>{{ program.description }}</p>{% endif %}
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Category</dt>
+                        <dd class="col-sm-8">
+                            {{ program.category.name|default:"Uncategorized" }}
+                        </dd>
+                        <dt class="col-sm-4">Program manager</dt><dd class="col-sm-8">{% if program.program_manager %}{{ program.program_manager.get_full_name|default:program.program_manager.email }}{% else %}Unassigned{% endif %}</dd>
+                        <dt class="col-sm-4">Directorate</dt>
+                        <dd class="col-sm-8">
+                            {{ program.responsible_directorate.name|default:"Not assigned" }}
+                        </dd>
+                        <dt class="col-sm-4">Timeline</dt>
+                        <dd class="col-sm-8">
+                            {{ program.start_date|default:"Open" }} to {{ program.end_date|default:"Open" }}
+                        </dd>
+                        <dt class="col-sm-4">Budget</dt>
+                        <dd class="col-sm-8">
+                            {{ program.budget_approved }} {{ program.currency }} approved, {{ program.budget_utilized }} utilized
+                        </dd>
+                        <dt class="col-sm-4">Budget utilization</dt>
+                        <dd class="col-sm-8">
+                            {{ program.budget_utilization_percentage }}%
+                        </dd>
+                        <dt class="col-sm-4">Target beneficiaries</dt>
+                        <dd class="col-sm-8">
+                            {{ program.target_beneficiary_count|default:"Not set" }}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <aside class="col-xl-4">
+            <div class="card shadow-sm border-0"><div class="card-body"><h3 class="h5">Status history</h3><ul class="list-group list-group-flush">{% for item in status_history %}<li class="list-group-item px-0 py-2"><small class="text-muted">{{ item.created_at|date:"Y-m-d H:i" }}</small><div class="fw-semibold">{{ item.get_from_status_display }} &rarr; {{ item.get_to_status_display }}</div>{% if item.reason %}<small>{{ item.reason }}</small>{% endif %}</li>{% empty %}<li class="list-group-item px-0 text-muted">No status transitions recorded.</li>{% endfor %}</ul></div></div>
+        </aside>
+    </section>
+    <section class="row g-4" aria-labelledby="links-heading">
+        <h2 id="links-heading" class="visually-hidden">Module links</h2>
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:work_plans' program.pk %}">Work plans</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:activities' program.pk %}">Activities</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:tasks' program.pk %}">Tasks</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:risks' program.pk %}">Risks</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:issues' program.pk %}">Issues</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:change_requests' program.pk %}">Change requests</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:budgets' program.pk %}">Budgets</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:team_members' program.pk %}">Team</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:stakeholder_links' program.pk %}">Stakeholders</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:indicators' program.pk %}">Indicators</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:evaluations' program.pk %}">Evaluations</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:documents' program.pk %}">Documents</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:beneficiaries' program.pk %}">Beneficiaries</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'programs:progress_updates' program.pk %}">Progress</a>
+            </div>
+        </div>
+    </section>
+    <section class="row g-4 mt-1" aria-labelledby="projects-heading">
+        <div class="col-xl-7"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body d-flex justify-content-between align-items-center"><h3 id="projects-heading" class="h5 mb-0">Projects</h3><a href="{% url 'programs:project_create_for_program' program.pk %}">Add</a></div><div class="table-responsive"><table class="table table-hover align-middle mb-0"><caption class="visually-hidden">Projects under this program</caption><thead><tr><th scope="col">Reference</th><th scope="col">Title</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Action</span></th></tr></thead><tbody>{% for item in projects %}<tr><td>{{ item.reference_number }}</td><td>{{ item.title }}</td><td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td><td><a class="btn btn-sm btn-outline-primary"
+   href="{% url 'programs:project_profile' item.pk %}">View</a></td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-4">No projects registered.</td></tr>{% endfor %}</tbody></table></div></div></div>
+        <div class="col-xl-5"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body"><h3 class="h5 mb-0">Team members</h3></div><div class="card-body"><ul class="list-group list-group-flush">{% for member in team_members %}<li class="list-group-item px-0 d-flex justify-content-between"><span>{{ member.user.get_full_name|default:member.user.email }}</span><span class="text-muted">{{ member.role_title }}</span></li>{% empty %}<li class="list-group-item px-0 text-muted">No team members assigned.</li>{% endfor %}</ul></div></div></div>
+    </section>
+</div>
+{% endblock dashboard_content %}

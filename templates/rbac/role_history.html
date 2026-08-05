@@ -1,0 +1,68 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% block title %}{% trans "History" %} - {{ role.name }} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:role_list' %}" class="text-decoration-none">Roles</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'core:role_detail' slug=role.slug %}"
+   class="text-decoration-none">{{ role.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">History</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>{{ role.name }} - Audit History</h1>
+            <p class="page-subtitle mb-0">Immutable record of changes to this role</p>
+        </div>
+        <div>
+            <a href="{% url 'core:role_detail' slug=role.slug %}"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Role
+            </a>
+        </div>
+    </div>
+    <div class="card border-0">
+        <div class="card-body">
+            {% if history %}
+                <div class="timeline">
+                    {% for event in history %}
+                        <div class="d-flex gap-3 mb-4">
+                            <div class="flex-shrink-0">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center bg-light border"
+                                     style="width: 40px;
+                                            height: 40px">
+                                    <i class="bi bi-journal-check text-primary-brand"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="fw-semibold">{{ event.get_action_display }}</span>
+                                        {% if event.changed_by %}
+                                            <span class="text-muted small">by {{ event.changed_by.get_full_name|default:event.changed_by.email }}</span>
+                                        {% else %}
+                                            <span class="text-muted small">by system</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="text-muted small">{{ event.created_at|date:"Y-m-d H:i" }}</span>
+                                </div>
+                                {% if event.notes %}
+                                    <p class="text-muted small mb-1 mt-1">{{ event.notes }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state py-4">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+                    <h3 class="h6 fw-semibold mb-1">No history recorded</h3>
+                    <p class="text-muted small mb-0">Changes to this role will be recorded here.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

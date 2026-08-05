@@ -1,0 +1,19 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Stakeholder Mapping Matrix | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "stakeholders/includes/module_nav.html" %}
+        <header class="mb-4">
+            <h1 class="h2 mb-1">Stakeholder mapping matrix</h1>
+            <p class="text-muted mb-0">Influence and interest determine placement. Missing values remain explicitly missing and are never imputed.</p>
+        </header>
+        <div class="row g-3 mb-4" aria-label="Matrix classification summary">{% for item in classification_summary %}<div class="col-sm-6 col-xl"><div class="card shadow-sm border-0 h-100"><div class="card-body"><p class="small text-muted mb-1">{{ item.classification|title }}</p><p class="h3 mb-0">{{ item.total }}</p></div></div></div>{% empty %}<div class="col-12"><div class="alert alert-light border">No assessment data is available.</div></div>{% endfor %}</div>
+        <form method="get" class="card card-body shadow-sm border-0 mb-3"><div class="row g-3 align-items-end"><div class="col-md-5"><label for="matrix-classification" class="form-label">Classification</label><select id="matrix-classification" class="form-select" name="classification"><option value="">All classifications</option>{% for value,label in classification_choices %}<option value="{{ value }}"
+        {% if request.GET.classification == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div><div class="col-md-7"><button class="btn btn-primary" type="submit">Apply filter</button> <a class="btn btn-outline-secondary"
+    href="{% url 'stakeholders:mapping_matrix' %}">Clear</a></div></div></form>
+        <div class="card shadow-sm border-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><caption class="visually-hidden">Stakeholder influence and interest assessments</caption><thead><tr><th scope="col">Stakeholder</th><th scope="col">Assessment</th><th scope="col">Influence</th><th scope="col">Interest</th><th scope="col">Placement</th><th scope="col">Completeness</th><th scope="col">Explanation</th></tr></thead><tbody>{% for item in assessments %}<tr><td><a href="{% url 'stakeholders:profile' item.stakeholder.pk %}">{{ item.stakeholder.display_name|default:item.stakeholder.legal_name }}</a></td><td>{{ item.assessment_date }}<br><small class="text-muted">{{ item.reference_number }}</small></td><td>{% if item.influence_score != None %}{{ item.influence_score }} / 5{% else %}<strong>Missing</strong>{% endif %}</td><td>{% if item.interest_score != None %}{{ item.interest_score }} / 5{% else %}<strong>Missing</strong>{% endif %}</td><td>{{ item.get_classification_display }}</td><td>{{ item.completeness_percentage }}%</td><td class="small">{{ item.matrix_explanation }}</td></tr>{% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No assessments match this filter.</td></tr>{% endfor %}</tbody></table></div></div>
+        {% if page_obj.has_other_pages %}<nav class="mt-4" aria-label="Matrix pages"><ul class="pagination justify-content-center">{% if page_obj.has_previous %}<li class="page-item"><a class="page-link"
+   href="?{{ query_without_page }}&page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}<li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>{% if page_obj.has_next %}<li class="page-item"><a class="page-link"
+   href="?{{ query_without_page }}&page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}</ul></nav>{% endif %}
+    </div>
+{% endblock dashboard_content %}

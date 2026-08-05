@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block navbar %}
+    {% include 'components/public_navbar.html' %}
+{% endblock %}
+{% block layout_content %}
+    <div class="container mt-4">
+        {% include 'components/messages.html' %}
+        {% block content %}{% endblock %}
+    </div>
+{% endblock %}
+{% block footer %}
+    {% include 'components/footer.html' %}
+{% endblock %}

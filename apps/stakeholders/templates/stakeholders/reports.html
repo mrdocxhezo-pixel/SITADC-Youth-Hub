@@ -1,0 +1,38 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Stakeholder Reports | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "stakeholders/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"><div><h1 class="h2 mb-1">Stakeholder reports</h1><p class="text-muted mb-0">Live summaries use only stakeholder records within your access scope.</p></div>{% if can_export %}<a class="btn btn-primary"
+   href="{% url 'stakeholders:register_export' %}"><i class="bi bi-filetype-csv me-1" aria-hidden="true"></i>Export stakeholder register</a>{% endif %}</header>
+        <section class="row g-4 mb-4" aria-labelledby="report-summary-heading">
+            <h2 id="report-summary-heading" class="visually-hidden">Report summary</h2>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1">Visible stakeholder records</p>
+                        <p class="display-6 mb-0">{{ total }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-9">
+                <div class="alert alert-info mb-0 h-100">
+                    <h3 class="h5">Available format</h3>
+                    <p class="mb-1">CSV is operational now and includes a formula-safe, permission-scoped stakeholder register.</p>
+                    <p class="mb-0"><strong>Future integration targets:</strong> PDF, DOCX, and XLSX will be connected when the shared export engine and its dependencies are implemented.</p>
+                </div>
+            </div>
+        </section>
+        <div class="row g-4"><section class="col-lg-4" aria-labelledby="status-report-heading"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body"><h2 id="status-report-heading" class="h5 mb-0">By status</h2></div><ul class="list-group list-group-flush">{% for item in status_summary %}<li class="list-group-item d-flex justify-content-between"><span>{{ item.status|title }}</span><strong>{{ item.total }}</strong></li>{% empty %}<li class="list-group-item text-muted">No data.</li>{% endfor %}</ul></div></section><section class="col-lg-4" aria-labelledby="category-report-heading"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body"><h2 id="category-report-heading" class="h5 mb-0">By category</h2></div><ul class="list-group list-group-flush">{% for item in category_summary %}<li class="list-group-item d-flex justify-content-between"><span>{{ item.name }}</span><strong>{{ item.total }}</strong></li>{% empty %}<li class="list-group-item text-muted">No categorized records.</li>{% endfor %}</ul></div></section><section class="col-lg-4" aria-labelledby="region-report-heading"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-body"><h2 id="region-report-heading" class="h5 mb-0">By region</h2></div><ul class="list-group list-group-flush">{% for item in region_summary %}<li class="list-group-item d-flex justify-content-between"><span>{{ item.province_or_region }}</span><strong>{{ item.total }}</strong></li>{% empty %}<li class="list-group-item text-muted">No regional data.</li>{% endfor %}</ul></div></section></div>
+        {% if contribution_summary %}<section class="card shadow-sm border-0 mt-4"
+         aria-labelledby="contribution-report-heading"><div class="card-header bg-body"><h2 id="contribution-report-heading" class="h5 mb-0">Authorized contribution summary</h2></div><div class="table-responsive"><table class="table mb-0"><caption class="visually-hidden">Financial contribution totals by status and currency</caption><thead><tr><th scope="col">Status</th><th scope="col">Currency</th><th scope="col">Records</th><th scope="col">Recorded amount</th></tr></thead><tbody>{% for item in contribution_summary %}<tr><td>{{ item.status|title }}</td><td>{{ item.currency }}</td><td>{{ item.records }}</td><td>{{ item.total|default:"0" }}</td></tr>{% endfor %}</tbody></table></div></section>{% endif %}
+        <section class="mt-4" aria-labelledby="future-formats-heading">
+            <h2 id="future-formats-heading" class="h5">Future formats</h2>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-secondary" type="button" disabled>PDF (future)</button>
+                <button class="btn btn-outline-secondary" type="button" disabled>DOCX (future)</button>
+                <button class="btn btn-outline-secondary" type="button" disabled>XLSX (future)</button>
+            </div>
+        </section>
+    </div>
+{% endblock dashboard_content %}

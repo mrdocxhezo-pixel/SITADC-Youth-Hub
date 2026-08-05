@@ -1,0 +1,69 @@
+{% extends "layouts/dashboard.html" %}
+{% load rbac_tags %}
+{% block title %}Application Detail - {{ application.reference_number }}{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Application: {{ application.reference_number }}</h1>
+            <a href="{% url 'volunteers:recruitment_list' %}"
+               class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+        </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Applicant Name:</strong> {{ application.applicant_name }}</p>
+                        <p><strong>Email:</strong> {{ application.email }}</p>
+                        <p><strong>Phone:</strong> {{ application.phone_number }}</p>
+                        <p><strong>Category:</strong> {{ application.category.name|default:"-" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Type:</strong> {{ application.volunteer_type.name|default:"-" }}</p>
+                        <p><strong>Status:</strong> <span class="badge bg-primary">{{ application.get_status_display }}</span></p>
+                        <p><strong>Submitted Date:</strong> {{ application.created_at }}</p>
+                    </div>
+                </div>
+                <hr>
+                <h6>Motivation Statement</h6>
+                <p class="text-muted">{{ application.motivation|default:"No motivation statement provided." }}</p>
+                {% if application.cv_file and request.user|has_perm:"volunteers.view_confidential" %}
+                    <a href="{% url 'volunteers:application_cv_download' application.pk %}"
+                       class="btn btn-outline-secondary mb-3">
+                        <i class="bi bi-download me-1" aria-hidden="true"></i>Download CV
+                    </a>
+                {% endif %}
+                {% if request.user|has_perm:"volunteers.update" %}
+                    <div class="border-top pt-3" aria-labelledby="application-actions-heading">
+                        <h2 id="application-actions-heading" class="h6">Workflow actions</h2>
+                        {% if application.status == "SUBMITTED" %}
+                            <form method="post"
+                                  action="{% url 'volunteers:application_review' application.pk %}"
+                                  class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="start-screening">
+                                <button class="btn btn-primary" type="submit">Start screening</button>
+                            </form>
+                        {% elif application.status == "UNDER_SCREENING" %}
+                            <a class="btn btn-primary"
+                               href="{% url 'volunteers:application_screening' application.pk %}">Record screening</a>
+                        {% elif application.status == "SHORTLISTED" %}
+                            <a class="btn btn-primary"
+                               href="{% url 'volunteers:application_interview' application.pk %}">Record interview</a>
+                        {% elif application.status == "INTERVIEWED" %}
+                            <form method="post"
+                                  action="{% url 'volunteers:application_review' application.pk %}"
+                                  class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-success" type="submit" name="action" value="approve">Approve</button>
+                                <button class="btn btn-outline-danger"
+                                        type="submit"
+                                        name="action"
+                                        value="reject">Reject</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

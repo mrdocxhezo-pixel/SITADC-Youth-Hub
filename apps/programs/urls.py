@@ -1,0 +1,195 @@
+"""URL routes for the program and project management module."""
+
+from django.urls import path
+
+from . import views
+
+app_name = "programs"
+
+urlpatterns = [
+    path("", views.ProgramDashboardView.as_view(), name="dashboard"),
+    path("dashboard/", views.ProgramDashboardView.as_view(), name="dashboard_alt"),
+    path("programs/", views.ProgramDirectoryView.as_view(), name="program_directory"),
+    path("programs/new/", views.ProgramCreateView.as_view(), name="program_create"),
+    path("projects/", views.ProjectDirectoryView.as_view(), name="project_directory"),
+    path("projects/new/", views.ProjectCreateView.as_view(), name="project_create"),
+    path(
+        "projects/new/for/<uuid:pk>/",
+        views.ProjectCreateView.as_view(),
+        name="project_create_for_program",
+    ),
+    path(
+        "programs/register.csv",
+        views.ProgramRegisterExportView.as_view(),
+        name="program_register_export",
+    ),
+    path(
+        "projects/register.csv",
+        views.ProjectRegisterExportView.as_view(),
+        name="project_register_export",
+    ),
+    path(
+        "programs/register.xlsx",
+        views.ProgramRegisterXlsxExportView.as_view(),
+        name="program_register_xlsx",
+    ),
+    path(
+        "programs/register.docx",
+        views.ProgramRegisterDocxExportView.as_view(),
+        name="program_register_docx",
+    ),
+    path(
+        "programs/register.pdf",
+        views.ProgramRegisterPdfExportView.as_view(),
+        name="program_register_pdf",
+    ),
+    path(
+        "projects/register.xlsx",
+        views.ProjectRegisterXlsxExportView.as_view(),
+        name="project_register_xlsx",
+    ),
+    path(
+        "projects/register.docx",
+        views.ProjectRegisterDocxExportView.as_view(),
+        name="project_register_docx",
+    ),
+    path(
+        "projects/register.pdf",
+        views.ProjectRegisterPdfExportView.as_view(),
+        name="project_register_pdf",
+    ),
+    path(
+        "lessons/register.xlsx",
+        views.LessonsLearnedExportView.as_view(),
+        name="lessons_learner_register_xlsx",
+    ),
+    path(
+        "programs/<uuid:pk>/closure.docx",
+        views.ProgramClosureReportView.as_view(),
+        name="program_closure_report",
+    ),
+    path(
+        "programs/<uuid:pk>/",
+        views.ProgramProfileView.as_view(),
+        name="program_profile",
+    ),
+    path(
+        "programs/<uuid:pk>/edit/",
+        views.ProgramUpdateView.as_view(),
+        name="program_edit",
+    ),
+    path(
+        "programs/<uuid:pk>/status/",
+        views.ProgramStatusView.as_view(),
+        name="program_status",
+    ),
+    path(
+        "programs/<uuid:pk>/archive/",
+        views.ProgramArchiveView.as_view(),
+        name="program_archive",
+    ),
+    path(
+        "programs/<uuid:pk>/restore/",
+        views.ProgramRestoreView.as_view(),
+        name="program_restore",
+    ),
+    path(
+        "projects/<uuid:pk>/",
+        views.ProjectProfileView.as_view(),
+        name="project_profile",
+    ),
+    path(
+        "projects/<uuid:pk>/edit/",
+        views.ProjectUpdateView.as_view(),
+        name="project_edit",
+    ),
+    path(
+        "projects/<uuid:pk>/status/",
+        views.ProjectStatusView.as_view(),
+        name="project_status",
+    ),
+    path(
+        "projects/<uuid:pk>/archive/",
+        views.ProjectArchiveView.as_view(),
+        name="project_archive",
+    ),
+    path(
+        "projects/<uuid:pk>/restore/",
+        views.ProjectRestoreView.as_view(),
+        name="project_restore",
+    ),
+    path(
+        "programs/<uuid:pk>/work-plans/",
+        views.WorkPlanView.as_view(),
+        name="work_plans",
+    ),
+    path(
+        "programs/<uuid:pk>/activities/",
+        views.ActivityView.as_view(),
+        name="activities",
+    ),
+    path("programs/<uuid:pk>/tasks/", views.TaskView.as_view(), name="tasks"),
+    path("programs/<uuid:pk>/risks/", views.RiskView.as_view(), name="risks"),
+    path("programs/<uuid:pk>/issues/", views.IssueView.as_view(), name="issues"),
+    path(
+        "programs/<uuid:pk>/changes/",
+        views.ChangeRequestView.as_view(),
+        name="change_requests",
+    ),
+    path("programs/<uuid:pk>/budgets/", views.BudgetView.as_view(), name="budgets"),
+    path(
+        "programs/<uuid:pk>/team/",
+        views.TeamMemberView.as_view(),
+        name="team_members",
+    ),
+    path(
+        "programs/<uuid:pk>/stakeholders/",
+        views.StakeholderLinkView.as_view(),
+        name="stakeholder_links",
+    ),
+    path(
+        "programs/<uuid:pk>/indicators/",
+        views.IndicatorView.as_view(),
+        name="indicators",
+    ),
+    path(
+        "programs/<uuid:pk>/evaluations/",
+        views.EvaluationView.as_view(),
+        name="evaluations",
+    ),
+    path(
+        "programs/<uuid:pk>/documents/",
+        views.DocumentView.as_view(),
+        name="documents",
+    ),
+    path(
+        "programs/<uuid:pk>/beneficiaries/",
+        views.BeneficiaryView.as_view(),
+        name="beneficiaries",
+    ),
+    path(
+        "programs/<uuid:pk>/progress/",
+        views.ProgressUpdateView.as_view(),
+        name="progress_updates",
+    ),
+    path(
+        "programs/<uuid:pk>/resources/",
+        views.ResourceAllocationView.as_view(),
+        name="resource_allocations",
+    ),
+    path(
+        "programs/<uuid:pk>/procurement/",
+        views.ProcurementRequestView.as_view(),
+        name="procurement_requests",
+    ),
+    path(
+        "programs/<uuid:pk>/lessons/",
+        views.LessonsLearnedView.as_view(),
+        name="lessons_learned",
+    ),
+    path(
+        "documents/<uuid:pk>/download/",
+        views.DocumentDownloadView.as_view(),
+        name="document_download",
+    ),
+]

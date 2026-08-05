@@ -1,0 +1,56 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ directory_title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "stakeholders/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"><div><h1 class="h2 mb-1">{{ directory_title }}</h1><p class="text-muted mb-0">{{ directory_description }}</p></div>{% if can_create %}<a class="btn btn-primary" href="{% url 'stakeholders:create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Register stakeholder</a>{% endif %}</header>
+        <nav class="nav nav-pills flex-wrap gap-1 mb-3"
+             aria-label="Specialized directories"><a class="nav-link" href="{% url 'stakeholders:directory' %}">All</a><a class="nav-link" href="{% url 'stakeholders:partners' %}">Partners</a><a class="nav-link" href="{% url 'stakeholders:donors' %}">Donors</a><a class="nav-link" href="{% url 'stakeholders:sponsors' %}">Sponsors</a><a class="nav-link" href="{% url 'stakeholders:government' %}">Government</a><a class="nav-link" href="{% url 'stakeholders:community' %}">Community</a></nav>
+        <section class="card shadow-sm border-0 mb-4"
+                 aria-labelledby="directory-filters">
+            <div class="card-body">
+                <h2 id="directory-filters" class="h5">Search and filter</h2>
+                <form method="get" class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="directory-search">Search</label>
+                        <input class="form-control"
+                               id="directory-search"
+                               type="search"
+                               name="q"
+                               value="{{ request.GET.q }}"
+                               placeholder="Name, acronym, or reference">
+                    </div>
+                    <div class="col-sm-6 col-lg-2"><label class="form-label" for="directory-status">Status</label><select class="form-select" id="directory-status" name="status"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}"
+        {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+                    <div class="col-sm-6 col-lg-2"><label class="form-label" for="directory-category">Category</label><select class="form-select" id="directory-category" name="category"><option value="">All categories</option>{% for item in categories %}<option value="{{ item.code }}"
+        {% if request.GET.category == item.code %}selected{% endif %}>{{ item.name }}</option>{% endfor %}</select></div>
+                    <div class="col-sm-6 col-lg-2"><label class="form-label" for="directory-type">Relationship</label><select class="form-select" id="directory-type" name="relationship_type"><option value="">All relationships</option>{% for item in relationship_types %}<option value="{{ item.code }}"
+        {% if request.GET.relationship_type == item.code %}selected{% endif %}>{{ item.name }}</option>{% endfor %}</select></div>
+                    <div class="col-sm-6 col-lg-2"><label class="form-label" for="directory-entity">Entity type</label><select class="form-select" id="directory-entity" name="entity_type"><option value="">All entity types</option>{% for value,label in entity_type_choices %}<option value="{{ value }}"
+        {% if request.GET.entity_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+                    <div class="col-sm-6 col-lg-3">
+                        <label class="form-label" for="directory-region">Region</label>
+                        <input class="form-control"
+                               id="directory-region"
+                               name="region"
+                               value="{{ request.GET.region }}">
+                    </div>
+                    <div class="col-sm-6 col-lg-3"><label class="form-label" for="directory-sort">Sort</label><select class="form-select" id="directory-sort" name="sort">{% for value,label in sort_choices %}<option value="{{ value }}"
+        {% if request.GET.sort == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+                    <input type="hidden" name="view" value="{{ display_mode }}">
+                    <div class="col-lg-6 d-flex align-items-end gap-2"><button class="btn btn-primary" type="submit"><i class="bi bi-search me-1" aria-hidden="true"></i>Apply filters</button><a class="btn btn-outline-secondary" href="{% url route_name %}">Clear</a></div>
+                </form>
+            </div>
+        </section>
+        <div class="d-flex justify-content-between align-items-center mb-2"><p class="small text-muted mb-0">{{ page_obj.paginator.count }} matching record{{ page_obj.paginator.count|pluralize }}</p><div class="btn-group" role="group" aria-label="Directory display"><a class="btn btn-sm {% if display_mode == 'table' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+   href="?{{ query_without_page }}&view=table"><i class="bi bi-table me-1" aria-hidden="true"></i>Table</a><a class="btn btn-sm {% if display_mode == 'cards' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+   href="?{{ query_without_page }}&view=cards"><i class="bi bi-grid me-1" aria-hidden="true"></i>Cards</a></div></div>
+        {% if display_mode == "cards" %}<div class="row g-3">{% for item in stakeholders %}<article class="col-md-6 col-xl-4"><div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="d-flex justify-content-between gap-2"><h2 class="h5">{{ item.display_name|default:item.legal_name }}</h2><span class="badge text-bg-secondary align-self-start">{{ item.get_status_display }}</span></div><p class="small text-muted">{{ item.reference_number }} &middot; {{ item.get_entity_type_display }}</p><dl class="row small mb-3"><dt class="col-4">Relationship</dt><dd class="col-8">{{ item.relationship_type.name|default:"Not classified" }}</dd><dt class="col-4">Location</dt><dd class="col-8">{{ item.province_or_region|default:"Not recorded" }}{% if item.district %}, {{ item.district }}{% endif %}</dd></dl><a class="btn btn-sm btn-outline-primary"
+   href="{% url 'stakeholders:profile' item.pk %}">View profile</a></div></div></article>{% empty %}<div class="col-12"><div class="alert alert-light border text-center">No stakeholder records match these filters.</div></div>{% endfor %}</div>
+    {% else %}<div class="card shadow-sm border-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><caption class="visually-hidden">Stakeholder directory results</caption><thead><tr><th scope="col">Reference</th><th scope="col">Stakeholder</th><th scope="col">Relationship</th><th scope="col">Location</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Action</span></th></tr></thead><tbody>{% for item in stakeholders %}<tr><td>{{ item.reference_number }}</td><td><span class="fw-semibold">{{ item.display_name|default:item.legal_name }}</span><br><span class="small text-muted">{{ item.get_entity_type_display }}</span></td><td>{{ item.relationship_type.name|default:"Not classified" }}</td><td>{{ item.province_or_region|default:"Not recorded" }}{% if item.district %} / {{ item.district }}{% endif %}</td><td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td><td><a class="btn btn-sm btn-outline-primary"
+   href="{% url 'stakeholders:profile' item.pk %}">View profile</a></td></tr>{% empty %}<tr><td colspan="6" class="text-center text-muted py-4">No stakeholder records match these filters.</td></tr>{% endfor %}</tbody></table></div></div>{% endif %}
+    {% if page_obj.has_other_pages %}<nav class="mt-4" aria-label="Directory pages"><ul class="pagination justify-content-center">{% if page_obj.has_previous %}<li class="page-item"><a class="page-link"
+   href="?{{ query_without_page }}&page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}<li class="page-item active" aria-current="page"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>{% if page_obj.has_next %}<li class="page-item"><a class="page-link"
+   href="?{{ query_without_page }}&page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}</ul></nav>{% endif %}
+</div>
+{% endblock dashboard_content %}

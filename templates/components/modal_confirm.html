@@ -1,0 +1,35 @@
+<!-- Reusable Confirmation Modal -->
+<!-- Usage: Set data-bs-target="#confirmModal" and data-bs-toggle="modal" on any trigger button.
+     Populate the modal dynamically using JS or provide defaults via context. -->
+<div class="modal fade"
+     id="confirmModal"
+     tabindex="-1"
+     aria-labelledby="confirmModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" id="confirmModalLabel">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    {{ confirm_title|default:"Confirm Action" }}
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-muted">
+                {{ confirm_message|default:"Are you sure you want to proceed? This action cannot be undone." }}
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <form id="confirmForm" method="post" action="" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-check-lg me-1"></i>{{ confirm_action|default:"Confirm" }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

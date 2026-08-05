@@ -1,0 +1,64 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Membership Transfers | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800"><i class="bi bi-arrow-left-right me-2"></i>Membership Transfers</h1>
+                <p class="text-muted small mb-0">Manage administrative transfers of members between regions/districts.</p>
+            </div>
+            <a href="{% url 'memberships:transfer_create' %}"
+               class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Request Transfer</a>
+        </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Member</th>
+                                <th>From District</th>
+                                <th>To District</th>
+                                <th>Effective Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transfer in transfers %}
+                                <tr>
+                                    <td class="fw-bold">{{ transfer.member.full_name }}</td>
+                                    <td>{{ transfer.from_district|default:"--" }}</td>
+                                    <td>{{ transfer.to_district|default:"--" }}</td>
+                                    <td>{{ transfer.effective_date }}</td>
+                                    <td><span class="badge bg-info">{{ transfer.get_status_display }}</span></td>
+                                    <td>
+                                        {% if transfer.status == "PENDING" %}
+                                            <form method="post"
+                                                  action="{% url 'memberships:transfer_decide' transfer.pk %}"
+                                                  class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit"
+                                                        name="action"
+                                                        value="approve"
+                                                        class="btn btn-sm btn-success">Approve</button>
+                                                <button type="submit"
+                                                        name="action"
+                                                        value="reject"
+                                                        class="btn btn-sm btn-outline-danger">Reject</button>
+                                            </form>
+                            {% else %}<span class="text-muted">--</span>{% endif %}
+                                </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No transfer requests found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

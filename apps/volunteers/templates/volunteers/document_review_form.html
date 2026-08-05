@@ -1,0 +1,32 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Review Document | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Review Document</h1>
+            <a href="{% url 'volunteers:document_list' %}"
+               class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+        </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h5>{{ document.title }} <span class="text-muted">(v{{ document.version }})</span></h5>
+                <p class="text-muted">Uploaded by {{ document.profile.user.full_name }}</p>
+                <hr>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">{% include "volunteers/includes/form_fields.html" %}</div>
+                    <div class="mt-4 d-flex justify-content-end gap-2">
+                        <button type="submit"
+                                name="action"
+                                value="reject"
+                                class="btn btn-outline-danger px-4"><i class="bi bi-x-circle me-1"></i>Reject</button>
+                        <button type="submit"
+                                name="action"
+                                value="approve"
+                                class="btn btn-primary px-4"><i class="bi bi-check-circle me-1"></i>Approve</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}
