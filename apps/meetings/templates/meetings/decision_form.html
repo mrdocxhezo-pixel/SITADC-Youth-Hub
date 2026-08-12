@@ -1,0 +1,25 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Decision | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meetings/includes/module_nav.html" %}
+        <div class="row justify-content-center">
+            <div class="col-xl-8">
+                <header class="mb-4">
+                    <h1 class="h2">{{ heading|default:"Record decision" }}</h1>
+                    <p class="text-muted mb-0">{{ subheading|default:"Record a decision made in this meeting." }}</p>
+                </header>
+                <form method="post" class="card shadow-sm border-0" novalidate>
+                    {% csrf_token %}
+                    <div class="card-body p-4">
+                        <div class="row g-3">{% include "meetings/includes/form_fields.html" %}</div>
+                    </div>
+                    <div class="card-footer bg-body d-flex justify-content-end gap-2">
+                        <a class="btn btn-outline-secondary" href="{% url 'meetings:meeting_detail' meeting.pk %}">Cancel</a>
+                        <button class="btn btn-primary" type="submit">Save decision</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

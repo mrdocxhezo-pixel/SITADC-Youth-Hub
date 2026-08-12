@@ -1590,12 +1590,16 @@ The project is under active development.
 | 12 — Membership Management | Memberships | Complete |
 | 13 — Volunteer Management | Volunteers | Candidate complete — acceptance re-review passed (2026-08-03) |
 | 14 — Stakeholder Management | Stakeholders | Accepted (2026-08-03) |
+| 15 — Program & Project Management | Programs | Accepted (2026-08-04) |
+| 16 — Project Management | Programs | Implemented (2026-08-05) |
+| 17 — Beneficiary Management | Beneficiaries | Implemented (2026-08-05) |
+| 18 — MEAL | Meal | Implemented (2026-08-05) |
 
 ## Next Recommended Phase
 
-**Phase 15 — Program Management.**
+**Phase 19 — Dynamic Report Builder.**
 
-After organizational acceptance of Phase 13, the recommended next roadmap is `roadmaps/15-Program-Management.md`.
+After implementation of Phase 18, the recommended next roadmap is `roadmaps/19-Dynamic-Report-Builder.md`; Phase 18 MEAL is implemented in `apps/meal` per `roadmaps/18-MEAL.md`.
 
 ## Acceptance References
 
@@ -1603,6 +1607,10 @@ After organizational acceptance of Phase 13, the recommended next roadmap is `ro
 - Phase 13 acceptance re-review: `docs/development/PHASE13_ACCEPTANCE_REVIEW.md`
 - Phase 13 external acceptance pack: `docs/development/PHASE13_EXTERNAL_ACCEPTANCE_PACK.md`
 - Phase 14 delivery report: `docs/development/PHASE14_STAKEHOLDER_MANAGEMENT_REPORT.md`
+- Phase 15 delivery report: `docs/development/PHASE15_*`
+- Phase 16 delivery report: `docs/development/PHASE16_PROJECT_MANAGEMENT_REPORT.md`
+- Phase 17 delivery report: `docs/development/PHASE17_BENEFICIARY_MANAGEMENT_REPORT.md`
+- Phase 18 delivery report: `docs/development/PHASE18_MEAL_MANAGEMENT_REPORT.md`
 - Phase 14 user guide: `docs/user-guides/STAKEHOLDER_MANAGEMENT_GUIDE.md`
 - Phase 13 user guide: `docs/user-guides/VOLUNTEER_MANAGEMENT_GUIDE.md`
 

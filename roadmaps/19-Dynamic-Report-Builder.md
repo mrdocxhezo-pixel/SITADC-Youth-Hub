@@ -2061,7 +2061,7 @@ Document any remaining limitations.
 
 ```text
 Phase 19: Completed
-Phase 20: Ready
+Phase 20: Completed
 ```
 
 or, if incomplete:

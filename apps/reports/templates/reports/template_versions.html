@@ -1,0 +1,61 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Versions &mdash; {{ object.title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "reports/includes/module_nav.html" %}
+        <header class="mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'reports:template_detail' object.pk %}">{{ object.code }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Versions</li>
+                </ol>
+            </nav>
+            <h1 class="h2 mb-1">Template versions</h1>
+            <p class="text-muted mb-0">{{ object.title }}</p>
+        </header>
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Version history</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Version</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Published</th>
+                            <th scope="col">Checksum</th>
+                            <th scope="col"><span class="visually-hidden">Action</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for version in versions %}
+                            <tr>
+                                <td class="fw-semibold">v{{ version.version_number }}</td>
+                                <td><span class="badge text-bg-secondary">{{ version.get_status_display }}</span></td>
+                                <td class="small text-muted">
+                                    {% if version.published_at %}{{ version.published_at|date:"d M Y H:i" }}{% else %}—{% endif %}
+                                </td>
+                                <td><code class="small">{{ version.checksum|truncatechars:12 }}</code></td>
+                                <td class="text-end">
+                                    {% if can_restore %}
+                                        <a class="btn btn-sm btn-outline-primary" href="{% url 'reports:template_version_restore' object.pk version.pk %}">Restore</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">No versions recorded.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if versions|length > 1 %}
+            <p class="small text-muted mt-3 mb-0">
+                Compare versions using
+                <a href="{% url 'reports:template_version_compare' object.pk versions.0.pk versions.1.pk %}">
+                    v{{ versions.0.version_number }} vs v{{ versions.1.version_number }}
+                </a>
+                {% if can_compare %}for the two newest versions.{% endif %}
+            </p>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

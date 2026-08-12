@@ -18,7 +18,7 @@ from .permissions import (
     PROJECTS_EXPORT,
     PROJECTS_MANAGE,
 )
-from .selectors import visible_programs, visible_projects
+from .selectors import user_can_access_project, visible_programs, visible_projects
 
 logger = logging.getLogger(__name__)
 
@@ -549,3 +549,155 @@ def program_closure_docx_response(user, program_id: str) -> HttpResponse:
     )
     resp["Cache-Control"] = "private, no-store"
     return resp
+
+
+# ── project report exports ────────────────────────────────────────────────
+
+
+def _project_report_rows(report) -> list:
+    project = report.project
+    rows = [
+        ("Report title", report.title),
+        ("Report type", report.get_report_type_display()),
+        ("Status", report.get_status_display()),
+        ("Period", report.period_label or "N/A"),
+        ("Project", project.reference_number),
+        ("Project title", project.title),
+        ("Program", project.program.reference_number),
+        (
+            "Project manager",
+            project.project_manager.full_name if project.project_manager else "N/A",
+        ),
+        ("Budget approved", f"{project.budget_approved} {project.currency}"),
+        ("Budget utilized", f"{project.budget_utilized} {project.currency}"),
+        ("Completion", f"{project.completion_percentage}%"),
+        ("Start date", project.start_date or "Open"),
+        ("End date", project.end_date or "Open"),
+        (
+            "Submitted by",
+            report.submitted_by.full_name if report.submitted_by else "N/A",
+        ),
+        ("Submitted at", report.submitted_at),
+        ("Approved by", report.approved_by.full_name if report.approved_by else "N/A"),
+        ("Approved at", report.approved_at),
+    ]
+    if report.summary:
+        rows.append(("Executive summary", report.summary))
+    return rows
+
+
+def _project_report_guard(user, report) -> None:
+    if not (
+        user_has_permission(user, PROJECTS_EXPORT)
+        or user_has_permission(user, PROJECTS_MANAGE)
+    ):
+        raise PermissionDenied
+    if not user_can_access_project(user, report.project, include_archived=True):
+        raise PermissionDenied
+
+
+def project_report_xlsx_response(user, report) -> HttpResponse:
+    from openpyxl import Workbook
+    from openpyxl.styles import Border, Side
+
+    _project_report_guard(user, report)
+    border = Border(
+        left=Side(style="thin"),
+        right=Side(style="thin"),
+        top=Side(style="thin"),
+        bottom=Side(style="thin"),
+    )
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Project Report"
+    _xlsx_styled_header(ws, ["Field", "Value"])
+    for row_idx, (field, value) in enumerate(_project_report_rows(report), 2):
+        for col_idx, cell_value in enumerate((field, value), 1):
+            cell = ws.cell(row=row_idx, column=col_idx, value=cell_value)
+            cell.border = border
+    _xlsx_set_widths(ws, [30, 90])
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    resp = HttpResponse(
+        buf.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    resp["Content-Disposition"] = (
+        f'attachment; filename="project_{report.project.reference_number}_report.xlsx"'
+    )
+    resp["Cache-Control"] = "private, no-store"
+    return resp
+
+
+def project_report_docx_response(user, report) -> HttpResponse:
+    from docx import Document as DocxDocument
+
+    _project_report_guard(user, report)
+    doc = DocxDocument()
+    doc.add_heading(report.title, 0)
+    doc.add_heading(report.get_report_type_display(), 1)
+    for field, value in _project_report_rows(report):
+        if field in {"Report title", "Report type"}:
+            continue
+        doc.add_paragraph(f"{field}: {value}")
+    buf = BytesIO()
+    doc.save(buf)
+    buf.seek(0)
+    resp = HttpResponse(
+        buf.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+    resp["Content-Disposition"] = (
+        f'attachment; filename="project_{report.project.reference_number}_report.docx"'
+    )
+    resp["Cache-Control"] = "private, no-store"
+    return resp
+
+
+def project_report_pdf_response(user, report) -> HttpResponse:
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+
+    _project_report_guard(user, report)
+    buf = BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4)
+    from reportlab.lib.styles import getSampleStyleSheet  # type: ignore[import-untyped]
+
+    styles = getSampleStyleSheet()
+    story = [
+        Paragraph(report.title, styles["Title"]),
+        Spacer(1, 4 * mm),
+        Paragraph(report.get_report_type_display(), styles["Heading2"]),
+        Spacer(1, 4 * mm),
+    ]
+    for field, value in _project_report_rows(report):
+        if field in {"Report title", "Report type"}:
+            continue
+        story.append(Paragraph(f"<b>{field}:</b> {value}", styles["BodyText"]))
+    doc.build(story)
+    buf.seek(0)
+    resp = HttpResponse(buf.getvalue(), content_type="application/pdf")
+    resp["Content-Disposition"] = (
+        f'attachment; filename="project_{report.project.reference_number}_report.pdf"'
+    )
+    resp["Cache-Control"] = "private, no-store"
+    return resp
+
+
+def project_report_csv_response(user, report) -> HttpResponse:
+    import csv
+
+    _project_report_guard(user, report)
+    from .exports import formula_safe_csv_value
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = (
+        f'attachment; filename="project_{report.project.reference_number}_report.csv"'
+    )
+    response["Cache-Control"] = "private, no-store"
+    writer = csv.writer(response)
+    for field, value in _project_report_rows(report):
+        writer.writerow([formula_safe_csv_value(field), formula_safe_csv_value(value)])
+    return response

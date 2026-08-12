@@ -1,0 +1,72 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Announcements | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "notifications/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Announcements</h1>
+                <p class="text-muted mb-0">Organisation-wide messages targeted to roles or units.</p>
+            </div>
+            <a class="btn btn-primary" href="{% url 'notifications:announcement_create' %}"><i class="bi bi-megaphone me-1" aria-hidden="true"></i>New announcement</a>
+        </header>
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Announcements</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Title</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Audience</th>
+                            <th scope="col">Publish</th>
+                            <th scope="col">Expires</th>
+                            <th scope="col">Status</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for announcement in announcements %}
+                            <tr>
+                                <td>
+                                    <a class="fw-semibold text-decoration-none" href="{% url 'notifications:announcement_update' announcement.pk %}">{{ announcement.title }}</a>
+                                    {% if announcement.acknowledgement_required %}<span class="badge text-bg-warning ms-1" title="Acknowledgement required">Ack</span>{% endif %}
+                                </td>
+                                <td>{{ announcement.get_announcement_type_display }}</td>
+                                <td>{{ announcement.get_audience_type_display }}</td>
+                                <td>{{ announcement.publish_at|date:"d M Y H:i" }}</td>
+                                <td>{{ announcement.expires_at|date:"d M Y H:i"|default:"—" }}</td>
+                                <td>
+                                    {% if announcement.is_published %}
+                                        <span class="badge text-bg-success">Published</span>
+                                    {% else %}
+                                        <span class="badge text-bg-secondary">Draft</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <form class="d-inline" method="post" action="{% if announcement.is_published %}{% url 'notifications:announcement_unpublish' announcement.pk %}{% else %}{% url 'notifications:announcement_publish' announcement.pk %}{% endif %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-sm {% if announcement.is_published %}btn-outline-secondary{% else %}btn-outline-success{% endif %}" type="submit">
+                                            {% if announcement.is_published %}Unpublish{% else %}Publish{% endif %}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="7" class="text-center text-muted py-4">No announcements yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-4" aria-label="Announcement pages">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+                    <li class="page-item active" aria-current="page"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

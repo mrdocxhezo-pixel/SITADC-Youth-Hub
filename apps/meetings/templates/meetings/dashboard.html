@@ -1,0 +1,151 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Calendar &amp; Meetings Dashboard | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meetings/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Calendar &amp; Meetings</h1>
+                <p class="text-muted mb-0">Coordinate calendars, meetings, minutes and action items.</p>
+            </div>
+            <div class="d-flex gap-2">
+                {% if can_create_meeting %}
+                    <a class="btn btn-primary" href="{% url 'meetings:meeting_create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New meeting</a>
+                {% endif %}
+                {% if can_create_calendar %}
+                    <a class="btn btn-outline-primary" href="{% url 'meetings:calendar_create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New calendar</a>
+                {% endif %}
+                {% if can_export %}
+                    <a class="btn btn-outline-primary" href="{% url 'meetings:export_format' 'csv' %}"><i class="bi bi-download me-1" aria-hidden="true"></i>Export CSV</a>
+                {% endif %}
+            </div>
+        </header>
+        <section aria-labelledby="headline-metrics" class="mb-4">
+            <h2 id="headline-metrics" class="visually-hidden">Headline metrics</h2>
+            <div class="row g-3">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-primary border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Meetings</p>
+                            <p class="display-6 mb-0">{{ total_meetings }}</p>
+                            <p class="small text-muted mb-0">{{ upcoming_count }} upcoming</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-success border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">In progress</p>
+                            <p class="display-6 mb-0">{{ in_progress_count }}</p>
+                            <p class="small text-muted mb-0">{{ completed_count }} completed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-warning border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Open actions</p>
+                            <p class="display-6 mb-0">{{ open_actions }}</p>
+                            <p class="small text-muted mb-0">{{ overdue_actions }} overdue</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-danger border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Minutes pending</p>
+                            <p class="display-6 mb-0">{{ minutes_pending_approval }}</p>
+                            <p class="small text-muted mb-0">{{ total_events }} events, {{ total_calendars }} calendars</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="upcoming-heading">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 id="upcoming-heading" class="h5 mb-0">Upcoming meetings</h2>
+                        <a href="{% url 'meetings:meeting_list' %}">Browse all meetings</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Upcoming meetings</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Meeting</th>
+                                    <th scope="col">When</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for meeting in upcoming_meetings %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ meeting.title }}</td>
+                                        <td class="text-muted">{{ meeting.start_at|date:"d M Y H:i" }}</td>
+                                        <td><span class="badge text-bg-secondary">{{ meeting.get_status_display }}</span></td>
+                                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:meeting_detail' meeting.pk %}">View</a></td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted py-4">No upcoming meetings.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Upcoming events</h2>
+                        <a href="{% url 'meetings:event_list' %}">Browse all events</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Upcoming events</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Event</th>
+                                    <th scope="col">Calendar</th>
+                                    <th scope="col">When</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in upcoming_events %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ event.title }}</td>
+                                        <td>{{ event.calendar.name }}</td>
+                                        <td class="text-muted">{{ event.start_at|date:"d M Y H:i" }}</td>
+                                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:event_detail' event.pk %}">View</a></td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted py-4">No upcoming events.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="activity-heading">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h2 id="activity-heading" class="h5">Recent meeting activity</h2>
+                        <ul class="list-group list-group-flush">
+                            {% for item in recent_activity %}
+                                <li class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-semibold small">{{ item.meeting.title }}</span>
+                                        <span class="small text-muted">{{ item.created_at|date:"d M Y" }}</span>
+                                    </div>
+                                    <span class="badge text-bg-secondary mt-1">{{ item.get_action_display }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item px-0 text-muted">No meeting activity yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

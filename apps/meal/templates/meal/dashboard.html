@@ -1,0 +1,137 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}MEAL Dashboard | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meal/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Monitoring, Evaluation, Accountability &amp; Learning</h1>
+                <p class="text-muted mb-0">An integrated view of the organizational MEAL portfolio.</p>
+            </div>
+            {% if can_create %}<a class="btn btn-primary" href="{% url 'meal:indicator_create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New indicator</a>{% endif %}
+        </header>
+        <section aria-labelledby="headline-metrics" class="mb-4">
+            <h2 id="headline-metrics" class="visually-hidden">Headline metrics</h2>
+            <div class="row g-3">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-primary border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Indicators</p>
+                            <p class="display-6 mb-0">{{ metrics.indicators }}</p>
+                            <p class="small text-muted mb-0">{{ metrics.active_indicators }} active</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-success border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Monitoring visits</p>
+                            <p class="display-6 mb-0">{{ metrics.visits }}</p>
+                            <p class="small text-muted mb-0">Field monitoring</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-warning border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Open complaints</p>
+                            <p class="display-6 mb-0">{{ metrics.open_complaints }}</p>
+                            <p class="small text-muted mb-0">{{ metrics.open_feedback }} open feedback</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-danger border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Open actions</p>
+                            <p class="display-6 mb-0">{{ metrics.open_actions }}</p>
+                            <p class="small text-muted mb-0">Corrective &amp; follow-up</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="activity-heading">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 id="activity-heading" class="h5 mb-0">Recent MEAL activity</h2>
+                        <a href="{% url 'meal:indicator_registry' %}">Indicator registry</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Recent workflow activity</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Record</th>
+                                    <th scope="col">Action</th>
+                                    <th scope="col">Status change</th>
+                                    <th scope="col">When</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in recent_activity %}
+                                    <tr>
+                                        <td>{{ item.entity_type }} #{{ item.entity_id|truncatechars:12 }}</td>
+                                        <td><span class="badge text-bg-secondary">{{ item.action }}</span></td>
+                                        <td>{% if item.from_status %}{{ item.from_status|title }} &rarr; {% endif %}{{ item.to_status|title }}</td>
+                                        <td class="text-muted">{{ item.created_at|date:"d M Y H:i" }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted py-4">No MEAL activity yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="status-heading">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h2 id="status-heading" class="h5">Indicators by status</h2>
+                        <ul class="list-group list-group-flush">
+                            {% for item in indicator_status_summary %}
+                                <li class="list-group-item px-0 d-flex justify-content-between">
+                                    <span>{{ item.status|title }}</span>
+                                    <span class="fw-bold">{{ item.total }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item px-0 text-muted">No indicator data.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h2 class="h5">Complaints by status</h2>
+                        <ul class="list-group list-group-flush">
+                            {% for item in complaint_status_summary %}
+                                <li class="list-group-item px-0 d-flex justify-content-between">
+                                    <span>{{ item.status|title }}</span>
+                                    <span class="fw-bold">{{ item.total }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item px-0 text-muted">No complaints.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h2 class="h5">Monitoring visits</h2>
+                        <ul class="list-group list-group-flush">
+                            {% for item in visit_status_summary %}
+                                <li class="list-group-item px-0 d-flex justify-content-between">
+                                    <span>{{ item.status|title }}</span>
+                                    <span class="fw-bold">{{ item.total }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item px-0 text-muted">No visits recorded.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

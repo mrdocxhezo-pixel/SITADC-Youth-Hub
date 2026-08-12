@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}My Documents - SITADC Youth Hub{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-person"></i> My Documents</h1>
+    <a href="{% url 'documents:upload' %}" class="btn btn-primary">
+      <i class="bi bi-cloud-upload"></i> Upload Document
+    </a>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-3">
+          <label for="search" class="form-label">Search</label>
+          <input type="text" name="search" id="search" class="form-control"
+                 value="{{ current_search }}" placeholder="Search my documents...">
+        </div>
+        <div class="col-md-2">
+          <label for="category" class="form-label">Category</label>
+          <select name="category" id="category" class="form-select">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat.pk }}" {% if current_category == cat.pk|stringformat:"s" %}selected{% endif %}>
+              {{ cat.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="status" class="form-label">Status</label>
+          <select name="status" id="status" class="form-select">
+            <option value="">All Statuses</option>
+            {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+              {{ label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-outline-primary me-2">Filter</button>
+          <a href="{% url 'documents:my_documents' %}" class="btn btn-outline-secondary">Clear</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Documents Table -->
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Reference</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Confidentiality</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for document in documents %}
+            <tr>
+              <td>{{ document.title }}</td>
+              <td><code>{{ document.reference_number }}</code></td>
+              <td>{{ document.category.name|default:"-" }}</td>
+              <td>
+                <span class="badge bg-{% if document.status == 'DRAFT' %}secondary{% elif document.status == 'PENDING_REVIEW' %}warning{% elif document.status == 'UNDER_REVIEW' %}info{% elif document.status == 'PENDING_APPROVAL' %}primary{% elif document.status == 'APPROVED' %}success{% elif document.status == 'PUBLISHED' %}success{% elif document.status == 'ARCHIVED' %}dark{% elif document.status == 'SUPERSEDED' %}warning{% elif document.status == 'EXPIRED' %}danger{% else %}secondary{% endif %}">
+                  {{ document.get_status_display }}
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-{% if document.confidentiality_level == 'PUBLIC' %}success{% elif document.confidentiality_level == 'INTERNAL' %}info{% elif document.confidentiality_level == 'RESTRICTED' %}warning{% elif document.confidentiality_level == 'CONFIDENTIAL' %}danger{% else %}secondary{% endif %}">
+                  {{ document.get_confidentiality_level_display }}
+                </span>
+              </td>
+              <td>{{ document.created_at|date:"Y-m-d" }}</td>
+              <td>
+                <a href="{% url 'documents:detail' document.pk %}" class="btn btn-sm btn-outline-info" title="View">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <a href="{% url 'documents:download' document.pk %}" class="btn btn-sm btn-outline-success" title="Download">
+                  <i class="bi bi-download"></i>
+                </a>
+                <a href="{% url 'documents:edit' document.pk %}" class="btn btn-sm btn-outline-warning" title="Edit">
+                  <i class="bi bi-pencil"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                You have no documents yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <nav aria-label="My documents pagination">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          </li>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">{{ num }}</a>
+          </li>
+          {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

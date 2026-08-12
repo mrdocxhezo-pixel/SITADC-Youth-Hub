@@ -59,6 +59,12 @@ class ReferenceModules(models.TextChoices):
     PARTNERS = "partners", _("Partners")
     DONORS = "donors", _("Donors")
     BENEFICIARIES = "beneficiaries", _("Beneficiaries")
+    MEAL = "meal", _("MEAL")
+    REGISTERS = "registers", _("Registers")
+    CALENDARS = "calendars", _("Calendars")
+    NOTIFICATIONS = "notifications", _("Notifications")
+    ANNOUNCEMENTS = "announcements", _("Announcements")
+    EXPORTS = "exports", _("Exports")
 
 
 class ReferenceAuditAction(models.TextChoices):

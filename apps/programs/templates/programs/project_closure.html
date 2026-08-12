@@ -1,0 +1,84 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Project closure | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "programs/includes/module_nav.html" with project=project %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Project closure</h1>
+                <p class="text-muted mb-0">{{ project.reference_number }} &middot; {{ project.title }}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if closure %}
+                    {% if can_verify and closure.status == "DRAFT" %}<a class="btn btn-outline-primary"
+   href="{% url 'programs:project_closure_action' project.pk 'verify' %}"><i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Verify</a>{% endif %}
+                    {% if can_approve and closure.status == "VERIFIED" %}<a class="btn btn-outline-success"
+   href="{% url 'programs:project_closure_action' project.pk 'approve' %}"><i class="bi bi-award me-1" aria-hidden="true"></i>Approve</a>{% endif %}
+                {% endif %}
+            </div>
+        </header>
+        {% if closure %}
+            <section class="row g-4 mb-4" aria-labelledby="closure-overview">
+                <div class="col-xl-8">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body">
+                            <h2 id="closure-overview" class="h5">Closure overview</h2>
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Status</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge text-bg-secondary">{{ closure.get_status_display }}</span>
+                                </dd>
+                                <dt class="col-sm-4">Closure date</dt>
+                                <dd class="col-sm-8">
+                                    {{ closure.closure_date|default:"Not set" }}
+                                </dd>
+                                <dt class="col-sm-4">Closed by</dt>
+                                <dd class="col-sm-8">{% if closure.closed_by %}{{ closure.closed_by.get_full_name|default:closure.closed_by.email }}{% else %}Not set{% endif %}</dd>
+                                <dt class="col-sm-4">Approved by</dt>
+                                <dd class="col-sm-8">{% if closure.approved_by %}{{ closure.approved_by.get_full_name|default:closure.approved_by.email }}{% else %}Not set{% endif %}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body">
+                            <h3 class="h5">Verification notes</h3>
+                            {% if closure.completion_verification %}<p>{{ closure.completion_verification }}</p>{% else %}<p class="text-muted">No verification notes recorded.</p>{% endif %}
+                            {% if closure.closure_notes %}<p>{{ closure.closure_notes }}</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="row g-4" aria-labelledby="closure-details">
+                <h2 id="closure-details" class="visually-hidden">Closure details</h2>
+                <div class="col-xl-6"><div class="card shadow-sm border-0 h-100"><div class="card-body"><h3 class="h5">Financial reconciliation</h3>{% if closure.financial_reconciliation %}<p>{{ closure.financial_reconciliation }}</p>{% else %}<p class="text-muted">Not recorded.</p>{% endif %}<h3 class="h5 mt-3">Asset handover</h3>{% if closure.asset_handover %}<p>{{ closure.asset_handover }}</p>{% else %}<p class="text-muted">Not recorded.</p>{% endif %}</div></div></div>
+                <div class="col-xl-6"><div class="card shadow-sm border-0 h-100"><div class="card-body"><h3 class="h5">Stakeholder sign-off</h3>{% if closure.stakeholder_signoff %}<p>{{ closure.stakeholder_signoff }}</p>{% else %}<p class="text-muted">Not recorded.</p>{% endif %}<h3 class="h5 mt-3">Final documentation</h3>{% if closure.final_documentation %}<p>{{ closure.final_documentation }}</p>{% else %}<p class="text-muted">Not recorded.</p>{% endif %}</div></div></div>
+            </section>
+        {% else %}
+            <div class="row g-4">
+                <div class="col-xl-8">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body text-muted">
+                            No closure record exists yet. Create one to begin the closure workflow (only for projects in Completion status).
+                        </div>
+                    </div>
+                </div>
+                <aside class="col-xl-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-body">
+                            <h2 class="h5 mb-0">Create closure record</h2>
+                        </div>
+                        <div class="card-body">
+                            {% if can_write %}
+                                <form method="post" class="row g-3" novalidate>{% csrf_token %}{% include "programs/includes/form_fields.html" %}<div class="col-12 d-flex justify-content-end gap-2"><button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Create</button></div></form>
+                            {% else %}
+                                <p class="text-muted mb-0">You do not have permission to create closure records.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

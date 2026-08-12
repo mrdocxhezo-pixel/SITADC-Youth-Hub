@@ -45,6 +45,139 @@ Each release should document:
 
 # [Unreleased]
 
+## Phase 26 Global Search — Implementation (2026-08-11)
+
+- Implemented the Global Search module (`apps/search`), per `roadmaps/26-Global-Search.md`, providing a unified, permission-scaled search surface across all authorized modules: grouped results, entity-type refinements, per-user recent history, named saved searches (create/list/run/delete), a permission-gated CSV export, and an immutable append-only audit trail.
+- Added 3 concrete models: `RecentSearch` (deduplicated history with a unique `(user, query)` constraint and prune cap), `SavedSearch` (unique `(user, name)`), and `SearchQueryLog` (append-only audit row with result count, duration and IP; updates/deletes rejected at the model and admin layers).
+- Added a pluggable provider registry (`SearchProvider`/`SearchHit`/`Registry`) with 22 entity providers covering beneficiaries, documents, leadership, MEAL, meetings & calendar events, memberships, notifications, programmes & projects, registers & entries, report templates, report instances, reviews, stakeholders & partners, and volunteers; each provider delegates visibility to the source module's fail-closed selectors.
+- Added fail-closed selectors and `search.view`/`search.export`/`search.manage` permissions; seeded for existing databases by `rbac.0018` (atomic=False); sidebar Search navigation item gated on `search.view`.
+- Added 7 permission-checked views/7 named routes (home, export, saved list/create/delete/run, audit), 2 forms, 3 Bootstrap 5 templates, CSV export with UTF-8 BOM and sanitized cells, and client-side entity-type filtering.
+- Added 59 tests in `apps/search/tests/` (permissions, validators, providers/registry, services, views), green in the 2026-08-11 verification run.
+- Added `docs/development/PHASE26_GLOBAL_SEARCH_REPORT.md` and updated `DEVELOPMENT_STATUS.md` and `CHANGELOG.md`.
+
+## Phase 25 Notifications & Announcements — Implementation (2026-08-09)
+
+- Implemented the Notifications & Announcements module (`apps/notifications`), per `roadmaps/25-Notifications-and-Announcements.md`, providing per-recipient notifications (categories, priorities, channels, preferences, quiet hours, digests), event-driven rules/templates, delivery tracking with retry/backoff and expiry, immutable audit/event records, and managed system announcements.
+- Added 12 concrete models on a shared `NotificationRecord` base: `NotificationEvent` (immutable), `NotificationCategory`, `Notification`, `NotificationTemplate`, `NotificationRule`, `NotificationPreference`, `NotificationDelivery`, `SystemAnnouncement`, `AnnouncementDelivery`, `AnnouncementDismissal`, `NotificationAuditRecord` (immutable), `NotificationDigest` (plus deprecated `Announcement` proxy).
+- Added 15 permission-checked service classes and 7 manager/queryset pairs; fail-closed selectors; 25 view classes/25 named routes (dashboard, inbox, actions, preferences, templates, rules, announcements, events, audit, JSON APIs).
+- Wired RBAC: `notifications` (9), `announcements` (6), `preferences` (3) permission categories seeded in `seed_data` and `rbac.0017` (atomic=False); reference schemes `notification`/NTF and `announcement`/ANN via `references.0011`.
+- Added notification bell badge/dropdown integration (`static/js/notifications.js`, `top_nav.html`, dashboard layout) plus the `process_notifications` management command.
+- Added 121 tests in `apps/notifications/tests/`; documents/registers/notifications suites verified green in the 2026-08-10 repository verification run.
+- Added `docs/development/PHASE25_NOTIFICATIONS_REPORT.md` and updated `DEVELOPMENT_STATUS.md` and `CHANGELOG.md`.
+
+## Phase 24 Calendar & Meetings — Implementation (2026-08-08)
+
+- Implemented the Calendar & Meetings module (`apps/meetings`), per `roadmaps/24-Calendar-and-Meetings.md`, providing organizational calendars, events with recurrence/conflict detection, and a full meeting lifecycle (scheduling, rescheduling, participants, invitations/RSVP, versioned agendas, quorum, attendance with corrections, versioned minutes, decisions/votes, action items, matters arising, venues, templates, confidential-access logging).
+- Added 26 concrete models on a shared `MeetingRecord` base, 16 service classes, a bounded recurrence engine (`recurrence.py`), fail-closed selectors, 76 view classes/81 named routes, and 30 Bootstrap 5 templates.
+- Wired RBAC: `calendars` (10), `events` (14), `meetings` (36) permission categories seeded in `seed_data` and `rbac.0016` (atomic=False); 6 reference schemes (CAL/EVT/MTG/MIN/DEC/ACT) via `references.0010`; 5 management commands.
+- Added 152 tests in `apps/meetings/tests/`. **Stabilization is in progress**: the 2026-08-10 verification run reports 55 passed / 97 failing (all_objects manager, transition mapping, route/redirect corrections, form/model constraint alignment, reverse-manager wiring, and reference-command superuser setup). Phase 24 is not yet acceptance-ready.
+- Added `docs/development/PHASE24_MEETINGS_REPORT.md` and updated `DEVELOPMENT_STATUS.md` and `CHANGELOG.md`.
+
+## Phase 23 Organizational Registers — Implementation (2026-08-07)
+
+- Implemented the Organizational Registers module (`apps/registers`), per `roadmaps/23-Organizational-Registers.md`, providing configurable register categories/registers, entry templates with JSON validation, register entries with approval workflow, relationships, private attachments, review decisions, immutable version history and activity timeline, and CSV/JSON/XLSX/DOCX/PDF exports with formula-injection neutralization.
+- Added 10 concrete models, 7 service classes (category/register/template/entry/validation/relationship/attachment), fail-closed confidentiality-aware selectors, 26 view classes/29 named routes, 12 `registers.*` permissions, and the `register_entry` reference scheme (prefix REG) via `references.0009` and `rbac.0013`.
+- Added 88 tests in `apps/registers/tests/` (verified green in the 2026-08-10 verification run).
+- Added `docs/development/PHASE23_REGISTERS_REPORT.md` and updated `DEVELOPMENT_STATUS.md` and `CHANGELOG.md`.
+
+## Phase 22 Document Management — Implementation (2026-08-07)
+
+- Implemented the enterprise Document & Records Management module (`apps/documents`), per `roadmaps/22-Document-Management.md`, covering the full document lifecycle: upload validation, metadata, version control, checkout/check-in, review/approval/publish workflow, sharing, legal holds, retention/disposal, archive/restore, and an immutable audit trail plus chronological timeline.
+- Added 15 concrete models, 29 transactional service functions, fail-closed selectors and object-level permission helpers, 34 view classes/35 named routes, and 20 Bootstrap 5 templates.
+- Wired RBAC: `documents` permission category (33 actions) seeded in `seed_data` and `rbac.0012` (atomic=False); `DOC` document reference scheme; private storage, extension/MIME/size validators, SHA-256 checksums; `seed_document_data` command (21 categories, 39 types, 10 retention policies).
+- Added 111 tests in `apps/documents/tests/` (verified green in the 2026-08-10 verification run).
+- Added `docs/development/PHASE22_DOCUMENT_MANAGEMENT_REPORT.md` and updated `DEVELOPMENT_STATUS.md` and `CHANGELOG.md`.
+
+## Phase 21 Review & Approval — Implementation (2026-08-08)
+
+- Implemented the Review and Approval module (`apps/reviews`), per `roadmaps/21-Review-and-Approval.md` (Part 1 of 4), building on the Phase 20 Report Management submission workflow.
+- Added 13 concrete models: `Review`, `ReviewAssignment`, `ReviewChecklist`, `ReviewChecklistItem`, `ReviewChecklistResponse`, `ReviewComment`, `ReviewDecision`, `DigitalSignature`, `EscalationRecord`, `DelegationRecord`, `SLAConfiguration`, `SLAEvent`, `ReviewConfiguration`, with status/decision/role/comment-type/trigger enums and immutable `ReviewRecord` auditing base.
+- Wired the module into the RBAC framework: added the `reviews` category (19 actions: view, create, assign, accept, start, comment, resolve_comment, update_checklist, decide, approve, reject, return_for_correction, escalate, delegate, sign, manage_checklists, manage_sla, manage_configuration, manage) to `PERMISSION_CATEGORIES` in `apps/rbac/seed_data.py`, plus `REVIEW_OPERATIONAL` / `REVIEW_REVIEWER` role groups; added `apps/rbac/migrations/0015_seed_review_permissions.py` so existing databases receive the new codes and grants (leadership = full access, coordinators/managers = reviewer set, officers = operational set, board = read-only).
+- Added `MANAGE = "reviews.manage"` to `apps/reviews/permissions.py` and fixed the `apps/reviews` view layer to resolve users via `get_user_model()` instead of `from accounts.models import User` (which raised `ModuleNotFoundError` and was silently swallowed by the generic exception handler).
+- Added a `get_full_name()` method to the custom `User` model (`apps/accounts/models.py`); templates and review services render reviewer names correctly.
+- Built service layer covering review creation with auto-populated checklist responses, assignment/delegation/escalation, commenting and comment resolution, decisions (approve/reject/return-for-correction), SLA tracking, and digital-signature capture; fixed checklist population to include all items (removed a non-existent `is_active` filter).
+- Added Bootstrap 5 views and templates: dashboard (pending/overdue/inbox), review list, review detail, assign, delegate, escalate, and decision, all with server-side `check_permission` authorization; sidebar now links the Reviews section.
+- Added comprehensive test suite (99 tests) in `apps/reviews/tests/`: models (constraints, immutability, unique constraints), services (lifecycle, delegation, escalation, decisions, SLA), selectors, permissions, and views (auth, fail-closed redirects/403, assign/delegate/escalate/decide). The suite is green (99/99).
+- Full repository suite: **1134/1134 passed** (previously 1035/1035 before Phase 21); `manage.py check` and `makemigrations --check --dry-run` are clean; Ruff/Black/isort green on `apps/reviews` and `apps/accounts`.
+- Added `docs/development/PHASE21_REVIEW_AND_APPROVAL_REPORT.md` and updated `DEVELOPMENT_STATUS.md` (1.3.0) and the roadmap tracker.
+
+## Phase 20 Report Management — Implementation (2026-08-08)
+
+- Wired the `report_instances` module into the RBAC framework: added the `report_instances` category (27 actions) to `PERMISSION_CATEGORIES` in `apps/rbac/seed_data.py` and to the `_operational_base` / `_officer_base` role groups so fresh installs grant the new codes.
+- Added `apps/rbac/migrations/0014_seed_report_instance_permissions.py` seeding the `report_instances` category, `Permission` rows, and role grants (leadership = full access, coordinators/managers = reviewer set, officers = operational set, board = read-only) for existing databases.
+- Created the previously-missing `report_instances/report_versions.html` and `report_instances/report_version_detail.html` templates, fixing 500s on the version-history routes (`ReportVersionsView`, `ReportVersionDetailView`).
+- Fixed `ReportSubmitView` to enforce `can_submit_report` instead of `can_update_report` so a `READY_FOR_SUBMISSION` report (which is not editable) can actually be submitted.
+- Added a shared test scaffold (`apps/report_instances/tests/base.py`) and comprehensive suites: models (state helpers, immutability of status history/timeline, version snapshots), services (create/update/validate/submit/withdraw/return/resubmit/approve/archive/restore, evidence, attachments, comments, versions, exports, assignment, reminders, auto-save), selectors, RBAC permissions, exports, forms, and views (auth, permission-denied, lifecycle, versions, exports, JSON API).
+- Repository test suite now includes **86 report-instance tests**; `apps/report_instances`, `apps/reports` (97) and `apps/rbac` (41) suites are green.
+- Full repository suite: **1035/1035 passed** (previously 950/950 before Phase 20).
+- Added `docs/development/PHASE20_REPORT_MANAGEMENT_REPORT.md` and updated `DEVELOPMENT_STATUS.md` and the roadmap tracker.
+
+## Phase 19 Dynamic Report Builder — Stabilization (2026-08-08)
+
+- Aligned the `apps/reports` test suite with the current service APIs: formula validation now expects `InvalidTemplateSchemaError`, `create_version(..., bump="major")` yields "2.0", and export uses `TemplateSchemaService.export_json`.
+- Added a unique `code` to `TemplateImportService.import_json` in the import/export round-trip test (prevents UNIQUE constraint collision on `reports_reporttemplate.code`).
+- `TemplatePublicationService.publish` is used directly in model tests; invalid publish now raises `TemplatePublishError`.
+- Corrected the officer-create RBAC test (officer holds CREATE) and added a viewer-create denial test.
+- Changed 15 reports view RBAC assertions from 302→403 so authenticated-but-unauthorized users fail closed, matching the other permission-gated modules.
+- Fixed the schema-editor POST 500 by catching `DynamicTemplateError` in `SchemaDesignerView.form_valid`.
+- Fixed the template-versions 500 by guarding the compare link when only one version exists.
+- Rewrote `apps/report_instances/tests/test_reports.py` as a service-level workflow test (create → save responses → validate → submit, DRAFT → READY_FOR_SUBMISSION → SUBMITTED).
+- Fixed the volunteers leave test to use relative dates.
+- Repository test suite: **950/950 passed** (previously 926 passed / 23 failed).
+- Added `docs/development/PHASE19_DYNAMIC_REPORT_BUILDER_REPORT.md` and updated `DEVELOPMENT_STATUS.md`.
+
+## Document Management — Unified Workflow Action (2026-08-07)
+
+- Added a unified **Workflow Action** view (`DocumentWorkflowActionView` at `documents:workflow_action`) that renders a dynamic action dropdown populated by document status and the current user's permissions.
+- Available actions per status: **Submit for Review** (DRAFT/UPLOADED/RETURNED), **Approve & Forward / Return for Correction** (PENDING_REVIEW/UNDER_REVIEW), **Approve** (PENDING_APPROVAL), **Publish** (APPROVED), **Unpublish** (PUBLISHED), **Archive** (non-archived), **Restore** (ARCHIVED).
+- Each action dispatches to the corresponding service (`submit_for_review`, `review_document`, `approve_document`, `publish_document`, `unpublish_document`, `archive_document`, `restore_document`) with optional comments and full audit/timeline recording.
+- Updated `document_detail.html` action sidebar to route all workflow buttons through the unified page instead of separate POST-only endpoints.
+- Added `DocumentWorkflowActionForm` with `action` ChoiceField and optional `comments` field; `action_choices` computed via `_available_workflow_actions(user, document)`.
+- Added "Create New Folder" and "Browse Folders" quick links under the Classification section of the upload form.
+- Added `DocumentWorkflowActionViewTests` (9 tests covering GET/POST for each action, permission filtering, and viewer access) to `apps/documents/tests/test_views.py`.
+- Fixed `_available_workflow_actions` to use `gettext_lazy`; manager test user granted `RETURN_FOR_CORRECTION` permission.
+
+## Phase 18 MEAL — Implementation (2026-08-05)
+
+- Implemented Phase 18 MEAL in the new `apps/meal` app per `roadmaps/18-MEAL.md`: the centralized monitoring, evaluation, accountability and learning platform (35 models).
+- Added Theory of Change, Results Frameworks, and Logical Frameworks (logframes) with result statements and logframe rows.
+- Added the centralized Indicator registry with categories, baselines, targets, and actual results, plus data collection (plans, sources, tools, submissions).
+- Added monitoring (plans, visits, findings, corrective actions), evaluations and recommendations, and Data Quality Assessments (DQA) with dimension scores.
+- Added accountability (complaints, feedback, corrective actions), learning (outcome harvesting, learning logs, best practices, lessons learned), organizational KPIs, performance scorecards with dimensions, and MEAL reports with an executive dashboard.
+- Added 11 transactional, permission-checked service classes and fail-closed permission helpers (`user_can_view_meal`, `user_can_manage_meal`, `user_can_view_confidential`) with the `MealPermissionMixin` applied to every view.
+- Added the `meal` RBAC permission category (22 actions) with operational role grants (`rbac.0010`) and 21 reference-numbering sub-schemes (TOC/RFR/LGF/IND/BSL/TGT/DCP/MNP/MON/EVL/DQA/CMP/FDB/CRA/OCH/LLG/BPR/LSN/SCR/MRL/KPI) under the new `meal` reference module (`references.0008`).
+- Added 36 forms, 87 permission-checked CBV routes (82 paths), and 13 Bootstrap 5 templates (dashboard, indicator registry, framework profile, entity directory/detail/form, monitoring visit, scorecard, complaint/feedback, workflow forms).
+- Added formula-safe CSV register exports plus XLSX/DOCX/PDF report export; uploads use private storage with type/size validation and metadata tracking.
+- Registered `apps.meal` in settings/URLs and added the sidebar navigation entry gated by `meal.view`/`meal.manage`.
+- Added 61 tests in `apps/meal/tests/`; the full `apps/meal` suite is green (61/61) and the repository suite is green (483/483).
+- Quality gates green on `apps/meal`: Ruff, Black, isort, mypy (whole `apps` tree), `manage.py check`, and `makemigrations --check`.
+
+## Phase 17 Beneficiary Management — Implementation (2026-08-05)
+
+- Implemented Phase 17 Beneficiary Management in the new `apps.beneficiaries` app per `roadmaps/17-Beneficiary-Management.md`: the official, consent-governed beneficiary registry with a validated lifecycle (IDENTIFIED → REGISTERED → VERIFIED → ENROLLED → ACTIVE → GRADUATED, plus SUSPENDED/EXITED).
+- Added 27 concrete models covering the beneficiary profile, households, groups, enrollments, participations, attendance, service delivery, referrals, role-based case notes, assessments, follow-up visits, safeguarding records, support plans, outcomes, exits, transfers, consent records, guardians, confidential documents, communications, feedback, duplicate review, immutable status history, and audit records.
+- Added consent governance: `ConsentService.record` is the only write path; adults require recorded consent and minors require guardian consent plus child assent before VERIFIED and later statuses.
+- Added 22 transactional, permission-checked service classes and fail-closed selectors (`visible_beneficiaries`, `user_can_access_beneficiary`, `visible_beneficiary_documents`) enforcing confidentiality levels and scope-based access.
+- Added the `beneficiaries` RBAC permission category (32 actions) with operational role grants (`rbac.0009`), 16 reference-numbering sub-schemes (HHL/GRP/ENR/PRT/ASS/RFL/SRV/CSE/SPL/EXT/TRF/BND/CNS/SFG/OUT/FDB) and the base `beneficiary` (BEN) scheme (`references.0006`/`0007`).
+- Added 36 forms, 56 permission-checked CBV routes, and 12 Bootstrap 5 templates (dashboard, directory, profile, households, groups, related records, workflow forms).
+- Added formula-safe CSV register export plus XLSX/DOCX/PDF register and profile exports; document uploads use private storage with type/size validation and metadata tracking.
+- Registered `apps.beneficiaries` in settings/URLs and added the sidebar navigation entry gated by `beneficiaries.view`/`beneficiaries.manage`.
+- Added 91 tests in `apps/beneficiaries/tests/`; the full `apps/beneficiaries` suite is green (91/91).
+- Quality gates green on `apps/beneficiaries`: Ruff, Black, isort, mypy (full `apps` tree), Bandit, djLint, `manage.py check`, and `makemigrations --check`.
+
+## Phase 16 Project Management — Implementation (2026-08-05)
+
+- Implemented Phase 16 Project Management within `apps/programs`, closing the gaps identified after Phase 15 acceptance per `roadmaps/16-Project-Management.md`.
+- Added operation models: `WBSNode`, `ProjectResult`, `BeneficiaryParticipation`, `ProjectTimeline`, `ProjectClosure`, `ProjectReport`, `EvidenceVersion`; extended `Project` with a `classifications` M2M (`PROJECT_CLASSIFICATION`) and derived `completion_percentage`.
+- Extended workflow models: `Milestone`/`Deliverable` submission and approval fields, `EvidenceRecord` versioning, `ChangeRequest` decision fields (`target_model`, `target_field`, `target_record_id`, `proposed_value`, `reviewer`, `reviewer_notes`, `reviewed_at`).
+- Added `PROJECT_CLASSIFICATION` taxonomy seed (16 rows with `area` metadata) and the `wbs` reference-numbering scheme.
+- Added transactional services: `WbsService`, `ProjectApprovalService`, `ProjectClosureService`, `ProjectResultService`, `BeneficiaryParticipationService`, `ProjectTimelineService`, `EvidenceService.upload_version`, `ProjectReportService`, `ProjectAnalyticsService`, and `ChangeRequestService.decide` (approve/reject with auto-apply).
+- Added permission-checked views, URLs, and Bootstrap 5 templates for WBS tree, results, timeline, beneficiary participation, closure workflow, reports, analytics, milestone/deliverable approval, change-request decisions, and project report exports (CSV/XLSX/DOCX/PDF).
+- Enabled `classifications` M2M handling in `ProjectService.create`/`update` (service-side field allow-list now includes many-to-many fields).
+- Fixed `ProjectAnalyticsService` to derive budget utilization from `Project.budget_approved`/`budget_utilized` and project task counts through `activity__work_plan__project`.
+- Registered all new operation models with `ServiceManagedAdmin` and added 22 Phase 16 tests; full `apps/programs` suite green (112 tests).
+- Quality gates green on `apps/programs`: Ruff, Black, isort, mypy, Bandit, djLint, `manage.py check`, and `makemigrations --check`.
+
 ## Phase 15 Formal Acceptance (2026-08-04)
 
 - Completed the external acceptance pack, acceptance validation, runbook, and delivery report for Phase 15 in `docs/development/PHASE15_*`; Phase 15 Program & Project Management is formally accepted (2026-08-04).
@@ -570,10 +703,8 @@ Completed:
 
 | Version | Date       | Status     | Description                |
 | ------- | ---------- | ---------- | -------------------------- |
-| 1.0.0   | YYYY-MM-DD | Production | Initial enterprise release |
-| 1.1.0   | YYYY-MM-DD | Planned    | Feature enhancements       |
-| 1.2.0   | YYYY-MM-DD | Planned    | Performance improvements   |
-| 2.0.0   | YYYY-MM-DD | Future     | Major platform upgrade     |
+| 1.0.0   | 2026-08-05 | Development | Phase 18 MEAL implemented (`apps/meal`, 61 tests, 483 repository-wide) |
+| 1.1.0   | 2026-08-07 | Development | Phase 22 Document Management implemented (`apps/documents`, 88+ tests) |
 
 ---
 

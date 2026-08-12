@@ -1,0 +1,362 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ meeting.title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meetings/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ meeting.title }}</h1>
+                <p class="text-muted mb-0">
+                    {{ meeting.reference|default:"" }} &middot; {{ meeting.get_meeting_type_display }}
+                    &middot; <span class="badge text-bg-secondary">{{ meeting.get_status_display }}</span>
+                </p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                {% if can_edit %}
+                    <a class="btn btn-outline-primary" href="{% url 'meetings:meeting_update' meeting.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a>
+                {% endif %}
+                {% if can_confirm %}
+                    <form method="post" action="{% url 'meetings:meeting_confirm' meeting.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-success" type="submit"><i class="bi bi-check-lg me-1" aria-hidden="true"></i>Confirm</button>
+                    </form>
+                {% endif %}
+                {% if can_start %}
+                    <form method="post" action="{% url 'meetings:meeting_start' meeting.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-success" type="submit"><i class="bi bi-play-fill me-1" aria-hidden="true"></i>Start</button>
+                    </form>
+                {% endif %}
+                {% if can_complete %}
+                    <form method="post" action="{% url 'meetings:meeting_complete' meeting.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-success" type="submit"><i class="bi bi-flag me-1" aria-hidden="true"></i>Complete</button>
+                    </form>
+                {% endif %}
+                {% if can_reschedule %}
+                    <a class="btn btn-outline-secondary" href="{% url 'meetings:meeting_reschedule' meeting.pk %}"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Reschedule</a>
+                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#postponeForm" aria-expanded="false" aria-controls="postponeForm"><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Postpone</button>
+                {% endif %}
+                {% if can_cancel %}
+                    <form method="post" action="{% url 'meetings:meeting_cancel' meeting.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-danger" type="submit"><i class="bi bi-x-circle me-1" aria-hidden="true"></i>Cancel</button>
+                    </form>
+                {% endif %}
+            </div>
+        </header>
+        {% if can_reschedule %}
+            <div class="collapse mb-4" id="postponeForm">
+                <form method="post" action="{% url 'meetings:meeting_postpone' meeting.pk %}" class="card shadow-sm border-0">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <h2 class="h6">Postpone meeting</h2>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="postpone-until">Postpone until</label>
+                                <input class="form-control" id="postpone-until" type="datetime-local" name="until">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="postpone-reason">Reason</label>
+                                <input class="form-control" id="postpone-reason" type="text" name="reason">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-body d-flex justify-content-end">
+                        <button class="btn btn-outline-secondary" type="submit">Postpone meeting</button>
+                    </div>
+                </form>
+            </div>
+        {% endif %}
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="meeting-details">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body"><h2 id="meeting-details" class="h5 mb-0">Details</h2></div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-3">When</dt><dd class="col-sm-9">{{ meeting.start_at|date:"d M Y H:i" }} &mdash; {{ meeting.end_at|date:"d M Y H:i" }}</dd>
+                            <dt class="col-sm-3">Mode</dt><dd class="col-sm-9">{{ meeting.get_mode_display }}</dd>
+                            <dt class="col-sm-3">Venue</dt><dd class="col-sm-9">{% if meeting.venue %}{{ meeting.venue.name }}{% else %}<span class="text-muted">Not specified</span>{% endif %}</dd>
+                            {% if meeting.online_meeting_link %}<dt class="col-sm-3">Online link</dt><dd class="col-sm-9"><a href="{{ meeting.online_meeting_link }}" rel="noopener noreferrer">{{ meeting.online_meeting_link }}</a></dd>{% endif %}
+                            <dt class="col-sm-3">Organizer</dt><dd class="col-sm-9">{{ meeting.organizer.get_full_name|default:meeting.organizer.username }}</dd>
+                            <dt class="col-sm-3">Quorum</dt><dd class="col-sm-9">
+                                {% if meeting.quorum_met %}<span class="badge text-bg-success">Met</span>
+                                {% elif meeting.quorum_type == "FIXED_NUMBER" %}{{ meeting.quorum_value|default:meeting.required_attendees }} required
+                                {% else %}{{ meeting.get_quorum_type_display }} quorum{% endif %}
+                            </dd>
+                            <dt class="col-sm-3">Agenda status</dt><dd class="col-sm-9">{{ meeting.get_agenda_status_display }}</dd>
+                            <dt class="col-sm-3">Minutes status</dt><dd class="col-sm-9">{{ meeting.get_minutes_status_display }}</dd>
+                            {% if meeting.purpose %}<dt class="col-sm-3">Purpose</dt><dd class="col-sm-9">{{ meeting.purpose }}</dd>{% endif %}
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Participants ({{ participants|length }})</h2>
+                        {% if can_manage_participants %}
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:participant_create' meeting.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add participant</a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Meeting participants</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Participant</th>
+                                    <th scope="col">Role</th>
+                                    <th scope="col">RSVP</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participant in participants %}
+                                    <tr>
+                                        <td>{{ participant.name_snapshot }}</td>
+                                        <td>{{ participant.get_role_in_meeting_display }}</td>
+                                        <td><span class="badge text-bg-secondary">{{ participant.get_rsvp_status_display }}</span></td>
+                                        <td class="text-end">
+                                            {% if can_manage_participants %}
+                                                <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:participant_update' meeting.pk participant.pk %}">Edit</a>
+                                            {% endif %}
+                                            {% if can_manage_participants and participant.email_snapshot %}
+                                                <form class="d-inline" method="post" action="{% url 'meetings:participant_invite' meeting.pk participant.pk %}">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-sm btn-outline-secondary" type="submit">Invite</button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted py-4">No participants added.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Agendas</h2>
+                        {% if can_manage_agendas %}
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:agenda_create' meeting.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New agenda</a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Meeting agendas</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Version</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for agenda in agendas %}
+                                    <tr>
+                                        <td>v{{ agenda.version }}</td>
+                                        <td class="fw-semibold"><a href="{% url 'meetings:agenda_detail' meeting.pk agenda.pk %}">{{ agenda.title }}</a></td>
+                                        <td><span class="badge text-bg-secondary">{{ agenda.get_status_display }}</span></td>
+                                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:agenda_detail' meeting.pk agenda.pk %}">View</a></td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted py-4">No agendas created.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Minutes</h2>
+                        {% if can_manage_minutes %}
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:minutes_create' meeting.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Draft minutes</a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Meeting minutes versions</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Version</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in minutes %}
+                                    <tr>
+                                        <td>v{{ item.version }}</td>
+                                        <td class="fw-semibold"><a href="{% url 'meetings:minutes_detail' meeting.pk item.pk %}">{{ item.title }}</a></td>
+                                        <td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td>
+                                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:minutes_detail' meeting.pk item.pk %}">View</a></td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted py-4">No minutes drafted.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Decisions</h2>
+                        {% if can_record_decisions %}
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:decision_create' meeting.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Record decision</a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Meeting decisions</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Reference</th>
+                                    <th scope="col">Decision</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for decision in decisions %}
+                                    <tr>
+                                        <td><code>{{ decision.reference|default:"&mdash;" }}</code></td>
+                                        <td class="fw-semibold">{{ decision.decision_text|truncatechars:80 }}</td>
+                                        <td><span class="badge text-bg-secondary">{{ decision.get_status_display }}</span></td>
+                                        <td class="text-end">
+                                            {% if can_record_decisions %}
+                                                <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:decision_update' meeting.pk decision.pk %}">Edit</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted py-4">No decisions recorded.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Action items</h2>
+                        {% if can_manage_actions %}
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:action_item_create' meeting.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New action</a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Meeting action items</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Reference</th>
+                                    <th scope="col">Action</th>
+                                    <th scope="col">Owner</th>
+                                    <th scope="col">Due</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for action in actions %}
+                                    <tr>
+                                        <td><code>{{ action.reference|default:"&mdash;" }}</code></td>
+                                        <td class="fw-semibold">{{ action.description|truncatechars:60 }}</td>
+                                        <td>{{ action.owner.get_full_name|default:action.owner.username|default:"&mdash;" }}</td>
+                                        <td class="text-muted">{{ action.due_date|date:"d M Y" }}</td>
+                                        <td><span class="badge text-bg-secondary">{{ action.get_status_display }}</span></td>
+                                        <td class="text-end">
+                                            {% if can_manage_actions %}
+                                                <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:action_item_update' meeting.pk action.pk %}">Edit</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="6" class="text-center text-muted py-4">No action items recorded.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Documents</h2>
+                        {% if can_manage_agendas %}
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:meeting_document_link' meeting.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Link document</a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Meeting documents</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Document</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for link in documents %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ link.document.title }}</td>
+                                        <td><span class="badge text-bg-secondary">{{ link.get_document_type_display }}</span></td>
+                                        <td class="text-end">
+                                            {% if can_manage_agendas %}
+                                                <form class="d-inline" method="post" action="{% url 'meetings:meeting_document_unlink' meeting.pk link.pk %}">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-sm btn-outline-danger" type="submit">Unlink</button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="3" class="text-center text-muted py-4">No documents linked.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="activity-heading">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 id="activity-heading" class="h5 mb-0">Activity</h2>
+                        {% if can_manage_attendance %}
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:meeting_quorum' meeting.pk %}">Evaluate quorum</a>
+                        {% endif %}
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in activity %}
+                            <li class="list-group-item px-3">
+                                <div class="small"><span class="badge text-bg-secondary">{{ item.get_action_display }}</span></div>
+                                <div class="small text-muted">{{ item.actor.get_full_name|default:item.actor.username|default:"System" }} &middot; {{ item.created_at|date:"d M Y H:i" }}</div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No activity recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h2 class="h5">Schedule history</h2>
+                        <ul class="list-group list-group-flush">
+                            {% for entry in schedule_history %}
+                                <li class="list-group-item px-0 small">
+                                    {{ entry.previous_start|date:"d M Y H:i" }} &rarr; {{ entry.new_start|date:"d M Y H:i" }}
+                                    <span class="text-muted d-block">{{ entry.reason|default:"" }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item px-0 text-muted">No rescheduling yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

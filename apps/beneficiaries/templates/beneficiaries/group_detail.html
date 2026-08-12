@@ -1,0 +1,42 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ group.group_name }} | Groups{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "beneficiaries/includes/module_nav.html" %}
+        <header class="mb-4"><p class="text-uppercase small fw-semibold text-muted mb-1">{{ group.reference_number }}</p><h1 class="h2 mb-1">{{ group.group_name }}</h1><p class="text-muted mb-0">{{ group.get_status_display }}{% if group.group_type %} &middot; {{ group.group_type.name }}{% endif %}</p><a class="btn btn-outline-secondary mt-3"
+   href="{% url 'beneficiaries:groups' %}"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Back to groups</a></header>
+        <div class="alert alert-light border d-flex flex-wrap gap-4" role="status"><span><strong>Leader:</strong> {{ group.group_leader.full_name|default:"Not assigned" }}</span><span><strong>Members:</strong> {{ group.member_count }}</span><span><strong>Formed:</strong> {{ group.formation_date }}</span><span><strong>Location:</strong> {{ group.province_or_region|default:"Not recorded" }}{% if group.district %}, {{ group.district }}{% endif %}</span></div>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="members-heading">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 id="members-heading" class="h5 mb-0">Members</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Group members</caption>
+                            <thead><tr><th scope="col">Beneficiary</th><th scope="col">Role</th><th scope="col">Joined</th><th scope="col">Status</th>{% if can_write %}<th scope="col"><span class="visually-hidden">Action</span></th>{% endif %}</tr></thead>
+                            <tbody>
+                                {% for item in memberships %}<tr><td><a href="{% url 'beneficiaries:profile' item.beneficiary.pk %}">{{ item.beneficiary.full_name }}</a></td><td>{{ item.role|default:"Member" }}</td><td>{{ item.joined_on }}</td><td>{% if item.is_active %}Active{% else %}Inactive{% endif %}</td>{% if can_write %}<td><form method="post"
+      action="{% url 'beneficiaries:group_member_remove' item.pk %}"
+      class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Remove</button></form></td>{% endif %}</tr>{% empty %}<tr><td colspan="{% if can_write %}5{% else %}4{% endif %}"
+    class="text-center text-muted py-4">No members recorded.</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="member-form">
+                {% if can_write and member_form %}
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h2 id="member-form" class="h5">Add member</h2>
+                            <form method="post" class="mt-3" novalidate>{% csrf_token %}<div class="row g-3">{% include "beneficiaries/includes/form_fields.html" with form=member_form %}</div><div class="mt-3"><button class="btn btn-primary" type="submit">Add member</button></div></form>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if group.objectives or group.description or group.meeting_schedule %}<div class="card shadow-sm border-0 mt-4"><div class="card-body"><h2 class="h5">Group profile</h2><dl class="row mb-0"><dt class="col-5">Objectives</dt><dd class="col-7">{{ group.objectives|default:"Not recorded"|linebreaksbr }}</dd><dt class="col-5">Description</dt><dd class="col-7">{{ group.description|default:"Not recorded"|linebreaksbr }}</dd><dt class="col-5">Meetings</dt><dd class="col-7">{{ group.meeting_schedule|default:"Not recorded" }}</dd></dl></div></div>{% endif %}
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

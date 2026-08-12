@@ -1,0 +1,21 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Preview &mdash; {{ object.title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "reports/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1">
+                        <li class="breadcrumb-item"><a href="{% url 'reports:template_detail' object.pk %}">{{ object.code }}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Preview</li>
+                    </ol>
+                </nav>
+                <h1 class="h2 mb-1">{{ object.title }}</h1>
+                <p class="text-muted mb-0">Server-side preview rendered from the live schema.</p>
+            </div>
+            <a class="btn btn-outline-secondary" href="{% url 'reports:template_detail' object.pk %}">Back to template</a>
+        </header>
+        {% include "reports/includes/preview_schema.html" %}
+    </div>
+{% endblock dashboard_content %}

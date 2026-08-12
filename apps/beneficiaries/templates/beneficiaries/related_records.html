@@ -1,0 +1,45 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ title }} | {{ beneficiary.full_name }}{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "beneficiaries/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"><div><p class="text-uppercase small fw-semibold text-muted mb-1">{{ beneficiary.reference_number }}</p><h1 class="h2 mb-1">{{ title }}</h1><p class="text-muted mb-0">{{ description }}</p></div><a class="btn btn-outline-primary"
+   href="{% url 'beneficiaries:profile' beneficiary.pk %}">Back to profile</a></header>
+        {% if can_write and form %}
+            <section class="card shadow-sm border-0 mb-4" aria-labelledby="record-form">
+                <div class="card-body">
+                    <h2 id="record-form" class="h5">Add {{ title|lower }}</h2>
+                    <form method="post" enctype="multipart/form-data" class="mt-3" novalidate>{% csrf_token %}<div class="row g-3">{% include "beneficiaries/includes/form_fields.html" %}</div><div class="mt-3"><button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Save record</button></div></form>
+                </div>
+            </section>
+        {% endif %}
+        <section class="card shadow-sm border-0" aria-labelledby="records-heading">
+            <div class="card-body">
+                <h2 id="records-heading" class="h5">{{ title }}</h2>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">{{ title }} records for {{ beneficiary.full_name }}</caption>
+                        <thead><tr>{% for column in columns %}<th scope="col">{{ column }}</th>{% endfor %}<th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+                        <tbody>
+                            {% for row in rows %}
+                                <tr>
+                                    {% for cell in row.cells %}<td>{{ cell }}</td>{% endfor %}
+                                    <td class="text-end">
+                                        {% for action in row.actions %}
+                                            {% if action.link %}<a class="btn btn-sm btn-{{ action.style }}" href="{{ action.url }}">{{ action.label }}</a>{% else %}<form method="post" action="{{ action.url }}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-{{ action.style }}" type="submit">{{ action.label }}</button></form>{% endif %}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="{{ columns|length|add:1 }}"
+                                        class="text-center text-muted py-4">No records recorded.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock dashboard_content %}

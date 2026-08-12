@@ -49,6 +49,27 @@
             </div>
         </div>
         <aside class="col-xl-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h3 class="h5">Project tools</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{% url 'programs:project_wbs' project.pk %}"><i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>WBS</a>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{% url 'programs:project_results' project.pk %}"><i class="bi bi-bullseye me-1" aria-hidden="true"></i>Results</a>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{% url 'programs:project_timeline' project.pk %}"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i>Timeline</a>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{% url 'programs:project_participations' project.pk %}"><i class="bi bi-people me-1" aria-hidden="true"></i>Participation</a>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{% url 'programs:project_closure' project.pk %}"><i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i>Closure</a>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{% url 'programs:project_reports' project.pk %}"><i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>Reports</a>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{% url 'programs:project_analytics' project.pk %}"><i class="bi bi-graph-up me-1" aria-hidden="true"></i>Analytics</a>
+                    </div>
+                </div>
+            </div>
             <div class="card shadow-sm border-0"><div class="card-body"><h3 class="h5">Status history</h3><ul class="list-group list-group-flush">{% for item in status_history %}<li class="list-group-item px-0 py-2"><small class="text-muted">{{ item.created_at|date:"Y-m-d H:i" }}</small><div class="fw-semibold">{{ item.get_from_status_display }} &rarr; {{ item.get_to_status_display }}</div>{% if item.reason %}<small>{{ item.reason }}</small>{% endif %}</li>{% empty %}<li class="list-group-item px-0 text-muted">No status transitions recorded.</li>{% endfor %}</ul></div></div>
         </aside>
     </div>

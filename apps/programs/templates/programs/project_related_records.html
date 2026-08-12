@@ -1,0 +1,47 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "programs/includes/module_nav.html" with project=project %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ title }}</h1>
+                <p class="text-muted mb-0">{{ description }}</p>
+            </div>
+        </header>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="records-heading">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Records for {{ title }}</caption>
+                            <thead><tr>{% for column in columns %}<th scope="col">{{ column }}</th>{% endfor %}<th scope="col"><span class="visually-hidden">Details</span></th></tr></thead>
+                            <tbody>
+                                {% for row in rows %}<tr>{% for value in row.values %}<td>{{ value }}</td>{% endfor %}<td><a class="btn btn-sm btn-outline-primary"
+   href="{% url 'programs:project_profile' project.pk %}">Open project</a></td></tr>{% empty %}<tr><td colspan="{{ columns|length|add:'1' }}"
+    class="text-center text-muted py-4">No records yet.</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="add-heading">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body">
+                        <h2 id="add-heading" class="h5 mb-0">Add {{ title|lower|cut:"s" }}</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if can_write %}
+                            <form method="post"
+                                  enctype="multipart/form-data"
+                                  class="row g-3"
+                                  novalidate>{% csrf_token %}{% include "programs/includes/form_fields.html" %}<div class="col-12 d-flex justify-content-end gap-2"><button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Save</button></div></form>
+                        {% else %}
+                            <p class="text-muted mb-0">You do not have permission to add records.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block title %}Edit Metadata - {{ document.title }} - SITADC Youth Hub{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1><i class="bi bi-pencil"></i> Edit Document Metadata</h1>
+      <p class="text-muted mb-0">
+        <code>{{ document.reference_number }}</code> &middot; {{ document.title }}
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'documents:detail' document.pk %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <div class="row">
+    <div class="col-lg-8">
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Basic Information -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-info-circle"></i> Basic Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+              <input type="text" name="title" id="title" class="form-control"
+                     value="{{ form.title.value|default:document.title }}" required maxlength="300">
+              {% if form.title.errors %}
+              <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              <label for="short_title" class="form-label">Short Title</label>
+              <input type="text" name="short_title" id="short_title" class="form-control"
+                     value="{{ form.short_title.value|default:document.short_title }}" maxlength="150">
+              {% if form.short_title.errors %}
+              <div class="invalid-feedback d-block">{{ form.short_title.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea name="description" id="description" class="form-control" rows="4">{{ form.description.value|default:document.description }}</textarea>
+              {% if form.description.errors %}
+              <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Classification -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-tags"></i> Classification</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="category" class="form-label">Category</label>
+                <select name="category" id="category" class="form-select">
+                  <option value="">Select Category</option>
+                  {% for cat in categories %}
+                  <option value="{{ cat.pk }}" {% if form.category.value|stringformat:"s" == cat.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ cat.name }}
+                  </option>
+                  {% endfor %}
+                </select>
+                {% if form.category.errors %}
+                <div class="invalid-feedback d-block">{{ form.category.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="document_type" class="form-label">Document Type</label>
+                <select name="document_type" id="document_type" class="form-select">
+                  <option value="">Select Type</option>
+                  {% for dtype in document_types %}
+                  <option value="{{ dtype.pk }}" {% if form.document_type.value|stringformat:"s" == dtype.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ dtype.name }}
+                  </option>
+                  {% endfor %}
+                </select>
+                {% if form.document_type.errors %}
+                <div class="invalid-feedback d-block">{{ form.document_type.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="folder" class="form-label">Folder</label>
+                <select name="folder" id="folder" class="form-select">
+                  <option value="">Select Folder</option>
+                  {% for folder in folders %}
+                  <option value="{{ folder.pk }}" {% if form.folder.value|stringformat:"s" == folder.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ folder.name }}
+                  </option>
+                  {% endfor %}
+                </select>
+                {% if form.folder.errors %}
+                <div class="invalid-feedback d-block">{{ form.folder.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="confidentiality_level" class="form-label">Confidentiality Level</label>
+                <select name="confidentiality_level" id="confidentiality_level" class="form-select">
+                  {% for value, label in confidentiality_choices %}
+                  <option value="{{ value }}" {% if form.confidentiality_level.value == value %}selected{% endif %}>
+                    {{ label }}
+                  </option>
+                  {% endfor %}
+                </select>
+                {% if form.confidentiality_level.errors %}
+                <div class="invalid-feedback d-block">{{ form.confidentiality_level.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="tags" class="form-label">Tags</label>
+              <select name="tags" id="tags" class="form-select" multiple size="3">
+                {% for tag in tags %}
+                <option value="{{ tag.pk }}" {% if tag.pk in form.tags.value %}selected{% endif %}>
+                  {{ tag.name }}
+                </option>
+                {% endfor %}
+              </select>
+              <div class="form-text">Hold Ctrl/Cmd to select multiple tags.</div>
+              {% if form.tags.errors %}
+              <div class="invalid-feedback d-block">{{ form.tags.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Ownership & Relationships -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-person"></i> Ownership & Relationships</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="owner" class="form-label">Owner</label>
+                <select name="owner" id="owner" class="form-select">
+                  <option value="">Select Owner</option>
+                  {% for user in users %}
+                  <option value="{{ user.pk }}" {% if form.owner.value|stringformat:"s" == user.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ user.get_full_name|default:user.username }}
+                  </option>
+                  {% endfor %}
+                </select>
+                {% if form.owner.errors %}
+                <div class="invalid-feedback d-block">{{ form.owner.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="responsible_unit" class="form-label">Responsible Unit</label>
+                <input type="text" name="responsible_unit" id="responsible_unit" class="form-control"
+                       value="{{ form.responsible_unit.value|default:document.responsible_unit }}">
+                {% if form.responsible_unit.errors %}
+                <div class="invalid-feedback d-block">{{ form.responsible_unit.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-calendar"></i> Dates</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3 mb-3">
+                <label for="effective_date" class="form-label">Effective Date</label>
+                <input type="date" name="effective_date" id="effective_date" class="form-control"
+                       value="{{ form.effective_date.value|default:document.effective_date|date:'Y-m-d'|default:'' }}">
+                {% if form.effective_date.errors %}
+                <div class="invalid-feedback d-block">{{ form.effective_date.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="expiry_date" class="form-label">Expiry Date</label>
+                <input type="date" name="expiry_date" id="expiry_date" class="form-control"
+                       value="{{ form.expiry_date.value|default:document.expiry_date|date:'Y-m-d'|default:'' }}">
+                {% if form.expiry_date.errors %}
+                <div class="invalid-feedback d-block">{{ form.expiry_date.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="review_date" class="form-label">Review Date</label>
+                <input type="date" name="review_date" id="review_date" class="form-control"
+                       value="{{ form.review_date.value|default:document.review_date|date:'Y-m-d'|default:'' }}">
+                {% if form.review_date.errors %}
+                <div class="invalid-feedback d-block">{{ form.review_date.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="renewal_date" class="form-label">Renewal Date</label>
+                <input type="date" name="renewal_date" id="renewal_date" class="form-control"
+                       value="{{ form.renewal_date.value|default:document.renewal_date|date:'Y-m-d'|default:'' }}">
+                {% if form.renewal_date.errors %}
+                <div class="invalid-feedback d-block">{{ form.renewal_date.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle"></i> Save Changes
+          </button>
+          <a href="{% url 'documents:detail' document.pk %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-file-earmark"></i> Current File</h5>
+        </div>
+        <div class="card-body">
+          <p class="mb-1"><strong>Filename:</strong> {{ document.original_filename }}</p>
+          <p class="mb-1"><strong>Size:</strong> {{ document.file_size|filesizeformat }}</p>
+          <p class="mb-0"><strong>Type:</strong> {{ document.mime_type }}</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-info-circle"></i> Guidelines</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2"><i class="bi bi-info-circle text-info me-2"></i> Only metadata can be edited</li>
+            <li class="mb-2"><i class="bi bi-info-circle text-info me-2"></i> To replace file, upload a new version</li>
+            <li class="mb-2"><i class="bi bi-info-circle text-info me-2"></i> Changes are tracked in audit log</li>
+            <li><i class="bi bi-info-circle text-info me-2"></i> Some fields may be read-only</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

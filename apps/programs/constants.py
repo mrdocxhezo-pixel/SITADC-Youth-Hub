@@ -20,6 +20,7 @@ class ReferenceDataKind(models.TextChoices):
     LESSON_CATEGORY = "LESSON_CATEGORY", _("Lessons learned category")
     EVIDENCE_TYPE = "EVIDENCE_TYPE", _("Evidence type")
     BUDGET_CATEGORY = "BUDGET_CATEGORY", _("Budget category")
+    PROJECT_CLASSIFICATION = "PROJECT_CLASSIFICATION", _("Project classification")
 
 
 class ProgramStatus(models.TextChoices):
@@ -201,6 +202,80 @@ class LessonCategory(models.TextChoices):
     OTHER = "OTHER", _("Other")
 
 
+class WBSNodeType(models.TextChoices):
+    PHASE = "PHASE", _("Phase")
+    WORK_PACKAGE = "WORK_PACKAGE", _("Work package")
+    ACTIVITY = "ACTIVITY", _("Activity")
+    TASK = "TASK", _("Task")
+    SUB_TASK = "SUB_TASK", _("Sub-task")
+
+
+class WBSNodeStatus(models.TextChoices):
+    PLANNED = "PLANNED", _("Planned")
+    IN_PROGRESS = "IN_PROGRESS", _("In progress")
+    COMPLETED = "COMPLETED", _("Completed")
+    DELAYED = "DELAYED", _("Delayed")
+    CANCELLED = "CANCELLED", _("Cancelled")
+
+
+class MilestoneApprovalStatus(models.TextChoices):
+    PENDING = "PENDING", _("Pending")
+    SUBMITTED = "SUBMITTED", _("Submitted")
+    APPROVED = "APPROVED", _("Approved")
+    REJECTED = "REJECTED", _("Rejected")
+
+
+class ResultType(models.TextChoices):
+    OUTPUT = "OUTPUT", _("Output")
+    OUTCOME = "OUTCOME", _("Outcome")
+    IMPACT = "IMPACT", _("Impact")
+
+
+class ResultStatus(models.TextChoices):
+    NOT_STARTED = "NOT_STARTED", _("Not started")
+    IN_PROGRESS = "IN_PROGRESS", _("In progress")
+    PARTIAL = "PARTIAL", _("Partially achieved")
+    ACHIEVED = "ACHIEVED", _("Achieved")
+
+
+class TimelineEntryStatus(models.TextChoices):
+    PLANNED = "PLANNED", _("Planned")
+    IN_PROGRESS = "IN_PROGRESS", _("In progress")
+    COMPLETED = "COMPLETED", _("Completed")
+    DELAYED = "DELAYED", _("Delayed")
+
+
+class ProjectClosureStatus(models.TextChoices):
+    DRAFT = "DRAFT", _("Draft")
+    VERIFIED = "VERIFIED", _("Verified")
+    APPROVED = "APPROVED", _("Approved")
+    COMPLETE = "COMPLETE", _("Complete")
+
+
+class ProjectReportType(models.TextChoices):
+    PROGRESS = "PROGRESS", _("Progress report")
+    WORK_PLAN = "WORK_PLAN", _("Work plan report")
+    ACTIVITY = "ACTIVITY", _("Activity report")
+    TASK = "TASK", _("Task report")
+    MILESTONE = "MILESTONE", _("Milestone report")
+    BUDGET = "BUDGET", _("Budget utilization report")
+    RESOURCE = "RESOURCE", _("Resource utilization report")
+    BENEFICIARY = "BENEFICIARY", _("Beneficiary report")
+    RISK = "RISK", _("Risk register")
+    ISSUE = "ISSUE", _("Issue register")
+    DELIVERABLE = "DELIVERABLE", _("Deliverables report")
+    PROCUREMENT = "PROCUREMENT", _("Procurement report")
+    CLOSURE = "CLOSURE", _("Project closure report")
+    LESSONS = "LESSONS", _("Lessons learned report")
+
+
+class ProjectReportStatus(models.TextChoices):
+    DRAFT = "DRAFT", _("Draft")
+    SUBMITTED = "SUBMITTED", _("Submitted")
+    APPROVED = "APPROVED", _("Approved")
+    ARCHIVED = "ARCHIVED", _("Archived")
+
+
 REFERENCE_SCHEME_CODES = {
     "program": "program",
     "project": "project",
@@ -217,6 +292,7 @@ REFERENCE_SCHEME_CODES = {
     "procurement": "procurement",
     "resource": "resource_allocation",
     "lesson": "lesson",
+    "wbs": "wbs",
 }
 
 PROGRAM_ACTION_PERMISSIONS = {

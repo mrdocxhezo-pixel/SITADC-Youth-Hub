@@ -1,0 +1,55 @@
+{% extends "layouts/dashboard.html" %}
+{% load meal_tags %}
+{% block title %}{{ complaint.reference_number }} | Complaints | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meal/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ complaint.reference_number }}</h1>
+                <p class="text-muted mb-0">Submitted {{ complaint.submission_date }} &middot; {{ complaint.get_status_display }}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if can_manage %}
+                    {% if complaint.status == "RECEIVED" or complaint.status == "ASSIGNED" or complaint.status == "UNDER_INVESTIGATION" %}
+                        <a class="btn btn-outline-primary" href="{% url 'meal:complaint_resolve' complaint.pk %}"><i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Resolve</a>
+                    {% endif %}
+                    {% if complaint.status == "RESOLVED" %}
+                        <form method="post" action="{% url 'meal:complaint_close' complaint.pk %}">{% csrf_token %}<button class="btn btn-success" type="submit"><i class="bi bi-lock-fill me-1" aria-hidden="true"></i>Close</button></form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </header>
+        {% if is_confidential %}<div class="alert alert-warning" role="alert"><i class="bi bi-shield-lock me-2" aria-hidden="true"></i>This complaint is confidential and visible only to authorized personnel.</div>{% endif %}
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="complaint-details">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 id="complaint-details" class="h5 mb-0">Details</h2></div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            {% for label, name in complaint|fields_with_labels %}
+                                <dt class="col-sm-4 text-muted fw-normal">{{ label }}</dt>
+                                <dd class="col-sm-8">{% if complaint|field_value:name == "" %}<span class="text-muted">Not recorded</span>{% else %}{{ complaint|field_value:name }}{% endif %}</dd>
+                            {% endfor %}
+                        </dl>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="complaint-history">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 id="complaint-history" class="h5 mb-0">Status history</h2></div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in complaint|record_history %}
+                            <li class="list-group-item px-3 d-flex justify-content-between">
+                                <span>{{ item.action|title }}: {{ item.to_status|title }}</span>
+                                <span class="text-muted">{{ item.created_at|date:"d M Y" }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No history recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

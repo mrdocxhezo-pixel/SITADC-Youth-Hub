@@ -1,0 +1,148 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+{% block title %}Exports | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        <header class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-1">Export Engine</h1>
+                <p class="text-muted mb-0">Generate branded, permission-aware PDF, DOCX, XLSX, CSV and print-ready exports.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'exports:history' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-clock-history me-1"></i> History
+                </a>
+                {% if can_manage %}
+                    <a href="{% url 'exports:settings' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-gear me-1"></i> Settings
+                    </a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <section class="card shadow-sm border-0 mb-4" aria-labelledby="request-heading">
+                    <div class="card-header bg-white border-0 pt-3">
+                        <h2 id="request-heading" class="h5 mb-0">New Export Request</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if not can_create %}
+                            <div class="alert alert-info mb-0">You do not have permission to create exports.</div>
+                        {% else %}
+                            <form method="post" action="{% url 'exports:create' %}" class="row g-3">
+                                {% csrf_token %}
+                                <div class="col-md-6">
+                                    <label for="{{ request_form.source_type.id_for_label }}" class="form-label">{{ request_form.source_type.label }}</label>
+                                    {{ request_form.source_type }}
+                                    {% for error in request_form.source_type.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ request_form.format.id_for_label }}" class="form-label">{{ request_form.format.label }}</label>
+                                    {{ request_form.format }}
+                                    {% for error in request_form.format.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        {{ request_form.include_sensitive }}
+                                        <label class="form-check-label" for="{{ request_form.include_sensitive.id_for_label }}">
+                                            {{ request_form.include_sensitive.label }}
+                                        </label>
+                                    </div>
+                                    {% if request_form.include_sensitive.help_text %}
+                                        <div class="form-text">{{ request_form.include_sensitive.help_text }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        {{ request_form.confirmed }}
+                                        <label class="form-check-label" for="{{ request_form.confirmed.id_for_label }}">
+                                            {{ request_form.confirmed.label }}
+                                        </label>
+                                    </div>
+                                    {% for error in request_form.confirmed.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-12 d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-download me-1"></i> Generate Export
+                                    </button>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
+                </section>
+
+                {% if templates %}
+                    <section class="card shadow-sm border-0" aria-labelledby="templates-heading">
+                        <div class="card-header bg-white border-0 pt-3">
+                            <h2 id="templates-heading" class="h5 mb-0">Available Templates</h2>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Name</th>
+                                            <th>Source</th>
+                                            <th>Version</th>
+                                            <th class="text-end">Page Size</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for template in templates %}
+                                            <tr>
+                                                <td><code>{{ template.code }}</code></td>
+                                                <td>{{ template.name }}</td>
+                                                <td>{{ template.get_source_type_display }}</td>
+                                                <td>v{{ template.version }}</td>
+                                                <td class="text-end">{{ template.get_page_size_display }} / {{ template.get_orientation_display }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-5">
+                <section class="card shadow-sm border-0" aria-labelledby="recent-heading">
+                    <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+                        <h2 id="recent-heading" class="h5 mb-0">Recent Exports</h2>
+                        <a href="{% url 'exports:history' %}" class="small">View all</a>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if recent_exports %}
+                            <div class="list-group list-group-flush">
+                                {% for export in recent_exports %}
+                                    <a href="{% url 'exports:detail' export.pk %}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="fw-semibold">{{ export.reference_number }}</div>
+                                                <small class="text-muted">{{ export.get_source_type_display }} &middot; {{ export.get_format_display }}</small>
+                                            </div>
+                                            <span class="badge {% if export.status == 'COMPLETED' %}text-bg-success{% elif export.status == 'FAILED' %}text-bg-danger{% elif export.status == 'EXPIRED' %}text-bg-secondary{% else %}text-bg-warning{% endif %}">
+                                                {{ export.get_status_display }}
+                                            </span>
+                                        </div>
+                                        <small class="text-muted">{{ export.requested_at|date:"M j, Y H:i" }}</small>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-4">No exports yet.</div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

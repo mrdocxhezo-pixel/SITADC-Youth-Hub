@@ -1,0 +1,42 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ household.household_name }} | Households{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "beneficiaries/includes/module_nav.html" %}
+        <header class="mb-4"><p class="text-uppercase small fw-semibold text-muted mb-1">{{ household.reference_number }}</p><h1 class="h2 mb-1">{{ household.household_name }}</h1><p class="text-muted mb-0">{{ household.get_status_display }}{% if household.household_type %} &middot; {{ household.household_type.name }}{% endif %}</p><a class="btn btn-outline-secondary mt-3"
+   href="{% url 'beneficiaries:households' %}"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Back to households</a></header>
+        <div class="alert alert-light border d-flex flex-wrap gap-4" role="status"><span><strong>Head:</strong> {{ household.head.full_name|default:"Not assigned" }}</span><span><strong>Members:</strong> {{ household.number_of_members }}</span><span><strong>Dependents:</strong> {{ household.number_of_dependents }}</span><span><strong>Location:</strong> {{ household.province_or_region|default:"Not recorded" }}{% if household.district %}, {{ household.district }}{% endif %}</span></div>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="members-heading">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 id="members-heading" class="h5 mb-0">Members</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Household members</caption>
+                            <thead><tr><th scope="col">Beneficiary</th><th scope="col">Relationship to head</th><th scope="col">Status</th>{% if can_write %}<th scope="col"><span class="visually-hidden">Action</span></th>{% endif %}</tr></thead>
+                            <tbody>
+                                {% for item in memberships %}<tr><td><a href="{% url 'beneficiaries:profile' item.beneficiary.pk %}">{{ item.beneficiary.full_name }}</a></td><td>{% if item.is_head %}Household head{% else %}{{ item.relationship_to_head.name|default:"Member" }}{% endif %}</td><td>{% if item.is_active %}Active{% else %}Inactive{% endif %}</td>{% if can_write %}<td>{% if not item.is_head %}<form method="post"
+      action="{% url 'beneficiaries:household_member_remove' item.pk %}"
+      class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Remove</button></form>{% endif %}</td>{% endif %}</tr>{% empty %}<tr><td colspan="{% if can_write %}4{% else %}3{% endif %}"
+    class="text-center text-muted py-4">No members recorded.</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="member-form">
+                {% if can_write and member_form %}
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h2 id="member-form" class="h5">Add member</h2>
+                            <form method="post" class="mt-3" novalidate>{% csrf_token %}<div class="row g-3">{% include "beneficiaries/includes/form_fields.html" with form=member_form %}</div><div class="mt-3"><button class="btn btn-primary" type="submit">Add member</button></div></form>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="card shadow-sm border-0 mt-4"><div class="card-body"><h2 class="h5">Household profile</h2><dl class="row mb-0"><dt class="col-5">Address</dt><dd class="col-7">{{ household.physical_address|default:"Not recorded"|linebreaksbr }}</dd><dt class="col-5">Community</dt><dd class="col-7">{{ household.community|default:"Not recorded" }}{% if household.village %}, {{ household.village }}{% endif %}</dd><dt class="col-5">Income source</dt><dd class="col-7">{{ household.primary_income_source|default:"Not recorded" }}</dd><dt class="col-5">Monthly income</dt><dd class="col-7">{% if household.monthly_income != None %}{{ household.currency }} {{ household.monthly_income }}{% else %}Not recorded{% endif %}</dd><dt class="col-5">Formed</dt><dd class="col-7">{{ household.formed_on }}{% if household.closed_on %} &middot; closed {{ household.closed_on }}{% endif %}</dd></dl>{% if household.notes %}<p class="small text-muted mt-3 mb-0">{{ household.notes }}</p>{% endif %}</div></div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

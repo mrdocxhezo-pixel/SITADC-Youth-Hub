@@ -1,0 +1,51 @@
+{% extends "layouts/dashboard.html" %}
+{% load meal_tags %}
+{% block title %}{{ visit.reference_number }} | Monitoring | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meal/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ visit.reference_number }}</h1>
+                <p class="text-muted mb-0">{{ visit.visit_date }} &middot; {{ visit.get_status_display }}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if can_manage %}
+                    <a class="btn btn-outline-primary" href="{% url 'meal:monitoring_visit_actions' visit.pk %}"><i class="bi bi-arrow-left-right me-1" aria-hidden="true"></i>Update status</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'meal:monitoring_finding_create' visit.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add finding</a>
+                {% endif %}
+            </div>
+        </header>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="visit-details">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 id="visit-details" class="h5 mb-0">Visit details</h2></div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            {% for label, name in visit|fields_with_labels %}
+                                <dt class="col-sm-4 text-muted fw-normal">{{ label }}</dt>
+                                <dd class="col-sm-8">{% if visit|field_value:name == "" %}<span class="text-muted">Not recorded</span>{% else %}{{ visit|field_value:name }}{% endif %}</dd>
+                            {% endfor %}
+                        </dl>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="visit-findings">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 id="visit-findings" class="h5 mb-0">Findings</h2></div>
+                    <ul class="list-group list-group-flush">
+                        {% for finding in findings %}
+                            <li class="list-group-item px-3">
+                                <span class="badge text-bg-secondary mb-1">{{ finding.get_category_display }}</span>
+                                <p class="mb-1">{{ finding.description }}</p>
+                                {% if finding.recommendation %}<p class="small text-muted mb-0">Recommendation: {{ finding.recommendation }}</p>{% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No findings recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

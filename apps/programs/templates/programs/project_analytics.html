@@ -1,0 +1,136 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Project analytics | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "programs/includes/module_nav.html" with project=project %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Project analytics</h1>
+                <p class="text-muted mb-0">{{ project.reference_number }} &middot; {{ project.title }}</p>
+            </div>
+        </header>
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h2 class="h6 text-muted mb-1">Completion</h2>
+                        <p class="h3 mb-0">{{ analytics.completion_percentage|floatformat }}%</p>
+                        <div class="progress mt-2"
+                             role="progressbar"
+                             aria-valuenow="{{ analytics.completion_percentage }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                            <div class="progress-bar"
+                                 style="width: {{ analytics.completion_percentage }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h2 class="h6 text-muted mb-1">Tasks</h2>
+                        <p class="h3 mb-0">{{ analytics.tasks_completed }}/{{ analytics.tasks_total }}</p>
+                        <p class="text-muted mb-0 small">completed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h2 class="h6 text-muted mb-1">Milestones</h2>
+                        <p class="h3 mb-0">{{ analytics.milestones_approved }}/{{ analytics.milestones_total }}</p>
+                        <p class="text-muted mb-0 small">approved</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h2 class="h6 text-muted mb-1">Deliverables</h2>
+                        <p class="h3 mb-0">{{ analytics.deliverables_approved }}/{{ analytics.deliverables_total }}</p>
+                        <p class="text-muted mb-0 small">approved</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Financial overview</h2>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-6">Total budget</dt>
+                            <dd class="col-sm-6">
+                                {{ analytics.budget_total }} {{ project.currency }}
+                            </dd>
+                            <dt class="col-sm-6">Budget utilization</dt>
+                            <dd class="col-sm-6">
+                                {{ analytics.budget_utilization }}%
+                            </dd>
+                            <dt class="col-sm-6">Beneficiaries reached</dt>
+                            <dd class="col-sm-6">
+                                {{ analytics.beneficiaries_reached }}
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Health indicators</h2>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-6">Open issues</dt>
+                            <dd class="col-sm-6">
+                                {{ analytics.open_issues }}
+                            </dd>
+                            <dt class="col-sm-6">WBS nodes</dt>
+                            <dd class="col-sm-6">
+                                {{ analytics.wbs_nodes }}
+                            </dd>
+                            <dt class="col-sm-6">Timeline entries</dt>
+                            <dd class="col-sm-6">
+                                {{ analytics.timeline_entries }}
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <section aria-labelledby="recent-reports">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-body">
+                    <h2 id="recent-reports" class="h5 mb-0">Recent reports</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Recent project reports</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Title</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Period</th>
+                                <th scope="col">Status</th>
+                                <th scope="col"><span class="visually-hidden">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in recent_reports %}
+                                <tr>
+                                    <td>{{ report.title }}</td>
+                                    <td>{{ report.get_report_type_display }}</td>
+                                    <td>{{ report.period_label|default:"-" }}</td>
+                                    <td><span class="badge text-bg-secondary">{{ report.get_status_display }}</span></td>
+                                    <td><a class="btn btn-sm btn-outline-secondary"
+   href="{% url 'programs:project_report_export' report.pk 'pdf' %}">PDF</a>
+                                        <a class="btn btn-sm btn-outline-secondary"
+                                           href="{% url 'programs:project_report_export' report.pk 'xlsx' %}">XLSX</a></td>
+                                    </tr>{% empty %}<tr><td colspan="5" class="text-center text-muted py-3">No reports yet.</td></tr>{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock dashboard_content %}

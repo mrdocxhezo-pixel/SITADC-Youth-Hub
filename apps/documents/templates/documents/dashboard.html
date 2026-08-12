@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Document Dashboard - SITADC Youth Hub{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-folder2-open"></i> Document Dashboard</h1>
+    <a href="{% url 'documents:upload' %}" class="btn btn-primary">
+      <i class="bi bi-cloud-upload"></i> Upload Document
+    </a>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4 col-lg-2 mb-3">
+      <div class="card text-bg-primary h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Total Documents</h6>
+              <h2 class="mb-0 mt-2">{{ total_documents|default:"0" }}</h2>
+            </div>
+            <i class="bi bi-files fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-lg-2 mb-3">
+      <div class="card text-bg-warning h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Pending Reviews</h6>
+              <h2 class="mb-0 mt-2">{{ pending_reviews|default:"0" }}</h2>
+            </div>
+            <i class="bi bi-eye fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-lg-2 mb-3">
+      <div class="card text-bg-info h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Pending Approvals</h6>
+              <h2 class="mb-0 mt-2">{{ pending_approvals|default:"0" }}</h2>
+            </div>
+            <i class="bi bi-clock-history fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-lg-2 mb-3">
+      <div class="card text-bg-danger h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Expiring Soon</h6>
+              <h2 class="mb-0 mt-2">{{ expiring_soon|default:"0" }}</h2>
+            </div>
+            <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-lg-2 mb-3">
+      <div class="card text-bg-secondary h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Archived</h6>
+              <h2 class="mb-0 mt-2">{{ archived_count|default:"0" }}</h2>
+            </div>
+            <i class="bi bi-archive fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-lg-2 mb-3">
+      <div class="card text-bg-success h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Storage Used</h6>
+              <h6 class="mb-0 mt-2">{{ storage_used|default:"0 MB" }}</h6>
+            </div>
+            <i class="bi bi-device-hdd fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Recent Activity -->
+    <div class="col-lg-8 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Activity</h5>
+          <a href="{% url 'documents:audit_log_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body">
+          {% if recent_activity %}
+          <div class="list-group list-group-flush">
+            {% for activity in recent_activity %}
+            <div class="list-group-item d-flex align-items-start">
+              <div class="me-3">
+                {% if activity.action == 'CREATE' %}
+                <i class="bi bi-plus-circle text-success"></i>
+                {% elif activity.action == 'UPDATE' %}
+                <i class="bi bi-pencil text-primary"></i>
+                {% elif activity.action == 'DELETE' %}
+                <i class="bi bi-trash text-danger"></i>
+                {% elif activity.action == 'DOWNLOAD' %}
+                <i class="bi bi-download text-info"></i>
+                {% elif activity.action == 'APPROVE' %}
+                <i class="bi bi-check-circle text-success"></i>
+                {% elif activity.action == 'REJECT' %}
+                <i class="bi bi-x-circle text-danger"></i>
+                {% else %}
+                <i class="bi bi-circle text-secondary"></i>
+                {% endif %}
+              </div>
+              <div class="flex-grow-1">
+                <p class="mb-1">{{ activity.description }}</p>
+                <small class="text-muted">
+                  {{ activity.user.get_full_name|default:activity.user.username }} &middot;
+                  {{ activity.created_at|timesince }} ago
+                </small>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-4">No recent activity.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions & Categories -->
+    <div class="col-lg-4 mb-4">
+      <!-- Quick Actions -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a href="{% url 'documents:upload' %}" class="btn btn-outline-primary text-start">
+              <i class="bi bi-cloud-upload me-2"></i> Upload Document
+            </a>
+            <a href="{% url 'documents:my_documents' %}" class="btn btn-outline-primary text-start">
+              <i class="bi bi-person me-2"></i> My Documents
+            </a>
+            <a href="{% url 'documents:list' %}" class="btn btn-outline-primary text-start">
+              <i class="bi bi-search me-2"></i> Browse Library
+            </a>
+            <a href="{% url 'documents:folder_list' %}" class="btn btn-outline-primary text-start">
+              <i class="bi bi-folder me-2"></i> Browse Folders
+            </a>
+            <a href="{% url 'documents:category_list' %}" class="btn btn-outline-primary text-start">
+              <i class="bi bi-tags me-2"></i> Browse Categories
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Categories -->
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-tags"></i> Categories</h5>
+          <a href="{% url 'documents:category_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body">
+          {% if top_categories %}
+          <ul class="list-group list-group-flush">
+            {% for category in top_categories %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>
+                {% if category.icon %}<i class="bi bi-{{ category.icon }} me-1"></i>{% endif %}
+                {{ category.name }}
+              </span>
+              <span class="badge bg-primary rounded-pill">{{ category.document_count }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-muted text-center mb-0">No categories found.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

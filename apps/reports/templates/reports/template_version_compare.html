@@ -1,0 +1,76 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Compare versions &mdash; {{ object.title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "reports/includes/module_nav.html" %}
+        <header class="mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'reports:template_detail' object.pk %}">{{ object.code }}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'reports:template_version_list' object.pk %}">Versions</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Compare</li>
+                </ol>
+            </nav>
+            <h1 class="h2 mb-1">Compare versions</h1>
+            <p class="text-muted mb-0">v{{ left.version_number }} &rarr; v{{ right.version_number }}</p>
+        </header>
+        <div class="row g-4">
+            <section class="col-lg-6" aria-labelledby="added-heading">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-body"><h2 id="added-heading" class="h5 mb-0">Added</h2></div>
+                    <ul class="list-group list-group-flush">
+                        {% for code in added_fields %}
+                            <li class="list-group-item"><code>{{ code }}</code> <span class="badge text-bg-success">field</span></li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">No new fields.</li>
+                        {% endfor %}
+                        {% for code in added_sections %}
+                            <li class="list-group-item"><code>{{ code }}</code> <span class="badge text-bg-info">section</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+            <section class="col-lg-6" aria-labelledby="removed-heading">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-body"><h2 id="removed-heading" class="h5 mb-0">Removed</h2></div>
+                    <ul class="list-group list-group-flush">
+                        {% for code in removed_fields %}
+                            <li class="list-group-item"><code>{{ code }}</code> <span class="badge text-bg-danger">field</span></li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">No removed fields.</li>
+                        {% endfor %}
+                        {% for code in removed_sections %}
+                            <li class="list-group-item"><code>{{ code }}</code> <span class="badge text-bg-warning">section</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+        </div>
+        <section class="card shadow-sm border-0 mt-4" aria-labelledby="changes-heading">
+            <div class="card-header bg-body"><h2 id="changes-heading" class="h5 mb-0">Changed paths</h2></div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Schema change details</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Path</th>
+                            <th scope="col">From</th>
+                            <th scope="col">To</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for change in changes %}
+                            <tr>
+                                <td><code>{{ change.path }}</code></td>
+                                <td class="text-muted">{{ change.from }}</td>
+                                <td>{{ change.to }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-3">No differences found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+{% endblock dashboard_content %}

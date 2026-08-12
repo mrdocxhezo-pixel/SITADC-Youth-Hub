@@ -1,0 +1,83 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ agenda.title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meetings/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ agenda.title }}</h1>
+                <p class="text-muted mb-0">
+                    <a href="{% url 'meetings:meeting_detail' agenda.meeting_id %}">{{ agenda.meeting.title }}</a>
+                    &middot; <span class="badge text-bg-secondary">{{ agenda.get_status_display }}</span>
+                </p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                {% if can_manage %}
+                    <a class="btn btn-outline-primary" href="{% url 'meetings:agenda_update' agenda.meeting_id agenda.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a>
+                    <a class="btn btn-outline-primary" href="{% url 'meetings:agenda_item_create' agenda.meeting_id agenda.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add item</a>
+                {% endif %}
+                {% if can_approve and agenda.status != "APPROVED" %}
+                    <form method="post" action="{% url 'meetings:agenda_approve' agenda.meeting_id agenda.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-success" type="submit">Approve</button>
+                    </form>
+                {% endif %}
+                {% if can_manage and agenda.status != "PUBLISHED" %}
+                    <form method="post" action="{% url 'meetings:agenda_publish' agenda.meeting_id agenda.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-success" type="submit">Publish</button>
+                    </form>
+                {% endif %}
+            </div>
+        </header>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="agenda-items">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body"><h2 id="agenda-items" class="h5 mb-0">Agenda items</h2></div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Agenda items</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Order</th>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">Owner</th>
+                                    <th scope="col">Duration</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                    <tr>
+                                        <td>{{ item.display_order|default:item.item_number }}</td>
+                                        <td class="fw-semibold">{{ item.title }}</td>
+                                        <td>{{ item.owner.get_full_name|default:item.owner.username|default:"&mdash;" }}</td>
+                                        <td class="text-muted">{{ item.duration_minutes|default:"&mdash;" }} min</td>
+                                        <td class="text-end">
+                                            {% if can_manage %}
+                                                <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:agenda_item_update' agenda.meeting_id agenda.pk item.pk %}">Edit</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="5" class="text-center text-muted py-4">No agenda items added.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if agenda.objectives %}<p class="text-muted mb-0"><strong>Objectives:</strong> {{ agenda.objectives }}</p>{% endif %}
+            </section>
+            <aside class="col-xl-4" aria-labelledby="agenda-history">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 id="agenda-history" class="h5 mb-0">Details</h2></div>
+                    <dl class="card-body mb-0 row">
+                        <dt class="col-4">Version</dt><dd class="col-8">v{{ agenda.version }}</dd>
+                        <dt class="col-4">Prepared by</dt><dd class="col-8">{{ agenda.prepared_by.get_full_name|default:agenda.prepared_by.username|default:"&mdash;" }}</dd>
+                        {% if agenda.change_summary %}<dt class="col-4">Changes</dt><dd class="col-8">{{ agenda.change_summary }}</dd>{% endif %}
+                    </dl>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

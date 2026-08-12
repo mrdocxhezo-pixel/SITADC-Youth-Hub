@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>Enter Report Data</h2>
+          <p class="text-muted mb-0">
+            <code>{{ report.reference_number }}</code> &middot;
+            {{ report.template.title }}
+          </p>
+        </div>
+        <div>
+          <a href="{% url 'report_instances:detail' report.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+          </a>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Progress</span>
+            <span id="progress-text">0%</span>
+          </div>
+          <div class="progress" style="height: 20px;">
+            <div id="progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Auto-save Status -->
+      <div id="autosave-status" class="alert alert-info d-none mb-3">
+        <i class="bi bi-cloud-check"></i> Auto-saved at <span id="autosave-time"></span>
+      </div>
+
+      <!-- Data Entry Form -->
+      <form method="post" enctype="multipart/form-data" id="report-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+          <p class="mb-0">{{ error }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Sections -->
+        {% for section in sections %}
+        <div class="card mb-4 section-card" data-section-id="{{ section.pk }}">
+          <div class="card-header d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse" data-bs-target="#section-{{ section.pk }}"
+               role="button" aria-expanded="true">
+            <h5 class="mb-0">
+              <i class="bi bi-chevron-down me-2"></i>
+              {{ section.name }}
+            </h5>
+            <span class="badge bg-secondary section-status">Not started</span>
+          </div>
+          <div class="collapse show" id="section-{{ section.pk }}">
+            <div class="card-body">
+              {% if section.description %}
+              <p class="text-muted">{{ section.description }}</p>
+              {% endif %}
+              {% if section.instructions %}
+              <div class="alert alert-light border mb-3">
+                <i class="bi bi-info-circle me-2"></i>
+                {{ section.instructions }}
+              </div>
+              {% endif %}
+
+              <!-- Groups within section -->
+              {% for group in section.groups.all %}
+              <div class="mb-4">
+                {% if group.name %}
+                <h6 class="text-muted mb-3">{{ group.name }}</h6>
+                {% endif %}
+
+                <!-- Fields within group -->
+                {% for field in group.fields.all %}
+                <div class="mb-3 field-wrapper" data-field-id="{{ field.pk }}">
+                  <label for="section_{{ section.pk }}_field_{{ field.pk }}" class="form-label">
+                    {{ field.label }}
+                    {% if field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+
+                  {% if field.help_text %}
+                  <div class="form-text">{{ field.help_text }}</div>
+                  {% endif %}
+
+                  {% if field.field_type == "MULTILINE_TEXT" or field.field_type == "RICH_TEXT" %}
+                  <textarea
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-control report-field"
+                    rows="4"
+                    {% if field.required %}required{% endif %}
+                    placeholder="{{ field.placeholder }}"
+                  >{% if field.default_value %}{{ field.default_value }}{% endif %}</textarea>
+
+                  {% elif field.field_type == "DROPDOWN" %}
+                  <select
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-select report-field"
+                    {% if field.required %}required{% endif %}
+                  >
+                    <option value="">---------</option>
+                    {% for option in field.options.all %}
+                    <option value="{{ option.value }}">{{ option.label }}</option>
+                    {% endfor %}
+                  </select>
+
+                  {% elif field.field_type == "MULTI_SELECT" %}
+                  <select
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-select report-field"
+                    multiple
+                    {% if field.required %}required{% endif %}
+                  >
+                    {% for option in field.options.all %}
+                    <option value="{{ option.value }}">{{ option.label }}</option>
+                    {% endfor %}
+                  </select>
+
+                  {% elif field.field_type == "CHECKBOX" or field.field_type == "TOGGLE" %}
+                  <div class="form-check">
+                    <input
+                      type="checkbox"
+                      name="section_{{ section.pk }}_field_{{ field.pk }}"
+                      id="section_{{ section.pk }}_field_{{ field.pk }}"
+                      class="form-check-input report-field"
+                      value="true"
+                    >
+                  </div>
+
+                  {% elif field.field_type == "RADIO" %}
+                  {% for option in field.options.all %}
+                  <div class="form-check">
+                    <input
+                      type="radio"
+                      name="section_{{ section.pk }}_field_{{ field.pk }}"
+                      id="section_{{ section.pk }}_field_{{ field.pk }}_{{ option.value }}"
+                      class="form-check-input report-field"
+                      value="{{ option.value }}"
+                    >
+                    <label class="form-check-label" for="section_{{ section.pk }}_field_{{ field.pk }}_{{ option.value }}">
+                      {{ option.label }}
+                    </label>
+                  </div>
+                  {% endfor %}
+
+                  {% elif field.field_type == "INTEGER" %}
+                  <input
+                    type="number"
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-control report-field"
+                    {% if field.required %}required{% endif %}
+                    step="1"
+                  >
+
+                  {% elif field.field_type == "DECIMAL" or field.field_type == "CURRENCY" or field.field_type == "PERCENTAGE" %}
+                  <input
+                    type="number"
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-control report-field"
+                    {% if field.required %}required{% endif %}
+                    step="0.01"
+                  >
+
+                  {% elif field.field_type == "DATE" %}
+                  <input
+                    type="date"
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-control report-field"
+                    {% if field.required %}required{% endif %}
+                  >
+
+                  {% elif field.field_type == "TIME" %}
+                  <input
+                    type="time"
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-control report-field"
+                    {% if field.required %}required{% endif %}
+                  >
+
+                  {% elif field.field_type == "DATETIME" %}
+                  <input
+                    type="datetime-local"
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-control report-field"
+                    {% if field.required %}required{% endif %}
+                  >
+
+                  {% elif field.field_type == "IMAGE" or field.field_type == "VIDEO" or field.field_type == "AUDIO" or field.field_type == "DOCUMENT" %}
+                  <input
+                    type="file"
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-control report-field"
+                    {% if field.required %}required{% endif %}
+                    accept="{% if field.field_type == 'IMAGE' %}image/*{% elif field.field_type == 'VIDEO' %}video/*{% elif field.field_type == 'AUDIO' %}audio/*{% else %}*/*{% endif %}"
+                  >
+
+                  {% elif field.field_type == "GPS_COORDINATES" %}
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      name="section_{{ section.pk }}_field_{{ field.pk }}"
+                      id="section_{{ section.pk }}_field_{{ field.pk }}"
+                      class="form-control report-field"
+                      placeholder="Latitude, Longitude"
+                      {% if field.required %}required{% endif %}
+                    >
+                    <button type="button" class="btn btn-outline-secondary" onclick="getLocation('{{ section.pk }}', '{{ field.pk }}')">
+                      <i class="bi bi-geo-alt"></i> Get Location
+                    </button>
+                  </div>
+
+                  {% elif field.field_type == "SIGNATURE" %}
+                  <input
+                    type="text"
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-control report-field signature-input"
+                    placeholder="Type your full name as signature"
+                    {% if field.required %}required{% endif %}
+                  >
+
+                  {% else %}
+                  <input
+                    type="text"
+                    name="section_{{ section.pk }}_field_{{ field.pk }}"
+                    id="section_{{ section.pk }}_field_{{ field.pk }}"
+                    class="form-control report-field"
+                    {% if field.required %}required{% endif %}
+                    placeholder="{{ field.placeholder }}"
+                  >
+                  {% endif %}
+
+                  {% if field.tooltip %}
+                  <div class="form-text"><i class="bi bi-info-circle"></i> {{ field.tooltip }}</div>
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+        <!-- Submit Buttons -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'report_instances:detail' report.pk %}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i> Cancel
+              </a>
+              <div>
+                <button type="button" class="btn btn-outline-primary me-2" onclick="saveDraft()">
+                  <i class="bi bi-save"></i> Save Draft
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-check-circle"></i> Save & Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Auto-save functionality
+let autoSaveTimer;
+const AUTO_SAVE_INTERVAL = 60000; // 60 seconds
+
+document.querySelectorAll('.report-field').forEach(field => {
+  field.addEventListener('input', () => {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(saveDraft, AUTO_SAVE_INTERVAL);
+    updateProgress();
+  });
+});
+
+function updateProgress() {
+  const fields = document.querySelectorAll('.report-field');
+  const filled = Array.from(fields).filter(f => {
+    if (f.type === 'checkbox') return f.checked;
+    if (f.type === 'file') return f.files.length > 0;
+    return f.value.trim() !== '';
+  }).length;
+  const total = fields.length;
+  const percent = total > 0 ? Math.round((filled / total) * 100) : 0;
+
+  document.getElementById('progress-bar').style.width = percent + '%';
+  document.getElementById('progress-text').textContent = percent + '%';
+
+  // Update section statuses
+  document.querySelectorAll('.section-card').forEach(card => {
+    const sectionFields = card.querySelectorAll('.report-field');
+    const sectionFilled = Array.from(sectionFields).filter(f => {
+      if (f.type === 'checkbox') return f.checked;
+      if (f.type === 'file') return f.files.length > 0;
+      return f.value.trim() !== '';
+    }).length;
+    const statusBadge = card.querySelector('.section-status');
+    if (sectionFilled === 0) {
+      statusBadge.textContent = 'Not started';
+      statusBadge.className = 'badge bg-secondary section-status';
+    } else if (sectionFilled < sectionFields.length) {
+      statusBadge.textContent = 'In progress';
+      statusBadge.className = 'badge bg-warning section-status';
+    } else {
+      statusBadge.textContent = 'Complete';
+      statusBadge.className = 'badge bg-success section-status';
+    }
+  });
+}
+
+function saveDraft() {
+  const form = document.getElementById('report-form');
+  const formData = new FormData(form);
+
+  fetch(window.location.href, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+  }).then(response => {
+    if (response.ok) {
+      const status = document.getElementById('autosave-status');
+      status.classList.remove('d-none');
+      document.getElementById('autosave-time').textContent = new Date().toLocaleTimeString();
+      setTimeout(() => status.classList.add('d-none'), 3000);
+    }
+  }).catch(err => console.error('Auto-save failed:', err));
+}
+
+function getLocation(sectionId, fieldId) {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const lat = position.coords.latitude.toFixed(6);
+        const lng = position.coords.longitude.toFixed(6);
+        document.getElementById(`section_${sectionId}_field_${fieldId}`).value = `${lat}, ${lng}`;
+      },
+      error => {
+        alert('Unable to get location: ' + error.message);
+      }
+    );
+  } else {
+    alert('Geolocation is not supported by this browser.');
+  }
+}
+
+// Initial progress update
+updateProgress();
+</script>
+{% endblock %}

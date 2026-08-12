@@ -1,5 +1,7 @@
 """Direct-object authorization, private files, and safe export tests."""
 
+from django.core.signals import request_finished
+from django.db import close_old_connections
 from django.urls import reverse
 
 from apps.stakeholders.constants import ConfidentialityLevel
@@ -98,7 +100,11 @@ class ProtectedDownloadTests(StakeholderTestCase):
         self.assertEqual(response["Cache-Control"], "private, no-store")
         self.assertEqual(response["Pragma"], "no-cache")
         self.assertEqual(response["X-Content-Type-Options"], "nosniff")
-        response.close()
+        request_finished.disconnect(close_old_connections)
+        try:
+            response.close()
+        finally:
+            request_finished.connect(close_old_connections)
 
     def test_scoped_download_returns_404_for_denied_existing_document(self):
         response = self.client.get(

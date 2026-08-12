@@ -1,0 +1,138 @@
+"""Declarative default data for the Phase 19 Dynamic Report Builder module.
+
+Categories A through P — single source of truth from the Report Categories
+and Unique Templates document.
+"""
+
+from __future__ import annotations
+
+DEFAULT_REPORT_CATEGORIES: tuple[dict[str, str | int], ...] = (
+    {
+        "code": "A",
+        "name": "A. Organizational Governance",
+        "description": "Reports governing organizational leadership, strategy, compliance and board operations.",
+        "color": "#0d6efd",
+        "icon": "bi-bank",
+        "sort_order": 1,
+    },
+    {
+        "code": "B",
+        "name": "B. Leadership",
+        "description": "Reports on leadership performance, attendance, development and team management.",
+        "color": "#6f42c1",
+        "icon": "bi-person-lines-fill",
+        "sort_order": 2,
+    },
+    {
+        "code": "C",
+        "name": "C. Program Management",
+        "description": "Reports on program planning, implementation, outcomes and community engagement.",
+        "color": "#198754",
+        "icon": "bi-diagram-3",
+        "sort_order": 3,
+    },
+    {
+        "code": "D",
+        "name": "D. Membership and Volunteer Management",
+        "description": "Reports on membership, volunteer deployment, performance and retention.",
+        "color": "#0dcaf0",
+        "icon": "bi-people",
+        "sort_order": 4,
+    },
+    {
+        "code": "E",
+        "name": "E. Monitoring, Evaluation, Accountability and Learning (MEAL)",
+        "description": "Reports on results frameworks, indicator performance, evaluations and learning.",
+        "color": "#dc3545",
+        "icon": "bi-graph-up-arrow",
+        "sort_order": 5,
+    },
+    {
+        "code": "F",
+        "name": "F. Communication and Information Management",
+        "description": "Reports on communications, social media, media coverage and knowledge management.",
+        "color": "#fd7e14",
+        "icon": "bi-megaphone",
+        "sort_order": 6,
+    },
+    {
+        "code": "G",
+        "name": "G. Finance",
+        "description": "Financial reports, budgets, audits and procurement.",
+        "color": "#ffc107",
+        "icon": "bi-cash-stack",
+        "sort_order": 7,
+    },
+    {
+        "code": "H",
+        "name": "H. Resource Mobilization",
+        "description": "Reports on grants, proposals, donor engagement and fundraising.",
+        "color": "#20c997",
+        "icon": "bi-coin",
+        "sort_order": 8,
+    },
+    {
+        "code": "I",
+        "name": "I. Training and Capacity Building",
+        "description": "Reports on training plans, attendance, evaluations and mentorship.",
+        "color": "#6610f2",
+        "icon": "bi-mortarboard",
+        "sort_order": 9,
+    },
+    {
+        "code": "J",
+        "name": "J. Research and Innovation",
+        "description": "Research reports, needs assessments, case studies and innovation.",
+        "color": "#e83e8c",
+        "icon": "bi-lightbulb",
+        "sort_order": 10,
+    },
+    {
+        "code": "K",
+        "name": "K. Partnership",
+        "description": "Reports on stakeholder mapping, partnerships and MoU tracking.",
+        "color": "#17a2b8",
+        "icon": "bi-handshake",
+        "sort_order": 11,
+    },
+    {
+        "code": "L",
+        "name": "L. Community Engagement",
+        "description": "Reports on community outreach, feedback, meetings and impact.",
+        "color": "#28a745",
+        "icon": "bi-geo-alt",
+        "sort_order": 12,
+    },
+    {
+        "code": "M",
+        "name": "M. Quality Assurance",
+        "description": "Reports on quality assessments, compliance, audits and improvement.",
+        "color": "#6c757d",
+        "icon": "bi-patch-check",
+        "sort_order": 13,
+    },
+    {
+        "code": "N",
+        "name": "N. Risk and Compliance",
+        "description": "Risk registers, incident reports, safeguarding and compliance.",
+        "color": "#343a40",
+        "icon": "bi-shield-exclamation",
+        "sort_order": 14,
+    },
+    {
+        "code": "O",
+        "name": "O. Organizational Learning",
+        "description": "After-action reviews, lessons learned and continuous improvement.",
+        "color": "#007bff",
+        "icon": "bi-journal-richtext",
+        "sort_order": 15,
+    },
+    {
+        "code": "P",
+        "name": "P. Organizational Registers",
+        "description": "Master registers for memberships, volunteers, assets, donors and more.",
+        "color": "#adb5bd",
+        "icon": "bi-journal-bookmark",
+        "sort_order": 16,
+    },
+)

@@ -1,0 +1,29 @@
+{% load rbac_tags %}
+<nav class="mb-4" aria-label="Notifications module">
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-secondary {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+           href="{% url 'notifications:dashboard' %}"><i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>Dashboard</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'notifications:inbox' %}"><i class="bi bi-inbox me-1" aria-hidden="true"></i>Inbox</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'notifications:preferences' %}"><i class="bi bi-sliders me-1" aria-hidden="true"></i>Preferences</a>
+        {% if request.user|has_perm:"notifications.manage_templates" or request.user|has_perm:"notifications.manage" %}
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{% url 'notifications:template_list' %}"><i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>Templates</a>
+        {% endif %}
+        {% if request.user|has_perm:"notifications.manage_rules" or request.user|has_perm:"notifications.manage" %}
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{% url 'notifications:rule_list' %}"><i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>Rules</a>
+        {% endif %}
+        {% if request.user|has_perm:"announcements.create" or request.user|has_perm:"announcements.manage" %}
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{% url 'notifications:announcement_list' %}"><i class="bi bi-megaphone me-1" aria-hidden="true"></i>Announcements</a>
+        {% endif %}
+        {% if request.user|has_perm:"notifications.manage" %}
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{% url 'notifications:event_list' %}"><i class="bi bi-activity me-1" aria-hidden="true"></i>Events</a>
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{% url 'notifications:audit_list' %}"><i class="bi bi-journal-check me-1" aria-hidden="true"></i>Audit</a>
+        {% endif %}
+    </div>
+</nav>

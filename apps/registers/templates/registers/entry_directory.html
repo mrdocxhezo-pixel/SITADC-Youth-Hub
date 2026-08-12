@@ -1,0 +1,121 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Register Entries | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "registers/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Register Entries</h1>
+                <p class="text-muted mb-0">Search and filter entries across all organizational registers.</p>
+            </div>
+            <div class="d-flex gap-2">
+                {% if can_create %}
+                    <a class="btn btn-primary" href="{% url 'registers:register_list' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New entry</a>
+                {% endif %}
+                {% if can_export %}
+                    <a class="btn btn-outline-primary"
+                       href="{% url 'registers:export_format' 'csv' %}"><i class="bi bi-download me-1" aria-hidden="true"></i>Export CSV</a>
+                {% endif %}
+            </div>
+        </header>
+        <section class="card shadow-sm border-0 mb-4"
+                 aria-labelledby="directory-filters">
+            <div class="card-body">
+                <h2 id="directory-filters" class="h5">Search and filter</h2>
+                <form method="get" class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="directory-search">Search</label>
+                        <input class="form-control"
+                               id="directory-search"
+                               type="search"
+                               name="q"
+                               value="{{ request.GET.q }}"
+                               placeholder="Reference, title or keywords">
+                    </div>
+                    <div class="col-sm-6 col-lg-2">
+                        <label class="form-label" for="directory-register">Register</label>
+                        <select class="form-select" id="directory-register" name="register">
+                            <option value="">All registers</option>
+                            {% for reg in search_form.fields.register.queryset %}<option value="{{ reg.pk }}"
+        {% if request.GET.register == reg.pk|stringformat:"s" %}selected{% endif %}>{{ reg.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-lg-2">
+                        <label class="form-label" for="directory-category">Category</label>
+                        <select class="form-select" id="directory-category" name="category">
+                            <option value="">All categories</option>
+                            {% for cat in search_form.fields.category.queryset %}<option value="{{ cat.pk }}"
+        {% if request.GET.category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-lg-2">
+                        <label class="form-label" for="directory-approval">Approval status</label>
+                        <select class="form-select" id="directory-approval" name="approval_status">
+                            <option value="">All statuses</option>
+                            {% for value, label in search_form.fields.approval_status.choices %}{% if value %}<option value="{{ value }}"
+        {% if request.GET.approval_status == value %}selected{% endif %}>{{ label }}</option>{% endif %}{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-lg-2">
+                        <label class="form-label" for="directory-confidentiality">Confidentiality</label>
+                        <select class="form-select"
+                                id="directory-confidentiality"
+                                name="confidentiality">
+                            <option value="">All levels</option>
+                            {% for value, label in search_form.fields.confidentiality.choices %}{% if value %}<option value="{{ value }}"
+        {% if request.GET.confidentiality == value %}selected{% endif %}>{{ label }}</option>{% endif %}{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 d-flex align-items-end gap-2">
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-search me-1" aria-hidden="true"></i>Apply filters</button>
+                        <a class="btn btn-outline-secondary" href="{{ request.path }}">Clear</a>
+                    </div>
+                </form>
+            </div>
+        </section>
+        <p class="small text-muted mb-2">{{ page_obj.paginator.count }} entr{{ page_obj.paginator.count|pluralize:"y,ies" }}</p>
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Register entry results</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Reference</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Register</th>
+                            <th scope="col">Approval status</th>
+                            <th scope="col">Confidentiality</th>
+                            <th scope="col"><span class="visually-hidden">Action</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                            <tr>
+                                <td><code>{{ entry.reference_number }}</code></td>
+                                <td class="fw-semibold"><a href="{% url 'registers:entry_detail' entry.pk %}">{{ entry.title }}</a></td>
+                                <td>{{ entry.register.name }}</td>
+                                <td><span class="badge text-bg-secondary">{{ entry.get_approval_status_display }}</span></td>
+                                <td><span class="badge text-bg-secondary">{{ entry.get_confidentiality_display }}</span></td>
+                                <td class="text-end"><a class="btn btn-sm btn-outline-primary"
+   href="{% url 'registers:entry_detail' entry.pk %}">View</a></td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No entries match these filters.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-4" aria-label="Entry pages">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+                    <li class="page-item active" aria-current="page"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

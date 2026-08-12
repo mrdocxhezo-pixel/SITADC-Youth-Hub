@@ -1,0 +1,54 @@
+{% extends "layouts/dashboard.html" %}
+{% load meal_tags %}
+{% block title %}{{ feedback.reference_number }} | Feedback | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meal/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ feedback.reference_number }}</h1>
+                <p class="text-muted mb-0">Submitted {{ feedback.submission_date }} &middot; {{ feedback.get_status_display }}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if can_manage %}
+                    {% if feedback.status == "RECEIVED" or feedback.status == "REVIEWED" %}
+                        <a class="btn btn-outline-primary" href="{% url 'meal:feedback_respond' feedback.pk %}"><i class="bi bi-reply me-1" aria-hidden="true"></i>Respond</a>
+                    {% endif %}
+                    {% if feedback.status == "RESPONDED" %}
+                        <form method="post" action="{% url 'meal:feedback_close' feedback.pk %}">{% csrf_token %}<button class="btn btn-success" type="submit"><i class="bi bi-lock-fill me-1" aria-hidden="true"></i>Close</button></form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </header>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="feedback-details">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 id="feedback-details" class="h5 mb-0">Details</h2></div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            {% for label, name in feedback|fields_with_labels %}
+                                <dt class="col-sm-4 text-muted fw-normal">{{ label }}</dt>
+                                <dd class="col-sm-8">{% if feedback|field_value:name == "" %}<span class="text-muted">Not recorded</span>{% else %}{{ feedback|field_value:name }}{% endif %}</dd>
+                            {% endfor %}
+                        </dl>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="feedback-history">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 id="feedback-history" class="h5 mb-0">Status history</h2></div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in feedback|record_history %}
+                            <li class="list-group-item px-3 d-flex justify-content-between">
+                                <span>{{ item.action|title }}: {{ item.to_status|title }}</span>
+                                <span class="text-muted">{{ item.created_at|date:"d M Y" }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No history recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

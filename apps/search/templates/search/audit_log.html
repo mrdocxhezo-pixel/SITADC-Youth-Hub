@@ -1,0 +1,48 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Search Audit Log | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        <header class="mb-4">
+            <h1 class="h2 mb-1">Search Audit Log</h1>
+            <p class="text-muted mb-0">Append-only record of every executed search query.</p>
+        </header>
+
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Search audit log entries</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">When</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Query</th>
+                            <th scope="col">Entity types</th>
+                            <th scope="col">Results</th>
+                            <th scope="col">Duration</th>
+                            <th scope="col">IP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                            <tr>
+                                <td>{{ log.created_at|date:"M d, Y H:i" }}</td>
+                                <td>{{ log.user|default:"-" }}</td>
+                                <td><code>{{ log.query }}</code></td>
+                                <td>
+                                    {% for key in log.entity_types %}<span class="badge text-bg-light me-1">{{ key }}</span>{% empty %}<span class="text-muted small">All</span>{% endfor %}
+                                </td>
+                                <td>{{ log.result_count }}</td>
+                                <td>{{ log.duration_ms }} ms</td>
+                                <td>{{ log.ip_address|default:"-" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">No search activity recorded yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,145 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ object.title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "reports/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1">
+                        <li class="breadcrumb-item"><a href="{% url 'reports:template_list' %}">Templates</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ object.code }}</li>
+                    </ol>
+                </nav>
+                <h1 class="h2 mb-1">{{ object.title }}</h1>
+                <p class="text-muted mb-0">
+                    <code>{{ object.reference_number }}</code>
+                    &middot; {{ object.get_status_display }}
+                    &middot; {{ object.category.name }}
+                    &middot; v{{ object.current_version.version_number|default:"-" }}
+                </p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if can_preview %}<a class="btn btn-outline-primary" href="{% url 'reports:template_preview' object.pk %}"><i class="bi bi-eye me-1" aria-hidden="true"></i>Preview</a>{% endif %}
+                {% if can_edit and object.is_editable %}<a class="btn btn-outline-primary" href="{% url 'reports:template_schema' object.pk %}"><i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>Design schema</a>{% endif %}
+                {% if can_edit and object.is_editable %}<a class="btn btn-outline-primary" href="{% url 'reports:template_update' object.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit details</a>{% endif %}
+                {% if can_clone %}<a class="btn btn-outline-secondary" href="{% url 'reports:template_clone' object.pk %}"><i class="bi bi-copy me-1" aria-hidden="true"></i>Clone</a>{% endif %}
+                {% if can_export %}<a class="btn btn-outline-secondary" href="{% url 'reports:template_export' object.pk %}"><i class="bi bi-download me-1" aria-hidden="true"></i>Export</a>{% endif %}
+            </div>
+        </header>
+        {% if object.is_published and can_publish %}
+            <form method="post" action="{% url 'reports:template_unpublish' object.pk %}" class="mb-4">
+                {% csrf_token %}
+                <button class="btn btn-outline-warning btn-sm" type="submit">Unpublish</button>
+            </form>
+        {% elif object.status == "DRAFT" and can_publish %}
+            <a class="btn btn-success mb-4" href="{% url 'reports:template_publish' object.pk %}"><i class="bi bi-rocket-takeoff me-1" aria-hidden="true"></i>Publish template</a>
+        {% endif %}
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="schema-heading">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body">
+                        <h2 id="schema-heading" class="h5 mb-0">Schema</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if sections %}
+                            {% for section in sections %}
+                                <article class="mb-3">
+                                    <h3 class="h6 mb-1">
+                                        <i class="bi bi-journal-text me-1" aria-hidden="true"></i>{{ section.name }}
+                                        <span class="badge text-bg-light">{{ section.get_visibility_mode_display }}</span>
+                                    </h3>
+                                    <p class="small text-muted mb-2">{{ section.description }}</p>
+                                    {% for group in section.groups.all %}
+                                        <ul class="list-group list-group-flush mb-2">
+                                            {% for field in group.fields.all %}
+                                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                                    <span>
+                                                        {{ field.label }}
+                                                        {% if field.is_calculated %}<span class="badge text-bg-info">calculated</span>{% endif %}
+                                                        {% if field.required %}<span class="text-danger" aria-hidden="true">*</span>{% endif %}
+                                                    </span>
+                                                    <span class="small text-muted">{{ field.get_field_type_display }}</span>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endfor %}
+                                </article>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted mb-0">No sections defined yet. Open the schema designer to build the template.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h2 class="h5">Details</h2>
+                        <dl class="row mb-0 small">
+                            <dt class="col-5 text-muted">Department</dt>
+                            <dd class="col-7">{{ object.department|default:"—" }}</dd>
+                            <dt class="col-5 text-muted">Frequency</dt>
+                            <dd class="col-7">{{ object.get_reporting_frequency_display }}</dd>
+                            <dt class="col-5 text-muted">Confidentiality</dt>
+                            <dd class="col-7">{{ object.get_confidentiality_display }}</dd>
+                            <dt class="col-5 text-muted">Effective from</dt>
+                            <dd class="col-7">{{ object.effective_from|default:"—" }}</dd>
+                            <dt class="col-5 text-muted">Expires on</dt>
+                            <dd class="col-7">{{ object.expires_on|default:"—" }}</dd>
+                            <dt class="col-5 text-muted">Retention</dt>
+                            <dd class="col-7">{{ object.retention_period_days }} days</dd>
+                            <dt class="col-5 text-muted">Owner</dt>
+                            <dd class="col-7">{{ object.owner.get_full_name|default:object.owner|default:"—" }}</dd>
+                        </dl>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Versions</h2>
+                        <a class="small" href="{% url 'reports:template_version_list' object.pk %}">View all</a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for version in versions|slice:":5" %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>v{{ version.version_number }}</span>
+                                <span class="badge text-bg-secondary">{{ version.get_status_display }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">No versions.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body d-flex flex-wrap gap-2">
+                        {% if can_archive and object.status != "ARCHIVED" %}
+                            <form method="post" action="{% url 'reports:template_archive' object.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Archive</button>
+                            </form>
+                        {% endif %}
+                        {% if can_restore and object.status == "ARCHIVED" %}
+                            <form method="post" action="{% url 'reports:template_restore' object.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-success btn-sm" type="submit">Restore</button>
+                            </form>
+                        {% endif %}
+                        {% if can_delete and object.status == "DRAFT" %}
+                            <form method="post" action="{% url 'reports:template_delete' object.pk %}" class="d-inline" data-confirm="Delete this draft template? This cannot be undone.">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if can_import %}
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <a class="btn btn-outline-secondary w-100" href="{% url 'reports:template_import' %}"><i class="bi bi-upload me-1" aria-hidden="true"></i>Import template</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

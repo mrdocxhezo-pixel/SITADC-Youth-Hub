@@ -1,0 +1,79 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ indicator.code }} | Indicator Registry | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meal/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ indicator.code }} &mdash; {{ indicator.title }}</h1>
+                <p class="text-muted mb-0">{{ indicator.reference_number }}</p>
+            </div>
+            <div class="d-flex gap-2">
+                {% if can_update %}<a class="btn btn-outline-primary" href="{% url 'meal:indicator_edit' indicator.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a>{% endif %}
+                {% if can_manage and indicator.status == "DRAFT" %}
+                    <form method="post" action="{% url 'meal:indicator_activate' indicator.pk %}">{% csrf_token %}<button class="btn btn-success" type="submit"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>Activate</button></form>
+                {% endif %}
+            </div>
+        </header>
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body"><p class="text-uppercase small fw-semibold text-muted mb-1">Type</p><p class="mb-0 fw-semibold">{{ indicator.get_indicator_type_display }}</p></div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body"><p class="text-uppercase small fw-semibold text-muted mb-1">Category</p><p class="mb-0 fw-semibold">{{ indicator.category.name|default:"Not classified" }}</p></div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body"><p class="text-uppercase small fw-semibold text-muted mb-1">Unit</p><p class="mb-0 fw-semibold">{{ indicator.unit.name|default:"Not set" }}</p></div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body"><p class="text-uppercase small fw-semibold text-muted mb-1">Status</p><p class="mb-0"><span class="badge text-bg-secondary">{{ indicator.get_status_display }}</span></p></div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <section class="col-lg-4" aria-labelledby="baselines-heading">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-body"><h2 id="baselines-heading" class="h5 mb-0">Baselines</h2></div>
+                    <ul class="list-group list-group-flush">
+                        {% for baseline in baselines %}
+                            <li class="list-group-item px-3 d-flex justify-content-between"><span>{{ baseline.value }}</span><span class="badge text-bg-secondary">{{ baseline.get_status_display }}</span></li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No baselines recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+            <section class="col-lg-4" aria-labelledby="targets-heading">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-body"><h2 id="targets-heading" class="h5 mb-0">Targets</h2></div>
+                    <ul class="list-group list-group-flush">
+                        {% for target in targets %}
+                            <li class="list-group-item px-3 d-flex justify-content-between"><span>{{ target.period_label }}: {{ target.value }}</span><span class="badge text-bg-secondary">{{ target.get_status_display }}</span></li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No targets recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+            <section class="col-lg-4" aria-labelledby="results-heading">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-body"><h2 id="results-heading" class="h5 mb-0">Results</h2></div>
+                    <ul class="list-group list-group-flush">
+                        {% for result in results %}
+                            <li class="list-group-item px-3 d-flex justify-content-between"><span>{{ result.period_label }}: {{ result.value }}</span><span class="badge text-bg-secondary">{{ result.get_status_display }}</span></li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No results recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+{% endblock dashboard_content %}

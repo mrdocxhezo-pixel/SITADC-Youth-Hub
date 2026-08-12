@@ -1,0 +1,56 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Notification Audit Log | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "notifications/includes/module_nav.html" %}
+        <header class="mb-4">
+            <h1 class="h2 mb-1">Notification audit log</h1>
+            <p class="text-muted mb-0">Immutable audit trail of notification administration actions.</p>
+        </header>
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Notification audit records</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Created</th>
+                            <th scope="col">Action</th>
+                            <th scope="col">Actor</th>
+                            <th scope="col">Target</th>
+                            <th scope="col">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in audit_records %}
+                            <tr>
+                                <td>{{ record.created_at|date:"d M Y H:i" }}</td>
+                                <td><span class="badge text-bg-light border">{{ record.action }}</span></td>
+                                <td>{{ record.actor.get_full_name|default:record.actor|default:"System" }}</td>
+                                <td>
+                                    {% if record.target_type %}
+                                        <small class="text-muted">{{ record.target_type }}:</small>
+                                        <code class="small">{{ record.target_id|truncatechars:20 }}</code>
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>{{ record.notes|truncatechars:60|default:"—" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">No audit records yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-4" aria-label="Audit pages">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+                    <li class="page-item active" aria-current="page"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,269 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Report Management Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-0">Report Management Dashboard</h1>
+      <p class="text-muted mb-0">Manage, track and review all organizational reports</p>
+    </div>
+    <div>
+      <a href="{% url 'report_instances:create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Create New Report
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary Cards Row 1 -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                <i class="bi bi-file-earmark-text text-primary fs-4"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="text-muted mb-1">My Drafts</h6>
+              <h2 class="mb-0">{{ my_drafts }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-top-0">
+          <a href="{% url 'report_instances:list' %}?status=DRAFT" class="text-decoration-none small">
+            View all <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                <i class="bi bi-send text-info fs-4"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="text-muted mb-1">My Submitted</h6>
+              <h2 class="mb-0">{{ my_submitted }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-top-0">
+          <a href="{% url 'report_instances:list' %}?status=SUBMITTED" class="text-decoration-none small">
+            View all <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                <i class="bi bi-check-circle text-success fs-4"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="text-muted mb-1">My Approved</h6>
+              <h2 class="mb-0">{{ my_approved }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-top-0">
+          <a href="{% url 'report_instances:list' %}?status=APPROVED" class="text-decoration-none small">
+            View all <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <div class="bg-dark bg-opacity-10 rounded-3 p-3">
+                <i class="bi bi-archive text-dark fs-4"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="text-muted mb-1">My Archived</h6>
+              <h2 class="mb-0">{{ my_archived }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-top-0">
+          <a href="{% url 'report_instances:list' %}?status=ARCHIVED" class="text-decoration-none small">
+            View all <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards Row 2 -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-4 col-md-6">
+      <div class="card border-start border-warning border-4 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <i class="bi bi-hourglass-split text-warning fs-3"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Pending Review</h6>
+              <h3 class="mb-0">{{ pending_review }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-4 col-md-6">
+      <div class="card border-start border-danger border-4 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <i class="bi bi-exclamation-triangle text-danger fs-3"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Overdue</h6>
+              <h3 class="mb-0">{{ overdue }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-4 col-md-6">
+      <div class="card border-start border-secondary border-4 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <i class="bi bi-collection text-secondary fs-3"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Total Reports</h6>
+              <h3 class="mb-0">{{ total_reports }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Recent Reports -->
+    <div class="col-xl-8">
+      <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Reports</h5>
+          <a href="{% url 'report_instances:list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Reference</th>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Owner</th>
+                  <th>Due Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for report in recent_reports %}
+                <tr>
+                  <td><code>{{ report.reference_number }}</code></td>
+                  <td>
+                    <a href="{% url 'report_instances:detail' report.pk %}">
+                      {{ report.title|truncatewords:8 }}
+                    </a>
+                  </td>
+                  <td><span class="badge bg-light text-dark">{{ report.category.code|default:"-" }}</span></td>
+                  <td>
+                    <span class="badge bg-{% if report.status == 'DRAFT' %}secondary{% elif report.status == 'SUBMITTED' %}primary{% elif report.status == 'APPROVED' %}success{% elif report.status == 'ARCHIVED' %}dark{% elif report.status == 'RETURNED_FOR_CORRECTION' %}warning{% elif report.status == 'UNDER_REVIEW' %}info{% else %}secondary{% endif %}">
+                      {{ report.get_status_display }}
+                    </span>
+                  </td>
+                  <td>{{ report.owner.get_full_name|default:report.owner.username }}</td>
+                  <td>
+                    {% if report.due_date %}
+                      <span class="{% if report.due_date < today %}text-danger{% endif %}">
+                        {{ report.due_date|date:"M d, Y" }}
+                      </span>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                    No reports yet. <a href="{% url 'report_instances:create' %}">Create your first report</a>.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions & Categories -->
+    <div class="col-xl-4">
+      <!-- Quick Actions -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a href="{% url 'report_instances:create' %}" class="btn btn-primary">
+              <i class="bi bi-plus-circle me-2"></i>Create New Report
+            </a>
+            <a href="{% url 'reports:category_browse' %}" class="btn btn-outline-primary">
+              <i class="bi bi-journal-bookmark me-2"></i>Browse Templates
+            </a>
+            <a href="{% url 'report_instances:list' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-list-ul me-2"></i>View All Reports
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories Summary -->
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-tags me-2"></i>Report Categories</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            {% for cat in categories %}
+            <a href="{% url 'reports:category_templates' pk=cat.pk %}"
+               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <div>
+                <i class="bi {{ cat.icon }} me-2" style="color: {{ cat.color }};"></i>
+                {{ cat.name|truncatewords:4 }}
+              </div>
+              <span class="badge rounded-pill" style="background-color: {{ cat.color }};">
+                {{ cat.template_count }}
+              </span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+/* Enterprise Search module styles */
+
+.search-hit {
+    position: relative;
+}
+
+.search-hit:hover {
+    background-color: var(--bs-primary-bg-subtle, #f8f9fa);
+}
+
+.search-type-check {
+    cursor: pointer;
+}

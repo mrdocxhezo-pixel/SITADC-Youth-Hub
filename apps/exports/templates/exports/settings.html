@@ -1,0 +1,86 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+{% block title %}Export Settings | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        <header class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-1">Export Settings</h1>
+                <p class="text-muted mb-0">Engine configuration for the Export Engine.</p>
+            </div>
+            <a href="{% url 'exports:home' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+        </header>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <section class="card shadow-sm border-0" aria-labelledby="config-heading">
+                    <div class="card-header bg-white border-0 pt-3">
+                        <h2 id="config-heading" class="h5 mb-0">Configuration</h2>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">Organization name</dt>
+                            <dd class="col-sm-7">{{ config.organization_name }}</dd>
+                            <dt class="col-sm-5">Short name</dt>
+                            <dd class="col-sm-7">{{ config.short_name }}</dd>
+                            <dt class="col-sm-5">Contact email</dt>
+                            <dd class="col-sm-7">{{ config.contact_email }}</dd>
+                            <dt class="col-sm-5">Website</dt>
+                            <dd class="col-sm-7">{{ config.website|default:"—" }}</dd>
+                            <dt class="col-sm-5">Default format</dt>
+                            <dd class="col-sm-7">{{ config.get_default_format_display }}</dd>
+                            <dt class="col-sm-5">Page / orientation</dt>
+                            <dd class="col-sm-7">{{ config.get_default_page_size_display }} / {{ config.get_default_orientation_display }}</dd>
+                            <dt class="col-sm-5">Logo enabled</dt>
+                            <dd class="col-sm-7">{% if config.logo_enabled %}Yes{% else %}No{% endif %}</dd>
+                            <dt class="col-sm-5">Enabled formats</dt>
+                            <dd class="col-sm-7">{{ config.enabled_formats|join:", " }}</dd>
+                            <dt class="col-sm-5">Max sync rows</dt>
+                            <dd class="col-sm-7">{{ config.max_sync_rows }}</dd>
+                            <dt class="col-sm-5">Max bulk rows</dt>
+                            <dd class="col-sm-7">{{ config.max_bulk_rows }}</dd>
+                            <dt class="col-sm-5">Max file size</dt>
+                            <dd class="col-sm-7">{{ config.max_file_size_mb }} MB</dd>
+                            <dt class="col-sm-5">Max columns</dt>
+                            <dd class="col-sm-7">{{ config.max_columns }}</dd>
+                            <dt class="col-sm-5">Download expiry</dt>
+                            <dd class="col-sm-7">{{ config.download_expiry_hours }} hours</dd>
+                            <dt class="col-sm-5">Standard retention</dt>
+                            <dd class="col-sm-7">{{ config.standard_retention_hours }} hours</dd>
+                            <dt class="col-sm-5">Sensitive retention</dt>
+                            <dd class="col-sm-7">{{ config.sensitive_retention_hours }} hours</dd>
+                        </dl>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-lg-5">
+                <section class="card shadow-sm border-0" aria-labelledby="templates-heading">
+                    <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+                        <h2 id="templates-heading" class="h5 mb-0">Templates</h2>
+                        <a href="{% url 'exports:templates' %}" class="small">View all</a>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if templates %}
+                            <div class="list-group list-group-flush">
+                                {% for template in templates %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-semibold">{{ template.name }}</span>
+                                            <code>{{ template.code }}</code>
+                                        </div>
+                                        <small class="text-muted">{{ template.get_source_type_display }} &middot; v{{ template.version }}</small>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-4">No templates configured.</div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,48 @@
+{% extends "layouts/dashboard.html" %}
+{% load meal_tags %}
+{% block title %}{{ scorecard.title }} | Scorecard | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meal/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ scorecard.title }}</h1>
+                <p class="text-muted mb-0">{{ scorecard.period_label }} &middot; {{ scorecard.get_status_display }} &middot; Average score: {{ scorecard.average_score }}%</p>
+            </div>
+            {% if can_manage and scorecard.status == "DRAFT" %}
+                <a class="btn btn-outline-primary" href="{% url 'meal:scorecard_actions' scorecard.pk %}">Workflow</a>
+            {% endif %}
+        </header>
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Scorecard dimensions</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Dimension</th>
+                            <th scope="col">Label</th>
+                            <th scope="col">Target</th>
+                            <th scope="col">Actual</th>
+                            <th scope="col">Score</th>
+                            <th scope="col">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dimension in dimensions %}
+                            <tr>
+                                <td>{{ dimension.get_dimension_display }}</td>
+                                <td>{{ dimension.label }}</td>
+                                <td>{{ dimension.target|default:"&mdash;" }}</td>
+                                <td>{{ dimension.actual|default:"&mdash;" }}</td>
+                                <td>{% if dimension.score is not None %}{{ dimension.score }}%{% else %}&mdash;{% endif %}</td>
+                                <td>{{ dimension.notes|default:"&mdash;" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">No dimensions recorded for this scorecard.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

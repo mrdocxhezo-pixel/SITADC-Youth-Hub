@@ -1,0 +1,533 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1>{{ report.title }}</h1>
+      <p class="text-muted mb-0">
+        <code>{{ report.reference_number }}</code> &middot;
+        {{ report.template.title }} &middot;
+        <span class="badge bg-{% if report.status == 'DRAFT' %}secondary{% elif report.status == 'SUBMITTED' %}primary{% elif report.status == 'APPROVED' %}success{% elif report.status == 'ARCHIVED' %}dark{% elif report.status == 'RETURNED_FOR_CORRECTION' %}warning{% elif report.status == 'UNDER_REVIEW' %}info{% elif report.status == 'REJECTED' %}danger{% else %}info{% endif %}">
+          {{ report.get_status_display }}
+        </span>
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'report_instances:list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+      {% if report.is_editable %}
+      <a href="{% url 'report_instances:enter_data' report.pk %}" class="btn btn-primary">
+        <i class="bi bi-pencil"></i> Enter Data
+      </a>
+      <a href="{% url 'report_instances:edit' report.pk %}" class="btn btn-warning">
+        <i class="bi bi-gear"></i> Settings
+      </a>
+      {% endif %}
+      <a href="{% url 'report_instances:preview' report.pk %}" class="btn btn-outline-info">
+        <i class="bi bi-eye"></i> Preview
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+      <!-- Report Info Card -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Report Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Category:</strong> {{ report.category.name|default:"-" }}</p>
+              <p><strong>Owner:</strong> {{ report.owner.get_full_name|default:report.owner.username }}</p>
+              <p><strong>Department:</strong> {{ report.department|default:"-" }}</p>
+              <p><strong>Confidentiality:</strong> {{ report.get_confidentiality_display }}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Due Date:</strong> {{ report.due_date|date:"Y-m-d"|default:"-" }}</p>
+              <p><strong>Submitted:</strong> {{ report.submitted_at|date:"Y-m-d H:i"|default:"-" }}</p>
+              <p><strong>Approved:</strong> {{ report.approved_at|date:"Y-m-d H:i"|default:"-" }}</p>
+              <p><strong>Version:</strong> {{ report.version_number }}</p>
+            </div>
+          </div>
+          {% if report.notes %}
+          <hr>
+          <p><strong>Notes:</strong></p>
+          <p class="text-muted">{{ report.notes }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Validation Status -->
+      {% if validation_result %}
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Validation Status</h5>
+          {% if validation_result.is_valid %}
+          <span class="badge bg-success">Passed</span>
+          {% else %}
+          <span class="badge bg-danger">Failed</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-3">
+              <h4>{{ validation_result.total_rules }}</h4>
+              <small class="text-muted">Total Rules</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="text-success">{{ validation_result.passed_rules }}</h4>
+              <small class="text-muted">Passed</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="text-danger">{{ validation_result.failed_rules }}</h4>
+              <small class="text-muted">Failed</small>
+            </div>
+            <div class="col-md-3">
+              <h4>{{ validation_result.warnings|length }}</h4>
+              <small class="text-muted">Warnings</small>
+            </div>
+          </div>
+          {% if validation_result.errors %}
+          <hr>
+          <h6>Errors:</h6>
+          <ul class="list-group list-group-flush">
+            {% for error in validation_result.errors %}
+            <li class="list-group-item text-danger">
+              <i class="bi bi-exclamation-circle me-2"></i>
+              {% if error.message %}{{ error.message }}{% else %}{{ error }}{% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Section Responses -->
+      {% if section_responses %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Section Responses</h5>
+        </div>
+        <div class="card-body">
+          {% for sr in section_responses %}
+          <div class="mb-3 p-3 border rounded">
+            <h6>{{ sr.section.name }}</h6>
+            {% if sr.data %}
+            <table class="table table-sm mb-0">
+              {% for key, value in sr.data.items %}
+              <tr>
+                <td class="fw-bold">{{ key }}</td>
+                <td>{{ value|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </table>
+            {% else %}
+            <p class="text-muted mb-0">No data</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Field Responses -->
+      {% if field_responses %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Field Responses</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for fr in field_responses %}
+              <tr>
+                <td>{{ fr.field.label }}</td>
+                <td>{{ fr.value|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Evidence -->
+      {% if evidence %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Evidence</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>File</th>
+                <th>Description</th>
+                <th>Verified</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for e in evidence %}
+              <tr>
+                <td>{{ e.get_evidence_type_display }}</td>
+                <td>{{ e.original_filename }}</td>
+                <td>{{ e.description|default:"-" }}</td>
+                <td>
+                  {% if e.is_verified %}
+                  <span class="badge bg-success">Verified</span>
+                  {% else %}
+                  <span class="badge bg-warning">Pending</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Attachments -->
+      {% if attachments %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Attachments</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Size</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in attachments %}
+              <tr>
+                <td>{{ a.original_filename }}</td>
+                <td>{{ a.file_size|filesizeformat }}</td>
+                <td>{{ a.description|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Actions Card -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            {% if report.is_editable %}
+            <a href="{% url 'report_instances:enter_data' report.pk %}" class="btn btn-primary">
+              <i class="bi bi-pencil-square"></i> Enter/Edit Data
+            </a>
+            <form method="post" action="{% url 'report_instances:validate' report.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-primary w-100">
+                <i class="bi bi-check-circle"></i> Validate
+              </button>
+            </form>
+            <form method="post" action="{% url 'report_instances:submit' report.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-success w-100">
+                <i class="bi bi-send"></i> Submit for Review
+              </button>
+            </form>
+            {% endif %}
+
+            {% if report.is_submitted %}
+            <form method="post" action="{% url 'report_instances:start_review' report.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-info w-100">
+                <i class="bi bi-eye"></i> Start Review
+              </button>
+            </form>
+            <form method="post" action="{% url 'report_instances:withdraw' report.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger w-100">
+                <i class="bi bi-x-circle"></i> Withdraw
+              </button>
+            </form>
+            {% endif %}
+
+            {% if report.status == 'RETURNED_FOR_CORRECTION' %}
+            <form method="post" action="{% url 'report_instances:resubmit' report.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-warning w-100">
+                <i class="bi bi-arrow-repeat"></i> Resubmit
+              </button>
+            </form>
+            {% endif %}
+
+            <form method="post" action="{% url 'report_instances:duplicate' report.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-copy"></i> Duplicate
+              </button>
+            </form>
+
+            {% if report.status == 'APPROVED' or report.status == 'SUBMITTED' %}
+            <form method="post" action="{% url 'report_instances:archive' report.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-dark w-100">
+                <i class="bi bi-archive"></i> Archive
+              </button>
+            </form>
+            {% endif %}
+
+            {% if report.status == 'ARCHIVED' %}
+            <form method="post" action="{% url 'report_instances:restore' report.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-warning w-100">
+                <i class="bi bi-arrow-counterclockwise"></i> Restore
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Review Actions (for Managers/Approvers) -->
+      {% if report.is_submitted or report.status == 'UNDER_REVIEW' %}
+      <div class="card mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="bi bi-check2-square me-2"></i>Review Actions</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" action="{% url 'report_instances:review' report.pk %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label fw-bold">Action</label>
+              <select name="action" class="form-select" required>
+                <option value="">Select action...</option>
+                <option value="approve"><i class="bi bi-check-circle"></i> Approve</option>
+                <option value="return"><i class="bi bi-arrow-return-left"></i> Return for Correction</option>
+                <option value="reject"><i class="bi bi-x-circle"></i> Reject</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Notes / Reason</label>
+              <textarea name="notes" class="form-control" rows="3" placeholder="Add review notes..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="bi bi-send"></i> Submit Review
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Export Card -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-download me-2"></i>Export</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <form method="post" action="{% url 'report_instances:export' report.pk %}" class="d-grid">
+              {% csrf_token %}
+              <input type="hidden" name="format" value="PDF">
+              <button type="submit" class="btn btn-outline-danger w-100">
+                <i class="bi bi-file-pdf"></i> Export as PDF
+              </button>
+            </form>
+            <form method="post" action="{% url 'report_instances:export' report.pk %}" class="d-grid">
+              {% csrf_token %}
+              <input type="hidden" name="format" value="XLSX">
+              <button type="submit" class="btn btn-outline-success w-100">
+                <i class="bi bi-file-excel"></i> Export as Excel
+              </button>
+            </form>
+            <form method="post" action="{% url 'report_instances:export' report.pk %}" class="d-grid">
+              {% csrf_token %}
+              <input type="hidden" name="format" value="CSV">
+              <button type="submit" class="btn btn-outline-info w-100">
+                <i class="bi bi-filetype-csv"></i> Export as CSV
+              </button>
+            </form>
+            <form method="post" action="{% url 'report_instances:export' report.pk %}" class="d-grid">
+              {% csrf_token %}
+              <input type="hidden" name="format" value="HTML">
+              <button type="submit" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-filetype-html"></i> Export as HTML
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comments Card -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Comments</h5>
+        </div>
+        <div class="card-body">
+          {% for comment in comments %}
+          <div class="mb-3 p-2 border rounded {% if comment.is_internal %}bg-light{% endif %}">
+            <div class="d-flex justify-content-between">
+              <strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong>
+              <small class="text-muted">{{ comment.created_at|date:"M d, H:i" }}</small>
+            </div>
+            <p class="mb-0 mt-1">{{ comment.body }}</p>
+            {% if comment.is_internal %}
+            <small class="text-muted"><i class="bi bi-lock"></i> Internal Note</small>
+            {% endif %}
+          </div>
+          {% empty %}
+          <p class="text-muted">No comments yet.</p>
+          {% endfor %}
+
+          <form method="post" action="{% url 'report_instances:comment' report.pk %}" class="mt-3">
+            {% csrf_token %}
+            <textarea name="body" class="form-control mb-2" rows="3" placeholder="Add a comment..."></textarea>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" name="is_internal" id="is_internal">
+              <label class="form-check-label" for="is_internal">Internal Note</label>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">Add Comment</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Upload Evidence Card -->
+      {% if report.is_editable %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-paperclip me-2"></i>Upload Evidence</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" action="{% url 'report_instances:evidence' report.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <select name="evidence_type" class="form-select mb-2">
+              <option value="PHOTOGRAPH">Photograph</option>
+              <option value="DOCUMENT">Document</option>
+              <option value="SPREADSHEET">Spreadsheet</option>
+              <option value="PDF">PDF</option>
+              <option value="SIGNED_DOCUMENT">Signed Document</option>
+              <option value="ATTENDANCE_SHEET">Attendance Sheet</option>
+              <option value="FINANCIAL_RECORD">Financial Record</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <input type="file" name="file" class="form-control mb-2" required>
+            <textarea name="description" class="form-control mb-2" rows="2" placeholder="Description (optional)"></textarea>
+            <button type="submit" class="btn btn-sm btn-outline-primary w-100">Upload Evidence</button>
+          </form>
+
+          <hr>
+
+          <form method="post" action="{% url 'report_instances:video_link' report.pk %}" class="mt-2">
+            {% csrf_token %}
+            <input type="url" name="url" class="form-control mb-2" placeholder="Video URL (YouTube, etc.)">
+            <input type="text" name="description" class="form-control mb-2" placeholder="Description (optional)">
+            <button type="submit" class="btn btn-sm btn-outline-primary w-100">Add Video Link</button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Upload Attachment Card -->
+      {% if report.is_editable %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-file-earmark me-2"></i>Upload Attachment</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" action="{% url 'report_instances:attachment' report.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="file" class="form-control mb-2" required>
+            <textarea name="description" class="form-control mb-2" rows="2" placeholder="Description (optional)"></textarea>
+            <button type="submit" class="btn btn-sm btn-outline-primary w-100">Upload Attachment</button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Timeline Card -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Activity Timeline</h5>
+        </div>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+          {% for event in timeline %}
+          <div class="mb-2 pb-2 border-bottom">
+            <small class="text-muted">{{ event.created_at|date:"M d, Y H:i" }}</small>
+            <p class="mb-0 small">{{ event.description }}</p>
+            {% if event.actor %}
+            <small class="text-muted">by {{ event.actor.get_full_name|default:event.actor.username }}</small>
+            {% endif %}
+          </div>
+          {% empty %}
+          <p class="text-muted">No activity recorded.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Versions Card -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Version History</h5>
+        </div>
+        <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+          {% for version in versions %}
+          <div class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-start">
+            <div>
+              <span class="badge bg-secondary">v{{ version.version_number }}</span>
+              <small class="text-muted ms-2">{{ version.created_at|date:"M d, H:i" }}</small>
+              {% if version.change_summary %}
+              <p class="mb-0 small">{{ version.change_summary }}</p>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-muted">No versions yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Submissions Card -->
+      {% if submissions %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-send me-2"></i>Submissions</h5>
+        </div>
+        <div class="card-body">
+          {% for sub in submissions %}
+          <div class="mb-2 pb-2 border-bottom">
+            <span class="badge bg-{% if sub.status == 'SUBMITTED' %}primary{% elif sub.status == 'WITHDRAWN' %}danger{% elif sub.status == 'RETURNED' %}warning{% else %}secondary{% endif %}">
+              {{ sub.get_status_display }}
+            </span>
+            <small class="text-muted ms-2">#{{ sub.submission_number }} - {{ sub.submitted_at|date:"M d, H:i" }}</small>
+            {% if sub.notes %}
+            <p class="mb-0 small text-muted">{{ sub.notes }}</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

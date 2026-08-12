@@ -6,12 +6,16 @@ from django.contrib import admin
 
 from .models import (
     Activity,
+    BeneficiaryParticipation,
     BeneficiaryRecord,
     ChangeRequest,
     Deliverable,
     EvidenceRecord,
+    EvidenceVersion,
     Issue,
+    LessonsLearned,
     Milestone,
+    ProcurementRequest,
     Program,
     ProgramBudget,
     ProgramBudgetLineItem,
@@ -26,8 +30,14 @@ from .models import (
     ProgramTeamMember,
     ProgressUpdate,
     Project,
+    ProjectClosure,
+    ProjectReport,
+    ProjectResult,
     ProjectStatusHistory,
+    ProjectTimeline,
+    ResourceAllocation,
     Task,
+    WBSNode,
     WorkPlan,
 )
 
@@ -103,12 +113,16 @@ class ProjectStatusHistoryAdmin(ServiceManagedAdmin):
 
 OPERATIONAL_MODELS = (
     Activity,
+    BeneficiaryParticipation,
     BeneficiaryRecord,
     ChangeRequest,
     Deliverable,
     EvidenceRecord,
+    EvidenceVersion,
     Issue,
+    LessonsLearned,
     Milestone,
+    ProcurementRequest,
     ProgramBudget,
     ProgramBudgetLineItem,
     ProgramDocument,
@@ -118,7 +132,13 @@ OPERATIONAL_MODELS = (
     ProgramStakeholderLink,
     ProgramTeamMember,
     ProgressUpdate,
+    ProjectClosure,
+    ProjectReport,
+    ProjectResult,
+    ProjectTimeline,
+    ResourceAllocation,
     Task,
+    WBSNode,
     WorkPlan,
 )
 

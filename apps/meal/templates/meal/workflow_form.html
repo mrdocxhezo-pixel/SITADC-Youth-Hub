@@ -1,0 +1,27 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ entity_label|default:"Update status" }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meal/includes/module_nav.html" %}
+        <div class="row justify-content-center">
+            <div class="col-xl-8">
+                <header class="mb-4">
+                    <h1 class="h2">{{ entity_label|default:"Update status" }}</h1>
+                    {% if object %}<p class="text-muted mb-0">{{ object }} &middot; Current: {{ object.get_status_display }}</p>{% endif %}
+                </header>
+                <form method="post" class="card shadow-sm border-0" novalidate>
+                    {% csrf_token %}
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            {% include "meal/includes/form_fields.html" %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-body d-flex justify-content-end gap-2">
+                        <a class="btn btn-outline-secondary" href="{{ request.META.HTTP_REFERER|default:'#' }}">Cancel</a>
+                        <button class="btn btn-primary" type="submit">Confirm action</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

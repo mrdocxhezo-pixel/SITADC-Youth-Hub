@@ -93,6 +93,10 @@ class VolunteerServiceTests(TestCase):
         self.assertEqual(float(att.hours_served), 6.0)
 
     def test_leave_service(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
         profile_service = VolunteerProfileService(user=self.user)
         profile = profile_service.create_profile(user_account=self.vol_user)
         profile_service.update_status(profile, VolunteerStatus.ACTIVE)
@@ -101,8 +105,8 @@ class VolunteerServiceTests(TestCase):
         leave = leave_service.apply_leave(
             profile=profile,
             leave_type="ANNUAL",
-            start_date="2026-08-01",
-            end_date="2026-08-05",
+            start_date=(timezone.localdate() - timedelta(days=1)).isoformat(),
+            end_date=(timezone.localdate() + timedelta(days=1)).isoformat(),
             reason="Vacation",
         )
         self.assertEqual(leave.status, LeaveStatus.SUBMITTED)

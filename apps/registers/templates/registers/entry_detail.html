@@ -1,0 +1,234 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ entry.title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "registers/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ entry.title }}</h1>
+                <p class="text-muted mb-0"><code>{{ entry.reference_number }}</code></p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-primary"
+                   href="{% url 'registers:register_detail' entry.register.pk %}">{{ entry.register.name }}</a>
+                {% if can_edit %}
+                    <a class="btn btn-outline-primary"
+                       href="{% url 'registers:entry_update' entry.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a>
+                    <a class="btn btn-outline-primary"
+                       href="{% url 'registers:attachment_create' entry.pk %}"><i class="bi bi-paperclip me-1" aria-hidden="true"></i>Attachment</a>
+                {% endif %}
+                {% if can_export %}
+                    <a class="btn btn-outline-primary"
+                       href="{% url 'registers:export_register_format' entry.register.pk 'csv' %}"><i class="bi bi-download me-1" aria-hidden="true"></i>Export</a>
+                {% endif %}
+                {% if can_act and entry.approval_status == 'DRAFT' %}
+                    <a class="btn btn-outline-primary"
+                       href="{% url 'registers:entry_submit' entry.pk %}"><i class="bi bi-send me-1" aria-hidden="true"></i>Submit</a>
+                {% endif %}
+                {% if can_act and entry.approval_status == 'SUBMITTED' %}
+                    <a class="btn btn-outline-primary"
+                       href="{% url 'registers:entry_start_review' entry.pk %}"><i class="bi bi-search me-1" aria-hidden="true"></i>Start review</a>
+                {% endif %}
+                {% if can_act and entry.approval_status == 'PENDING_REVIEW' %}
+                    <a class="btn btn-outline-success"
+                       href="{% url 'registers:entry_approve' entry.pk %}"><i class="bi bi-check-lg me-1" aria-hidden="true"></i>Approve</a>
+                    <a class="btn btn-outline-warning"
+                       href="{% url 'registers:entry_return' entry.pk %}"><i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Return</a>
+                    <a class="btn btn-outline-danger"
+                       href="{% url 'registers:entry_reject' entry.pk %}"><i class="bi bi-x-lg me-1" aria-hidden="true"></i>Reject</a>
+                {% endif %}
+                {% if can_act and not entry.is_archived %}
+                    <form method="post"
+                          action="{% url 'registers:entry_archive' entry.pk %}"
+                          class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-danger" type="submit"><i class="bi bi-archive me-1" aria-hidden="true"></i>Archive</button>
+                    </form>
+                {% endif %}
+                {% if can_act and entry.is_archived %}
+                    <form method="post"
+                          action="{% url 'registers:entry_restore' entry.pk %}"
+                          class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-success" type="submit"><i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Restore</button>
+                    </form>
+                {% endif %}
+            </div>
+        </header>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="entry-details">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body">
+                        <h2 id="entry-details" class="h5 mb-0">Details</h2>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted fw-normal">Register</dt>
+                            <dd class="col-sm-8"><a href="{% url 'registers:register_detail' entry.register.pk %}">{{ entry.register.name }}</a></dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Template</dt>
+                            <dd class="col-sm-8">
+                                {{ entry.template.name|default:"None" }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Approval status</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge text-bg-secondary">{{ entry.get_approval_status_display }}</span>
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Status</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge text-bg-secondary">{{ entry.get_status_display }}</span>
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Confidentiality</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge text-bg-secondary">{{ entry.get_confidentiality_display }}</span>
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Owner</dt>
+                            <dd class="col-sm-8">
+                                {{ entry.owner.get_full_name|default:entry.owner }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Directorate</dt>
+                            <dd class="col-sm-8">
+                                {{ entry.directorate|default:"Not recorded" }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Program</dt>
+                            <dd class="col-sm-8">
+                                {{ entry.program|default:"Not recorded" }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Project</dt>
+                            <dd class="col-sm-8">
+                                {{ entry.project|default:"Not recorded" }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Reporting period</dt>
+                            <dd class="col-sm-8">{% if entry.reporting_period_start %}{{ entry.reporting_period_start|date:"d M Y" }} &rarr; {{ entry.reporting_period_end|date:"d M Y" }}{% else %}Not recorded{% endif %}</dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Submitted</dt>
+                            <dd class="col-sm-8">
+                                {{ entry.submitted_at|date:"d M Y H:i"|default:"Not submitted" }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Approved</dt>
+                            <dd class="col-sm-8">
+                                {{ entry.approved_at|date:"d M Y H:i"|default:"Not approved" }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Keywords</dt>
+                            <dd class="col-sm-8">
+                                {{ entry.keywords|default:"Not recorded" }}
+                            </dd>
+                            {% if entry.description %}
+                                <dt class="col-sm-4 text-muted fw-normal">Description</dt>
+                                <dd class="col-sm-8">
+                                    {{ entry.description }}
+                                </dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+                {% if entry.field_data %}
+                    <div class="card shadow-sm border-0 mt-4">
+                        <div class="card-header bg-body">
+                            <h2 class="h5 mb-0">Field data</h2>
+                        </div>
+                        <div class="card-body">
+                            <pre class="bg-light rounded p-3 mb-0"><code>{{ entry.field_data|pprint }}</code></pre>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if attachments %}
+                    <div class="card shadow-sm border-0 mt-4">
+                        <div class="card-header bg-body">
+                            <h2 class="h5 mb-0">Attachments</h2>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% for attachment in attachments %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-paperclip me-2" aria-hidden="true"></i>{{ attachment.original_filename }}</span>
+                                    <span class="small text-muted">{{ attachment.size|filesizeformat }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                {% if relationships %}
+                    <div class="card shadow-sm border-0 mt-4">
+                        <div class="card-header bg-body">
+                            <h2 class="h5 mb-0">Related records</h2>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% for relationship in relationships %}
+                                <li class="list-group-item">
+                                    <span class="badge text-bg-secondary">{{ relationship.get_relationship_type_display }}</span>
+                                    <span class="ms-2">{{ relationship.content_type.app_label }} #{{ relationship.object_id|truncatechars:12 }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </section>
+            <aside class="col-xl-4" aria-labelledby="entry-activity">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body">
+                        <h2 id="entry-activity" class="h5 mb-0">Activity</h2>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in activity %}
+                            <li class="list-group-item px-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="badge text-bg-secondary">{{ item.get_action_display }}</span>
+                                    <span class="text-muted small">{{ item.created_at|date:"d M Y H:i" }}</span>
+                                </div>
+                                {% if item.comment %}<p class="small mb-0 mt-1 text-muted">{{ item.comment }}</p>{% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No activity recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body">
+                        <h2 class="h5 mb-0">Versions</h2>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for version in versions %}
+                            <li class="list-group-item px-3 d-flex justify-content-between">
+                                <span>v{{ version.version_number }}</span>
+                                <span class="text-muted">{{ version.created_at|date:"d M Y" }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No versions recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body">
+                        <h2 class="h5 mb-0">Reviews</h2>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for review in reviews %}
+                            <li class="list-group-item px-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="badge text-bg-secondary">{{ review.get_decision_display }}</span>
+                                    <span class="text-muted small">{{ review.reviewed_at|date:"d M Y" }}</span>
+                                </div>
+                                {% if review.comments %}<p class="small mb-0 mt-1 text-muted">{{ review.comments }}</p>{% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No reviews recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body">
+                        <h2 class="h5 mb-0">Validation</h2>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for validation in validations %}
+                            <li class="list-group-item px-3 d-flex justify-content-between">
+                                <span>{{ validation.rule_code }}</span>
+                                {% if validation.passed %}<span class="badge text-bg-success">passed</span>{% else %}<span class="badge text-bg-danger">failed</span>{% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No validation results.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,72 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Notification Rules | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "notifications/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Notification rules</h1>
+                <p class="text-muted mb-0">Routing rules that decide who receives a notification and how.</p>
+            </div>
+            <a class="btn btn-primary" href="{% url 'notifications:rule_create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New rule</a>
+        </header>
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Notification rules</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Event</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Priority</th>
+                            <th scope="col">Recipient</th>
+                            <th scope="col">Channels</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rule in rules %}
+                            <tr>
+                                <td><a class="fw-semibold text-decoration-none" href="{% url 'notifications:rule_update' rule.pk %}">{{ rule.name }}</a></td>
+                                <td><code>{{ rule.event_type }}</code></td>
+                                <td>{{ rule.get_category_display }}</td>
+                                <td>{{ rule.get_notification_type_display }}</td>
+                                <td><span class="badge text-bg-secondary">{{ rule.get_priority_display }}</span></td>
+                                <td>
+                                    {% if rule.recipient_role %}
+                                        {{ rule.recipient_role.name }}
+                                    {% elif rule.recipient_user %}
+                                        {{ rule.recipient_user.get_full_name|default:rule.recipient_user }}
+                                    {% else %}
+                                        <span class="text-muted">{{ rule.recipient_type }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ rule.channels|join:", "|default:"—" }}</td>
+                                <td>
+                                    {% if rule.is_active %}
+                                        <span class="badge text-bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge text-bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="8" class="text-center text-muted py-4">No rules yet. Create one to route event notifications.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-4" aria-label="Rule pages">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+                    <li class="page-item active" aria-current="page"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

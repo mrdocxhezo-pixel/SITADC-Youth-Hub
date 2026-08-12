@@ -212,6 +212,27 @@ DEFAULT_REFERENCE_DATA = (
             ("other", "Other approved costs", {}),
         ),
     ),
+    *_rows(
+        ReferenceDataKind.PROJECT_CLASSIFICATION,
+        (
+            ("community", "Community-led", {"area": "delivery"}),
+            ("institution-led", "Institution-led", {"area": "delivery"}),
+            ("donor-funded", "Donor-funded", {"area": "funding"}),
+            ("self-funded", "Self-funded", {"area": "funding"}),
+            ("partnership", "Partnership-delivered", {"area": "funding"}),
+            ("regional", "Regional scope", {"area": "scope"}),
+            ("district", "District scope", {"area": "scope"}),
+            ("community-level", "Community-level scope", {"area": "scope"}),
+            ("national", "National scope", {"area": "scope"}),
+            ("innovation", "Innovation-driven", {"area": "approach"}),
+            ("advocacy", "Advocacy-led", {"area": "approach"}),
+            ("capacity-building", "Capacity-building", {"area": "approach"}),
+            ("emergency", "Emergency response", {"area": "approach"}),
+            ("research", "Research-driven", {"area": "approach"}),
+            ("pilot", "Pilot / demonstration", {"area": "approach"}),
+            ("scale-up", "Scale-up / replication", {"area": "approach"}),
+        ),
+    ),
 )
 
 DEFAULT_REFERENCE_SCHEMES = (
@@ -225,6 +246,7 @@ DEFAULT_REFERENCE_SCHEMES = (
     ("change", "Change Request", "CHG"),
     ("evidence", "Evidence", "EVD"),
     ("program_beneficiary", "Program Beneficiary", "BNF"),
+    ("wbs", "WBS Node", "WBS"),
 )
 
 PROGRAM_REFERENCE_SCHEME_MODULES = (

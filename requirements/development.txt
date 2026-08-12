@@ -10,7 +10,7 @@ djlint==1.43.2
 
 # Type Checking
 mypy==1.11.1
-django-stubs==5.0.4
+django-stubs==6.0.9
 
 # Testing
 pytest==8.3.2

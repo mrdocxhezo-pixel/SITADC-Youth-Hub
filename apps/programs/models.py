@@ -35,18 +35,27 @@ from .constants import (
     EvaluationType,
     IssueStatus,
     LessonCategory,
+    MilestoneApprovalStatus,
     MilestoneStatus,
     PortfolioStatus,
     Priority,
     ProcurementStatus,
     ProgramStatus,
     ProgressStatus,
+    ProjectClosureStatus,
+    ProjectReportStatus,
+    ProjectReportType,
     ProjectStatus,
     ReferenceDataKind,
     ResourceType,
+    ResultStatus,
+    ResultType,
     RiskLevel,
     RiskStatus,
     TaskStatus,
+    TimelineEntryStatus,
+    WBSNodeStatus,
+    WBSNodeType,
     WorkPlanStatus,
 )
 from .managers import (
@@ -738,6 +747,12 @@ class Project(ProgramRecord, SoftDeleteModel, ArchivableModel):
         blank=True,
         limit_choices_to={"kind": ReferenceDataKind.PROJECT_CATEGORY},
     )
+    classifications = models.ManyToManyField(
+        ProgramReferenceData,
+        related_name="classified_projects",
+        blank=True,
+        limit_choices_to={"kind": ReferenceDataKind.PROJECT_CLASSIFICATION},
+    )
     description = models.TextField(blank=True)
     objectives = models.TextField(blank=True)
     scope = models.TextField(blank=True)
@@ -751,6 +766,14 @@ class Project(ProgramRecord, SoftDeleteModel, ArchivableModel):
     regions = models.JSONField(default=list, blank=True)
     districts = models.JSONField(default=list, blank=True)
     communities = models.JSONField(default=list, blank=True)
+    completion_percentage = models.DecimalField(
+        _("Completion percentage"),
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        validators=[validate_percentage],
+        editable=False,
+    )
     start_date = models.DateField(null=True, blank=True, db_index=True)
     end_date = models.DateField(null=True, blank=True, db_index=True)
     status = models.CharField(
@@ -1024,12 +1047,47 @@ class Milestone(ProgramRecord):
         blank=True,
     )
     deliverables = models.TextField(blank=True)
-    approval_status = models.CharField(max_length=20, default="PENDING", db_index=True)
+    approval_status = models.CharField(
+        _("Approval status"),
+        max_length=20,
+        choices=MilestoneApprovalStatus.choices,
+        default=MilestoneApprovalStatus.PENDING,
+        db_index=True,
+    )
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="submitted_milestones",
+        null=True,
+        blank=True,
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    approval_notes = models.TextField(blank=True)
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="approved_milestones",
+        null=True,
+        blank=True,
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
     evidence_notes = models.TextField(blank=True)
 
     class Meta:
         ordering = ("target_date",)
-        indexes = [models.Index(fields=["project", "status", "target_date"])]
+        indexes = [
+            models.Index(fields=["project", "status", "target_date"]),
+            models.Index(fields=["project", "approval_status"]),
+        ]
+
+    @property
+    def is_overdue(self) -> bool:
+        return bool(
+            self.target_date
+            and self.completion_date is None
+            and self.status in {MilestoneStatus.PLANNED, MilestoneStatus.IN_PROGRESS}
+            and self.target_date < timezone.localdate()
+        )
 
     def clean(self) -> None:
         super().clean()
@@ -1066,7 +1124,23 @@ class Deliverable(ProgramRecord):
         null=True,
         blank=True,
     )
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="submitted_deliverables",
+        null=True,
+        blank=True,
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True)
     approval_notes = models.TextField(blank=True)
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="approved_deliverables",
+        null=True,
+        blank=True,
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
     evidence_notes = models.TextField(blank=True)
 
     class Meta:
@@ -1183,6 +1257,19 @@ class ChangeRequest(ProgramRecord):
         blank=True,
     )
     decided_at = models.DateTimeField(null=True, blank=True)
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="reviewed_change_requests",
+        null=True,
+        blank=True,
+    )
+    reviewer_notes = models.TextField(blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    target_model = models.CharField(max_length=80, blank=True)
+    target_field = models.CharField(max_length=120, blank=True)
+    target_record_id = models.UUIDField(null=True, blank=True)
+    proposed_value = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ("-created_at",)
@@ -1239,6 +1326,7 @@ class EvidenceRecord(ProgramRecord):
     gps_coordinates = models.CharField(max_length=80, blank=True)
     notes = models.TextField(blank=True)
     is_verified = models.BooleanField(default=False)
+    version_number = models.PositiveIntegerField(default=1, db_index=True)
 
     class Meta:
         ordering = ("-created_at",)
@@ -1651,3 +1739,410 @@ class LessonsLearned(ProgramRecord):
                     "project, not both."
                 )
             )
+
+
+class WBSNode(ProgramRecord):
+    """A hierarchical Work Breakdown Structure node under a project.
+
+    Nodes form an unlimited-depth tree (Phase -> Work Package -> Activity ->
+    Task -> Sub-task).  Each node tracks ownership, effort, budget, progress
+    and dependencies.  Parent nodes roll completion up from their children.
+    """
+
+    reference_number = models.CharField(
+        _("WBS node ID"), max_length=80, unique=True, db_index=True
+    )
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="wbs_nodes"
+    )
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        related_name="children",
+        null=True,
+        blank=True,
+    )
+    node_type = models.CharField(
+        _("Node type"),
+        max_length=20,
+        choices=WBSNodeType.choices,
+        default=WBSNodeType.WORK_PACKAGE,
+        db_index=True,
+    )
+    code = models.CharField(_("WBS code"), max_length=80, blank=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    responsible_officer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="responsible_wbs_nodes",
+        null=True,
+        blank=True,
+    )
+    planned_start_date = models.DateField(null=True, blank=True, db_index=True)
+    planned_end_date = models.DateField(null=True, blank=True, db_index=True)
+    actual_start_date = models.DateField(null=True, blank=True)
+    actual_end_date = models.DateField(null=True, blank=True)
+    estimated_effort_hours = models.DecimalField(
+        _("Estimated effort (hours)"),
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    actual_effort_hours = models.DecimalField(
+        _("Actual effort (hours)"),
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    completion_percentage = models.DecimalField(
+        _("Completion percentage"),
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        validators=[validate_percentage],
+    )
+    budget_allocated = models.DecimalField(
+        _("Budget allocated"), max_digits=18, decimal_places=2, default=Decimal("0.00")
+    )
+    budget_spent = models.DecimalField(
+        _("Budget spent"), max_digits=18, decimal_places=2, default=Decimal("0.00")
+    )
+    status = models.CharField(
+        _("Status"),
+        max_length=20,
+        choices=WBSNodeStatus.choices,
+        default=WBSNodeStatus.PLANNED,
+        db_index=True,
+    )
+    dependencies = models.ManyToManyField(
+        "self", symmetrical=False, related_name="dependents", blank=True
+    )
+
+    class Meta:
+        verbose_name = _("WBS Node")
+        verbose_name_plural = _("WBS Nodes")
+        ordering = ("project", "code", "title")
+        indexes = [
+            models.Index(fields=["project", "parent"]),
+            models.Index(fields=["project", "status"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.reference_number})"
+
+    @property
+    def is_leaf(self) -> bool:
+        return not self.children.exists()
+
+    def clean(self) -> None:
+        super().clean()
+        validate_date_range(
+            self.planned_start_date, self.planned_end_date, end_field="planned_end_date"
+        )
+        validate_date_range(
+            self.actual_start_date, self.actual_end_date, end_field="actual_end_date"
+        )
+        validate_positive_amount(self.budget_allocated)
+        validate_positive_amount(self.budget_spent)
+        if self.budget_spent > self.budget_allocated:
+            raise ValidationError(
+                {"budget_spent": _("Budget spent cannot exceed budget allocated.")}
+            )
+        if self.parent_id and self.parent is not None:
+            if self.parent.project_id != self.project_id:
+                raise ValidationError(
+                    {"parent": _("A WBS node and its parent must share a project.")}
+                )
+            if self.parent_id == self.pk:
+                raise ValidationError(
+                    {"parent": _("A WBS node cannot be its own parent.")}
+                )
+            ancestors = self._ancestor_pks()
+            if self.pk in ancestors:
+                raise ValidationError(
+                    {
+                        "parent": _(
+                            "A WBS node cannot be moved under its own descendant."
+                        )
+                    }
+                )
+
+    def _ancestor_pks(self) -> set:
+        pks: set = set()
+        cursor = self.parent_id
+        depth = 0
+        while cursor is not None and depth < 64:
+            if cursor in pks:
+                break
+            pks.add(cursor)
+            parent = WBSNode.objects.filter(pk=cursor).only("parent_id").first()
+            cursor = parent.parent_id if parent else None
+            depth += 1
+        return pks
+
+
+class ProjectResult(ProgramRecord):
+    """A structured output, outcome, or impact result for a project."""
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="results"
+    )
+    result_type = models.CharField(
+        _("Result type"),
+        max_length=20,
+        choices=ResultType.choices,
+        default=ResultType.OUTPUT,
+        db_index=True,
+    )
+    code = models.CharField(_("Result code"), max_length=80)
+    description = models.TextField()
+    indicator = models.CharField(max_length=255, blank=True)
+    baseline = models.CharField(max_length=120, blank=True)
+    target = models.CharField(max_length=120, blank=True)
+    actual = models.CharField(max_length=120, blank=True)
+    status = models.CharField(
+        _("Status"),
+        max_length=20,
+        choices=ResultStatus.choices,
+        default=ResultStatus.NOT_STARTED,
+        db_index=True,
+    )
+    target_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = _("Project Result")
+        verbose_name_plural = _("Project Results")
+        ordering = ("project", "result_type", "code")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "result_type", "code"],
+                name="project_result_type_code_uniq",
+            )
+        ]
+        indexes = [models.Index(fields=["project", "result_type", "status"])]
+
+    def __str__(self) -> str:
+        return f"{self.get_result_type_display()}: {self.description[:60]}"
+
+
+class BeneficiaryParticipation(ProgramRecord):
+    """A participation event recorded against a project beneficiary."""
+
+    beneficiary = models.ForeignKey(
+        BeneficiaryRecord, on_delete=models.CASCADE, related_name="participations"
+    )
+    participation_date = models.DateField(default=timezone.localdate, db_index=True)
+    activity_title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    services_received = models.TextField(blank=True)
+    outcomes_achieved = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = _("Beneficiary Participation")
+        verbose_name_plural = _("Beneficiary Participations")
+        ordering = ("-participation_date",)
+        indexes = [models.Index(fields=["beneficiary", "participation_date"])]
+
+    def __str__(self) -> str:
+        return f"{self.beneficiary}: {self.activity_title}"
+
+
+class ProjectTimeline(ProgramRecord):
+    """A schedule entry on a project timeline (Gantt-style planning data)."""
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="timeline_entries"
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    planned_start_date = models.DateField(db_index=True)
+    planned_end_date = models.DateField(db_index=True)
+    actual_start_date = models.DateField(null=True, blank=True)
+    actual_end_date = models.DateField(null=True, blank=True)
+    status = models.CharField(
+        _("Status"),
+        max_length=20,
+        choices=TimelineEntryStatus.choices,
+        default=TimelineEntryStatus.PLANNED,
+        db_index=True,
+    )
+    depends_on = models.ManyToManyField(
+        "self", symmetrical=False, related_name="dependent_entries", blank=True
+    )
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = _("Project Timeline")
+        verbose_name_plural = _("Project Timelines")
+        ordering = ("order", "planned_start_date")
+        indexes = [models.Index(fields=["project", "status", "planned_start_date"])]
+
+    def __str__(self) -> str:
+        return self.title
+
+    def clean(self) -> None:
+        super().clean()
+        validate_date_range(
+            self.planned_start_date,
+            self.planned_end_date,
+            end_field="planned_end_date",
+        )
+        validate_date_range(
+            self.actual_start_date, self.actual_end_date, end_field="actual_end_date"
+        )
+        if (
+            self.depends_on.exists()
+            and self.pk
+            and self.depends_on.filter(pk=self.pk).exists()
+        ):
+            raise ValidationError(
+                {"depends_on": _("A timeline entry cannot depend on itself.")}
+            )
+
+
+class ProjectClosure(ProgramRecord):
+    """Structured closure record for a project."""
+
+    project = models.OneToOneField(
+        Project, on_delete=models.CASCADE, related_name="closure"
+    )
+    status = models.CharField(
+        _("Status"),
+        max_length=20,
+        choices=ProjectClosureStatus.choices,
+        default=ProjectClosureStatus.DRAFT,
+        db_index=True,
+    )
+    completion_verification = models.TextField(blank=True)
+    financial_reconciliation = models.TextField(blank=True)
+    final_evaluation_notes = models.TextField(blank=True)
+    asset_handover = models.TextField(blank=True)
+    stakeholder_signoff = models.TextField(blank=True)
+    final_documentation = models.TextField(blank=True)
+    closure_notes = models.TextField(blank=True)
+    closure_date = models.DateField(null=True, blank=True, db_index=True)
+    closed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="closed_projects",
+        null=True,
+        blank=True,
+    )
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="approved_project_closures",
+        null=True,
+        blank=True,
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("Project Closure")
+        verbose_name_plural = _("Project Closures")
+        ordering = ("-created_at",)
+        indexes = [models.Index(fields=["project", "status"])]
+
+    def __str__(self) -> str:
+        return f"{self.project}: {self.get_status_display()}"
+
+    def clean(self) -> None:
+        super().clean()
+        if self.closure_date and self.closure_date > timezone.localdate():
+            raise ValidationError(
+                {"closure_date": _("Closure date cannot be in the future.")}
+            )
+
+
+class ProjectReport(ProgramRecord):
+    """A project report record supporting the reporting workflow."""
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="reports"
+    )
+    title = models.CharField(max_length=255)
+    report_type = models.CharField(
+        _("Report type"),
+        max_length=30,
+        choices=ProjectReportType.choices,
+        db_index=True,
+    )
+    status = models.CharField(
+        _("Status"),
+        max_length=20,
+        choices=ProjectReportStatus.choices,
+        default=ProjectReportStatus.DRAFT,
+        db_index=True,
+    )
+    period_label = models.CharField(max_length=120, blank=True)
+    summary = models.TextField(blank=True)
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="submitted_project_reports",
+        null=True,
+        blank=True,
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="approved_project_reports",
+        null=True,
+        blank=True,
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+    report_file = models.FileField(
+        _("Report file"),
+        upload_to="programs/reports/",
+        storage=private_program_storage,
+        validators=[validate_program_document],
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _("Project Report")
+        verbose_name_plural = _("Project Reports")
+        ordering = ("-created_at",)
+        indexes = [models.Index(fields=["project", "report_type", "status"])]
+
+    def __str__(self) -> str:
+        return f"{self.get_report_type_display()}: {self.title}"
+
+
+class EvidenceVersion(ProgramRecord):
+    """An immutable version of an evidence record."""
+
+    evidence = models.ForeignKey(
+        EvidenceRecord, on_delete=models.CASCADE, related_name="versions"
+    )
+    version_number = models.PositiveIntegerField(db_index=True)
+    file = models.FileField(
+        _("Version file"),
+        upload_to="programs/evidence/versions/",
+        storage=private_program_storage,
+        validators=[validate_program_document],
+    )
+    original_filename = models.CharField(max_length=255)
+    file_size = models.PositiveBigIntegerField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = _("Evidence Version")
+        verbose_name_plural = _("Evidence Versions")
+        ordering = ("evidence", "-version_number")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["evidence", "version_number"],
+                name="evidence_version_number_uniq",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.evidence} v{self.version_number}"

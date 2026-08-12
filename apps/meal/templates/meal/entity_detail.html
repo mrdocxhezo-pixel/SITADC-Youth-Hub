@@ -1,0 +1,48 @@
+{% extends "layouts/dashboard.html" %}
+{% load meal_tags %}
+{% block title %}{{ entity_label|default:"MEAL Record" }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meal/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ entity_label|default:"MEAL Record" }}</h1>
+                <p class="text-muted mb-0">{{ record }}</p>
+            </div>
+            {% if can_manage and record.status %}
+                <a class="btn btn-outline-primary" href="{{ actions_url }}"><i class="bi bi-arrow-left-right me-1" aria-hidden="true"></i>Update status</a>
+            {% endif %}
+        </header>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="record-details">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 id="record-details" class="h5 mb-0">Details</h2></div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            {% for label, name in record|fields_with_labels %}
+                                <dt class="col-sm-4 text-muted fw-normal">{{ label }}</dt>
+                                <dd class="col-sm-8">{% if record|field_value:name == "" %}<span class="text-muted">Not recorded</span>{% else %}{{ record|field_value:name }}{% endif %}</dd>
+                            {% endfor %}
+                        </dl>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="status-history">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 id="status-history" class="h5 mb-0">Status history</h2></div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in record|record_history %}
+                            <li class="list-group-item px-3 d-flex justify-content-between">
+                                <span>{{ item.action|title }}: {{ item.to_status|title }}</span>
+                                <span class="text-muted">{{ item.created_at|date:"d M Y" }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No history recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </aside>
+        </div>
+        {% block extra_panels %}{% endblock extra_panels %}
+    </div>
+{% endblock dashboard_content %}

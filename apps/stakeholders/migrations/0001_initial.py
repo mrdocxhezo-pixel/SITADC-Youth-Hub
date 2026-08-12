@@ -3566,7 +3566,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="stakeholderduplicatereview",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     ("stakeholder", models.F("possible_duplicate")), _negated=True
                 ),
                 name="stakeholder_duplicate_not_self",
@@ -3659,7 +3659,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="stakeholdercontribution",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     ("amount__isnull", True), ("amount__gte", 0), _connector="OR"
                 ),
                 name="stakeholder_contribution_amount_nonnegative",
@@ -3668,7 +3668,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="stakeholdercontribution",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     ("estimated_value__isnull", True),
                     ("estimated_value__gte", 0),
                     _connector="OR",

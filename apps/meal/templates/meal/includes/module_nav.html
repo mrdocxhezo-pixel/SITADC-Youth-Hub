@@ -1,0 +1,18 @@
+<nav class="mb-4" aria-label="MEAL module">
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meal:dashboard' %}"><i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>Dashboard</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meal:indicator_registry' %}"><i class="bi bi-bullseye me-1" aria-hidden="true"></i>Indicators</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meal:results_framework_create' %}"><i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>Frameworks</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meal:monitoring_visit_directory' %}"><i class="bi bi-clipboard-check me-1" aria-hidden="true"></i>Monitoring</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meal:evaluation_directory' %}"><i class="bi bi-search-heart me-1" aria-hidden="true"></i>Evaluations</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meal:complaint_directory' %}"><i class="bi bi-megaphone me-1" aria-hidden="true"></i>Accountability</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meal:meal_report_directory' %}"><i class="bi bi-file-earmark-bar-graph me-1" aria-hidden="true"></i>Reports</a>
+    </div>
+</nav>

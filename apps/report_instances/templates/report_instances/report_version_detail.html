@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1>Version v{{ version.version_number }}</h1>
+      <p class="text-muted mb-0">
+        <code>{{ report.reference_number }}</code> &middot;
+        {{ report.title }}
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'report_instances:versions' report.pk %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Versions
+      </a>
+      <a href="{% url 'report_instances:detail' report.pk %}" class="btn btn-outline-secondary">
+        <i class="bi bi-file-text"></i> Report
+      </a>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Snapshot Metadata -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Snapshot Details</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Version:</strong> {{ version.version_number }}</p>
+              <p><strong>Captured:</strong> {{ version.created_at|date:"M d, Y H:i" }}</p>
+              <p><strong>Status at version:</strong>
+                {% if version.status_at_version %}
+                <span class="badge bg-info">{{ version.status_at_version }}</span>
+                {% else %}
+                <span class="text-muted">-</span>
+                {% endif %}
+              </p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Author:</strong>
+                {{ version.author.get_full_name|default:version.author.username|default:"-" }}
+              </p>
+              {% if version.change_summary %}
+              <p><strong>Change Summary:</strong></p>
+              <p class="text-muted">{{ version.change_summary }}</p>
+              {% endif %}
+            </div>
+          </div>
+          {% if version.snapshot %}
+          <hr>
+          <h6 class="mb-3">Snapshot Data</h6>
+          <div class="mb-3">
+            <p class="mb-1"><strong>Title:</strong> {{ version.snapshot.title|default:report.title }}</p>
+            <p class="mb-1"><strong>Status:</strong> {{ version.snapshot.status|default:"-" }}</p>
+            <p class="mb-1"><strong>Validation:</strong> {{ version.snapshot.validation_status|default:"-" }}</p>
+            {% if version.snapshot.notes %}
+            <p class="mb-1"><strong>Notes:</strong> {{ version.snapshot.notes }}</p>
+            {% endif %}
+          </div>
+
+          {% if version.snapshot.section_data %}
+          <h6 class="mb-2">Section Responses</h6>
+          {% for section_id, data in version.snapshot.section_data.items %}
+          <div class="mb-2 p-2 border rounded">
+            <strong>Section {{ forloop.counter }} ({{ section_id|slice:":8" }}&hellip;)</strong>
+            {% if data %}
+            <table class="table table-sm mb-0 mt-2">
+              {% for key, value in data.items %}
+              <tr>
+                <td class="fw-bold">{{ key }}</td>
+                <td>{{ value|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </table>
+            {% else %}
+            <p class="text-muted mb-0">No data</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+          {% endif %}
+
+          {% if version.snapshot.field_data %}
+          <h6 class="mb-2">Field Responses</h6>
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Field ID</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for field_id, value in version.snapshot.field_data.items %}
+              <tr>
+                <td>{{ field_id|slice:":8" }}&hellip;</td>
+                <td>{{ value|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

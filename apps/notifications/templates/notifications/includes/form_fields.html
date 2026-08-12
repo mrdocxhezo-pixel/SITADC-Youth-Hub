@@ -1,0 +1,25 @@
+{% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+        <h2 class="h6">Please correct the following errors</h2>
+        {{ form.non_field_errors }}
+    </div>
+{% endif %}
+{% for field in form %}
+    <div class="{% if field.field.widget.input_type == 'checkbox' %}col-12{% elif field.field.widget.input_type == 'checkbox-multiple' %}col-12{% else %}col-lg-6{% endif %}">
+        {% if field.field.widget.input_type == "checkbox" and field.field.widget.input_type != "checkbox-multiple" %}
+            <div class="form-check mt-2">
+                {{ field }}
+                <label class="form-check-label fw-semibold" for="{{ field.id_for_label }}">
+                    {{ field.label }}{% if field.field.required %}<span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">required</span>{% endif %}
+                </label>
+            </div>
+        {% else %}
+            <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
+                {{ field.label }}{% if field.field.required %}<span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">required</span>{% endif %}
+            </label>
+            {{ field }}
+        {% endif %}
+        {% if field.help_text %}<div id="{{ field.id_for_label }}_help" class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="invalid-feedback d-block" role="alert">{{ error }}</div>{% endfor %}
+    </div>
+{% endfor %}

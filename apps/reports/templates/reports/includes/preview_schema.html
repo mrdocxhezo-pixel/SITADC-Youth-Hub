@@ -1,0 +1,82 @@
+<article aria-label="Report template preview" class="preview-schema">
+    {% for section in sections %}
+        <section class="card shadow-sm border-0 mb-3 {% if not section.visible %}d-none{% endif %}"
+                 data-section="{{ section.section.code }}"
+                 {% if not section.visible %}hidden{% endif %}>
+            <div class="card-header bg-body">
+                <h2 class="h6 mb-0">
+                    <i class="bi bi-journal-text me-1" aria-hidden="true"></i>{{ section.section.name }}
+                    {% if section.section.is_repeatable %}<span class="badge text-bg-light">repeatable</span>{% endif %}
+                </h2>
+            </div>
+            <div class="card-body">
+                {% if section.section.description %}<p class="small text-muted">{{ section.section.description }}</p>{% endif %}
+                {% for group in section.groups %}
+                    <fieldset class="mb-3">
+                        <legend class="h6">{{ group.group.name }}</legend>
+                        {% for item in group.fields %}
+                            {% if item.visible %}
+                                <div class="mb-3" data-field="{{ item.field.code }}">
+                                    <label class="form-label fw-semibold" for="preview-{{ item.field.code }}">
+                                        {{ item.field.label }}{% if item.required %}<span class="text-danger" aria-hidden="true">*</span>{% endif %}
+                                    </label>
+                                    {% if item.field.field_type == "MULTILINE_TEXT" or item.field.field_type == "RICH_TEXT" %}
+                                        <textarea class="form-control" id="preview-{{ item.field.code }}" rows="3" {% if not item.enabled %}disabled{% endif %} placeholder="{{ item.field.placeholder }}">{{ item.value }}</textarea>
+                                    {% elif item.field.field_type in "DROPDOWN RADIO" %}
+                                        <select class="form-select" id="preview-{{ item.field.code }}" {% if not item.enabled %}disabled{% endif %}>
+                                            {% for option in item.options %}<option value="{{ option.value }}"{% if item.value == option.value %}selected{% endif %}>{{ option.label }}</option>{% endfor %}
+                                        </select>
+                                    {% elif item.field.field_type == "MULTI_SELECT" %}
+                                        <select class="form-select" id="preview-{{ item.field.code }}" multiple {% if not item.enabled %}disabled{% endif %}>
+                                            {% for option in item.options %}<option value="{{ option.value }}"{% if item.value == option.value %}selected{% endif %}>{{ option.label }}</option>{% endfor %}
+                                        </select>
+                                    {% elif item.field.field_type == "CHECKBOX" or item.field.field_type == "TOGGLE" %}
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="preview-{{ item.field.code }}" {% if item.value %}checked{% endif %} {% if not item.enabled %}disabled{% endif %}>
+                                            <label class="form-check-label" for="preview-{{ item.field.code }}">{{ item.field.label }}</label>
+                                        </div>
+                                    {% elif item.field.field_type in "INTEGER DECIMAL CURRENCY PERCENTAGE" %}
+                                        <input class="form-control" id="preview-{{ item.field.code }}" type="number" value="{{ item.value|default:"" }}" {% if not item.enabled %}disabled{% endif %} placeholder="{{ item.field.placeholder }}">
+                                    {% elif item.field.field_type == "DATE" %}
+                                        <input class="form-control" id="preview-{{ item.field.code }}" type="date" value="{{ item.value|default:"" }}" {% if not item.enabled %}disabled{% endif %}>
+                                    {% elif item.field.field_type == "DATETIME" %}
+                                        <input class="form-control" id="preview-{{ item.field.code }}" type="datetime-local" value="{{ item.value|default:"" }}" {% if not item.enabled %}disabled{% endif %}>
+                                    {% elif item.field.field_type == "FORMULA" %}
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-calculator" aria-hidden="true"></i></span>
+                                            <input class="form-control" id="preview-{{ item.field.code }}" value="{{ item.value|default:"" }}" readonly>
+                                        </div>
+                                    {% else %}
+                                        <input class="form-control" id="preview-{{ item.field.code }}" value="{{ item.value|default:"" }}" {% if not item.enabled %}disabled{% endif %} placeholder="{{ item.field.placeholder }}">
+                                    {% endif %}
+                                    {% if item.field.help_text %}<div class="form-text">{{ item.field.help_text }}</div>{% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </fieldset>
+                {% endfor %}
+                {% if section.subsections %}
+                    {% for subsection in section.subsections %}
+                        <section class="border rounded-3 p-3 mb-3 {% if not subsection.visible %}d-none{% endif %}" data-section="{{ subsection.section.code }}" {% if not subsection.visible %}hidden{% endif %}>
+                            <h3 class="h6">{{ subsection.section.name }}</h3>
+                            {% if subsection.section.description %}<p class="small text-muted">{{ subsection.section.description }}</p>{% endif %}
+                            {% for group in subsection.groups %}
+                                <fieldset class="mb-2">
+                                    <legend class="h6">{{ group.group.name }}</legend>
+                                    {% for item in group.fields %}
+                                        <div class="mb-2" data-field="{{ item.field.code }}">
+                                            <label class="form-label small fw-semibold" for="preview-{{ item.field.code }}">{{ item.field.label }}</label>
+                                            <input class="form-control form-control-sm" id="preview-{{ item.field.code }}" value="{{ item.value|default:"" }}" {% if not item.visible %}disabled{% endif %}>
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            {% endfor %}
+                        </section>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </section>
+    {% empty %}
+        <div class="alert alert-info" role="alert">This template has no sections yet.</div>
+    {% endfor %}
+</article>

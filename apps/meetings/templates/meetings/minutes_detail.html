@@ -1,0 +1,93 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ minutes.title }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meetings/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ minutes.title }}</h1>
+                <p class="text-muted mb-0">
+                    <a href="{% url 'meetings:meeting_detail' minutes.meeting_id %}">{{ minutes.meeting.title }}</a>
+                    &middot; v{{ minutes.version }}
+                    &middot; <span class="badge text-bg-secondary">{{ minutes.get_status_display }}</span>
+                </p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                {% if can_manage and minutes.status == "DRAFT" %}
+                    <a class="btn btn-outline-primary" href="{% url 'meetings:minutes_update' minutes.meeting_id minutes.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a>
+                    <form method="post" action="{% url 'meetings:minutes_submit' minutes.meeting_id minutes.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-primary" type="submit">Submit</button>
+                    </form>
+                {% endif %}
+                {% if can_manage %}
+                    <a class="btn btn-outline-secondary" href="{% url 'meetings:minute_section_create' minutes.meeting_id minutes.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add section</a>
+                {% endif %}
+                {% if can_manage %}
+                    <div class="btn-group">
+                        <button class="btn btn-outline-success" type="button" data-bs-toggle="collapse" data-bs-target="#approve-form" aria-expanded="false">Approve</button>
+                        <button class="btn btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#return-form" aria-expanded="false">Return</button>
+                    </div>
+                {% endif %}
+            </div>
+        </header>
+        {% if can_manage %}
+            <div class="collapse mb-4" id="approve-form">
+                <form method="post" action="{% url 'meetings:minutes_approve' minutes.meeting_id minutes.pk %}" class="card shadow-sm border-0">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <h2 class="h6">Approve minutes</h2>
+                        <div class="mb-3">
+                            <label class="form-label" for="approve-comments">Comments</label>
+                            <textarea class="form-control" id="approve-comments" name="comments" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-body d-flex justify-content-end"><button class="btn btn-success" type="submit">Approve minutes</button></div>
+                </form>
+            </div>
+            <div class="collapse mb-4" id="return-form">
+                <form method="post" action="{% url 'meetings:minutes_return' minutes.meeting_id minutes.pk %}" class="card shadow-sm border-0">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <h2 class="h6">Return minutes</h2>
+                        <div class="mb-3">
+                            <label class="form-label" for="return-reason">Reason <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="return-reason" name="reason" rows="2" required></textarea>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-body d-flex justify-content-end"><button class="btn btn-danger" type="submit">Return minutes</button></div>
+                </form>
+            </div>
+        {% endif %}
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="minutes-sections">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body"><h2 id="minutes-sections" class="h5 mb-0">Sections</h2></div>
+                    <div class="card-body">
+                        {% for section in sections %}
+                            <article class="mb-4">
+                                <h3 class="h6">{{ section.title }}</h3>
+                                <p class="text-muted small mb-2">{{ section.get_section_type_display }}</p>
+                                <div class="text-break">{{ section.content|linebreaks }}</div>
+                            </article>
+                        {% empty %}
+                            <p class="text-muted mb-0">No sections added.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="minutes-meta">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 id="minutes-meta" class="h5 mb-0">Details</h2></div>
+                    <dl class="card-body mb-0 row">
+                        {% if minutes.opening %}<dt class="col-4">Opening</dt><dd class="col-8">{{ minutes.opening }}</dd>{% endif %}
+                        {% if minutes.closing %}<dt class="col-4">Closing</dt><dd class="col-8">{{ minutes.closing }}</dd>{% endif %}
+                        <dt class="col-4">Quorum</dt><dd class="col-8">{{ minutes.quorum_status|default:"&mdash;" }}</dd>
+                        <dt class="col-4">Prepared by</dt><dd class="col-8">{{ minutes.prepared_by.get_full_name|default:minutes.prepared_by.username|default:"&mdash;" }}</dd>
+                        <dt class="col-4">Date</dt><dd class="col-8">{{ minutes.meeting.start_at|date:"d M Y" }}</dd>
+                    </dl>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,147 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+{% block title %}Search | SITADC Youth Hub{% endblock title %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'search/css/search.css' %}">
+{% endblock extra_css %}
+{% block extra_js %}
+    {{ block.super }}
+    <script src="{% static 'search/js/search.js' %}"></script>
+{% endblock extra_js %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        <header class="mb-4">
+            <h1 class="h2 mb-1">Search</h1>
+            <p class="text-muted mb-0">Search across leadership, membership, programmes, projects, MEAL, reports, documents, registers, meetings and more.</p>
+        </header>
+
+        <section class="card shadow-sm border-0 mb-4" aria-labelledby="search-heading">
+            <div class="card-body">
+                <form method="get" action="{% url 'search:home' %}" class="row g-3"
+                      role="search" aria-label="Unified search">
+                    <div class="col-12">
+                        {{ search_form.q }}
+                        {% for error in search_form.q.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% if entity_choices %}
+                        <div class="col-12">
+                            <fieldset>
+                                <legend class="form-label mb-2">Refine by entity type</legend>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for value, label in search_form.types.field.choices %}
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input search-type-check"
+                                                   type="checkbox"
+                                                   name="types"
+                                                   id="type-{{ value }}"
+                                                   value="{{ value }}"
+                                                   {% if value in search_form.types.value %}checked{% endif %}>
+                                            <label class="form-check-label small" for="type-{{ value }}">{{ label }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </fieldset>
+                        </div>
+                    {% endif %}
+                    <div class="col-12 d-flex gap-2">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                        </button>
+                        <a class="btn btn-outline-secondary" href="{% url 'search:home' %}">Clear</a>
+                        {% if results and can_export %}
+                            <a class="btn btn-outline-primary ms-auto"
+                               href="{% url 'search:export' %}?{{ export_query_string }}"
+                               download>
+                                <i class="bi bi-download me-1" aria-hidden="true"></i>Export CSV
+                            </a>
+                        {% endif %}
+                    </div>
+                </form>
+                <form method="post" action="{% url 'search:saved_create' %}" class="mt-3"
+                      aria-label="Save this search">
+                    {% csrf_token %}
+                    {{ saved_form.query }}
+                    {{ saved_form.types }}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <div class="input-group input-group-sm" style="max-width: 420px;">
+                        <span class="input-group-text"><i class="bi bi-bookmark-plus" aria-hidden="true"></i></span>
+                        <input type="text" name="name" class="form-control"
+                               placeholder="Save this search as... (optional)" aria-label="Saved search name">
+                        <button class="btn btn-outline-secondary" type="submit">Save</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        {% if results %}
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <p class="small text-muted mb-0">
+                    {{ results.total }} result{{ results.total|pluralize }} for "{{ active_query }}" in {{ results.duration_ms }} ms
+                </p>
+                <a class="small" href="{% url 'search:saved_list' %}">Manage saved searches</a>
+            </div>
+
+            {% for group in results.groups %}
+                {% if group.hits %}
+                    <section class="card shadow-sm border-0 mb-3" id="group-{{ group.key }}">
+                        <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                            <h2 class="h6 mb-0"><i class="bi bi-collection me-2 text-primary-brand" aria-hidden="true"></i>{{ group.label }}
+                                <span class="badge text-bg-light ms-2">{{ group.total }}</span>
+                            </h2>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% for hit in group.hits %}
+                                <li class="list-group-item search-hit">
+                                    {% if hit.url %}
+                                        <a class="text-decoration-none stretched-link" href="{{ hit.url }}"></a>
+                                    {% endif %}
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="search-hit-body">
+                                            <div class="fw-semibold text-primary-brand">{{ hit.title }}</div>
+                                            {% if hit.subtitle %}<div class="text-muted small">{{ hit.subtitle }}</div>{% endif %}
+                                            <div class="d-flex flex-wrap gap-2 mt-1">
+                                                {% if hit.reference %}<span class="small text-muted"><i class="bi bi-hash" aria-hidden="true"></i> {{ hit.reference }}</span>{% endif %}
+                                                {% if hit.status %}<span class="badge text-bg-light">{{ hit.status }}</span>{% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                {% endif %}
+            {% empty %}
+                <div class="alert alert-info" role="status">
+                    <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+                    No results found for "{{ active_query }}". Try a different term or fewer entity types.
+                </div>
+            {% endfor %}
+        {% elif active_query %}
+            <div class="alert alert-info" role="status">
+                <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+                No results found for "{{ active_query }}". Try a different term or fewer entity types.
+            </div>
+        {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-search display-4" aria-hidden="true"></i>
+                <p class="mt-3">Enter a search term above to begin. Choose entity types to narrow your search.</p>
+            </div>
+        {% endif %}
+
+        {% if recent_searches %}
+            <section class="card shadow-sm border-0 mt-4" aria-labelledby="recent-searches-heading">
+                <div class="card-body">
+                    <h2 id="recent-searches-heading" class="h6">Recent searches</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for recent in recent_searches %}
+                            <a class="btn btn-sm btn-outline-secondary"
+                               href="{% url 'search:home' %}?q={{ recent.query|urlencode }}">{{ recent.query }}
+                                <span class="text-muted ms-1">({{ recent.result_count }})</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

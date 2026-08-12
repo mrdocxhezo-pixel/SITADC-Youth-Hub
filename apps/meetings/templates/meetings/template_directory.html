@@ -1,0 +1,48 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Meeting templates | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meetings/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2">Meeting templates</h1>
+                <p class="text-muted mb-0">Reusable templates for recurring meeting types.</p>
+            </div>
+            <a class="btn btn-primary" href="{% url 'meetings:template_create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New template</a>        </header>
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Meeting templates</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Status</th>
+                            <th scope="col"><span class="visually-hidden">Action</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for template in templates %}
+                            <tr>
+                                <td class="fw-semibold">{{ template.name }}</td>
+                                <td>{{ template.get_meeting_type_display }}</td>
+                                <td>
+                                    {% if template.is_active %}
+                                        <span class="badge text-bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge text-bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:template_update' template.pk %}">Edit</a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">No templates created.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,39 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Notification Preferences | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "notifications/includes/module_nav.html" %}
+        <header class="mb-4">
+            <h1 class="h2 mb-1">Notification preferences</h1>
+            <p class="text-muted mb-0">Choose which channels and digests you receive.</p>
+        </header>
+        <div class="row">
+            <div class="col-lg-8">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-body"><h2 class="h5 mb-0">Channels</h2></div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                {% include "notifications/includes/form_fields.html" with form=form %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1" aria-hidden="true"></i>Save preferences</button>
+                        <a class="btn btn-outline-secondary" href="{% url 'notifications:dashboard' %}">Cancel</a>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 class="h6 mb-0">About quiet hours</h2></div>
+                    <div class="card-body small">
+                        <p class="mb-2">Quiet hours prevent non-critical notifications from disturbing you during a set window. Critical and action-required notifications may override them according to the policy you select.</p>
+                        <p class="mb-0">Times use 24-hour format, e.g. <code>22:00</code> to <code>07:00</code>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1><i class="bi bi-journal-bookmark me-2"></i>Report Categories & Templates</h1>
+      <p class="text-muted mb-0">
+        Browse all report templates organized by category (A through P).
+        <span class="badge bg-primary ms-2">{{ total_templates }} templates</span>
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'reports:dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-8">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" name="q" class="form-control"
+                   placeholder="Search templates by name or code (e.g. A1, Financial, Risk)..."
+                   value="{{ search_query }}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <button type="submit" class="btn btn-primary me-2">Search</button>
+          {% if search_query %}
+          <a href="{% url 'reports:category_browse' %}" class="btn btn-outline-secondary">Clear</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Navigation -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Quick Navigation</h5>
+    </div>
+    <div class="card-body">
+      <div class="d-flex flex-wrap gap-2">
+        {% for cat_data in categories %}
+        {% if cat_data.template_count > 0 %}
+        <a href="#cat-{{ cat_data.category.code }}"
+           class="btn btn-sm {% if search_query %}btn-outline-primary{% else %}btn-primary{% endif %} rounded-pill">
+          <i class="bi {{ cat_data.category.icon }} me-1"></i>
+          {{ cat_data.category.code }}
+          <span class="badge bg-white text-primary ms-1">{{ cat_data.template_count }}</span>
+        </a>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  {% for cat_data in categories %}
+  {% if cat_data.template_count > 0 %}
+  <div class="card mb-4" id="cat-{{ cat_data.category.code }}">
+    <div class="card-header d-flex justify-content-between align-items-center"
+         style="border-left: 4px solid {{ cat_data.category.color }};">
+      <div>
+        <h4 class="mb-0">
+          <i class="bi {{ cat_data.category.icon }} me-2" style="color: {{ cat_data.category.color }};"></i>
+          {{ cat_data.category.name }}
+        </h4>
+        <small class="text-muted">{{ cat_data.category.description }}</small>
+      </div>
+      <div>
+        <span class="badge" style="background-color: {{ cat_data.category.color }};">
+          {{ cat_data.template_count }} template{{ cat_data.template_count|pluralize }}
+        </span>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="row">
+        {% for template in cat_data.templates %}
+        <div class="col-lg-4 col-md-6 mb-3">
+          <div class="card h-100 border-1 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-secondary">{{ template.code }}</span>
+                {% if template.confidentiality == 'RESTRICTED' %}
+                <span class="badge bg-danger"><i class="bi bi-lock"></i> Restricted</span>
+                {% elif template.confidentiality == 'CONFIDENTIAL' %}
+                <span class="badge bg-warning"><i class="bi bi-shield-lock"></i> Confidential</span>
+                {% endif %}
+              </div>
+              <h6 class="card-title">{{ template.title }}</h6>
+              <p class="card-text small text-muted">{{ template.description|truncatewords:20 }}</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                  <i class="bi bi-list-ul me-1"></i>
+                  {{ template.sections.count }} section{{ template.sections.count|pluralize }}
+                </small>
+                <small class="text-muted">
+                  <i class="bi bi-tag me-1"></i>
+                  {{ template.get_reporting_frequency_display }}
+                </small>
+              </div>
+            </div>
+            <div class="card-footer bg-transparent">
+              <div class="d-grid gap-2">
+                <a href="{% url 'reports:template_preview' template.pk %}"
+                   class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-eye me-1"></i> Preview Template
+                </a>
+                <a href="{% url 'report_instances:create' %}?template={{ template.pk }}"
+                   class="btn btn-sm btn-success">
+                  <i class="bi bi-plus-circle me-1"></i> Create Report
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+          <p class="text-muted text-center py-3">
+            <i class="bi bi-inbox me-2"></i>No templates found matching your search.
+          </p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  {% if not search_query %}
+  <div class="text-center py-4">
+    <p class="text-muted">
+      Showing {{ total_templates }} templates across {{ categories|length }} active categories.
+    </p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Smooth scroll for navigation links
+  document.querySelectorAll('a[href^="#cat-"]').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

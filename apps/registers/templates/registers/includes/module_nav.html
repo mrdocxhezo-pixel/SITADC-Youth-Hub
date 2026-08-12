@@ -1,0 +1,14 @@
+<nav class="mb-4" aria-label="Registers module">
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'registers:dashboard' %}"><i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>Dashboard</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'registers:register_list' %}"><i class="bi bi-journal-text me-1" aria-hidden="true"></i>Registers</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'registers:entry_list' %}"><i class="bi bi-card-list me-1" aria-hidden="true"></i>Entries</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'registers:category_list' %}"><i class="bi bi-tags me-1" aria-hidden="true"></i>Categories</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'registers:template_list' %}"><i class="bi bi-file-earmark-richtext me-1" aria-hidden="true"></i>Templates</a>
+    </div>
+</nav>

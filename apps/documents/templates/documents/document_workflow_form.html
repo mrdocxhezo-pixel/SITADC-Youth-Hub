@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Workflow Action - {{ document.title }} - SITADC Youth Hub{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1><i class="bi bi-arrow-repeat"></i> Workflow Action</h1>
+      <p class="text-muted mb-0">
+        <code>{{ document.reference_number }}</code> &middot; {{ document.title }}
+      </p>
+    </div>
+    <a href="{% url 'documents:detail' document.pk %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <div class="row">
+    <div class="col-lg-8">
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Document Info -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Document Information</h5>
+          </div>
+          <div class="card-body">
+            <dl class="row mb-0">
+              <dt class="col-sm-3">Title:</dt>
+              <dd class="col-sm-9">{{ document.title }}</dd>
+              <dt class="col-sm-3">Reference:</dt>
+              <dd class="col-sm-9"><code>{{ document.reference_number }}</code></dd>
+              <dt class="col-sm-3">Current Status:</dt>
+              <dd class="col-sm-9">
+                <span class="badge bg-{% if document.status == 'DRAFT' %}secondary{% elif document.status == 'PENDING_REVIEW' %}warning{% elif document.status == 'PENDING_APPROVAL' %}info{% elif document.status == 'PUBLISHED' %}success{% elif document.status == 'ARCHIVED' %}dark{% else %}secondary{% endif %}">
+                  {{ document.get_status_display }}
+                </span>
+              </dd>
+              <dt class="col-sm-3">Owner:</dt>
+              <dd class="col-sm-9">{{ document.owner.get_full_name|default:document.owner.username }}</dd>
+            </dl>
+          </div>
+        </div>
+
+        <!-- Workflow Action -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-gear"></i> Action</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="action" class="form-label">Select Action <span class="text-danger">*</span></label>
+              <select name="action" id="action" class="form-select" required>
+                <option value="">Choose an action...</option>
+                {% for value, label in action_choices %}
+                <option value="{{ value }}" {% if form.action.value == value %}selected{% endif %}>{{ label }}</option>
+                {% empty %}
+                <option value="">No actions available for this document status</option>
+                {% endfor %}
+              </select>
+              {% if form.action.errors %}
+              <div class="invalid-feedback d-block">{{ form.action.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              <label for="comments" class="form-label">Comments</label>
+              <textarea name="comments" id="comments" class="form-control" rows="4"
+                        placeholder="Add comments for this action...">{{ form.comments.value|default:'' }}</textarea>
+              {% if form.comments.errors %}
+              <div class="invalid-feedback d-block">{{ form.comments.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg"></i> Submit Action
+          </button>
+          <a href="{% url 'documents:detail' document.pk %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-info-circle"></i> Workflow Guide</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            <li class="mb-3">
+              <i class="bi bi-send text-primary me-2"></i>
+              <strong>Submit for Review</strong>
+              <p class="small text-muted mb-0 ms-4">Send document to reviewers for evaluation.</p>
+            </li>
+            <li class="mb-3">
+              <i class="bi bi-check-circle text-success me-2"></i>
+              <strong>Approve</strong>
+              <p class="small text-muted mb-0 ms-4">Mark document as approved and ready for publication.</p>
+            </li>
+            <li class="mb-3">
+              <i class="bi bi-x-circle text-danger me-2"></i>
+              <strong>Reject</strong>
+              <p class="small text-muted mb-0 ms-4">Return document to owner with feedback.</p>
+            </li>
+            <li class="mb-3">
+              <i class="bi bi-globe text-info me-2"></i>
+              <strong>Publish</strong>
+              <p class="small text-muted mb-0 ms-4">Make document available to all users.</p>
+            </li>
+            <li>
+              <i class="bi bi-archive text-secondary me-2"></i>
+              <strong>Archive</strong>
+              <p class="small text-muted mb-0 ms-4">Move document to archive.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

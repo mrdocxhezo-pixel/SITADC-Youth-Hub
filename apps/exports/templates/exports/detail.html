@@ -1,0 +1,112 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+{% block title %}Export {{ export.reference_number }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        <header class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-1">Export {{ export.reference_number }}</h1>
+                <p class="text-muted mb-0">
+                    {{ export.get_source_type_display }} &middot; {{ export.get_format_display }}
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'exports:history' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                </a>
+                {% if can_download and export.is_downloadable %}
+                    <a href="{% url 'exports:download' export.pk %}" class="btn btn-primary">
+                        <i class="bi bi-download me-1"></i> Download
+                    </a>
+                {% endif %}
+                {% if can_cancel %}
+                    <form method="post" action="{% url 'exports:cancel' export.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Cancel this export request?');">
+                            <i class="bi bi-x-lg me-1"></i> Cancel
+                        </button>
+                    </form>
+                {% endif %}
+                {% if export.status == 'COMPLETED' %}
+                    <form method="post" action="{% url 'exports:regenerate' export.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-repeat me-1"></i> Regenerate
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <section class="card shadow-sm border-0 mb-4" aria-labelledby="details-heading">
+                    <div class="card-header bg-white border-0 pt-3">
+                        <h2 id="details-heading" class="h5 mb-0">Details</h2>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Status</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge {% if export.status == 'COMPLETED' %}text-bg-success{% elif export.status == 'FAILED' %}text-bg-danger{% elif export.status == 'EXPIRED' %}text-bg-secondary{% elif export.status == 'CANCELLED' %}text-bg-dark{% else %}text-bg-warning{% endif %}">
+                                    {{ export.get_status_display }}
+                                </span>
+                            </dd>
+                            <dt class="col-sm-4">Requested by</dt>
+                            <dd class="col-sm-8">{{ export.requested_by.get_full_name|default:export.requested_by }}</dd>
+                            <dt class="col-sm-4">Requested at</dt>
+                            <dd class="col-sm-8">{{ export.requested_at|date:"M j, Y H:i" }}</dd>
+                            <dt class="col-sm-4">Completed at</dt>
+                            <dd class="col-sm-8">{{ export.completed_at|date:"M j, Y H:i"|default:"—" }}</dd>
+                            <dt class="col-sm-4">Expires at</dt>
+                            <dd class="col-sm-8">{{ export.expires_at|date:"M j, Y H:i"|default:"—" }}</dd>
+                            <dt class="col-sm-4">Records</dt>
+                            <dd class="col-sm-8">{{ export.record_count|default:"—" }}</dd>
+                            <dt class="col-sm-4">File size</dt>
+                            <dd class="col-sm-8">{{ export.file_size|filesizeformat|default:"—" }}</dd>
+                            <dt class="col-sm-4">Confidentiality</dt>
+                            <dd class="col-sm-8">{{ export.get_confidentiality_display }}</dd>
+                            <dt class="col-sm-4">Sensitive</dt>
+                            <dd class="col-sm-8">{% if export.is_sensitive %}Yes{% else %}No{% endif %}</dd>
+                            {% if export.failure_summary %}
+                                <dt class="col-sm-4">Failure</dt>
+                                <dd class="col-sm-8 text-danger">{{ export.failure_summary }}</dd>
+                            {% endif %}
+                            {% if export.filters %}
+                                <dt class="col-sm-4">Filters</dt>
+                                <dd class="col-sm-8"><code>{{ export.filters }}</code></dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-lg-5">
+                <section class="card shadow-sm border-0" aria-labelledby="activity-heading">
+                    <div class="card-header bg-white border-0 pt-3">
+                        <h2 id="activity-heading" class="h5 mb-0">Activity</h2>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if activity %}
+                            <ul class="list-group list-group-flush">
+                                {% for event in activity %}
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-semibold">{{ event.get_action_display }}</span>
+                                            <small class="text-muted">{{ event.created_at|date:"M j, Y H:i" }}</small>
+                                        </div>
+                                        {% if event.actor %}
+                                            <small class="text-muted">{{ event.actor.get_full_name|default:event.actor }}</small>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <div class="text-center text-muted py-4">No activity recorded.</div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

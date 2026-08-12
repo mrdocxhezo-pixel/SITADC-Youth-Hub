@@ -26,7 +26,18 @@ INSTALLED_APPS = [
     "apps.memberships.apps.MembershipsConfig",
     "apps.stakeholders.apps.StakeholdersConfig",
     "apps.programs.apps.ProgramsConfig",
-]
+    "apps.beneficiaries.apps.BeneficiariesConfig",
+    "apps.meal.apps.MealConfig",
+    "apps.reports.apps.ReportsConfig",
+    "apps.report_instances.apps.ReportInstancesConfig",
+    "apps.reviews.apps.ReviewsConfig",
+      "apps.documents.apps.DocumentsConfig",
+      "apps.registers.apps.RegistersConfig",
+      "apps.meetings.apps.MeetingsConfig",
+      "apps.notifications.apps.NotificationsConfig",
+      "apps.search.apps.SearchConfig",
+      "apps.exports.apps.ExportsConfig",
+  ]
 
 MIDDLEWARE = [
     "apps.core.middleware.RequestIDMiddleware",

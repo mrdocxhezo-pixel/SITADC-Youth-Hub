@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}New Version - {{ document.title }} - SITADC Youth Hub{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1><i class="bi bi-file-earmark-plus"></i> New Version</h1>
+      <p class="text-muted mb-0">
+        <code>{{ document.reference_number }}</code> &middot; {{ document.title }}
+      </p>
+    </div>
+    <a href="{% url 'documents:version_history' document.pk %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Back to History
+    </a>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <div class="row">
+    <div class="col-lg-8">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- File Upload -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-arrow-up"></i> New Version File</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="file" class="form-label">Select File <span class="text-danger">*</span></label>
+              <input type="file" name="file" id="file" class="form-control" required
+                     accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.odt,.ods,.odp,.jpg,.jpeg,.png,.gif,.svg,.zip,.rar">
+              <div class="form-text">Upload the updated document file (max 50MB).</div>
+              {% if form.file.errors %}
+              <div class="invalid-feedback d-block">{{ form.file.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Version Details -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-info-circle"></i> Version Details</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="version_type" class="form-label">Version Type <span class="text-danger">*</span></label>
+              <select name="version_type" id="version_type" class="form-select" required>
+                {% for value, label in version_type_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text">Major = significant changes, Minor = small fixes/updates.</div>
+            </div>
+            <div class="mb-3">
+              <label for="label" class="form-label">Version Label</label>
+              <input type="text" name="label" id="label" class="form-control"
+                     value="{{ form.label.value|default:'' }}" maxlength="100"
+                     placeholder="e.g., Final, Draft 2, Revised">
+              {% if form.label.errors %}
+              <div class="invalid-feedback d-block">{{ form.label.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              <label for="change_summary" class="form-label">Change Summary <span class="text-danger">*</span></label>
+              <textarea name="change_summary" id="change_summary" class="form-control" rows="4"
+                        required placeholder="Describe what changed in this version...">{{ form.change_summary.value|default:'' }}</textarea>
+              {% if form.change_summary.errors %}
+              <div class="invalid-feedback d-block">{{ form.change_summary.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-upload"></i> Upload New Version
+          </button>
+          <a href="{% url 'documents:version_history' document.pk %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-clock-history"></i> Current Version</h5>
+        </div>
+        <div class="card-body">
+          {% if current_version %}
+          <dl class="row mb-0">
+            <dt class="col-sm-5">Version:</dt>
+            <dd class="col-sm-7">{{ current_version.version_number }}</dd>
+            <dt class="col-sm-5">Type:</dt>
+            <dd class="col-sm-7">
+              <span class="badge bg-{% if current_version.version_type == 'MAJOR' %}primary{% else %}secondary{% endif %}">
+                {{ current_version.get_version_type_display }}
+              </span>
+            </dd>
+            <dt class="col-sm-5">Uploaded:</dt>
+            <dd class="col-sm-7">{{ current_version.uploaded_at|date:"Y-m-d H:i" }}</dd>
+            <dt class="col-sm-5">By:</dt>
+            <dd class="col-sm-7">{{ current_version.created_by.get_full_name|default:current_version.created_by.username }}</dd>
+            <dt class="col-sm-5">Size:</dt>
+            <dd class="col-sm-7">{{ current_version.file_size|filesizeformat }}</dd>
+          </dl>
+          {% else %}
+          <p class="text-muted mb-0">This will be the first version.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

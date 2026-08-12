@@ -1,0 +1,155 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ register.name }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "registers/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ register.name }}</h1>
+                <p class="text-muted mb-0"><code>{{ register.reference_number }}</code></p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-primary"
+                   href="{% url 'registers:entry_create' register.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New entry</a>
+                {% if can_manage %}
+                    <a class="btn btn-outline-primary"
+                       href="{% url 'registers:register_update' register.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a>
+                {% endif %}
+                {% if can_export %}
+                    <a class="btn btn-outline-primary"
+                       href="{% url 'registers:export_register_format' register.pk 'csv' %}"><i class="bi bi-download me-1" aria-hidden="true"></i>Export</a>
+                {% endif %}
+                {% if can_manage %}
+                    <form method="post"
+                          action="{% url 'registers:register_archive' register.pk %}"
+                          class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-danger" type="submit"><i class="bi bi-archive me-1" aria-hidden="true"></i>Archive</button>
+                    </form>
+                {% endif %}
+            </div>
+        </header>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="register-details">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body">
+                        <h2 id="register-details" class="h5 mb-0">Details</h2>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted fw-normal">Category</dt>
+                            <dd class="col-sm-8">
+                                {{ register.category.name }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Status</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge text-bg-secondary">{{ register.get_status_display }}</span>
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Confidentiality</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge text-bg-secondary">{{ register.get_confidentiality_display }}</span>
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Owner</dt>
+                            <dd class="col-sm-8">
+                                {{ register.owner.get_full_name|default:register.owner }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Responsible department</dt>
+                            <dd class="col-sm-8">
+                                {{ register.responsible_department|default:"Not recorded" }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Approval required</dt>
+                            <dd class="col-sm-8">
+                                {{ register.approval_required|yesno:"Yes,No" }}
+                            </dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Retention</dt>
+                            <dd class="col-sm-8">{{ register.get_retention_policy_display }}{% if register.retention_years %} ({{ register.retention_years }} years){% endif %}</dd>
+                            <dt class="col-sm-4 text-muted fw-normal">Numbering scheme</dt>
+                            <dd class="col-sm-8">
+                                {{ register.numbering_scheme.name|default:"None" }}
+                            </dd>
+                            {% if register.description %}
+                                <dt class="col-sm-4 text-muted fw-normal">Description</dt>
+                                <dd class="col-sm-8">
+                                    {{ register.description }}
+                                </dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0 mt-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Templates</h2>
+                        <a href="{% url 'registers:template_create' %}">Manage templates</a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for template in templates %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ template.name }}{% if template.is_default %} <span class="badge text-bg-primary">default</span>{% endif %}</span>
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="{% url 'registers:template_update' template.pk %}">Edit</a>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">No templates configured for this register.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="register-activity">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body">
+                        <h2 id="register-activity" class="h5 mb-0">Activity</h2>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in activity %}
+                            <li class="list-group-item px-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="badge text-bg-secondary">{{ item.get_action_display }}</span>
+                                    <span class="text-muted small">{{ item.created_at|date:"d M Y H:i" }}</span>
+                                </div>
+                                {% if item.comment %}<p class="small mb-0 mt-1 text-muted">{{ item.comment }}</p>{% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-3 text-muted">No activity recorded.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </aside>
+        </div>
+        <section class="card shadow-sm border-0 mt-4" aria-labelledby="entry-heading">
+            <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                <h2 id="entry-heading" class="h5 mb-0">Recent entries ({{ entry_count }})</h2>
+                <a href="{% url 'registers:entry_list' %}">View all entries</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Register entries</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Reference</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Approval status</th>
+                            <th scope="col">Created</th>
+                            <th scope="col"><span class="visually-hidden">Action</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                            <tr>
+                                <td><code>{{ entry.reference_number }}</code></td>
+                                <td class="fw-semibold"><a href="{% url 'registers:entry_detail' entry.pk %}">{{ entry.title }}</a></td>
+                                <td><span class="badge text-bg-secondary">{{ entry.get_approval_status_display }}</span></td>
+                                <td class="text-muted">{{ entry.created_at|date:"d M Y" }}</td>
+                                <td class="text-end"><a class="btn btn-sm btn-outline-primary"
+   href="{% url 'registers:entry_detail' entry.pk %}">View</a></td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No entries in this register yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+{% endblock dashboard_content %}

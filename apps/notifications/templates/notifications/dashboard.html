@@ -1,0 +1,143 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Notifications Dashboard | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "notifications/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Notifications &amp; Announcements</h1>
+                <p class="text-muted mb-0">Your notification centre and module administration.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn btn-primary" href="{% url 'notifications:inbox' %}"><i class="bi bi-inbox me-1" aria-hidden="true"></i>Open inbox</a>
+                {% if can_manage_announcements %}
+                    <a class="btn btn-outline-primary" href="{% url 'notifications:announcement_create' %}"><i class="bi bi-megaphone me-1" aria-hidden="true"></i>New announcement</a>
+                {% endif %}
+            </div>
+        </header>
+        <section aria-labelledby="headline-metrics" class="mb-4">
+            <h2 id="headline-metrics" class="visually-hidden">Headline metrics</h2>
+            <div class="row g-3">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-primary border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Unread</p>
+                            <p class="display-6 mb-0">{{ summary.unread }}</p>
+                            <p class="small text-muted mb-0">{{ summary.total }} total active</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-warning border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Action required</p>
+                            <p class="display-6 mb-0">{{ summary.action_required }}</p>
+                            <p class="small text-muted mb-0">need your attention</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-success border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Read</p>
+                            <p class="display-6 mb-0">{{ summary.read }}</p>
+                            <p class="small text-muted mb-0">{{ summary.delivered }} delivered</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 border-start border-info border-4">
+                        <div class="card-body">
+                            <p class="text-uppercase small fw-semibold text-muted mb-1">Announcements</p>
+                            <p class="display-6 mb-0">{{ announcement_counts.published }}</p>
+                            <p class="small text-muted mb-0">{{ announcement_counts.drafts }} drafts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="recent-heading">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 id="recent-heading" class="h5 mb-0">Recent notifications</h2>
+                        <a href="{% url 'notifications:inbox' %}">View all</a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for notification in recent_notifications %}
+                            <li class="list-group-item d-flex gap-3 align-items-start">
+                                <i class="bi {{ notification.icon }} text-primary mt-1" aria-hidden="true"></i>
+                                <div class="flex-grow-1 min-w-0">
+                                    <a class="fw-semibold text-decoration-none {% if notification.read_status == 'UNREAD' %}text-primary{% endif %}"
+                                       href="{% url 'notifications:notification_open' notification.pk %}">{{ notification.title }}</a>
+                                    <p class="text-muted small mb-0">{{ notification.message|truncatechars:90 }}</p>
+                                    <small class="text-muted">{{ notification.created_at|date:"d M Y H:i" }}</small>
+                                </div>
+                                <span class="badge {{ notification.badge_color }}">{{ notification.get_priority_display }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center text-muted py-4">You have no notifications yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">Action required</h2>
+                        <a href="{% url 'notifications:inbox' %}?status=action">View all</a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for notification in action_required %}
+                            <li class="list-group-item d-flex gap-3 align-items-start" data-notification-row>
+                                <i class="bi bi-clipboard-check text-warning mt-1" aria-hidden="true"></i>
+                                <div class="flex-grow-1 min-w-0">
+                                    <a class="fw-semibold text-decoration-none" href="{% url 'notifications:notification_open' notification.pk %}">{{ notification.title }}</a>
+                                    <p class="text-muted small mb-0">{{ notification.message|truncatechars:90 }}</p>
+                                </div>
+                                <form method="post" action="{% url 'notifications:notification_acknowledge' notification.pk %}" data-notification-ajax="true" data-dismiss="true">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-success" type="submit"><i class="bi bi-check2 me-1" aria-hidden="true"></i>Acknowledge</button>
+                                </form>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center text-muted py-4">Nothing needs your attention.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="announcements-heading">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                        <h2 id="announcements-heading" class="h5 mb-0">Announcements</h2>
+                        {% if can_manage_announcements %}
+                            <a href="{% url 'notifications:announcement_list' %}">Manage</a>
+                        {% endif %}
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for announcement in announcements %}
+                            <li class="list-group-item">
+                                <p class="fw-semibold mb-0"><i class="bi bi-megaphone text-primary me-1" aria-hidden="true"></i>{{ announcement.title }}</p>
+                                <p class="text-muted small mb-0">{{ announcement.message|truncatechars:80 }}</p>
+                                <small class="text-muted">{{ announcement.publish_at|date:"d M Y" }}</small>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center text-muted py-3">No announcements available.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body"><h2 class="h5 mb-0">Categories</h2></div>
+                    <ul class="list-group list-group-flush">
+                        {% for category in categories %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ category.label }}</span>
+                                <span class="badge text-bg-primary rounded-pill">{{ category.count }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center text-muted py-3">No categories with unread items.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

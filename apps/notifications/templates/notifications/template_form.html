@@ -1,0 +1,32 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{% if object %}Update{% else %}New{% endif %} Template | Notifications{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "notifications/includes/module_nav.html" %}
+        <nav aria-label="Breadcrumb" class="mb-3">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'notifications:template_list' %}">Templates</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% if object %}Update{% else %}New{% endif %}</li>
+            </ol>
+        </nav>
+        <header class="mb-4">
+            <h1 class="h2 mb-1">{% if object %}Update{% else %}Create{% endif %} notification template</h1>
+            <p class="text-muted mb-0">Variables in {{ "{{" }} brackets {{ "}}" }} are rendered from the notification event payload.</p>
+        </header>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-body"><h2 class="h5 mb-0">Template details</h2></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% include "notifications/includes/form_fields.html" with form=form %}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1" aria-hidden="true"></i>{% if object %}Save changes{% else %}Create template{% endif %}</button>
+                <a class="btn btn-outline-secondary" href="{% url 'notifications:template_list' %}">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock dashboard_content %}

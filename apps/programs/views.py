@@ -28,8 +28,11 @@ from .constants import (
 from .exports import program_register_csv_response, project_register_csv_response
 from .forms import (
     ActivityForm,
+    BeneficiaryParticipationForm,
     BeneficiaryRecordForm,
+    ChangeDecisionForm,
     ChangeRequestForm,
+    ClosureActionForm,
     IssueForm,
     LessonsLearnedForm,
     ProcurementRequestForm,
@@ -43,19 +46,28 @@ from .forms import (
     ProgramStatusTransitionForm,
     ProgramTeamMemberForm,
     ProgressUpdateForm,
+    ProjectApprovalActionForm,
+    ProjectClosureForm,
     ProjectForm,
+    ProjectReportForm,
+    ProjectResultForm,
     ProjectStatusTransitionForm,
+    ProjectTimelineForm,
     ReasonArchiveForm,
     ResourceAllocationForm,
     TaskForm,
+    WBSNodeForm,
     WorkPlanForm,
 )
 from .models import (
     Activity,
+    BeneficiaryParticipation,
     BeneficiaryRecord,
     ChangeRequest,
+    Deliverable,
     Issue,
     LessonsLearned,
+    Milestone,
     ProcurementRequest,
     Program,
     ProgramBudget,
@@ -68,8 +80,10 @@ from .models import (
     ProgramTeamMember,
     ProgressUpdate,
     Project,
+    ProjectReport,
     ResourceAllocation,
     Task,
+    WBSNode,
     WorkPlan,
 )
 from .permissions import (
@@ -100,10 +114,18 @@ from .report_exports import (
 )
 from .selectors import visible_programs, visible_projects
 from .services import (
+    ChangeRequestService,
     ProgramChildRecordService,
     ProgramDocumentService,
     ProgramService,
+    ProjectAnalyticsService,
+    ProjectApprovalService,
+    ProjectClosureService,
+    ProjectReportService,
+    ProjectResultService,
     ProjectService,
+    ProjectTimelineService,
+    WbsService,
 )
 
 logger = logging.getLogger(__name__)
@@ -1371,3 +1393,505 @@ class ProgramClosureReportView(ProgramPermissionMixin, View):
 
     def get(self, request, program_id):
         return program_closure_docx_response(request.user, program_id)
+
+
+class ProjectRelatedView(ProgramPermissionMixin, TemplateView):
+    """Render and create one scoped child collection for a project."""
+
+    template_name = "programs/project_related_records.html"
+    permission_required: str | tuple[str, ...] = (PROJECTS_VIEW,)
+    write_permission = PROJECTS_UPDATE
+    form_class: ClassVar[type[forms.BaseForm] | None] = None
+    route_name = ""
+    title = "Project records"
+    description = ""
+    columns: tuple[str, ...] = ()
+    project: Project | None = None
+    form_needs_project = False
+
+    def get_project(self):
+        if self.project is None:
+            self.project = _scoped_project(
+                self.request.user, self.kwargs["pk"], include_archived=True
+            )
+        return self.project
+
+    def can_write(self):
+        return bool(
+            self.write_permission and _can(self.request.user, self.write_permission)
+        )
+
+    def get_form_kwargs(self):
+        if not self.form_needs_project:
+            return {}
+        return {"project": self.get_project()}
+
+    def get_form(self, data=None, files=None):
+        if not self.can_write() or self.form_class is None:
+            return None
+        return self.form_class(data, files, **self.get_form_kwargs())
+
+    def get_rows(self) -> list[dict[str, Any]]:
+        raise NotImplementedError
+
+    def perform_service(self, cleaned_data: dict):
+        raise NotImplementedError
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "project": self.get_project(),
+                "entity": self.get_project(),
+                "title": self.title,
+                "description": self.description,
+                "columns": self.columns,
+                "rows": self.get_rows(),
+                "form": kwargs.get("form") or self.get_form(),
+                "can_write": self.can_write(),
+                "cancel_url": reverse(
+                    "programs:project_profile", kwargs={"pk": self.get_project().pk}
+                ),
+            }
+        )
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if not self.can_write():
+            raise PermissionDenied
+        form = self.get_form(request.POST, request.FILES)
+        if form is None:
+            raise PermissionDenied
+        if not form.is_valid():
+            return self.render_to_response(self.get_context_data(**kwargs, form=form))
+        self.perform_service(form.cleaned_data)
+        messages.success(self.request, f"{self.title} saved successfully.")
+        return redirect(self.route_name, pk=self.get_project().pk)
+
+
+class ProjectWbsView(ProjectRelatedView):
+    form_class = WBSNodeForm
+    route_name = "programs:project_wbs"
+    title = "Work breakdown structure"
+    description = "Hierarchical project WBS with progress roll-up."
+    columns = ("Code", "Node", "Type", "Progress", "Status")
+    template_name = "programs/project_wbs.html"
+    form_needs_project = True
+
+    def get_rows(self) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for node in self.get_project().wbs_nodes.select_related("parent").all():
+            rows.append(
+                {
+                    "code": node.code,
+                    "title": node.title,
+                    "node_type": node.get_node_type_display(),
+                    "progress": f"{node.completion_percentage}%",
+                    "status": node.get_status_display(),
+                    "node": node,
+                    "depth": self._depth(node),
+                }
+            )
+        return rows
+
+    def _depth(self, node: WBSNode) -> int:
+        depth = 0
+        cursor = node.parent
+        seen: set = set()
+        while cursor is not None and depth < 64 and cursor.pk not in seen:
+            seen.add(cursor.pk)
+            depth += 1
+            cursor = cursor.parent
+        return depth
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "root_nodes": [node for node in self.get_rows() if node["depth"] == 0],
+            }
+        )
+        return context
+
+    def perform_service(self, cleaned_data: dict):
+        WbsService(user=self.request.user).create_node(
+            self.get_project(), **cleaned_data
+        )
+
+
+class ProjectResultsView(ProjectRelatedView):
+    form_class = ProjectResultForm
+    route_name = "programs:project_results"
+    title = "Project results"
+    description = "Structured outputs, outcomes, and impacts."
+    columns = ("Type", "Code", "Description", "Target", "Status")
+
+    def get_rows(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "code": row.get_result_type_display(),
+                "title": row.code,
+                "node_type": row.description[:60],
+                "progress": row.target,
+                "status": row.get_status_display(),
+            }
+            for row in self.get_project().results.all()[:40]
+        ]
+
+    def perform_service(self, cleaned_data: dict):
+        ProjectResultService(user=self.request.user).create_result(
+            self.get_project(), **cleaned_data
+        )
+
+
+class ProjectTimelineView(ProjectRelatedView):
+    form_class = ProjectTimelineForm
+    route_name = "programs:project_timeline"
+    title = "Project timeline"
+    description = "Scheduled entries for Gantt-style planning."
+    columns = ("Title", "Planned start", "Planned end", "Status")
+    form_needs_project = True
+
+    def get_rows(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "code": row.title,
+                "title": row.planned_start_date,
+                "node_type": row.planned_end_date,
+                "progress": row.get_status_display(),
+                "status": "",
+            }
+            for row in self.get_project().timeline_entries.all()[:40]
+        ]
+
+    def perform_service(self, cleaned_data: dict):
+        ProjectTimelineService(user=self.request.user).create_entry(
+            self.get_project(), **cleaned_data
+        )
+
+
+class ProjectParticipationView(ProjectRelatedView):
+    form_class = BeneficiaryParticipationForm
+    route_name = "programs:project_participations"
+    title = "Beneficiary participation"
+    description = "Participation events against project beneficiaries."
+    columns = ("Beneficiary", "Activity", "Date", "Outcomes")
+
+    def get_rows(self) -> list[dict[str, Any]]:
+        records = BeneficiaryParticipation.objects.filter(
+            beneficiary__project=self.get_project()
+        ).select_related("beneficiary")[:40]
+        return [
+            {
+                "code": row.beneficiary.name,
+                "title": row.activity_title,
+                "node_type": row.participation_date,
+                "progress": row.outcomes_achieved[:40],
+                "status": "",
+            }
+            for row in records
+        ]
+
+    def perform_service(self, cleaned_data: dict):
+        raise NotImplementedError
+
+
+class ProjectClosureView(ProgramPermissionMixin, FormView):
+    form_class = ProjectClosureForm
+    template_name = "programs/project_closure.html"
+    permission_required = PROJECTS_UPDATE
+
+    def get_project(self):
+        if not hasattr(self, "project"):
+            self.project = _scoped_project(
+                self.request.user, self.kwargs["pk"], include_archived=True
+            )
+        return self.project
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project = self.get_project()
+        context.update(
+            {
+                "project": project,
+                "closure": getattr(project, "closure", None),
+                "can_verify": _can(self.request.user, PROJECTS_UPDATE),
+                "can_approve": _can(self.request.user, PROJECTS_MANAGE),
+            }
+        )
+        return context
+
+    def form_valid(self, form):
+        project = self.get_project()
+        try:
+            ProjectClosureService(user=self.request.user).create(
+                project, **form.cleaned_data
+            )
+        except ValidationError as exc:
+            _apply_service_errors(form, exc)
+            return self.form_invalid(form)
+        messages.success(self.request, "Project closure record created.")
+        return redirect("programs:project_closure", pk=project.pk)
+
+
+class ProjectClosureActionView(ProgramPermissionMixin, FormView):
+    form_class = ClosureActionForm
+    template_name = "programs/workflow_form.html"
+    permission_required = PROJECTS_UPDATE
+
+    def get_project(self):
+        if not hasattr(self, "project"):
+            self.project = _scoped_project(
+                self.request.user, self.kwargs["pk"], include_archived=True
+            )
+        return self.project
+
+    def get_closure(self):
+        return getattr(self.get_project(), "closure", None)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        action = self.kwargs.get("action", "")
+        context.update(
+            {
+                "title": f"Project closure — {action.replace('-', ' ')}",
+                "entity": self.get_project(),
+                "cancel_url": reverse(
+                    "programs:project_closure",
+                    kwargs={"pk": self.get_project().pk},
+                ),
+            }
+        )
+        return context
+
+    def form_valid(self, form):
+        project = self.get_project()
+        closure = self.get_closure()
+        if closure is None:
+            raise Http404("No closure record for this project.")
+        action = self.kwargs.get("action", "")
+        notes = form.cleaned_data.get("notes", "")
+        service = ProjectClosureService(user=self.request.user)
+        if action == "verify":
+            service.verify(closure, notes)
+            messages.success(self.request, "Closure verified.")
+        elif action == "approve":
+            service.approve(closure, notes)
+            messages.success(self.request, "Closure approved; project closed.")
+        else:
+            raise Http404("Unknown closure action.")
+        return redirect("programs:project_closure", pk=project.pk)
+
+
+class ProjectReportsView(ProjectRelatedView):
+    form_class = ProjectReportForm
+    route_name = "programs:project_reports"
+    title = "Project reports"
+    description = "Report records for the project reporting workflow."
+    columns = ("Title", "Type", "Period", "Status")
+
+    def get_rows(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "code": row.title,
+                "title": row.get_report_type_display(),
+                "node_type": row.period_label,
+                "progress": row.get_status_display(),
+                "status": "",
+            }
+            for row in self.get_project().reports.all()[:40]
+        ]
+
+    def perform_service(self, cleaned_data: dict):
+        file = cleaned_data.pop("report_file", None)
+        service = ProjectReportService(user=self.request.user)
+        report = service.create(self.get_project(), **cleaned_data)
+        if file:
+            report.report_file = file
+            report.save()
+
+
+class ProjectAnalyticsView(ProgramPermissionMixin, TemplateView):
+    template_name = "programs/project_analytics.html"
+    permission_required = PROJECTS_VIEW
+
+    def get_project(self):
+        if not hasattr(self, "project"):
+            self.project = _scoped_project(
+                self.request.user, self.kwargs["pk"], include_archived=True
+            )
+        return self.project
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project = self.get_project()
+        analytics = ProjectAnalyticsService(user=self.request.user).summarize(project)
+        context.update(
+            {
+                "project": project,
+                "analytics": analytics,
+                "recent_reports": project.reports.all()[:5],
+            }
+        )
+        return context
+
+
+class ProjectMilestoneApprovalView(ProgramPermissionMixin, FormView):
+    form_class = ProjectApprovalActionForm
+    template_name = "programs/workflow_form.html"
+    permission_required = PROJECTS_UPDATE
+
+    def get_milestone(self):
+        return get_object_or_404(
+            Milestone.objects.select_related("project"),
+            pk=self.kwargs["milestone_pk"],
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        milestone = self.get_milestone()
+        context.update(
+            {
+                "title": f"Review milestone — {milestone.title}",
+                "entity": milestone,
+                "cancel_url": reverse(
+                    "programs:project_profile",
+                    kwargs={"pk": milestone.project_id},
+                ),
+            }
+        )
+        return context
+
+    def form_valid(self, form):
+        milestone = self.get_milestone()
+        action = self.kwargs.get("action", "")
+        notes = form.cleaned_data.get("notes", "")
+        service = ProjectApprovalService(user=self.request.user)
+        try:
+            if action == "submit":
+                service.submit_milestone(milestone, notes)
+            elif action == "approve":
+                service.approve_milestone(milestone, notes)
+            elif action == "reject":
+                service.reject_milestone(milestone, notes)
+            else:
+                raise Http404("Unknown milestone action.")
+        except ValidationError as exc:
+            _apply_service_errors(form, exc)
+            return self.form_invalid(form)
+        messages.success(self.request, "Milestone updated.")
+        return redirect("programs:project_profile", pk=milestone.project_id)
+
+
+class ProjectDeliverableApprovalView(ProgramPermissionMixin, FormView):
+    form_class = ProjectApprovalActionForm
+    template_name = "programs/workflow_form.html"
+    permission_required = PROJECTS_UPDATE
+
+    def get_deliverable(self):
+        return get_object_or_404(
+            Deliverable.objects.select_related("project"),
+            pk=self.kwargs["deliverable_pk"],
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        deliverable = self.get_deliverable()
+        context.update(
+            {
+                "title": f"Review deliverable — {deliverable.title}",
+                "entity": deliverable,
+                "cancel_url": reverse(
+                    "programs:project_profile",
+                    kwargs={"pk": deliverable.project_id},
+                ),
+            }
+        )
+        return context
+
+    def form_valid(self, form):
+        deliverable = self.get_deliverable()
+        action = self.kwargs.get("action", "")
+        notes = form.cleaned_data.get("notes", "")
+        service = ProjectApprovalService(user=self.request.user)
+        try:
+            if action == "submit":
+                service.submit_deliverable(deliverable, notes)
+            elif action == "approve":
+                service.approve_deliverable(deliverable, notes)
+            elif action == "reject":
+                service.reject_deliverable(deliverable, notes)
+            else:
+                raise Http404("Unknown deliverable action.")
+        except ValidationError as exc:
+            _apply_service_errors(form, exc)
+            return self.form_invalid(form)
+        messages.success(self.request, "Deliverable updated.")
+        return redirect("programs:project_profile", pk=deliverable.project_id)
+
+
+class ChangeRequestDecisionView(ProgramPermissionMixin, FormView):
+    form_class = ChangeDecisionForm
+    template_name = "programs/workflow_form.html"
+    permission_required = PROJECTS_UPDATE
+
+    def get_change(self):
+        return get_object_or_404(
+            ChangeRequest.objects.select_related("project"),
+            pk=self.kwargs["pk"],
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        change = self.get_change()
+        context.update(
+            {
+                "title": f"Decide change request — {change.title}",
+                "entity": change,
+                "cancel_url": reverse(
+                    "programs:project_profile",
+                    kwargs={"pk": change.project_id},
+                ),
+            }
+        )
+        return context
+
+    def form_valid(self, form):
+        change = self.get_change()
+        service = ChangeRequestService(user=self.request.user)
+        try:
+            service.decide(
+                change,
+                form.cleaned_data["decision"],
+                form.cleaned_data["reviewer_notes"],
+            )
+        except ValidationError as exc:
+            _apply_service_errors(form, exc)
+            return self.form_invalid(form)
+        messages.success(self.request, "Change request decided.")
+        return redirect("programs:project_profile", pk=change.project_id)
+
+
+class ProjectReportExportView(ProgramPermissionMixin, View):
+    permission_required = PROJECTS_EXPORT
+
+    def get(self, request, pk, fmt):
+        report = get_object_or_404(
+            ProjectReport.objects.select_related("project"), pk=pk
+        )
+        if fmt not in {"xlsx", "docx", "pdf", "csv"}:
+            raise Http404("Unsupported report format.")
+        from .report_exports import (
+            project_report_csv_response,
+            project_report_docx_response,
+            project_report_pdf_response,
+            project_report_xlsx_response,
+        )
+
+        response_map = {
+            "xlsx": project_report_xlsx_response,
+            "docx": project_report_docx_response,
+            "pdf": project_report_pdf_response,
+            "csv": project_report_csv_response,
+        }
+        return response_map[fmt](request.user, report)

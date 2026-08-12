@@ -1,0 +1,86 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Complaints | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meal/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Complaints</h1>
+                <p class="text-muted mb-0">A confidential, channeled register of complaints and their resolution.</p>
+            </div>
+            {% if can_create %}<a class="btn btn-primary" href="{% url 'meal:complaint_create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Log complaint</a>{% endif %}
+        </header>
+        <section class="card shadow-sm border-0 mb-4" aria-labelledby="complaint-filters">
+            <div class="card-body">
+                <h2 id="complaint-filters" class="h5">Search and filter</h2>
+                <form method="get" class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="complaint-search">Search</label>
+                        <input class="form-control" id="complaint-search" type="search" name="q" value="{{ request.GET.q }}" placeholder="Reference or description">
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <label class="form-label" for="complaint-status">Status</label>
+                        <select class="form-select" id="complaint-status" name="status">
+                            <option value="">All statuses</option>
+                            {% for value, label in status_choices %}<option value="{{ value }}"{% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <label class="form-label" for="complaint-priority">Priority</label>
+                        <select class="form-select" id="complaint-priority" name="priority">
+                            <option value="">All priorities</option>
+                            <option value="LOW"{% if request.GET.priority == "LOW" %}selected{% endif %}>Low</option>
+                            <option value="MEDIUM"{% if request.GET.priority == "MEDIUM" %}selected{% endif %}>Medium</option>
+                            <option value="HIGH"{% if request.GET.priority == "HIGH" %}selected{% endif %}>High</option>
+                            <option value="CRITICAL"{% if request.GET.priority == "CRITICAL" %}selected{% endif %}>Critical</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 d-flex align-items-end gap-2">
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-search me-1" aria-hidden="true"></i>Apply</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+        <p class="small text-muted mb-2">{{ page_obj.paginator.count }} matching complaint{{ page_obj.paginator.count|pluralize }}</p>
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Complaint register results</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Reference</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Priority</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Confidential</th>
+                            <th scope="col"><span class="visually-hidden">Action</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for complaint in complaints %}
+                            <tr>
+                                <td>{{ complaint.reference_number }}</td>
+                                <td class="fw-semibold">{{ complaint.description|truncatechars:60 }}</td>
+                                <td><span class="badge text-bg-{% if complaint.priority == 'CRITICAL' %}danger{% elif complaint.priority == 'HIGH' %}warning{% elif complaint.priority == 'LOW' %}secondary{% else %}info{% endif %}">{{ complaint.get_priority_display }}</span></td>
+                                <td><span class="badge text-bg-secondary">{{ complaint.get_status_display }}</span></td>
+                                <td>{% if complaint.is_confidential %}<span class="badge text-bg-dark">Confidential</span>{% else %}&mdash;{% endif %}</td>
+                                <td><a class="btn btn-sm btn-outline-primary" href="{% url 'meal:complaint_detail' complaint.pk %}">View</a></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">No complaints match these filters.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-4" aria-label="Complaint pages">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+                    <li class="page-item active" aria-current="page"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

@@ -1,0 +1,93 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}{{ calendar.name }} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meetings/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">{{ calendar.name }}</h1>
+                <p class="text-muted mb-0">{{ calendar.get_calendar_type_display }} &middot; {{ calendar.get_visibility_display }} visibility</p>
+            </div>
+            <div class="d-flex gap-2">
+                {% if can_manage %}
+                    <a class="btn btn-outline-primary" href="{% url 'meetings:calendar_update' calendar.pk %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a>
+                {% endif %}
+                {% if can_share %}
+                    <a class="btn btn-outline-primary" href="{% url 'meetings:calendar_share_create' calendar.pk %}"><i class="bi bi-share me-1" aria-hidden="true"></i>Share</a>
+                {% endif %}
+                {% if can_create_event %}
+                    <a class="btn btn-primary" href="{% url 'meetings:calendar_event_create' calendar.pk %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New event</a>
+                {% endif %}
+            </div>
+        </header>
+        <div class="row g-4">
+            <section class="col-xl-8" aria-labelledby="events-heading">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-body">
+                        <h2 id="events-heading" class="h5 mb-0">Events ({{ event_count }})</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Events on this calendar</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Event</th>
+                                    <th scope="col">When</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col"><span class="visually-hidden">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                    <tr>
+                                        <td class="fw-semibold"><a href="{% url 'meetings:event_detail' event.pk %}">{{ event.title }}</a></td>
+                                        <td class="text-muted">{{ event.start_at|date:"d M Y H:i" }}</td>
+                                        <td><span class="badge text-bg-secondary">{{ event.get_status_display }}</span></td>
+                                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'meetings:event_detail' event.pk %}">View</a></td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted py-4">No events on this calendar.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <aside class="col-xl-4" aria-labelledby="shares-heading">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h2 id="shares-heading" class="h5">Shared with</h2>
+                        <ul class="list-group list-group-flush">
+                            {% for share in shares %}
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <span>{{ share.user.get_full_name|default:share.user.username|default:share.organization_unit.name|default:share.access_scope.name }}</span>
+                                    <span class="d-flex align-items-center gap-2">
+                                        <span class="badge text-bg-secondary">{{ share.get_permission_level_display }}</span>
+                                        {% if can_share %}
+                                            <form method="post" action="{% url 'meetings:calendar_share_revoke' calendar.pk share.pk %}">
+                                                {% csrf_token %}
+                                                <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Revoke share"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+                                            </form>
+                                        {% endif %}
+                                    </span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item px-0 text-muted">Not shared with anyone yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h2 class="h5">Details</h2>
+                        <dl class="mb-0">
+                            <dt>Owner</dt><dd>{{ calendar.owner.get_full_name|default:calendar.owner.username }}</dd>
+                            <dt>Timezone</dt><dd>{{ calendar.default_timezone }}</dd>
+                            {% if calendar.description %}<dt>Description</dt><dd>{{ calendar.description }}</dd>{% endif %}
+                        </dl>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock dashboard_content %}

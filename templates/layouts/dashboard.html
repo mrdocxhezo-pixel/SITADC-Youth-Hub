@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block layout_content %}
     <div class="dashboard-wrapper">
         <!-- Sidebar -->
@@ -26,4 +27,8 @@
             </footer>
         </div>
     </div>
-{% endblock %}
+{% endblock layout_content %}
+{% block extra_js %}
+    {{ block.super }}
+    <script src="{% static 'js/notifications.js' %}"></script>
+{% endblock extra_js %}

@@ -1,0 +1,56 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Beneficiary Households | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "beneficiaries/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Households</h1>
+                <p class="text-muted mb-0">Shared living and economic units for beneficiaries.</p>
+            </div>
+        </header>
+        {% if can_create and household_form %}
+            <section class="card shadow-sm border-0 mb-4" aria-labelledby="household-form">
+                <div class="card-body">
+                    <h2 id="household-form" class="h5">Register household</h2>
+                    <form method="post" class="mt-3" novalidate>{% csrf_token %}<div class="row g-3">{% include "beneficiaries/includes/form_fields.html" with form=household_form %}</div><div class="mt-3"><button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Register household</button></div></form>
+                </div>
+            </section>
+        {% endif %}
+        <section class="card shadow-sm border-0 mb-4"
+                 aria-labelledby="household-filters">
+            <div class="card-body">
+                <h2 id="household-filters" class="h5">Search and filter</h2>
+                <form method="get" class="row g-3">
+                    <div class="col-lg-6">
+                        <label class="form-label" for="household-search">Search</label>
+                        <input class="form-control"
+                               id="household-search"
+                               type="search"
+                               name="q"
+                               value="{{ request.GET.q }}"
+                               placeholder="Household name or reference">
+                    </div>
+                    <div class="col-sm-6 col-lg-3"><label class="form-label" for="household-status">Status</label><select class="form-select" id="household-status" name="status"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}"
+        {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+                    <div class="col-lg-3 d-flex align-items-end gap-2"><button class="btn btn-primary" type="submit"><i class="bi bi-search me-1" aria-hidden="true"></i>Apply filters</button><a class="btn btn-outline-secondary"
+   href="{% url 'beneficiaries:households' %}">Clear</a></div>
+                </form>
+            </div>
+        </section>
+        <p class="small text-muted mb-2">{{ page_obj.paginator.count }} matching household{{ page_obj.paginator.count|pluralize }}</p>
+        <div class="row g-3">
+            {% for item in households %}
+                <article class="col-md-6 col-xl-4"><div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="d-flex justify-content-between gap-2"><h2 class="h5">{{ item.household_name }}</h2><span class="badge text-bg-secondary align-self-start">{{ item.get_status_display }}</span></div><p class="small text-muted">{{ item.reference_number }}</p><dl class="row small mb-3"><dt class="col-5">Head</dt><dd class="col-7">{{ item.head.full_name|default:"Not assigned" }}</dd><dt class="col-5">Members</dt><dd class="col-7">{{ item.number_of_members }}</dd><dt class="col-5">Location</dt><dd class="col-7">{{ item.province_or_region|default:"Not recorded" }}{% if item.district %}, {{ item.district }}{% endif %}</dd></dl><a class="btn btn-sm btn-outline-primary"
+   href="{% url 'beneficiaries:household_detail' item.pk %}">View household</a></div></div></article>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-light border text-center">No households match these filters.</div>
+                </div>
+            {% endfor %}
+        </div>
+        {% if page_obj.has_other_pages %}<nav class="mt-4" aria-label="Household pages"><ul class="pagination justify-content-center">{% if page_obj.has_previous %}<li class="page-item"><a class="page-link"
+   href="?{{ query_without_page }}&page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}<li class="page-item active" aria-current="page"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>{% if page_obj.has_next %}<li class="page-item"><a class="page-link"
+   href="?{{ query_without_page }}&page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}</ul></nav>{% endif %}
+    </div>
+{% endblock dashboard_content %}

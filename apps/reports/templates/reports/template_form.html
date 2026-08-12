@@ -1,0 +1,27 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Report Template{% if is_update %} &mdash; Edit{% endif %} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "reports/includes/module_nav.html" %}
+        <div class="row justify-content-center">
+            <div class="col-xl-9">
+                <header class="mb-4">
+                    <h1 class="h2">Report template{% if is_update and object %} &mdash; edit{% endif %}</h1>
+                    {% if object %}<p class="text-muted mb-0">{{ object }}</p>{% endif %}
+                </header>
+                <form method="post" class="card shadow-sm border-0" novalidate>
+                    {% csrf_token %}
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            {% include "reports/includes/form_fields.html" %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-body d-flex justify-content-end gap-2">
+                        <a class="btn btn-outline-secondary" href="{{ cancel_url|default:'#' }}">Cancel</a>
+                        <button class="btn btn-primary" type="submit">Save template</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

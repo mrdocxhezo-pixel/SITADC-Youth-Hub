@@ -1,0 +1,29 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Add Attachment | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "registers/includes/module_nav.html" %}
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <header class="mb-4">
+                    <h1 class="h2">Add attachment</h1>
+                    <p class="text-muted mb-0">{{ entry.reference_number }} &mdash; {{ entry.title }}</p>
+                </header>
+                <form method="post"
+                      enctype="multipart/form-data"
+                      class="card shadow-sm border-0"
+                      novalidate>
+                    {% csrf_token %}
+                    <div class="card-body p-4">
+                        <div class="row g-3">{% include "registers/includes/form_fields.html" %}</div>
+                    </div>
+                    <div class="card-footer bg-body d-flex justify-content-end gap-2">
+                        <a class="btn btn-outline-secondary"
+                           href="{% url 'registers:entry_detail' entry.pk %}">Cancel</a>
+                        <button class="btn btn-primary" type="submit">Upload attachment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

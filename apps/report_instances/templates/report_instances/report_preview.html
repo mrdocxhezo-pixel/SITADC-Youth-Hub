@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>Report Preview</h2>
+          <p class="text-muted mb-0">
+            <code>{{ report.reference_number }}</code> &middot;
+            {{ report.template.title }}
+          </p>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{% url 'report_instances:detail' report.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+          </a>
+          <button onclick="window.print()" class="btn btn-outline-primary">
+            <i class="bi bi-printer"></i> Print
+          </button>
+        </div>
+      </div>
+
+      <!-- Report Header -->
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">{{ report.title }}</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <table class="table table-borderless mb-0">
+                <tr><td class="fw-bold">Reference:</td><td>{{ report.reference_number }}</td></tr>
+                <tr><td class="fw-bold">Template:</td><td>{{ report.template.title }}</td></tr>
+                <tr><td class="fw-bold">Category:</td><td>{{ report.category.name|default:"-" }}</td></tr>
+                <tr><td class="fw-bold">Status:</td><td><span class="badge bg-primary">{{ report.get_status_display }}</span></td></tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <table class="table table-borderless mb-0">
+                <tr><td class="fw-bold">Owner:</td><td>{{ report.owner.get_full_name|default:report.owner.username }}</td></tr>
+                <tr><td class="fw-bold">Department:</td><td>{{ report.department|default:"-" }}</td></tr>
+                <tr><td class="fw-bold">Due Date:</td><td>{{ report.due_date|date:"Y-m-d"|default:"-" }}</td></tr>
+                <tr><td class="fw-bold">Version:</td><td>{{ report.version_number }}</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Responses -->
+      {% for sr in section_responses %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">{{ sr.section.name }}</h5>
+        </div>
+        <div class="card-body">
+          {% if sr.data %}
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for key, value in sr.data.items %}
+              <tr>
+                <td>{{ key }}</td>
+                <td>{{ value|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-muted">No data entered for this section.</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+
+      <!-- Field Responses (outside sections) -->
+      {% if field_responses %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Additional Field Responses</h5>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for fr in field_responses %}
+              <tr>
+                <td>{{ fr.field.label }}</td>
+                <td>{{ fr.value|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Evidence -->
+      {% if evidence %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Evidence</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for e in evidence %}
+            <div class="col-md-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6>{{ e.get_evidence_type_display }}</h6>
+                  <p class="mb-1">{{ e.original_filename }}</p>
+                  {% if e.description %}
+                  <p class="text-muted small">{{ e.description }}</p>
+                  {% endif %}
+                  {% if e.is_verified %}
+                  <span class="badge bg-success">Verified</span>
+                  {% else %}
+                  <span class="badge bg-warning">Pending</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Attachments -->
+      {% if attachments %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Attachments</h5>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Size</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in attachments %}
+              <tr>
+                <td>{{ a.original_filename }}</td>
+                <td>{{ a.file_size|filesizeformat }}</td>
+                <td>{{ a.description|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Notes -->
+      {% if report.notes %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Notes</h5>
+        </div>
+        <div class="card-body">
+          <p>{{ report.notes }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Footer -->
+      <div class="text-muted text-center mt-4 mb-4">
+        <small>Generated on {% now "Y-m-d H:i:s" %} &middot; {{ report.reference_number }}</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media print {
+    .btn, .no-print { display: none !important; }
+    .card { border: 1px solid #ddd !important; break-inside: avoid; }
+  }
+</style>
+{% endblock %}

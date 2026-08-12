@@ -506,6 +506,15 @@ Upload capabilities shall include:
 
 Every uploaded document shall immediately receive a unique Document ID and reference number.
 
+# 18.1 CLASSIFICATION SECTION — FOLDER MANAGEMENT QUICK LINKS
+
+The document upload form's Classification section includes quick-access links alongside the Folder dropdown:
+
+* **Create New Folder** — navigates to the folder creation form (`documents:folder_create`), allowing users to add a new folder without leaving the upload flow.
+* **Browse Folders** — navigates to the folder list (`documents:folder_list`), providing full folder hierarchy management (create, rename, move, archive, permissions).
+
+These links enable users to organize documents into folders at upload time without pre-creating the folder structure.
+
 ---
 
 # 19. BULK UPLOAD
@@ -1070,6 +1079,22 @@ Integration shall support:
 * Digital signatures
 
 Document review actions shall synchronize with report review workflows.
+
+# 43.1 UNIFIED WORKFLOW ACTION
+
+The Document Management module provides a unified **Workflow Action** page (`documents:workflow_action`) accessible from the document detail sidebar. The page presents a dynamic "Select Action" dropdown populated with only the next valid workflow actions based on the document's current status and the user's permissions.
+
+Supported actions and conditions:
+
+* **Submit for Review** — available when status is DRAFT, UPLOADED, or RETURNED_FOR_CORRECTION and user has `documents.submit`.
+* **Approve & Forward** / **Return for Correction** — available when status is PENDING_REVIEW or UNDER_REVIEW and user has `documents.review` / `documents.return_for_correction`.
+* **Approve** — available when status is PENDING_APPROVAL and user has `documents.approve`.
+* **Publish** — available when status is APPROVED and user has `documents.publish`.
+* **Unpublish** — available when status is PUBLISHED and user has `documents.unpublish`.
+* **Archive** — available when status is not ARCHIVED or DISPOSED and user has `documents.archive`.
+* **Restore** — available when status is ARCHIVED and user has `documents.restore`.
+
+Each action accepts optional comments and dispatches to the corresponding service (`submit_for_review`, `review_document`, `approve_document`, `publish_document`, `unpublish_document`, `archive_document`, `restore_document`) with full audit/timeline recording. The form uses `DocumentWorkflowActionForm` with `action` ChoiceField and `comments` CharField.
 
 ---
 
@@ -2129,34 +2154,26 @@ Phase 22: Completed
 Phase 23: Ready
 ```
 
-or, if incomplete:
-
-```text
-Phase 22: Incomplete
-```
-
-with a clear explanation.
-
 ---
 
 # 88. PHASE COMPLETION CHECKLIST
 
 ## Document Management
 
-* [ ] Document repository implemented
-* [ ] Upload functionality implemented
-* [ ] Folder management implemented
-* [ ] Metadata management implemented
-* [ ] Version control implemented
-* [ ] Search implemented
-* [ ] Preview implemented
-* [ ] Download implemented
-* [ ] Sharing implemented
-* [ ] Archive implemented
-* [ ] Restore implemented
-* [ ] Retention management implemented
-* [ ] Secure disposal implemented
-* [ ] QR verification implemented
+* [x] Document repository implemented
+* [x] Upload functionality implemented
+* [x] Folder management implemented
+* [x] Metadata management implemented
+* [x] Version control implemented
+* [x] Search implemented
+* [x] Preview implemented
+* [x] Download implemented
+* [x] Sharing implemented
+* [x] Archive implemented
+* [x] Restore implemented
+* [x] Retention management implemented
+* [x] Secure disposal implemented
+* [x] QR verification implemented
 * [ ] Barcode support implemented
 * [ ] Storage analytics implemented
 

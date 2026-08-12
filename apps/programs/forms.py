@@ -14,9 +14,16 @@ from apps.accounts.selectors import get_active_users
 from apps.organizations.selectors import get_active_units
 from apps.stakeholders.models import Stakeholder
 
-from .constants import ChangeStatus, ProgramStatus, ProjectStatus, ReferenceDataKind
+from .constants import (
+    ChangeStatus,
+    ProgramStatus,
+    ProjectStatus,
+    ReferenceDataKind,
+    WBSNodeStatus,
+)
 from .models import (
     Activity,
+    BeneficiaryParticipation,
     BeneficiaryRecord,
     ChangeRequest,
     Deliverable,
@@ -37,8 +44,13 @@ from .models import (
     ProgramTeamMember,
     ProgressUpdate,
     Project,
+    ProjectClosure,
+    ProjectReport,
+    ProjectResult,
+    ProjectTimeline,
     ResourceAllocation,
     Task,
+    WBSNode,
     WorkPlan,
 )
 from .services import PROGRAM_TRANSITIONS, PROJECT_TRANSITIONS
@@ -266,6 +278,7 @@ class ProjectForm(ProgramFormMixin, forms.ModelForm):
             "program",
             "title",
             "category",
+            "classifications",
             "description",
             "objectives",
             "scope",
@@ -312,6 +325,10 @@ class ProjectForm(ProgramFormMixin, forms.ModelForm):
         _model_choice(self, "category").queryset = _active_reference_data(
             ReferenceDataKind.PROJECT_CATEGORY
         )
+        if "classifications" in self.fields:
+            _model_choice(self, "classifications").queryset = _active_reference_data(
+                ReferenceDataKind.PROJECT_CLASSIFICATION
+            )
         _model_choice(self, "funding_source").queryset = _active_reference_data(
             ReferenceDataKind.FUNDING_SOURCE
         )
@@ -1058,3 +1075,223 @@ class LessonsLearnedForm(ProgramFormMixin, forms.ModelForm):
                 )
             )
         return cleaned_data
+
+
+class WBSNodeForm(ProgramFormMixin, forms.ModelForm):
+    class Meta:
+        model = WBSNode
+        fields = [
+            "parent",
+            "node_type",
+            "code",
+            "title",
+            "description",
+            "responsible_officer",
+            "planned_start_date",
+            "planned_end_date",
+            "actual_start_date",
+            "actual_end_date",
+            "estimated_effort_hours",
+            "actual_effort_hours",
+            "completion_percentage",
+            "budget_allocated",
+            "budget_spent",
+            "status",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, project: Project | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if project is not None:
+            _model_choice(self, "parent").queryset = WBSNode.objects.filter(
+                project=project
+            ).order_by("code", "title")
+            self.fields["parent"].required = False
+        _model_choice(self, "responsible_officer").queryset = _active_users()
+
+    def clean(self):
+        cleaned_data = super().clean() or {}
+        _validate_date_order(cleaned_data, "planned_start_date", "planned_end_date")
+        _validate_date_order(cleaned_data, "actual_start_date", "actual_end_date")
+        return cleaned_data
+
+
+class ProjectResultForm(ProgramFormMixin, forms.ModelForm):
+    class Meta:
+        model = ProjectResult
+        fields = [
+            "result_type",
+            "code",
+            "description",
+            "indicator",
+            "baseline",
+            "target",
+            "actual",
+            "status",
+            "target_date",
+            "notes",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
+class BeneficiaryParticipationForm(ProgramFormMixin, forms.ModelForm):
+    class Meta:
+        model = BeneficiaryParticipation
+        fields = [
+            "participation_date",
+            "activity_title",
+            "description",
+            "services_received",
+            "outcomes_achieved",
+            "notes",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+            "services_received": forms.Textarea(attrs={"rows": 3}),
+            "outcomes_achieved": forms.Textarea(attrs={"rows": 3}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
+class ProjectTimelineForm(ProgramFormMixin, forms.ModelForm):
+    class Meta:
+        model = ProjectTimeline
+        fields = [
+            "title",
+            "description",
+            "planned_start_date",
+            "planned_end_date",
+            "actual_start_date",
+            "actual_end_date",
+            "status",
+            "depends_on",
+            "order",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, project: Project | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if project is not None and "depends_on" in self.fields:
+            _model_choice(self, "depends_on").queryset = ProjectTimeline.objects.filter(
+                project=project
+            ).order_by("order", "planned_start_date")
+
+    def clean(self):
+        cleaned_data = super().clean() or {}
+        _validate_date_order(cleaned_data, "planned_start_date", "planned_end_date")
+        _validate_date_order(cleaned_data, "actual_start_date", "actual_end_date")
+        return cleaned_data
+
+
+class ProjectClosureForm(ProgramFormMixin, forms.ModelForm):
+    class Meta:
+        model = ProjectClosure
+        fields = [
+            "completion_verification",
+            "financial_reconciliation",
+            "final_evaluation_notes",
+            "asset_handover",
+            "stakeholder_signoff",
+            "final_documentation",
+            "closure_notes",
+            "closure_date",
+        ]
+        widgets = {
+            name: forms.Textarea(attrs={"rows": 3})
+            for name in (
+                "completion_verification",
+                "financial_reconciliation",
+                "final_evaluation_notes",
+                "asset_handover",
+                "stakeholder_signoff",
+                "final_documentation",
+                "closure_notes",
+            )
+        }
+
+
+class ClosureActionForm(ProgramFormMixin, forms.Form):
+    notes = forms.CharField(
+        label=_("Notes"),
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+
+class ProjectReportForm(ProgramFormMixin, forms.ModelForm):
+    class Meta:
+        model = ProjectReport
+        fields = [
+            "title",
+            "report_type",
+            "period_label",
+            "summary",
+            "report_file",
+        ]
+        widgets = {
+            "summary": forms.Textarea(attrs={"rows": 4}),
+        }
+
+
+class ReportSubmissionForm(ProgramFormMixin, forms.Form):
+    summary = forms.CharField(
+        label=_("Executive summary"),
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4}),
+    )
+
+
+class ProjectApprovalActionForm(ProgramFormMixin, forms.Form):
+    notes = forms.CharField(
+        label=_("Review notes"),
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+
+class ChangeDecisionForm(ProgramFormMixin, forms.Form):
+    decision = forms.ChoiceField(
+        label=_("Decision"),
+        choices=(
+            ("APPROVED", _("Approve")),
+            ("REJECTED", _("Reject")),
+        ),
+    )
+    reviewer_notes = forms.CharField(
+        label=_("Reviewer notes"),
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+
+class WBSNodeProgressForm(ProgramFormMixin, forms.Form):
+    status = forms.ChoiceField(
+        label=_("Status"),
+        choices=WBSNodeStatus.choices,
+    )
+    completion_percentage = forms.DecimalField(
+        label=_("Completion percentage"),
+        min_value=0,
+        max_value=100,
+        required=False,
+        max_digits=5,
+        decimal_places=2,
+    )
+    actual_effort_hours = forms.DecimalField(
+        label=_("Actual effort (hours)"),
+        required=False,
+        max_digits=10,
+        decimal_places=2,
+    )
+    notes = forms.CharField(
+        label=_("Notes"),
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )

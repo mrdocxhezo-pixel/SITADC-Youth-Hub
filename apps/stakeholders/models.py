@@ -926,11 +926,11 @@ class StakeholderContribution(StakeholderRecord):
         indexes = [models.Index(fields=["stakeholder", "status", "contribution_date"])]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(amount__isnull=True) | models.Q(amount__gte=0),
+                condition=models.Q(amount__isnull=True) | models.Q(amount__gte=0),
                 name="stakeholder_contribution_amount_nonnegative",
             ),
             models.CheckConstraint(
-                check=models.Q(estimated_value__isnull=True)
+                condition=models.Q(estimated_value__isnull=True)
                 | models.Q(estimated_value__gte=0),
                 name="stakeholder_contribution_value_nonnegative",
             ),
@@ -1708,7 +1708,7 @@ class StakeholderDuplicateReview(StakeholderRecord):
                 name="stakeholder_duplicate_pair_uniq",
             ),
             models.CheckConstraint(
-                check=~models.Q(stakeholder=models.F("possible_duplicate")),
+                condition=~models.Q(stakeholder=models.F("possible_duplicate")),
                 name="stakeholder_duplicate_not_self",
             ),
         ]

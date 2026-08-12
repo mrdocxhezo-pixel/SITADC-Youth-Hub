@@ -79,6 +79,9 @@ class User(AbstractBaseUser, PermissionsMixin, UUIDModel, TimeStampedModel):
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
+
     def is_locked(self):
         return bool(self.locked_until and self.locked_until > timezone.now())
 

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ dataset.title|default:"Export" }} — {{ organization_name }}</title>
+    <style>
+        :root {
+            --brand: #003366;
+            --muted: #555555;
+            --border: #CCCCCC;
+            --band: #EEF2F7;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #212529;
+            margin: 0 auto;
+            max-width: 210mm;
+            padding: 14mm;
+        }
+        header.export-header {
+            border-bottom: 2px solid var(--brand);
+            padding-bottom: 6px;
+            margin-bottom: 14px;
+        }
+        header.export-header .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        header.export-header h1 {
+            color: var(--brand);
+            font-size: 20px;
+            margin: 0;
+        }
+        header.export-header .subtitle {
+            color: var(--muted);
+            margin: 2px 0 0;
+        }
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+        .meta-table td {
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            vertical-align: top;
+            font-size: 11px;
+        }
+        .meta-table td.label {
+            background: var(--band);
+            font-weight: 600;
+            width: 220px;
+        }
+        h2 {
+            color: var(--brand);
+            font-size: 14px;
+            margin: 16px 0 6px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 11px;
+        }
+        .data-table th {
+            background: var(--brand);
+            color: #ffffff;
+            text-align: left;
+            padding: 5px 8px;
+            font-weight: 600;
+        }
+        .data-table td {
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            vertical-align: top;
+        }
+        .data-table tbody tr:nth-child(even) td { background: var(--band); }
+        .section-block {
+            margin: 6px 0;
+            padding: 6px 10px;
+            border-left: 3px solid var(--brand);
+            background: #f8f9fa;
+        }
+        .section-block table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .section-block table td, .section-block table th {
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+        }
+        .section-block table th { background: var(--band); text-align: left; }
+        .draft-banner {
+            background: #B22222;
+            color: #ffffff;
+            font-weight: 700;
+            text-align: center;
+            padding: 6px;
+            margin-bottom: 12px;
+        }
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 72px;
+            font-weight: 700;
+            color: rgba(160, 30, 30, 0.12);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .confidentiality-notice {
+            position: fixed;
+            bottom: 8px;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: #8B0000;
+            letter-spacing: 2px;
+        }
+        .approval-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        .approval-table td {
+            border: 1px solid var(--border);
+            padding: 5px 8px;
+            font-size: 11px;
+        }
+        .approval-table td.label { font-weight: 600; background: var(--band); width: 200px; }
+        .no-records { color: var(--muted); font-style: italic; }
+        @media print {
+            body { padding: 10mm; max-width: none; }
+            .watermark { position: fixed; }
+        }
+    </style>
+</head>
+<body>
+    {% if watermark %}<div class="watermark" aria-hidden="true">{{ watermark }}</div>{% endif %}
+
+    <header class="export-header">
+        <div class="brand-row">
+            {% if dataset.logo_enabled %}
+                {% load static %}
+                <img src="{% static 'images/app_logo.png' %}" alt="SITADC logo" height="40">
+            {% endif %}
+            <div>
+                <h1>{{ dataset.title|default:"Export" }}</h1>
+                {% if dataset.subtitle %}<p class="subtitle">{{ dataset.subtitle }}</p>{% endif %}
+            </div>
+        </div>
+    </header>
+
+    {% if dataset.draft %}
+        <div class="draft-banner">DRAFT — UNCONTROLLED COPY, NOT FOR DISTRIBUTION</div>
+    {% endif %}
+
+    {% if meta_rows %}
+        <h2>Document Information</h2>
+        <table class="meta-table">
+            {% for label, value in meta_rows %}
+                <tr>
+                    <td class="label">{{ label }}</td>
+                    <td>{{ value|default:"—" }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    {% if sections %}
+        {% for heading, blocks in sections %}
+            <h2>{{ heading }}</h2>
+            {% for block in blocks %}
+                {% if block is list %}
+                    <div class="section-block">
+                        <table>
+                            {% if block.0 %}
+                                <tr>
+                                    {% for cell in block.0 %}<th>{{ cell }}</th>{% endfor %}
+                                </tr>
+                            {% endif %}
+                            {% for row in block.1 %}
+                                <tr>
+                                    {% for cell in row %}<td>{{ cell|default:"—" }}</td>{% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="section-block">{{ block }}</div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    {% if headers and rows %}
+        <h2>Data</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    {% for header in headers %}<th>{{ header }}</th>{% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        {% for cell in row %}<td>{{ cell|default:"—" }}</td>{% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if not headers and not rows and not sections %}
+        <p class="no-records">No records matched the requested export criteria.</p>
+    {% endif %}
+
+    {% if dataset.approval %}
+        <h2>Approval and Sign-off</h2>
+        <table class="approval-table">
+            <tr>
+                <td class="label">Prepared By</td>
+                <td>{{ dataset.approval.Prepared_By|default:"—" }}</td>
+            </tr>
+            <tr>
+                <td class="label">Reviewed By</td>
+                <td>{{ dataset.approval.Reviewed_By|default:"—" }}</td>
+            </tr>
+            <tr>
+                <td class="label">Approved By</td>
+                <td>{{ dataset.approval.Approved_By|default:"—" }}</td>
+            </tr>
+        </table>
+    {% endif %}
+
+    {% if dataset.confidentiality_notice and dataset.confidentiality != "PUBLIC" %}
+        <div class="confidentiality-notice">{{ dataset.confidentiality }}</div>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,26 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Calendar{% if is_update %} &mdash; Edit{% endif %} | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "meetings/includes/module_nav.html" %}
+        <div class="row justify-content-center">
+            <div class="col-xl-9">
+                <header class="mb-4">
+                    <h1 class="h2">{% if is_update %}Edit calendar{% else %}New calendar{% endif %}</h1>
+                    <p class="text-muted mb-0">Calendars organize events and meetings for a team, unit or the organization.</p>
+                </header>
+                <form method="post" class="card shadow-sm border-0" novalidate>
+                    {% csrf_token %}
+                    <div class="card-body p-4">
+                        <div class="row g-3">{% include "meetings/includes/form_fields.html" %}</div>
+                    </div>
+                    <div class="card-footer bg-body d-flex justify-content-end gap-2">
+                        <a class="btn btn-outline-secondary"
+                           href="{% if is_update and object %}{% url 'meetings:calendar_detail' object.pk %}{% else %}{% url 'meetings:calendar_list' %}{% endif %}">Cancel</a>
+                        <button class="btn btn-primary" type="submit">Save calendar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock dashboard_content %}

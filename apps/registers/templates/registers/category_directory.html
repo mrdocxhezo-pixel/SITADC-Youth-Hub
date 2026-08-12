@@ -1,0 +1,60 @@
+{% extends "layouts/dashboard.html" %}
+{% block title %}Register Categories | SITADC Youth Hub{% endblock title %}
+{% block dashboard_content %}
+    <div class="container-fluid py-3">
+        {% include "registers/includes/module_nav.html" %}
+        <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h1 class="h2 mb-1">Register Categories</h1>
+                <p class="text-muted mb-0">Configure the highest-level grouping of organizational registers.</p>
+            </div>
+            {% if can_manage %}
+                <a class="btn btn-primary" href="{% url 'registers:category_create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New category</a>
+            {% endif %}
+        </header>
+        <p class="small text-muted mb-2">{{ page_obj.paginator.count }} categor{{ page_obj.paginator.count|pluralize:"y,ies" }}</p>
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Register categories</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Category</th>
+                            <th scope="col">Prefix</th>
+                            <th scope="col">Default confidentiality</th>
+                            <th scope="col">Retention</th>
+                            <th scope="col"><span class="visually-hidden">Action</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                            <tr>
+                                <td class="fw-semibold">{{ category.name }}</td>
+                                <td><code>{{ category.number_prefix|default:"&mdash;" }}</code></td>
+                                <td><span class="badge text-bg-secondary">{{ category.get_default_confidentiality_display }}</span></td>
+                                <td>{{ category.get_retention_policy_display }}</td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{% url 'registers:category_update' category.pk %}">Edit</a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No categories configured yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-4" aria-label="Category pages">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+                    <li class="page-item active" aria-current="page"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+{% endblock dashboard_content %}

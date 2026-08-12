@@ -1,0 +1,19 @@
+{% load rbac_tags %}
+<nav class="mb-4" aria-label="Calendar and meetings module">
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meetings:dashboard' %}"><i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>Dashboard</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meetings:calendar_list' %}"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i>Calendars</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meetings:event_list' %}"><i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Events</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meetings:meeting_list' %}"><i class="bi bi-people me-1" aria-hidden="true"></i>Meetings</a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'meetings:venue_list' %}"><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>Venues</a>
+        {% if request.user|has_perm:"meetings.manage_templates" or request.user|has_perm:"meetings.manage" %}
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{% url 'meetings:template_list' %}"><i class="bi bi-file-earmark-richtext me-1" aria-hidden="true"></i>Templates</a>
+        {% endif %}
+    </div>
+</nav>
