@@ -1,4 +1,5 @@
 """Domain exceptions for the Document Management module."""
+
 from __future__ import annotations
 
 

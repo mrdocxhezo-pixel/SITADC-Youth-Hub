@@ -69,9 +69,19 @@ fixable = ["ALL"]
 "apps/meetings/models.py" = ["RUF012"]
 "apps/meetings/selectors.py" = ["RUF012"]
 "apps/search/models.py" = ["RUF012"]
+"apps/documents/admin.py" = ["RUF012"]
+"apps/documents/forms.py" = ["RUF012"]
+"apps/documents/models.py" = ["RUF012"]
+"apps/notifications/forms.py" = ["RUF012"]
+"apps/report_instances/models.py" = ["RUF012"]
+"apps/reports/models.py" = ["RUF012"]
 "apps/leadership/tests/test_models.py" = ["B017"]
 "apps/memberships/tests/test_models.py" = ["B017"]
 "apps/memberships/tests/test_services.py" = ["B017"]
+# Declarative seed data contains long human-readable string literals that
+# cannot be split by the formatter.
+"apps/reports/seed_data*.py" = ["E501"]
+"apps/reports/seed_template_data.py" = ["E501"]
 
 [tool.isort]
 profile = "black"

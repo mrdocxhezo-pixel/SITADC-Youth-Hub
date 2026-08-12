@@ -61,7 +61,7 @@ class CalendarSelectorTests(MeetingsTestCase):
 
     def test_Q_calendar_visible_to(self):
         scope_ids = []
-        q = Q_calendar_visible_to(self.manager, scope_ids)
+        Q_calendar_visible_to(self.manager, scope_ids)
         # Should not error
 
 
@@ -109,7 +109,7 @@ class EventSelectorTests(MeetingsTestCase):
         self.assertIn(self.event2, events)
 
     def test_event_queryset_select_related(self):
-        qs = event_queryset(self.manager)
+        event_queryset(self.manager)
         # Should not error and should use select_related
 
 
@@ -145,7 +145,9 @@ class MeetingSelectorTests(MeetingsTestCase):
         meetings = visible_meetings(self.manager)
         self.assertIn(self.meeting1, meetings)
         self.assertIn(self.meeting2, meetings)
-        self.assertNotIn(self.meeting3, meetings)  # Completed meetings may not be "visible" in some contexts
+        self.assertNotIn(
+            self.meeting3, meetings
+        )  # Completed meetings may not be "visible" in some contexts
 
     def test_upcoming_meetings(self):
         meetings = upcoming_meetings(self.manager, limit=5)

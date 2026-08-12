@@ -6,10 +6,7 @@ from django.utils import timezone
 
 from apps.notifications.constants import (
     NotificationCategory,
-    NotificationPriority,
-    NotificationStatus,
     NotificationType,
-    ReadStatus,
 )
 from apps.notifications.selectors import (
     action_required_notifications,
@@ -72,9 +69,7 @@ class NotificationSelectorTests(NotificationsTestCase):
 class AnnouncementSelectorTests(NotificationsTestCase):
     def setUp(self):
         super().setUp()
-        self.announcement = self.create_announcement(
-            self.manager, publish_now=True
-        )
+        self.announcement = self.create_announcement(self.manager, publish_now=True)
 
     def test_announcement_queryset_returns_published(self):
         results = announcement_queryset(self.viewer)

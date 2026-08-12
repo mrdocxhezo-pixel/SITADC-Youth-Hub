@@ -19,7 +19,9 @@ urlpatterns = [
     path("<uuid:pk>/edit/", views.ReportEditView.as_view(), name="edit"),
     path("<uuid:pk>/duplicate/", views.ReportDuplicateView.as_view(), name="duplicate"),
     # Data Entry
-    path("<uuid:pk>/enter-data/", views.ReportDataEntryView.as_view(), name="enter_data"),
+    path(
+        "<uuid:pk>/enter-data/", views.ReportDataEntryView.as_view(), name="enter_data"
+    ),
     # Lifecycle
     path("<uuid:pk>/submit/", views.ReportSubmitView.as_view(), name="submit"),
     path("<uuid:pk>/withdraw/", views.ReportWithdrawView.as_view(), name="withdraw"),
@@ -29,13 +31,21 @@ urlpatterns = [
     path("<uuid:pk>/restore/", views.ReportRestoreView.as_view(), name="restore"),
     # Review Actions
     path("<uuid:pk>/review/", views.ReportReviewView.as_view(), name="review"),
-    path("<uuid:pk>/start-review/", views.ReportStartReviewView.as_view(), name="start_review"),
+    path(
+        "<uuid:pk>/start-review/",
+        views.ReportStartReviewView.as_view(),
+        name="start_review",
+    ),
     # Comments
     path("<uuid:pk>/comment/", views.ReportCommentView.as_view(), name="comment"),
     # Evidence & Attachments
     path("<uuid:pk>/evidence/", views.ReportEvidenceView.as_view(), name="evidence"),
-    path("<uuid:pk>/video-link/", views.ReportVideoLinkView.as_view(), name="video_link"),
-    path("<uuid:pk>/attachment/", views.ReportAttachmentView.as_view(), name="attachment"),
+    path(
+        "<uuid:pk>/video-link/", views.ReportVideoLinkView.as_view(), name="video_link"
+    ),
+    path(
+        "<uuid:pk>/attachment/", views.ReportAttachmentView.as_view(), name="attachment"
+    ),
     # Version History
     path("<uuid:pk>/versions/", views.ReportVersionsView.as_view(), name="versions"),
     path(
@@ -50,5 +60,9 @@ urlpatterns = [
     path("<uuid:pk>/assign/", views.ReportAssignView.as_view(), name="assign"),
     # API
     path("<uuid:pk>/autosave/", views.ReportAutoSaveView.as_view(), name="autosave"),
-    path("api/template/<uuid:template_id>/fields/", views.ReportTemplateFieldsView.as_view(), name="template_fields"),
+    path(
+        "api/template/<uuid:template_id>/fields/",
+        views.ReportTemplateFieldsView.as_view(),
+        name="template_fields",
+    ),
 ]

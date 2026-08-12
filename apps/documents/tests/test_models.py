@@ -5,26 +5,12 @@ from __future__ import annotations
 from django.core.exceptions import ValidationError
 
 from ..constants import (
-    CheckoutStatus,
-    ConfidentialityLevel,
     DocumentStatus,
-    HoldStatus,
     HoldType,
-    SharePermissionLevel,
 )
 from ..models import (
-    Document,
     DocumentAuditRecord,
-    DocumentCategory,
-    DocumentCheckout,
-    DocumentFolder,
-    DocumentHold,
-    DocumentShare,
-    DocumentTag,
     DocumentTimelineEvent,
-    DocumentVersion,
-    DocumentType,
-    RetentionCategory,
 )
 from .base import DocumentsTestCase
 
@@ -146,8 +132,7 @@ class DocumentHoldModelTests(DocumentsTestCase):
             reason="Legal investigation",
         )
         expected = (
-            f"Hold — {document.reference_number} "
-            f"[{hold.hold_type}] ({hold.status})"
+            f"Hold — {document.reference_number} " f"[{hold.hold_type}] ({hold.status})"
         )
         self.assertEqual(str(hold), expected)
 

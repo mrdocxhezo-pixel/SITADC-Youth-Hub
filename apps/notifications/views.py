@@ -7,25 +7,19 @@ the module management permissions.
 
 from __future__ import annotations
 
-import json as _json
+import contextlib
 import logging
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 
 from .constants import (
-    AnnouncementAudience,
-    DeliveryChannel,
-    NotificationCategory,
-    NotificationPriority,
-    NotificationStatus,
     ReadStatus,
 )
 from .forms import (
@@ -39,16 +33,11 @@ from .models import (
     Notification,
     NotificationAuditRecord,
     NotificationEvent,
-    NotificationPreference,
     NotificationRule,
     NotificationTemplate,
     SystemAnnouncement,
 )
 from .permissions import (
-    ANNOUNCEMENT_CREATE,
-    ANNOUNCEMENT_MANAGE,
-    NOTIFICATION_MANAGE_RULES,
-    NOTIFICATION_MANAGE_TEMPLATES,
     user_can_manage_announcements,
     user_can_manage_notifications,
     user_can_manage_rules,
@@ -61,7 +50,6 @@ from .selectors import (
     announcement_summary_counts,
     category_breakdown,
     digest_summary_counts,
-    expired_notifications,
     notification_preference_for,
     rule_queryset,
     template_queryset,
@@ -73,11 +61,9 @@ from .services import (
     ArchiveNotificationService,
     MarkAllNotificationsReadService,
     MarkNotificationReadService,
-    NotificationEventService,
     NotificationPreferenceService,
     PublishAnnouncementService,
     RuleService,
-    SendNotificationService,
     TemplateService,
     UnpublishAnnouncementService,
 )
@@ -163,9 +149,11 @@ class InboxView(NotificationPermissionMixin, ListView):
         elif status == "action":
             queryset = queryset.action_required()
         elif status == "archived":
-            queryset = Notification.all_objects.for_user(user).filter(
-                is_archived=True
-            ).recent_first()
+            queryset = (
+                Notification.all_objects.for_user(user)
+                .filter(is_archived=True)
+                .recent_first()
+            )
             queryset = queryset.select_related("actor", "recipient", "template")
 
         search_form = NotificationSearchForm(self.request.GET)
@@ -194,18 +182,18 @@ class NotificationDetailView(NotificationPermissionMixin, DetailView):
     model = Notification
 
     def get_queryset(self):
-        return Notification.all_objects.for_user(self.request.user).select_related(
-            "actor", "recipient", "template"
-        ).prefetch_related("delivery_attempts")
+        return (
+            Notification.all_objects.for_user(self.request.user)
+            .select_related("actor", "recipient", "template")
+            .prefetch_related("delivery_attempts")
+        )
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
         notification = self.object
         if notification.read_status != ReadStatus.READ:
-            try:
+            with contextlib.suppress(PermissionDenied):
                 MarkNotificationReadService(user=request.user).execute(notification)
-            except PermissionDenied:
-                pass
         return response
 
 
@@ -230,10 +218,8 @@ class NotificationMarkReadView(NotificationPermissionMixin, View):
         notification = get_object_or_404(
             Notification.objects.filter(recipient=request.user), pk=pk
         )
-        try:
+        with contextlib.suppress(PermissionDenied):
             MarkNotificationReadService(user=request.user).execute(notification)
-        except PermissionDenied:
-            pass
         return redirect("notifications:notification_detail", pk=pk)
 
 
@@ -273,7 +259,9 @@ class MarkAllReadView(NotificationPermissionMixin, View):
     def post(self, request):
         try:
             count = MarkAllNotificationsReadService(user=request.user).execute()
-            messages.success(request, _("%(count)s notification(s) marked read.") % {"count": count})
+            messages.success(
+                request, _("%(count)s notification(s) marked read.") % {"count": count}
+            )
         except PermissionDenied:
             pass
         return redirect("notifications:inbox")
@@ -287,10 +275,8 @@ class NotificationRedirectView(NotificationPermissionMixin, View):
             Notification.objects.filter(recipient=request.user), pk=pk
         )
         if notification.read_status != ReadStatus.READ:
-            try:
+            with contextlib.suppress(PermissionDenied):
                 MarkNotificationReadService(user=request.user).execute(notification)
-            except PermissionDenied:
-                pass
         deep_link = notification.deep_link
         if not deep_link:
             return redirect("notifications:notification_detail", pk=pk)
@@ -375,7 +361,7 @@ class TemplateCreateView(NotificationPermissionMixin, FormView):
             )
         except PermissionDenied:
             raise
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Notification template created."))
@@ -421,7 +407,7 @@ class TemplateUpdateView(NotificationPermissionMixin, FormView):
             )
         except PermissionDenied:
             raise
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Notification template updated."))
@@ -442,7 +428,9 @@ class RuleListView(NotificationPermissionMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        return rule_queryset(self.request.user).select_related("template", "recipient_role")
+        return rule_queryset(self.request.user).select_related(
+            "template", "recipient_role"
+        )
 
 
 class RuleCreateView(NotificationPermissionMixin, FormView):
@@ -486,7 +474,7 @@ class RuleCreateView(NotificationPermissionMixin, FormView):
             )
         except PermissionDenied:
             raise
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Notification rule created."))
@@ -537,7 +525,7 @@ class RuleUpdateView(NotificationPermissionMixin, FormView):
             )
         except PermissionDenied:
             raise
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Notification rule updated."))
@@ -592,7 +580,7 @@ class AnnouncementCreateView(NotificationPermissionMixin, FormView):
             )
         except PermissionDenied:
             raise
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Announcement created."))
@@ -637,7 +625,7 @@ class AnnouncementUpdateView(NotificationPermissionMixin, FormView):
             )
         except PermissionDenied:
             raise
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Announcement updated."))
@@ -649,9 +637,13 @@ class AnnouncementPublishView(NotificationPermissionMixin, View):
         announcement = get_object_or_404(SystemAnnouncement, pk=pk)
         try:
             PublishAnnouncementService(user=request.user).execute(announcement)
-            messages.success(request, _("Announcement published and delivered to its audience."))
+            messages.success(
+                request, _("Announcement published and delivered to its audience.")
+            )
         except PermissionDenied:
-            messages.error(request, _("You do not have permission to publish announcements."))
+            messages.error(
+                request, _("You do not have permission to publish announcements.")
+            )
         return redirect("notifications:announcement_list")
 
 
@@ -662,7 +654,9 @@ class AnnouncementUnpublishView(NotificationPermissionMixin, View):
             UnpublishAnnouncementService(user=request.user).execute(announcement)
             messages.success(request, _("Announcement unpublished."))
         except PermissionDenied:
-            messages.error(request, _("You do not have permission to unpublish announcements."))
+            messages.error(
+                request, _("You do not have permission to unpublish announcements.")
+            )
         return redirect("notifications:announcement_list")
 
 
@@ -700,7 +694,11 @@ class EventListView(NotificationPermissionMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        return NotificationEvent.objects.all().select_related("actor").order_by("-created_at")
+        return (
+            NotificationEvent.objects.all()
+            .select_related("actor")
+            .order_by("-created_at")
+        )
 
 
 class AuditLogListView(NotificationPermissionMixin, ListView):
@@ -714,7 +712,11 @@ class AuditLogListView(NotificationPermissionMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        return NotificationAuditRecord.objects.all().select_related("actor").order_by("-created_at")
+        return (
+            NotificationAuditRecord.objects.all()
+            .select_related("actor")
+            .order_by("-created_at")
+        )
 
 
 # ── JSON endpoints (bell / polling) ───────────────────────────────────────
@@ -750,6 +752,4 @@ class RecentNotificationsView(NotificationPermissionMixin, View):
             }
             for n in items
         ]
-        return JsonResponse(
-            {"unread": unread_count(request.user), "items": data}
-        )
+        return JsonResponse({"unread": unread_count(request.user), "items": data})

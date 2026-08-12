@@ -241,6 +241,7 @@ DEFAULT_VERSION = "1.0"
 # Phase 20 — Report Management Constants
 # ---------------------------------------------------------------------------
 
+
 class ReportStatus(models.TextChoices):
     """Lifecycle status of a report instance."""
 

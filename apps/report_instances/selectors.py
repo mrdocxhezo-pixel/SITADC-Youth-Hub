@@ -14,7 +14,6 @@ from apps.reports.constants import ReportStatus
 
 from .models import Report, ReportVersion
 
-
 # ---------------------------------------------------------------------------
 # Single-object selectors
 # ---------------------------------------------------------------------------
@@ -30,9 +29,13 @@ def get_report_or_404(report_id: str | Any) -> Report:
     return get_object_or_404(Report, pk=report_id)
 
 
-def get_report_version_or_404(report_id: str | Any, version_number: int) -> ReportVersion:
+def get_report_version_or_404(
+    report_id: str | Any, version_number: int
+) -> ReportVersion:
     """Return a specific version snapshot or raise 404."""
-    return get_object_or_404(ReportVersion, report_id=report_id, version_number=version_number)
+    return get_object_or_404(
+        ReportVersion, report_id=report_id, version_number=version_number
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -88,7 +91,11 @@ def get_reports_pending_review(user: Any) -> QuerySet[Report]:
     """Return reports pending review for a specific reviewer."""
     return get_all_reports().filter(
         assigned_reviewer=user,
-        status__in={ReportStatus.SUBMITTED, ReportStatus.UNDER_REVIEW, ReportStatus.RESUBMITTED},
+        status__in={
+            ReportStatus.SUBMITTED,
+            ReportStatus.UNDER_REVIEW,
+            ReportStatus.RESUBMITTED,
+        },
     )
 
 

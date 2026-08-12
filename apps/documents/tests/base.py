@@ -8,6 +8,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import InMemoryUploadedFile
+
+# Python 3.14 + Django 5.0.7 compatibility: fix Context.__copy__
+from django.template.context import Context as _Ctx
 from django.test import TestCase
 
 from apps.accounts.constants import AccountStatus
@@ -16,24 +19,16 @@ from apps.rbac.authorization import clear_permission_cache
 from ..constants import (
     ConfidentialityLevel,
     DocumentPermissions,
-    DocumentStatus,
-    HoldType,
 )
 from ..models import (
-    Document,
-    DocumentAuditRecord,
     DocumentCategory,
     DocumentFolder,
     DocumentTag,
-    DocumentTimelineEvent,
     DocumentType,
     RetentionCategory,
 )
 
-# Python 3.14 + Django 5.0.7 compatibility: fix Context.__copy__
-from django.template.context import Context as _Ctx
-
-if not hasattr(_Ctx, '_patched_copy'):
+if not hasattr(_Ctx, "_patched_copy"):
 
     def _patched_copy(self):
         dup = object.__new__(self.__class__)

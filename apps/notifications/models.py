@@ -10,7 +10,6 @@ flow through the service layer.
 
 from __future__ import annotations
 
-import re
 from datetime import timedelta
 
 from django.conf import settings
@@ -29,10 +28,9 @@ from apps.core.models import (
     UUIDModel,
 )
 from apps.organizations.models import OrganizationUnit
-from apps.rbac.models import AccessScope, Role
+from apps.rbac.models import Role
 
 from .constants import (
-    ALLOWED_TEMPLATE_VARIABLES,
     DEFAULT_ANNOUNCEMENT_EXPIRY_DAYS,
     DEFAULT_NOTIFICATION_EXPIRY_DAYS,
     DEFAULT_RETRY_BACKOFF_MINUTES,
@@ -43,7 +41,6 @@ from .constants import (
     DeliveryStatus,
     DigestFrequency,
     EscalationLevel,
-    NotificationCategory as NotificationCategoryChoices,
     NotificationPriority,
     NotificationSeverity,
     NotificationStatus,
@@ -52,8 +49,10 @@ from .constants import (
     ReadStatus,
     ReminderFrequency,
 )
+from .constants import (
+    NotificationCategory as NotificationCategoryChoices,
+)
 from .managers import (
-    AnnouncementManager,
     NotificationDeliveryManager,
     NotificationManager,
     NotificationPreferenceManager,
@@ -158,9 +157,7 @@ class NotificationEvent(NotificationRecord, NotesModel):
         return f"{self.event_type} @ {self.created_at:%Y-%m-%d %H:%M}"
 
 
-class NotificationCategory(
-    NotificationRecord, IsActiveModel, NotesModel
-):
+class NotificationCategory(NotificationRecord, IsActiveModel, NotesModel):
     """Configurable notification category."""
 
     code = models.CharField(_("Code"), max_length=50, unique=True)
@@ -193,7 +190,11 @@ class Notification(NotificationRecord, ArchivableModel):
     """
 
     reference = models.CharField(
-        _("Notification reference"), max_length=80, unique=True, blank=True, editable=False
+        _("Notification reference"),
+        max_length=80,
+        unique=True,
+        blank=True,
+        editable=False,
     )
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -262,10 +263,16 @@ class Notification(NotificationRecord, ArchivableModel):
         verbose_name=_("Acknowledged by"),
     )
 
-    source_app = models.CharField(_("Source application"), max_length=50, blank=True, db_index=True)
+    source_app = models.CharField(
+        _("Source application"), max_length=50, blank=True, db_index=True
+    )
     source_model = models.CharField(_("Source model"), max_length=100, blank=True)
-    source_object_id = models.CharField(_("Source object ID"), max_length=100, blank=True, db_index=True)
-    source_object_reference = models.CharField(_("Source reference"), max_length=80, blank=True)
+    source_object_id = models.CharField(
+        _("Source object ID"), max_length=100, blank=True, db_index=True
+    )
+    source_object_reference = models.CharField(
+        _("Source reference"), max_length=80, blank=True
+    )
 
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -292,9 +299,13 @@ class Notification(NotificationRecord, ArchivableModel):
     )
     action_label = models.CharField(_("Action label"), max_length=100, blank=True)
 
-    scheduled_at = models.DateTimeField(_("Scheduled at"), null=True, blank=True, db_index=True)
+    scheduled_at = models.DateTimeField(
+        _("Scheduled at"), null=True, blank=True, db_index=True
+    )
     sent_at = models.DateTimeField(_("Sent at"), null=True, blank=True)
-    expiry_at = models.DateTimeField(_("Expires at"), null=True, blank=True, db_index=True)
+    expiry_at = models.DateTimeField(
+        _("Expires at"), null=True, blank=True, db_index=True
+    )
 
     deduplication_key = models.CharField(
         _("Deduplication key"), max_length=255, blank=True, db_index=True
@@ -429,7 +440,7 @@ class Notification(NotificationRecord, ArchivableModel):
                 if DeliveryStatus.DELIVERED in statuses:
                     self._delivery_status_cache = DeliveryStatus.DELIVERED
                 elif statuses:
-                    self._delivery_status_cache = list(statuses)[0]
+                    self._delivery_status_cache = next(iter(statuses))
         return self._delivery_status_cache
 
 
@@ -445,17 +456,23 @@ class NotificationTemplate(NotificationRecord, IsActiveModel):
         choices=NotificationCategoryChoices.choices,
         default=NotificationCategoryChoices.GENERAL,
     )
-    event_type = models.CharField(_("Event type"), max_length=100, blank=True, db_index=True)
+    event_type = models.CharField(
+        _("Event type"), max_length=100, blank=True, db_index=True
+    )
     channel = models.CharField(
         _("Channel"),
         max_length=20,
         choices=DeliveryChannel.choices,
         default=DeliveryChannel.IN_APP,
     )
-    subject_template = models.CharField(_("Subject template"), max_length=255, blank=True)
+    subject_template = models.CharField(
+        _("Subject template"), max_length=255, blank=True
+    )
     title_template = models.CharField(_("Title template"), max_length=255)
     message_template = models.TextField(_("Message template"))
-    short_message_template = models.CharField(_("Short message template"), max_length=255, blank=True)
+    short_message_template = models.CharField(
+        _("Short message template"), max_length=255, blank=True
+    )
     action_label = models.CharField(_("Action label"), max_length=100, blank=True)
     priority = models.CharField(
         _("Priority"),
@@ -463,7 +480,9 @@ class NotificationTemplate(NotificationRecord, IsActiveModel):
         choices=NotificationPriority.choices,
         default=NotificationPriority.NORMAL,
     )
-    required_variables = models.JSONField(_("Required variables"), default=list, blank=True)
+    required_variables = models.JSONField(
+        _("Required variables"), default=list, blank=True
+    )
     version = models.PositiveIntegerField(_("Version"), default=1, editable=False)
     organization_unit = models.ForeignKey(
         OrganizationUnit,
@@ -545,7 +564,9 @@ class NotificationRule(NotificationRecord, IsActiveModel):
         related_name="notification_rules",
         verbose_name=_("Role recipient"),
     )
-    recipient_type = models.CharField(_("Recipient type"), max_length=50, default="USER", blank=True)
+    recipient_type = models.CharField(
+        _("Recipient type"), max_length=50, default="USER", blank=True
+    )
     delay_minutes = models.PositiveIntegerField(_("Delay (minutes)"), default=0)
     reminder_enabled = models.BooleanField(_("Reminder enabled"), default=False)
     reminder_offsets = models.JSONField(
@@ -561,7 +582,9 @@ class NotificationRule(NotificationRecord, IsActiveModel):
         choices=EscalationLevel.choices,
         blank=True,
     )
-    escalation_after_hours = models.PositiveIntegerField(_("Escalation after hours"), default=24)
+    escalation_after_hours = models.PositiveIntegerField(
+        _("Escalation after hours"), default=24
+    )
     digest_eligible = models.BooleanField(_("Digest eligible"), default=False)
     organization_unit = models.ForeignKey(
         OrganizationUnit,
@@ -612,11 +635,15 @@ class NotificationPreference(UUIDModel, TimeStampedModel, UpdatedByModel):
         choices=DigestFrequency.choices,
         default=DigestFrequency.WEEKLY,
     )
-    digest_timezone = models.CharField(_("Digest timezone"), max_length=64, default="Africa/Lusaka")
+    digest_timezone = models.CharField(
+        _("Digest timezone"), max_length=64, default="Africa/Lusaka"
+    )
     digest_channels = models.JSONField(_("Digest channels"), default=list, blank=True)
 
     quiet_hours_enabled = models.BooleanField(_("Quiet hours enabled"), default=False)
-    quiet_hours_start = models.CharField(_("Quiet hours start"), max_length=5, blank=True)
+    quiet_hours_start = models.CharField(
+        _("Quiet hours start"), max_length=5, blank=True
+    )
     quiet_hours_end = models.CharField(_("Quiet hours end"), max_length=5, blank=True)
     quiet_hours_policy = models.CharField(
         _("Quiet hours policy"),
@@ -638,7 +665,9 @@ class NotificationPreference(UUIDModel, TimeStampedModel, UpdatedByModel):
         choices=ReminderFrequency.choices,
         default=ReminderFrequency.IMMEDIATE,
     )
-    marketing_enabled = models.BooleanField(_("Marketing/announcements enabled"), default=False)
+    marketing_enabled = models.BooleanField(
+        _("Marketing/announcements enabled"), default=False
+    )
     mandatory_categories = models.JSONField(
         _("Mandatory categories"),
         default=list,
@@ -730,11 +759,19 @@ class NotificationDelivery(UUIDModel, TimeStampedModel):
     sent_at = models.DateTimeField(_("Sent at"), null=True, blank=True)
     delivered_at = models.DateTimeField(_("Delivered at"), null=True, blank=True)
     failed_at = models.DateTimeField(_("Failed at"), null=True, blank=True)
-    failure_category = models.CharField(_("Failure category"), max_length=100, blank=True)
-    safe_error_summary = models.CharField(_("Safe error summary"), max_length=255, blank=True)
-    provider_reference = models.CharField(_("Provider reference"), max_length=255, blank=True)
+    failure_category = models.CharField(
+        _("Failure category"), max_length=100, blank=True
+    )
+    safe_error_summary = models.CharField(
+        _("Safe error summary"), max_length=255, blank=True
+    )
+    provider_reference = models.CharField(
+        _("Provider reference"), max_length=255, blank=True
+    )
     retry_count = models.PositiveIntegerField(_("Retry count"), default=0)
-    next_retry_at = models.DateTimeField(_("Next retry at"), null=True, blank=True, db_index=True)
+    next_retry_at = models.DateTimeField(
+        _("Next retry at"), null=True, blank=True, db_index=True
+    )
     last_error_at = models.DateTimeField(_("Last error at"), null=True, blank=True)
     payload_snapshot = models.JSONField(_("Payload snapshot"), default=dict, blank=True)
 
@@ -751,7 +788,10 @@ class NotificationDelivery(UUIDModel, TimeStampedModel):
         ]
 
     def __str__(self) -> str:
-        return f"{self.notification.reference or self.notification_id} / {self.channel} / {self.status}"
+        return (
+            f"{self.notification.reference or self.notification_id} / "
+            f"{self.channel} / {self.status}"
+        )
 
     def mark_sent(self) -> None:
         self.status = DeliveryStatus.SENT
@@ -796,7 +836,11 @@ class SystemAnnouncement(NotificationRecord):
     """A controlled organizational announcement targeted to an audience."""
 
     reference = models.CharField(
-        _("Announcement reference"), max_length=80, unique=True, blank=True, editable=False
+        _("Announcement reference"),
+        max_length=80,
+        unique=True,
+        blank=True,
+        editable=False,
     )
     title = models.CharField(_("Title"), max_length=255)
     message = models.TextField(_("Message"))
@@ -836,12 +880,18 @@ class SystemAnnouncement(NotificationRecord):
         choices=NotificationCategoryChoices.choices,
         default=NotificationCategoryChoices.ANNOUNCEMENTS,
     )
-    publish_at = models.DateTimeField(_("Publish at"), default=timezone.now, db_index=True)
-    expires_at = models.DateTimeField(_("Expires at"), null=True, blank=True, db_index=True)
+    publish_at = models.DateTimeField(
+        _("Publish at"), default=timezone.now, db_index=True
+    )
+    expires_at = models.DateTimeField(
+        _("Expires at"), null=True, blank=True, db_index=True
+    )
     is_published = models.BooleanField(_("Published"), default=False)
     published_at = models.DateTimeField(_("Published at"), null=True, blank=True)
     is_dismissible = models.BooleanField(_("Dismissible"), default=True)
-    acknowledgement_required = models.BooleanField(_("Acknowledgement required"), default=False)
+    acknowledgement_required = models.BooleanField(
+        _("Acknowledgement required"), default=False
+    )
     deep_link = models.CharField(_("Deep link"), max_length=500, blank=True)
     organization_unit = models.ForeignKey(
         OrganizationUnit,
@@ -868,7 +918,9 @@ class SystemAnnouncement(NotificationRecord):
 
     def save(self, *args, **kwargs) -> None:
         if not self.expires_at:
-            self.expires_at = timezone.now() + timedelta(days=DEFAULT_ANNOUNCEMENT_EXPIRY_DAYS)
+            self.expires_at = timezone.now() + timedelta(
+                days=DEFAULT_ANNOUNCEMENT_EXPIRY_DAYS
+            )
         super().save(*args, **kwargs)
 
     def publish(self, user) -> None:

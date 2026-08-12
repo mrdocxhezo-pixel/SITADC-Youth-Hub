@@ -12,7 +12,7 @@ initial creation.
 
 from __future__ import annotations
 
-from typing import ClassVar, NoReturn
+from typing import NoReturn
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -286,12 +286,8 @@ class Document(
 
     # File information
     file = models.FileField(_("File"), upload_to="documents/files/")
-    original_filename = models.CharField(
-        _("Original filename"), max_length=255
-    )
-    stored_filename = models.CharField(
-        _("Stored filename"), max_length=255
-    )
+    original_filename = models.CharField(_("Original filename"), max_length=255)
+    stored_filename = models.CharField(_("Stored filename"), max_length=255)
     file_extension = models.CharField(_("File extension"), max_length=10)
     mime_type = models.CharField(_("MIME type"), max_length=255)
     file_size = models.PositiveBigIntegerField(_("File size (bytes)"))
@@ -377,18 +373,10 @@ class Document(
     )
 
     # Dates
-    effective_date = models.DateField(
-        _("Effective date"), null=True, blank=True
-    )
-    expiry_date = models.DateField(
-        _("Expiry date"), null=True, blank=True
-    )
-    review_date = models.DateField(
-        _("Review date"), null=True, blank=True
-    )
-    renewal_date = models.DateField(
-        _("Renewal date"), null=True, blank=True
-    )
+    effective_date = models.DateField(_("Effective date"), null=True, blank=True)
+    expiry_date = models.DateField(_("Expiry date"), null=True, blank=True)
+    review_date = models.DateField(_("Review date"), null=True, blank=True)
+    renewal_date = models.DateField(_("Renewal date"), null=True, blank=True)
 
     # Retention
     retention_category = models.ForeignKey(
@@ -408,12 +396,8 @@ class Document(
     safeguarding_hold = models.BooleanField(_("Safeguarding hold"), default=False)
 
     # Access restrictions
-    download_restricted = models.BooleanField(
-        _("Download restricted"), default=False
-    )
-    print_restricted = models.BooleanField(
-        _("Print restricted"), default=False
-    )
+    download_restricted = models.BooleanField(_("Download restricted"), default=False)
+    print_restricted = models.BooleanField(_("Print restricted"), default=False)
     external_sharing_restricted = models.BooleanField(
         _("External sharing restricted"), default=True
     )
@@ -435,20 +419,12 @@ class Document(
         related_name="documents_published",
         verbose_name=_("Published by"),
     )
-    approved_at = models.DateTimeField(
-        _("Approved at"), null=True, blank=True
-    )
-    published_at = models.DateTimeField(
-        _("Published at"), null=True, blank=True
-    )
-    archived_at = models.DateTimeField(
-        _("Archived at"), null=True, blank=True
-    )
+    approved_at = models.DateTimeField(_("Approved at"), null=True, blank=True)
+    published_at = models.DateTimeField(_("Published at"), null=True, blank=True)
+    archived_at = models.DateTimeField(_("Archived at"), null=True, blank=True)
 
     # Metadata
-    keywords = models.JSONField(
-        _("Keywords"), default=list, blank=True
-    )
+    keywords = models.JSONField(_("Keywords"), default=list, blank=True)
     metadata_snapshot = models.JSONField(
         _("Metadata snapshot"), default=dict, blank=True
     )
@@ -465,12 +441,8 @@ class Document(
             models.Index(fields=["folder"], name="doc_folder_idx"),
             models.Index(fields=["status"], name="doc_status_idx"),
             models.Index(fields=["approval_status"], name="doc_approval_status_idx"),
-            models.Index(
-                fields=["publication_status"], name="doc_pub_status_idx"
-            ),
-            models.Index(
-                fields=["confidentiality_level"], name="doc_conf_level_idx"
-            ),
+            models.Index(fields=["publication_status"], name="doc_pub_status_idx"),
+            models.Index(fields=["confidentiality_level"], name="doc_conf_level_idx"),
             models.Index(fields=["owner"], name="doc_owner_idx"),
             models.Index(fields=["effective_date"], name="doc_eff_date_idx"),
             models.Index(fields=["expiry_date"], name="doc_exp_date_idx"),
@@ -514,12 +486,8 @@ class DocumentVersion(UUIDModel, TimeStampedModel, CreatedByModel):
 
     # File information for this version
     file = models.FileField(_("File"), upload_to="documents/versions/")
-    original_filename = models.CharField(
-        _("Original filename"), max_length=255
-    )
-    stored_filename = models.CharField(
-        _("Stored filename"), max_length=255
-    )
+    original_filename = models.CharField(_("Original filename"), max_length=255)
+    stored_filename = models.CharField(_("Stored filename"), max_length=255)
     mime_type = models.CharField(_("MIME type"), max_length=255)
     file_size = models.PositiveBigIntegerField(_("File size (bytes)"))
     checksum = models.CharField(
@@ -546,12 +514,8 @@ class DocumentVersion(UUIDModel, TimeStampedModel, CreatedByModel):
     )
 
     # Dates
-    effective_date = models.DateField(
-        _("Effective date"), null=True, blank=True
-    )
-    superseded_date = models.DateField(
-        _("Superseded date"), null=True, blank=True
-    )
+    effective_date = models.DateField(_("Effective date"), null=True, blank=True)
+    superseded_date = models.DateField(_("Superseded date"), null=True, blank=True)
 
     # Security scan
     scan_status = models.CharField(
@@ -619,9 +583,7 @@ class DocumentCheckout(UUIDModel, TimeStampedModel, CreatedByModel):
         related_name="document_checkouts",
         verbose_name=_("Checked out by"),
     )
-    checked_out_at = models.DateTimeField(
-        _("Checked out at"), auto_now_add=True
-    )
+    checked_out_at = models.DateTimeField(_("Checked out at"), auto_now_add=True)
     expected_return_date = models.DateField(
         _("Expected return date"), null=True, blank=True
     )
@@ -635,9 +597,7 @@ class DocumentCheckout(UUIDModel, TimeStampedModel, CreatedByModel):
         default=CheckoutStatus.ACTIVE,
         db_index=True,
     )
-    checked_in_at = models.DateTimeField(
-        _("Checked in at"), null=True, blank=True
-    )
+    checked_in_at = models.DateTimeField(_("Checked in at"), null=True, blank=True)
     new_version = models.ForeignKey(
         DocumentVersion,
         on_delete=models.SET_NULL,
@@ -646,9 +606,7 @@ class DocumentCheckout(UUIDModel, TimeStampedModel, CreatedByModel):
         related_name="checkout_new_version",
         verbose_name=_("New version"),
     )
-    cancelled_at = models.DateTimeField(
-        _("Cancelled at"), null=True, blank=True
-    )
+    cancelled_at = models.DateTimeField(_("Cancelled at"), null=True, blank=True)
     cancelled_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -721,9 +679,7 @@ class DocumentShare(UUIDModel, TimeStampedModel, CreatedByModel):
         verbose_name=_("Shared by"),
     )
     shared_at = models.DateTimeField(_("Shared at"), auto_now_add=True)
-    expiry_date = models.DateField(
-        _("Expiry date"), null=True, blank=True
-    )
+    expiry_date = models.DateField(_("Expiry date"), null=True, blank=True)
 
     # Permissions
     permission_level = models.CharField(
@@ -738,9 +694,7 @@ class DocumentShare(UUIDModel, TimeStampedModel, CreatedByModel):
 
     # Lifecycle
     is_active = models.BooleanField(_("Is active"), default=True, db_index=True)
-    revoked_at = models.DateTimeField(
-        _("Revoked at"), null=True, blank=True
-    )
+    revoked_at = models.DateTimeField(_("Revoked at"), null=True, blank=True)
     revoked_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -807,15 +761,9 @@ class DocumentRelationship(UUIDModel, TimeStampedModel, CreatedByModel):
             ),
         ]
         indexes = [
-            models.Index(
-                fields=["source_document"], name="docrel_source_idx"
-            ),
-            models.Index(
-                fields=["target_document"], name="docrel_target_idx"
-            ),
-            models.Index(
-                fields=["relationship_type"], name="docrel_type_idx"
-            ),
+            models.Index(fields=["source_document"], name="docrel_source_idx"),
+            models.Index(fields=["target_document"], name="docrel_target_idx"),
+            models.Index(fields=["relationship_type"], name="docrel_type_idx"),
         ]
 
     def __str__(self) -> str:
@@ -855,9 +803,7 @@ class RetentionCategory(UUIDModel, TimeStampedModel, CreatedByModel, IsActiveMod
         choices=DisposalAction.choices,
         default=DisposalAction.NONE,
     )
-    supports_legal_hold = models.BooleanField(
-        _("Supports legal hold"), default=True
-    )
+    supports_legal_hold = models.BooleanField(_("Supports legal hold"), default=True)
     requires_review = models.BooleanField(_("Requires review"), default=False)
     requires_approval = models.BooleanField(_("Requires approval"), default=False)
 
@@ -898,9 +844,7 @@ class DocumentHold(UUIDModel, TimeStampedModel, CreatedByModel):
         verbose_name=_("Applied by"),
     )
     applied_at = models.DateTimeField(_("Applied at"), auto_now_add=True)
-    review_date = models.DateField(
-        _("Review date"), null=True, blank=True
-    )
+    review_date = models.DateField(_("Review date"), null=True, blank=True)
     released_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -909,9 +853,7 @@ class DocumentHold(UUIDModel, TimeStampedModel, CreatedByModel):
         related_name="released_holds",
         verbose_name=_("Released by"),
     )
-    released_at = models.DateTimeField(
-        _("Released at"), null=True, blank=True
-    )
+    released_at = models.DateTimeField(_("Released at"), null=True, blank=True)
     status = models.CharField(
         _("Status"),
         max_length=20,
@@ -993,14 +935,11 @@ class DocumentDisposalRequest(UUIDModel, TimeStampedModel, CreatedByModel):
         default=DisposalStatus.REQUESTED,
         db_index=True,
     )
-    disposal_date = models.DateField(
-        _("Disposal date"), null=True, blank=True
-    )
+    disposal_date = models.DateField(_("Disposal date"), null=True, blank=True)
     disposal_method = models.CharField(
         _("Disposal method"),
         max_length=30,
         choices=DisposalMethod.choices,
-        null=True,
         blank=True,
     )
     disposal_certificate_reference = models.CharField(
@@ -1014,15 +953,11 @@ class DocumentDisposalRequest(UUIDModel, TimeStampedModel, CreatedByModel):
         indexes = [
             models.Index(fields=["document"], name="docdisp_document_idx"),
             models.Index(fields=["status"], name="docdisp_status_idx"),
-            models.Index(
-                fields=["retention_category"], name="docdisp_retcat_idx"
-            ),
+            models.Index(fields=["retention_category"], name="docdisp_retcat_idx"),
         ]
 
     def __str__(self) -> str:
-        return (
-            f"Disposal — {self.document.reference_number} [{self.status}]"
-        )
+        return f"Disposal — {self.document.reference_number} [{self.status}]"
 
 
 # ---------------------------------------------------------------------------
@@ -1104,16 +1039,10 @@ class DocumentTimelineEvent(UUIDModel, TimeStampedModel):
         related_name="document_timeline_events",
         verbose_name=_("Actor"),
     )
-    previous_status = models.CharField(
-        _("Previous status"), max_length=30, blank=True
-    )
-    new_status = models.CharField(
-        _("New status"), max_length=30, blank=True
-    )
+    previous_status = models.CharField(_("Previous status"), max_length=30, blank=True)
+    new_status = models.CharField(_("New status"), max_length=30, blank=True)
     comments = models.TextField(_("Comments"), blank=True)
-    metadata = models.JSONField(
-        _("Metadata"), default=dict, blank=True
-    )
+    metadata = models.JSONField(_("Metadata"), default=dict, blank=True)
 
     class Meta:
         verbose_name = _("Document Timeline Event")

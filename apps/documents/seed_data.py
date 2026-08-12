@@ -1,12 +1,13 @@
 """Seed reference data for the Document Management module."""
+
 from __future__ import annotations
 
 from django.db import transaction
 
 from apps.documents.models import (
     DocumentCategory,
-    DocumentType,
     DocumentSettings,
+    DocumentType,
     RetentionCategory,
 )
 
@@ -15,27 +16,92 @@ from apps.documents.models import (
 def seed_document_categories():
     """Create default document categories."""
     categories = [
-        ("GOV", "Governance", "Governance documents including constitution, bylaws, and board documents", 1),
-        ("LEAD", "Leadership", "Leadership documents, appointment letters, and performance reviews", 2),
+        (
+            "GOV",
+            "Governance",
+            "Governance documents including constitution, bylaws, and board documents",
+            1,
+        ),
+        (
+            "LEAD",
+            "Leadership",
+            "Leadership documents, appointment letters, and performance reviews",
+            2,
+        ),
         ("MEM", "Membership", "Membership applications, certificates, and records", 3),
-        ("VOL", "Volunteers", "Volunteer applications, agreements, and training records", 4),
+        (
+            "VOL",
+            "Volunteers",
+            "Volunteer applications, agreements, and training records",
+            4,
+        ),
         ("PROG", "Programs", "Program plans, reports, and implementation documents", 5),
-        ("PROJ", "Projects", "Project proposals, plans, budgets, and closure documents", 6),
-        ("BEN", "Beneficiaries", "Beneficiary registration, consent, and outcome documents", 7),
-        ("MEAL", "MEAL", "Monitoring, evaluation, accountability, and learning documents", 8),
-        ("FIN", "Finance", "Financial statements, budgets, receipts, and audit reports", 9),
-        ("PROC", "Procurement", "Purchase requests, orders, contracts, and delivery notes", 10),
-        ("PART", "Partnerships", "MoUs, partnership agreements, and stakeholder correspondence", 11),
-        ("HR", "Human Resources", "Employment contracts, appointment letters, and HR records", 12),
-        ("TRAIN", "Training", "Training materials, certificates, and attendance records", 13),
-        ("COMM", "Communications", "Newsletters, press releases, and branding materials", 14),
+        (
+            "PROJ",
+            "Projects",
+            "Project proposals, plans, budgets, and closure documents",
+            6,
+        ),
+        (
+            "BEN",
+            "Beneficiaries",
+            "Beneficiary registration, consent, and outcome documents",
+            7,
+        ),
+        (
+            "MEAL",
+            "MEAL",
+            "Monitoring, evaluation, accountability, and learning documents",
+            8,
+        ),
+        (
+            "FIN",
+            "Finance",
+            "Financial statements, budgets, receipts, and audit reports",
+            9,
+        ),
+        (
+            "PROC",
+            "Procurement",
+            "Purchase requests, orders, contracts, and delivery notes",
+            10,
+        ),
+        (
+            "PART",
+            "Partnerships",
+            "MoUs, partnership agreements, and stakeholder correspondence",
+            11,
+        ),
+        (
+            "HR",
+            "Human Resources",
+            "Employment contracts, appointment letters, and HR records",
+            12,
+        ),
+        (
+            "TRAIN",
+            "Training",
+            "Training materials, certificates, and attendance records",
+            13,
+        ),
+        (
+            "COMM",
+            "Communications",
+            "Newsletters, press releases, and branding materials",
+            14,
+        ),
         ("LEGAL", "Legal", "Legal documents, contracts, and compliance records", 15),
         ("POL", "Policies", "Organizational policies and procedures", 16),
         ("RPT", "Reports", "Organizational reports and submissions", 17),
         ("EVID", "Evidence", "Evidence attachments and supporting documents", 18),
         ("MEDIA", "Media", "Images, videos, and audio recordings", 19),
         ("TPL", "Templates", "Document templates and forms", 20),
-        ("ARCH", "Archived Records", "Historical and archived organizational records", 21),
+        (
+            "ARCH",
+            "Archived Records",
+            "Historical and archived organizational records",
+            21,
+        ),
     ]
 
     created_count = 0
@@ -121,16 +187,86 @@ def seed_document_types():
 def seed_retention_categories():
     """Create default retention categories."""
     categories = [
-        ("PERM", "Permanent", "Permanent retention - never disposed", None, "CREATION", "NONE"),
-        ("7YR", "Seven Years", "Retain for 7 years from trigger date", 2555, "APPROVAL", "DELETE"),
-        ("5YR", "Five Years", "Retain for 5 years from trigger date", 1825, "APPROVAL", "DELETE"),
-        ("3YR", "Three Years", "Retain for 3 years from trigger date", 1095, "CREATION", "DELETE"),
-        ("PROJ", "Project Life + 5 Years", "Retain for 5 years after project closure", 1825, "PROJECT_CLOSURE", "DELETE"),
-        ("AGREEMENT", "Agreement Life + 7 Years", "Retain for 7 years after agreement termination", 2555, "AGREEMENT_TERMINATION", "DELETE"),
-        ("FIN", "Financial Records", "Financial records per regulatory requirements", 2555, "APPROVAL", "ARCHIVE"),
-        ("HR", "Personnel Records", "Human resource records per employment law", 2555, "MEMBERSHIP_EXIT", "ARCHIVE"),
-        ("TEMP", "Temporary Working Documents", "Temporary documents with short retention", 365, "LAST_ACTIVITY", "DELETE"),
-        ("SAFEGUARD", "Safeguarding Permanent", "Safeguarding records retained permanently", None, "CREATION", "NONE"),
+        (
+            "PERM",
+            "Permanent",
+            "Permanent retention - never disposed",
+            None,
+            "CREATION",
+            "NONE",
+        ),
+        (
+            "7YR",
+            "Seven Years",
+            "Retain for 7 years from trigger date",
+            2555,
+            "APPROVAL",
+            "DELETE",
+        ),
+        (
+            "5YR",
+            "Five Years",
+            "Retain for 5 years from trigger date",
+            1825,
+            "APPROVAL",
+            "DELETE",
+        ),
+        (
+            "3YR",
+            "Three Years",
+            "Retain for 3 years from trigger date",
+            1095,
+            "CREATION",
+            "DELETE",
+        ),
+        (
+            "PROJ",
+            "Project Life + 5 Years",
+            "Retain for 5 years after project closure",
+            1825,
+            "PROJECT_CLOSURE",
+            "DELETE",
+        ),
+        (
+            "AGREEMENT",
+            "Agreement Life + 7 Years",
+            "Retain for 7 years after agreement termination",
+            2555,
+            "AGREEMENT_TERMINATION",
+            "DELETE",
+        ),
+        (
+            "FIN",
+            "Financial Records",
+            "Financial records per regulatory requirements",
+            2555,
+            "APPROVAL",
+            "ARCHIVE",
+        ),
+        (
+            "HR",
+            "Personnel Records",
+            "Human resource records per employment law",
+            2555,
+            "MEMBERSHIP_EXIT",
+            "ARCHIVE",
+        ),
+        (
+            "TEMP",
+            "Temporary Working Documents",
+            "Temporary documents with short retention",
+            365,
+            "LAST_ACTIVITY",
+            "DELETE",
+        ),
+        (
+            "SAFEGUARD",
+            "Safeguarding Permanent",
+            "Safeguarding records retained permanently",
+            None,
+            "CREATION",
+            "NONE",
+        ),
     ]
 
     created_count = 0

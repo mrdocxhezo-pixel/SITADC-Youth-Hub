@@ -10,10 +10,8 @@ from __future__ import annotations
 from typing import Any
 
 from django import forms
-from django.utils.text import slugify
 
-from apps.reports.models import DynamicField, FieldGroup, TemplateSection
-
+from apps.reports.models import DynamicField, TemplateSection
 
 # ---------------------------------------------------------------------------
 # Field-type to form-field mapping
@@ -63,17 +61,23 @@ def _widget_for_field(field: DynamicField) -> forms.Widget | None:
     if ft == "TIME":
         return forms.TimeInput(attrs={"type": "time", "class": "form-control"})
     if ft == "DATETIME":
-        return forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"})
+        return forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": "form-control"}
+        )
     if ft in ("INTEGER", "DECIMAL", "CURRENCY", "PERCENTAGE"):
         return forms.NumberInput(attrs={"class": "form-control"})
     if ft == "GPS_COORDINATES":
-        return forms.TextInput(attrs={"class": "form-control", "placeholder": "lat, lng"})
+        return forms.TextInput(
+            attrs={"class": "form-control", "placeholder": "lat, lng"}
+        )
     return forms.TextInput(attrs={"class": "form-control"})
 
 
 def _choices_for_field(field: DynamicField) -> list[tuple[str, str]]:
     """Return choice tuples for selection-type fields."""
-    return [(opt.value, opt.label) for opt in field.options.order_by("sort_order", "value")]
+    return [
+        (opt.value, opt.label) for opt in field.options.order_by("sort_order", "value")
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -105,9 +109,7 @@ class DynamicReportForm(forms.Form):
                 for field in fields:
                     self._add_dynamic_field(section, field)
 
-    def _add_dynamic_field(
-        self, section: TemplateSection, field: DynamicField
-    ) -> None:
+    def _add_dynamic_field(self, section: TemplateSection, field: DynamicField) -> None:
         """Add a single dynamic field to the form."""
         field_name = f"section_{section.pk}_field_{field.pk}"
 
@@ -167,7 +169,7 @@ class DynamicReportForm(forms.Form):
         data: dict[str, Any] = {}
         for name, value in self.cleaned_data.items():
             if name.startswith(prefix):
-                field_pk = name[len(prefix):]
+                field_pk = name[len(prefix) :]
                 data[field_pk] = value
         return data
 

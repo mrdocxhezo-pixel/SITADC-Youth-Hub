@@ -262,7 +262,9 @@ class _Evaluator:
             return abs(self._numeric(self.evaluate(self._require_arg(name, args, 0))))
         if name == "round":
             if len(args) == 1:
-                return round(self._numeric(self.evaluate(self._require_arg(name, args, 0))))
+                return round(
+                    self._numeric(self.evaluate(self._require_arg(name, args, 0)))
+                )
             return round(
                 self._numeric(self.evaluate(self._require_arg(name, args, 0))),
                 self._numeric(self.evaluate(self._require_arg(name, args, 1, 0))),

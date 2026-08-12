@@ -1,4 +1,5 @@
 """Unit tests for Phase 19 Report Builder forms."""
+
 from __future__ import annotations
 
 import json
@@ -17,6 +18,7 @@ from apps.reports.tests.base import ReportsTestCase
 
 # ── SchemaEditorForm ───────────────────────────────────────────────────────
 
+
 class SchemaEditorFormTests(TestCase):
     def _valid(self):
         return json.dumps({"sections": []})
@@ -26,7 +28,9 @@ class SchemaEditorFormTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
 
     def test_missing_sections_key_fails(self):
-        form = SchemaEditorForm(data={"schema": json.dumps({"no_sections": []}), "change_summary": ""})
+        form = SchemaEditorForm(
+            data={"schema": json.dumps({"no_sections": []}), "change_summary": ""}
+        )
         self.assertFalse(form.is_valid())
         self.assertIn("schema", form.errors)
 
@@ -36,19 +40,24 @@ class SchemaEditorFormTests(TestCase):
         self.assertIn("schema", form.errors)
 
     def test_array_root_fails(self):
-        form = SchemaEditorForm(data={"schema": json.dumps([{"sections": []}]), "change_summary": ""})
+        form = SchemaEditorForm(
+            data={"schema": json.dumps([{"sections": []}]), "change_summary": ""}
+        )
         self.assertFalse(form.is_valid())
         self.assertIn("schema", form.errors)
 
     def test_cleaned_data_is_dict_with_sections(self):
         schema = {"sections": [{"code": "s1", "name": "S1", "groups": []}]}
-        form = SchemaEditorForm(data={"schema": json.dumps(schema), "change_summary": "test"})
+        form = SchemaEditorForm(
+            data={"schema": json.dumps(schema), "change_summary": "test"}
+        )
         self.assertTrue(form.is_valid())
         self.assertIsInstance(form.cleaned_data["schema"], dict)
         self.assertIn("sections", form.cleaned_data["schema"])
 
 
 # ── TemplateImportForm ─────────────────────────────────────────────────────
+
 
 class TemplateImportFormTests(ReportsTestCase):
     def setUp(self):
@@ -69,20 +78,24 @@ class TemplateImportFormTests(ReportsTestCase):
         self.assertTrue(form.is_valid(), form.errors)
 
     def test_non_dict_payload_fails(self):
-        form = TemplateImportForm(data={
-            "category": str(self.category.pk),
-            "payload": json.dumps([1, 2, 3]),
-            "dry_run": False,
-        })
+        form = TemplateImportForm(
+            data={
+                "category": str(self.category.pk),
+                "payload": json.dumps([1, 2, 3]),
+                "dry_run": False,
+            }
+        )
         self.assertFalse(form.is_valid())
         self.assertIn("payload", form.errors)
 
     def test_invalid_json_payload_fails(self):
-        form = TemplateImportForm(data={
-            "category": str(self.category.pk),
-            "payload": "not-json",
-            "dry_run": False,
-        })
+        form = TemplateImportForm(
+            data={
+                "category": str(self.category.pk),
+                "payload": "not-json",
+                "dry_run": False,
+            }
+        )
         self.assertFalse(form.is_valid())
         self.assertIn("payload", form.errors)
 
@@ -98,13 +111,18 @@ class TemplateImportFormTests(ReportsTestCase):
 
 # ── TemplateCloneForm ──────────────────────────────────────────────────────
 
+
 class TemplateCloneFormTests(TestCase):
     def test_valid_clone_form(self):
-        form = TemplateCloneForm(data={"new_code": "my-clone", "new_title": "Cloned", "notes": ""})
+        form = TemplateCloneForm(
+            data={"new_code": "my-clone", "new_title": "Cloned", "notes": ""}
+        )
         self.assertTrue(form.is_valid(), form.errors)
 
     def test_invalid_slug_fails(self):
-        form = TemplateCloneForm(data={"new_code": "invalid slug!", "new_title": "", "notes": ""})
+        form = TemplateCloneForm(
+            data={"new_code": "invalid slug!", "new_title": "", "notes": ""}
+        )
         self.assertFalse(form.is_valid())
         self.assertIn("new_code", form.errors)
 
@@ -115,13 +133,19 @@ class TemplateCloneFormTests(TestCase):
 
 # ── ReportCategoryForm ─────────────────────────────────────────────────────
 
+
 class ReportCategoryFormTests(TestCase):
     def test_valid_category_form(self):
-        form = ReportCategoryForm(data={
-            "code": "cat-001", "name": "Category One",
-            "description": "A test", "color": "#00ff00",
-            "icon": "bi-star", "sort_order": 10,
-        })
+        form = ReportCategoryForm(
+            data={
+                "code": "cat-001",
+                "name": "Category One",
+                "description": "A test",
+                "color": "#00ff00",
+                "icon": "bi-star",
+                "sort_order": 10,
+            }
+        )
         self.assertTrue(form.is_valid(), form.errors)
 
     def test_code_is_required(self):
@@ -135,11 +159,14 @@ class ReportCategoryFormTests(TestCase):
         self.assertIn("name", form.errors)
 
     def test_description_is_optional(self):
-        form = ReportCategoryForm(data={"code": "cat-003", "name": "No Desc", "sort_order": 10})
+        form = ReportCategoryForm(
+            data={"code": "cat-003", "name": "No Desc", "sort_order": 10}
+        )
         self.assertTrue(form.is_valid(), form.errors)
 
 
 # ── TemplatePublishForm ────────────────────────────────────────────────────
+
 
 class TemplatePublishFormTests(TestCase):
     def test_empty_notes_is_valid(self):

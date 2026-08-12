@@ -31,13 +31,13 @@ INSTALLED_APPS = [
     "apps.reports.apps.ReportsConfig",
     "apps.report_instances.apps.ReportInstancesConfig",
     "apps.reviews.apps.ReviewsConfig",
-      "apps.documents.apps.DocumentsConfig",
-      "apps.registers.apps.RegistersConfig",
-      "apps.meetings.apps.MeetingsConfig",
-      "apps.notifications.apps.NotificationsConfig",
-      "apps.search.apps.SearchConfig",
-      "apps.exports.apps.ExportsConfig",
-  ]
+    "apps.documents.apps.DocumentsConfig",
+    "apps.registers.apps.RegistersConfig",
+    "apps.meetings.apps.MeetingsConfig",
+    "apps.notifications.apps.NotificationsConfig",
+    "apps.search.apps.SearchConfig",
+    "apps.exports.apps.ExportsConfig",
+]
 
 MIDDLEWARE = [
     "apps.core.middleware.RequestIDMiddleware",

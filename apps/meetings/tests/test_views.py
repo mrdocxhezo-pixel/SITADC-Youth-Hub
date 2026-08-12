@@ -11,7 +11,13 @@ from apps.meetings.constants import (
     MeetingStatus,
     MeetingType,
 )
-from apps.meetings.models import Calendar, CalendarEvent, Meeting
+from apps.meetings.models import (
+    Calendar,
+    CalendarEvent,
+    Meeting,
+    MeetingTemplate,
+    MeetingVenue,
+)
 from apps.meetings.tests.base import MeetingsTestCase
 
 
@@ -28,7 +34,7 @@ class DashboardViewTests(MeetingsTestCase):
 
     def test_dashboard_shows_upcoming_meetings(self):
         self.login_as(self.manager)
-        mtg = Meeting.objects.create(
+        Meeting.objects.create(
             title="Upcoming Meeting",
             meeting_type=MeetingType.STAFF,
             organizer=self.manager,
@@ -152,8 +158,12 @@ class CalendarEventViewTests(MeetingsTestCase):
             {
                 "title": "New Event",
                 "event_type": EventType.MEETING,
-                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=2, hours=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (
+                    timezone.now() + timezone.timedelta(days=2, hours=1)
+                ).strftime("%Y-%m-%dT%H:%M"),
                 "organizer": self.manager.pk,
             },
         )
@@ -166,8 +176,12 @@ class CalendarEventViewTests(MeetingsTestCase):
             {
                 "title": "Updated Event",
                 "event_type": EventType.MEETING,
-                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=2, hours=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (
+                    timezone.now() + timezone.timedelta(days=2, hours=1)
+                ).strftime("%Y-%m-%dT%H:%M"),
                 "organizer": self.manager.pk,
             },
         )
@@ -219,8 +233,12 @@ class MeetingViewTests(MeetingsTestCase):
             {
                 "title": "New Meeting",
                 "meeting_type": MeetingType.STAFF,
-                "start_at": (timezone.now() + timezone.timedelta(days=3)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=3, hours=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=3)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (
+                    timezone.now() + timezone.timedelta(days=3, hours=1)
+                ).strftime("%Y-%m-%dT%H:%M"),
                 "organizer": self.manager.pk,
             },
         )
@@ -231,8 +249,12 @@ class MeetingViewTests(MeetingsTestCase):
         response = self.client.post(
             reverse("meetings:meeting_reschedule", args=[self.meeting.pk]),
             {
-                "start_at": (timezone.now() + timezone.timedelta(days=5)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=5, hours=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=5)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (
+                    timezone.now() + timezone.timedelta(days=5, hours=1)
+                ).strftime("%Y-%m-%dT%H:%M"),
                 "reason": "Rescheduling for availability",
             },
         )
@@ -268,9 +290,7 @@ class MeetingViewTests(MeetingsTestCase):
             },
         )
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(
-            self.meeting.participants.filter(user=self.officer).exists()
-        )
+        self.assertTrue(self.meeting.participants.filter(user=self.officer).exists())
 
 
 class TemplateViewTests(MeetingsTestCase):

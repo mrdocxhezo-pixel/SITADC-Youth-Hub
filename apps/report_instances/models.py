@@ -8,12 +8,11 @@ version history, timeline events, assignments, and export tracking.
 
 from __future__ import annotations
 
-from typing import ClassVar, NoReturn
+from typing import NoReturn
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import (
@@ -35,7 +34,6 @@ from apps.reports.models import (
     DynamicField,
     FieldGroup,
     ReportCategory,
-    ReportConfiguration,
     ReportingPeriod,
     ReportTemplate,
     ReportTemplateVersion,
@@ -578,9 +576,7 @@ class ReportSubmission(ReportRecord):
         related_name="report_instance_submissions",
         verbose_name=_("Submitted by"),
     )
-    submission_number = models.PositiveIntegerField(
-        _("Submission number"), default=1
-    )
+    submission_number = models.PositiveIntegerField(_("Submission number"), default=1)
     status = models.CharField(
         _("Status"),
         max_length=20,
@@ -601,8 +597,7 @@ class ReportSubmission(ReportRecord):
 
     def __str__(self) -> str:
         return (
-            f"Submission #{self.submission_number} — "
-            f"{self.report.reference_number}"
+            f"Submission #{self.submission_number} — " f"{self.report.reference_number}"
         )
 
 
@@ -773,9 +768,7 @@ class ReportValidationResult(ReportRecord):
     passed_rules = models.PositiveIntegerField(_("Rules passed"), default=0)
     failed_rules = models.PositiveIntegerField(_("Rules failed"), default=0)
     errors = models.JSONField(_("Validation errors"), default=list, blank=True)
-    warnings = models.JSONField(
-        _("Validation warnings"), default=list, blank=True
-    )
+    warnings = models.JSONField(_("Validation warnings"), default=list, blank=True)
     validated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -821,9 +814,7 @@ class ReportExport(ReportRecord):
         max_length=10,
         choices=ExportFormat.choices,
     )
-    file = models.FileField(
-        _("Exported file"), upload_to="report_exports/%Y/%m/"
-    )
+    file = models.FileField(_("Exported file"), upload_to="report_exports/%Y/%m/")
     exported_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -886,6 +877,5 @@ class ReportReminder(ReportRecord):
 
     def __str__(self) -> str:
         return (
-            f"{self.get_reminder_type_display()} — "
-            f"{self.report.reference_number}"
+            f"{self.get_reminder_type_display()} — " f"{self.report.reference_number}"
         )

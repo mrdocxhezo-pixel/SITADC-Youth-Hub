@@ -11,15 +11,22 @@ urlpatterns = [
     path("memberships/", include("apps.memberships.urls", namespace="memberships")),
     path("stakeholders/", include("apps.stakeholders.urls", namespace="stakeholders")),
     path("programs/", include("apps.programs.urls", namespace="programs")),
-    path("beneficiaries/", include("apps.beneficiaries.urls", namespace="beneficiaries")),
+    path(
+        "beneficiaries/", include("apps.beneficiaries.urls", namespace="beneficiaries")
+    ),
     path("meal/", include("apps.meal.urls", namespace="meal")),
     path("reports/", include("apps.reports.urls", namespace="reports")),
-    path("report-instances/", include("apps.report_instances.urls", namespace="report_instances")),
+    path(
+        "report-instances/",
+        include("apps.report_instances.urls", namespace="report_instances"),
+    ),
     path("reviews/", include("apps.reviews.urls", namespace="reviews")),
     path("documents/", include("apps.documents.urls", namespace="documents")),
     path("registers/", include("apps.registers.urls", namespace="registers")),
     path("meetings/", include("apps.meetings.urls", namespace="meetings")),
-    path("notifications/", include("apps.notifications.urls", namespace="notifications")),
+    path(
+        "notifications/", include("apps.notifications.urls", namespace="notifications")
+    ),
     path("search/", include("apps.search.urls", namespace="search")),
     path("exports/", include("apps.exports.urls", namespace="exports")),
 ]

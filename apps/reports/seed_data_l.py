@@ -33,8 +33,18 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Report Info",
                         "code": "report-info",
                         "fields": [
-                            {"label": "Reporting Month", "code": "reporting_month", "field_type": DT, "required": True},
-                            {"label": "Prepared By", "code": "prepared_by", "field_type": T, "required": True},
+                            {
+                                "label": "Reporting Month",
+                                "code": "reporting_month",
+                                "field_type": DT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Prepared By",
+                                "code": "prepared_by",
+                                "field_type": T,
+                                "required": True,
+                            },
                         ],
                     }
                 ],
@@ -48,14 +58,58 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Outreach Activities",
                         "code": "outreach-activities",
                         "fields": [
-                            {"label": "Activity Type", "code": "activity_type", "field_type": DD, "options": ["Door-to-Door", "Community Meeting", "Market Outreach", "School Visit", "Health Campaign", "Other"], "required": True},
-                            {"label": "Location", "code": "location", "field_type": T, "required": True},
-                            {"label": "Date", "code": "date", "field_type": DT, "required": True},
-                            {"label": "Target Group", "code": "target_group", "field_type": T},
-                            {"label": "People Reached", "code": "people_reached", "field_type": INT},
-                            {"label": "Description", "code": "description", "field_type": MT},
-                            {"label": "Materials Distributed", "code": "materials_distributed", "field_type": MT},
-                            {"label": "Photos", "code": "photos", "field_type": IMG, "is_repeatable": True},
+                            {
+                                "label": "Activity Type",
+                                "code": "activity_type",
+                                "field_type": DD,
+                                "options": [
+                                    "Door-to-Door",
+                                    "Community Meeting",
+                                    "Market Outreach",
+                                    "School Visit",
+                                    "Health Campaign",
+                                    "Other",
+                                ],
+                                "required": True,
+                            },
+                            {
+                                "label": "Location",
+                                "code": "location",
+                                "field_type": T,
+                                "required": True,
+                            },
+                            {
+                                "label": "Date",
+                                "code": "date",
+                                "field_type": DT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Target Group",
+                                "code": "target_group",
+                                "field_type": T,
+                            },
+                            {
+                                "label": "People Reached",
+                                "code": "people_reached",
+                                "field_type": INT,
+                            },
+                            {
+                                "label": "Description",
+                                "code": "description",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Materials Distributed",
+                                "code": "materials_distributed",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Photos",
+                                "code": "photos",
+                                "field_type": IMG,
+                                "is_repeatable": True,
+                            },
                         ],
                     }
                 ],
@@ -68,10 +122,30 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Summary",
                         "code": "summary",
                         "fields": [
-                            {"label": "Total People Reached", "code": "total_reached", "field_type": INT, "is_calculated": True, "formula": "sum(people_reached)"},
-                            {"label": "Total Activities", "code": "total_activities", "field_type": INT, "is_calculated": True, "formula": "count(activities)"},
-                            {"label": "Key Issues Identified", "code": "key_issues", "field_type": MT},
-                            {"label": "Follow-up Actions", "code": "followup_actions", "field_type": MT},
+                            {
+                                "label": "Total People Reached",
+                                "code": "total_reached",
+                                "field_type": INT,
+                                "is_calculated": True,
+                                "formula": "sum(people_reached)",
+                            },
+                            {
+                                "label": "Total Activities",
+                                "code": "total_activities",
+                                "field_type": INT,
+                                "is_calculated": True,
+                                "formula": "count(activities)",
+                            },
+                            {
+                                "label": "Key Issues Identified",
+                                "code": "key_issues",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Follow-up Actions",
+                                "code": "followup_actions",
+                                "field_type": MT,
+                            },
                         ],
                     }
                 ],
@@ -92,10 +166,30 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Assessment Info",
                         "code": "assessment-info",
                         "fields": [
-                            {"label": "Assessment Title", "code": "assessment_title", "field_type": T, "required": True},
-                            {"label": "Community", "code": "community", "field_type": T, "required": True},
-                            {"label": "Date", "code": "date", "field_type": DT, "required": True},
-                            {"label": "Assessor", "code": "assessor", "field_type": T, "required": True},
+                            {
+                                "label": "Assessment Title",
+                                "code": "assessment_title",
+                                "field_type": T,
+                                "required": True,
+                            },
+                            {
+                                "label": "Community",
+                                "code": "community",
+                                "field_type": T,
+                                "required": True,
+                            },
+                            {
+                                "label": "Date",
+                                "code": "date",
+                                "field_type": DT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Assessor",
+                                "code": "assessor",
+                                "field_type": T,
+                                "required": True,
+                            },
                         ],
                     }
                 ],
@@ -108,9 +202,22 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Methodology",
                         "code": "methodology",
                         "fields": [
-                            {"label": "Methods Used", "code": "methods_used", "field_type": MT, "required": True},
-                            {"label": "Sample Size", "code": "sample_size", "field_type": INT},
-                            {"label": "Response Rate", "code": "response_rate", "field_type": PCT},
+                            {
+                                "label": "Methods Used",
+                                "code": "methods_used",
+                                "field_type": MT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Sample Size",
+                                "code": "sample_size",
+                                "field_type": INT,
+                            },
+                            {
+                                "label": "Response Rate",
+                                "code": "response_rate",
+                                "field_type": PCT,
+                            },
                         ],
                     }
                 ],
@@ -124,11 +231,45 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Needs Identified",
                         "code": "needs-identified",
                         "fields": [
-                            {"label": "Need Category", "code": "need_category", "field_type": DD, "options": ["Health", "Education", "Economic", "Social", "Infrastructure", "Environment", "Governance", "Other"], "required": True},
-                            {"label": "Description", "code": "description", "field_type": MT, "required": True},
-                            {"label": "Priority", "code": "priority", "field_type": DD, "options": ["High", "Medium", "Low"], "required": True},
-                            {"label": "Affected Population", "code": "affected_population", "field_type": INT},
-                            {"label": "Current Resources", "code": "current_resources", "field_type": MT},
+                            {
+                                "label": "Need Category",
+                                "code": "need_category",
+                                "field_type": DD,
+                                "options": [
+                                    "Health",
+                                    "Education",
+                                    "Economic",
+                                    "Social",
+                                    "Infrastructure",
+                                    "Environment",
+                                    "Governance",
+                                    "Other",
+                                ],
+                                "required": True,
+                            },
+                            {
+                                "label": "Description",
+                                "code": "description",
+                                "field_type": MT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Priority",
+                                "code": "priority",
+                                "field_type": DD,
+                                "options": ["High", "Medium", "Low"],
+                                "required": True,
+                            },
+                            {
+                                "label": "Affected Population",
+                                "code": "affected_population",
+                                "field_type": INT,
+                            },
+                            {
+                                "label": "Current Resources",
+                                "code": "current_resources",
+                                "field_type": MT,
+                            },
                             {"label": "Gaps", "code": "gaps", "field_type": MT},
                         ],
                     }
@@ -142,8 +283,17 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Recommendations",
                         "code": "recommendations",
                         "fields": [
-                            {"label": "Priority Actions", "code": "priority_actions", "field_type": RT, "required": True},
-                            {"label": "Resource Requirements", "code": "resource_requirements", "field_type": MT},
+                            {
+                                "label": "Priority Actions",
+                                "code": "priority_actions",
+                                "field_type": RT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Resource Requirements",
+                                "code": "resource_requirements",
+                                "field_type": MT,
+                            },
                             {"label": "Timeline", "code": "timeline", "field_type": MT},
                         ],
                     }
@@ -165,8 +315,18 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Report Info",
                         "code": "report-info",
                         "fields": [
-                            {"label": "Reporting Period", "code": "reporting_period", "field_type": T, "required": True},
-                            {"label": "Prepared By", "code": "prepared_by", "field_type": T, "required": True},
+                            {
+                                "label": "Reporting Period",
+                                "code": "reporting_period",
+                                "field_type": T,
+                                "required": True,
+                            },
+                            {
+                                "label": "Prepared By",
+                                "code": "prepared_by",
+                                "field_type": T,
+                                "required": True,
+                            },
                         ],
                     }
                 ],
@@ -180,13 +340,72 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Feedback Items",
                         "code": "feedback-items",
                         "fields": [
-                            {"label": "Source", "code": "source", "field_type": DD, "options": ["Community Meeting", "Suggestion Box", "Hotline", "Survey", "Direct", "Social Media", "Other"], "required": True},
-                            {"label": "Date Received", "code": "date_received", "field_type": DT, "required": True},
-                            {"label": "Category", "code": "category", "field_type": DD, "options": ["Service Quality", "Program Design", "Staff Conduct", "Accessibility", "Complaint", "Suggestion", "Compliment", "Other"], "required": True},
-                            {"label": "Description", "code": "description", "field_type": MT, "required": True},
-                            {"label": "Response Provided", "code": "response_provided", "field_type": MT},
-                            {"label": "Status", "code": "status", "field_type": DD, "options": ["Received", "Acknowledged", "Investigating", "Resolved", "Escalated"], "required": True},
-                            {"label": "Action Taken", "code": "action_taken", "field_type": MT},
+                            {
+                                "label": "Source",
+                                "code": "source",
+                                "field_type": DD,
+                                "options": [
+                                    "Community Meeting",
+                                    "Suggestion Box",
+                                    "Hotline",
+                                    "Survey",
+                                    "Direct",
+                                    "Social Media",
+                                    "Other",
+                                ],
+                                "required": True,
+                            },
+                            {
+                                "label": "Date Received",
+                                "code": "date_received",
+                                "field_type": DT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Category",
+                                "code": "category",
+                                "field_type": DD,
+                                "options": [
+                                    "Service Quality",
+                                    "Program Design",
+                                    "Staff Conduct",
+                                    "Accessibility",
+                                    "Complaint",
+                                    "Suggestion",
+                                    "Compliment",
+                                    "Other",
+                                ],
+                                "required": True,
+                            },
+                            {
+                                "label": "Description",
+                                "code": "description",
+                                "field_type": MT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Response Provided",
+                                "code": "response_provided",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Status",
+                                "code": "status",
+                                "field_type": DD,
+                                "options": [
+                                    "Received",
+                                    "Acknowledged",
+                                    "Investigating",
+                                    "Resolved",
+                                    "Escalated",
+                                ],
+                                "required": True,
+                            },
+                            {
+                                "label": "Action Taken",
+                                "code": "action_taken",
+                                "field_type": MT,
+                            },
                         ],
                     }
                 ],
@@ -199,11 +418,35 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Summary",
                         "code": "summary",
                         "fields": [
-                            {"label": "Total Feedback Items", "code": "total_items", "field_type": INT, "is_calculated": True, "formula": "count(feedback)"},
-                            {"label": "Resolved Items", "code": "resolved_items", "field_type": INT},
-                            {"label": "Resolution Rate", "code": "resolution_rate", "field_type": PCT, "is_calculated": True, "formula": "resolved_items / total_items * 100"},
-                            {"label": "Key Themes", "code": "key_themes", "field_type": MT},
-                            {"label": "Recommendations", "code": "recommendations", "field_type": RT},
+                            {
+                                "label": "Total Feedback Items",
+                                "code": "total_items",
+                                "field_type": INT,
+                                "is_calculated": True,
+                                "formula": "count(feedback)",
+                            },
+                            {
+                                "label": "Resolved Items",
+                                "code": "resolved_items",
+                                "field_type": INT,
+                            },
+                            {
+                                "label": "Resolution Rate",
+                                "code": "resolution_rate",
+                                "field_type": PCT,
+                                "is_calculated": True,
+                                "formula": "resolved_items / total_items * 100",
+                            },
+                            {
+                                "label": "Key Themes",
+                                "code": "key_themes",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Recommendations",
+                                "code": "recommendations",
+                                "field_type": RT,
+                            },
                         ],
                     }
                 ],
@@ -224,11 +467,35 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Meeting Info",
                         "code": "meeting-info",
                         "fields": [
-                            {"label": "Meeting Title", "code": "meeting_title", "field_type": T, "required": True},
-                            {"label": "Date", "code": "date", "field_type": DT, "required": True},
-                            {"label": "Location", "code": "location", "field_type": T, "required": True},
-                            {"label": "Facilitator", "code": "facilitator", "field_type": T, "required": True},
-                            {"label": "Number of Attendees", "code": "num_attendees", "field_type": INT},
+                            {
+                                "label": "Meeting Title",
+                                "code": "meeting_title",
+                                "field_type": T,
+                                "required": True,
+                            },
+                            {
+                                "label": "Date",
+                                "code": "date",
+                                "field_type": DT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Location",
+                                "code": "location",
+                                "field_type": T,
+                                "required": True,
+                            },
+                            {
+                                "label": "Facilitator",
+                                "code": "facilitator",
+                                "field_type": T,
+                                "required": True,
+                            },
+                            {
+                                "label": "Number of Attendees",
+                                "code": "num_attendees",
+                                "field_type": INT,
+                            },
                         ],
                     }
                 ],
@@ -242,11 +509,32 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Agenda Items",
                         "code": "agenda-items",
                         "fields": [
-                            {"label": "Agenda Item", "code": "agenda_item", "field_type": T, "required": True},
-                            {"label": "Presenter", "code": "presenter", "field_type": T},
-                            {"label": "Discussion Summary", "code": "discussion_summary", "field_type": MT},
-                            {"label": "Decisions Made", "code": "decisions_made", "field_type": MT},
-                            {"label": "Action Items", "code": "action_items", "field_type": MT},
+                            {
+                                "label": "Agenda Item",
+                                "code": "agenda_item",
+                                "field_type": T,
+                                "required": True,
+                            },
+                            {
+                                "label": "Presenter",
+                                "code": "presenter",
+                                "field_type": T,
+                            },
+                            {
+                                "label": "Discussion Summary",
+                                "code": "discussion_summary",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Decisions Made",
+                                "code": "decisions_made",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Action Items",
+                                "code": "action_items",
+                                "field_type": MT,
+                            },
                         ],
                     }
                 ],
@@ -259,11 +547,33 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Follow-up",
                         "code": "follow-up",
                         "fields": [
-                            {"label": "Key Outcomes", "code": "key_outcomes", "field_type": RT, "required": True},
-                            {"label": "Action Items", "code": "action_items", "field_type": MT},
-                            {"label": "Next Meeting Date", "code": "next_meeting_date", "field_type": DT},
-                            {"label": "Photos", "code": "photos", "field_type": IMG, "is_repeatable": True},
-                            {"label": "Attendance List", "code": "attendance_list", "field_type": DOC},
+                            {
+                                "label": "Key Outcomes",
+                                "code": "key_outcomes",
+                                "field_type": RT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Action Items",
+                                "code": "action_items",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Next Meeting Date",
+                                "code": "next_meeting_date",
+                                "field_type": DT,
+                            },
+                            {
+                                "label": "Photos",
+                                "code": "photos",
+                                "field_type": IMG,
+                                "is_repeatable": True,
+                            },
+                            {
+                                "label": "Attendance List",
+                                "code": "attendance_list",
+                                "field_type": DOC,
+                            },
                         ],
                     }
                 ],
@@ -284,8 +594,18 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Report Info",
                         "code": "report-info",
                         "fields": [
-                            {"label": "Reporting Year", "code": "reporting_year", "field_type": T, "required": True},
-                            {"label": "Prepared By", "code": "prepared_by", "field_type": T, "required": True},
+                            {
+                                "label": "Reporting Year",
+                                "code": "reporting_year",
+                                "field_type": T,
+                                "required": True,
+                            },
+                            {
+                                "label": "Prepared By",
+                                "code": "prepared_by",
+                                "field_type": T,
+                                "required": True,
+                            },
                         ],
                     }
                 ],
@@ -299,12 +619,45 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Impact Areas",
                         "code": "impact-areas",
                         "fields": [
-                            {"label": "Impact Area", "code": "impact_area", "field_type": DD, "options": ["Economic", "Social", "Health", "Education", "Environmental", "Governance", "Other"], "required": True},
-                            {"label": "Description of Change", "code": "change_description", "field_type": RT, "required": True},
+                            {
+                                "label": "Impact Area",
+                                "code": "impact_area",
+                                "field_type": DD,
+                                "options": [
+                                    "Economic",
+                                    "Social",
+                                    "Health",
+                                    "Education",
+                                    "Environmental",
+                                    "Governance",
+                                    "Other",
+                                ],
+                                "required": True,
+                            },
+                            {
+                                "label": "Description of Change",
+                                "code": "change_description",
+                                "field_type": RT,
+                                "required": True,
+                            },
                             {"label": "Evidence", "code": "evidence", "field_type": MT},
-                            {"label": "Beneficiaries Affected", "code": "beneficiaries_affected", "field_type": INT},
-                            {"label": "Sustainability", "code": "sustainability", "field_type": DD, "options": ["High", "Medium", "Low"]},
-                            {"label": "Photos", "code": "photos", "field_type": IMG, "is_repeatable": True},
+                            {
+                                "label": "Beneficiaries Affected",
+                                "code": "beneficiaries_affected",
+                                "field_type": INT,
+                            },
+                            {
+                                "label": "Sustainability",
+                                "code": "sustainability",
+                                "field_type": DD,
+                                "options": ["High", "Medium", "Low"],
+                            },
+                            {
+                                "label": "Photos",
+                                "code": "photos",
+                                "field_type": IMG,
+                                "is_repeatable": True,
+                            },
                         ],
                     }
                 ],
@@ -317,9 +670,21 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Community Voice",
                         "code": "community-voice",
                         "fields": [
-                            {"label": "Testimonials", "code": "testimonials", "field_type": MT},
-                            {"label": "Community Leaders Feedback", "code": "leaders_feedback", "field_type": MT},
-                            {"label": "Unexpected Outcomes", "code": "unexpected_outcomes", "field_type": MT},
+                            {
+                                "label": "Testimonials",
+                                "code": "testimonials",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Community Leaders Feedback",
+                                "code": "leaders_feedback",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Unexpected Outcomes",
+                                "code": "unexpected_outcomes",
+                                "field_type": MT,
+                            },
                         ],
                     }
                 ],
@@ -332,9 +697,28 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Summary",
                         "code": "summary",
                         "fields": [
-                            {"label": "Overall Impact Rating", "code": "overall_impact", "field_type": DD, "options": ["Very High", "High", "Moderate", "Low", "None"]},
-                            {"label": "Key Achievements", "code": "key_achievements", "field_type": RT},
-                            {"label": "Recommendations", "code": "recommendations", "field_type": RT},
+                            {
+                                "label": "Overall Impact Rating",
+                                "code": "overall_impact",
+                                "field_type": DD,
+                                "options": [
+                                    "Very High",
+                                    "High",
+                                    "Moderate",
+                                    "Low",
+                                    "None",
+                                ],
+                            },
+                            {
+                                "label": "Key Achievements",
+                                "code": "key_achievements",
+                                "field_type": RT,
+                            },
+                            {
+                                "label": "Recommendations",
+                                "code": "recommendations",
+                                "field_type": RT,
+                            },
                         ],
                     }
                 ],
@@ -355,9 +739,24 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Report Info",
                         "code": "report-info",
                         "fields": [
-                            {"label": "Program Name", "code": "program_name", "field_type": T, "required": True},
-                            {"label": "Collection Date", "code": "collection_date", "field_type": DT, "required": True},
-                            {"label": "Collected By", "code": "collected_by", "field_type": T, "required": True},
+                            {
+                                "label": "Program Name",
+                                "code": "program_name",
+                                "field_type": T,
+                                "required": True,
+                            },
+                            {
+                                "label": "Collection Date",
+                                "code": "collection_date",
+                                "field_type": DT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Collected By",
+                                "code": "collected_by",
+                                "field_type": T,
+                                "required": True,
+                            },
                         ],
                     }
                 ],
@@ -371,12 +770,31 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Testimonials",
                         "code": "testimonials",
                         "fields": [
-                            {"label": "Beneficiary Name", "code": "beneficiary_name", "field_type": T, "required": True},
+                            {
+                                "label": "Beneficiary Name",
+                                "code": "beneficiary_name",
+                                "field_type": T,
+                                "required": True,
+                            },
                             {"label": "Age", "code": "age", "field_type": INT},
-                            {"label": "Gender", "code": "gender", "field_type": DD, "options": ["Male", "Female", "Other"]},
+                            {
+                                "label": "Gender",
+                                "code": "gender",
+                                "field_type": DD,
+                                "options": ["Male", "Female", "Other"],
+                            },
                             {"label": "Location", "code": "location", "field_type": T},
-                            {"label": "Testimonial", "code": "testimonial", "field_type": RT, "required": True},
-                            {"label": "Photo Consent", "code": "photo_consent", "field_type": CB},
+                            {
+                                "label": "Testimonial",
+                                "code": "testimonial",
+                                "field_type": RT,
+                                "required": True,
+                            },
+                            {
+                                "label": "Photo Consent",
+                                "code": "photo_consent",
+                                "field_type": CB,
+                            },
                             {"label": "Photo", "code": "photo", "field_type": IMG},
                         ],
                     }
@@ -390,9 +808,23 @@ CATEGORY_L_TEMPLATES: list[dict] = [
                         "name": "Summary",
                         "code": "summary",
                         "fields": [
-                            {"label": "Total Testimonials", "code": "total_testimonials", "field_type": INT, "is_calculated": True, "formula": "count(testimonials)"},
-                            {"label": "Common Themes", "code": "common_themes", "field_type": MT},
-                            {"label": "Usage Consent", "code": "usage_consent", "field_type": CB},
+                            {
+                                "label": "Total Testimonials",
+                                "code": "total_testimonials",
+                                "field_type": INT,
+                                "is_calculated": True,
+                                "formula": "count(testimonials)",
+                            },
+                            {
+                                "label": "Common Themes",
+                                "code": "common_themes",
+                                "field_type": MT,
+                            },
+                            {
+                                "label": "Usage Consent",
+                                "code": "usage_consent",
+                                "field_type": CB,
+                            },
                         ],
                     }
                 ],

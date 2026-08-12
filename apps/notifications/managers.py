@@ -248,9 +248,9 @@ class SystemAnnouncementQuerySet(models.QuerySet):
         """Announcements relevant to a recipient (published + not dismissed)."""
         from .models import AnnouncementDismissal
 
-        dismissed_ids = AnnouncementDismissal.objects.filter(
-            user=user
-        ).values_list("announcement_id", flat=True)
+        dismissed_ids = AnnouncementDismissal.objects.filter(user=user).values_list(
+            "announcement_id", flat=True
+        )
         return self.active().exclude(id__in=dismissed_ids)
 
 

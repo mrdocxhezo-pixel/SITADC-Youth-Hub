@@ -96,17 +96,11 @@ def user_can_update_preferences(user) -> bool:
 
 def is_recipient(user, notification) -> bool:
     """Whether the user is the intended recipient of the notification."""
-    return bool(
-        user
-        and user.is_authenticated
-        and notification.recipient_id == user.pk
-    )
+    return bool(user and user.is_authenticated and notification.recipient_id == user.pk)
 
 
 def is_announcement_author(user, announcement) -> bool:
     """Whether the user created the announcement."""
     return bool(
-        user
-        and user.is_authenticated
-        and announcement.created_by_id == user.pk
+        user and user.is_authenticated and announcement.created_by_id == user.pk
     )

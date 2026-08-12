@@ -45,10 +45,6 @@ from .constants import (
     TemplateComponentType,
     TemplateVersionStatus,
     ValidationRuleType,
-    ReportStatus,
-    ReportValidationStatus,
-    SubmissionStatus,
-    EvidenceType,
 )
 from .managers import (
     IMMUTABLE_REPORT_HISTORY_MESSAGE,
@@ -732,7 +728,9 @@ class ReportTemplateAuditRecord(ReportRecord):
     def delete(self, *args, **kwargs) -> NoReturn:
         raise ValidationError(IMMUTABLE_REPORT_HISTORY_MESSAGE, code="immutable_audit")
 
+
 # --- Workflow Configuration (Phase 19 Section 71) ---
+
 
 class WorkflowStage(ReportRecord, IsActiveModel):
     """A configurable stage in a report submission workflow (Phase 19 section 71)."""
@@ -831,7 +829,7 @@ class ReportingPeriod(ReportRecord):
         indexes = [models.Index(fields=["start_date", "end_date"])]
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.start_date} – {self.end_date})"
+        return f"{self.name} ({self.start_date} - {self.end_date})"
 
 
 class ReportConfiguration(ReportRecord):
@@ -879,9 +877,7 @@ class ReportConfiguration(ReportRecord):
     notification_rules = models.JSONField(
         _("Notification rules"), default=dict, blank=True
     )
-    export_defaults = models.JSONField(
-        _("Export defaults"), default=dict, blank=True
-    )
+    export_defaults = models.JSONField(_("Export defaults"), default=dict, blank=True)
     branding = models.JSONField(_("Branding"), default=dict, blank=True)
     is_active = models.BooleanField(_("Active"), default=True)
 

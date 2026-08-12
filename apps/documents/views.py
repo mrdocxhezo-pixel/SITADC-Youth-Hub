@@ -48,7 +48,6 @@ from .models import (
     DocumentShare,
     DocumentTag,
     DocumentType,
-    DocumentVersion,
 )
 from .permissions import (
     can_download,
@@ -60,16 +59,16 @@ from .selectors import (
     get_document_dashboard_stats,
     get_document_holds,
     get_document_shares,
-    get_folder_by_id,
     get_folder_breadcrumbs,
+    get_folder_by_id,
     get_folder_children,
     get_root_folders,
     get_version_history,
 )
 from .services import (
-    archive_document,
-    approve_document,
     apply_hold,
+    approve_document,
+    archive_document,
     cancel_checkout,
     checkin_document,
     checkout_document,
@@ -105,9 +104,7 @@ class DocumentPermissionMixin(PermissionRequiredMixin):
     def test_func(self) -> bool:
         required = self.permission_required
         permissions = (required,) if isinstance(required, str) else tuple(required)
-        return any(
-            user_has_permission(self.request.user, code) for code in permissions
-        )
+        return any(user_has_permission(self.request.user, code) for code in permissions)
 
 
 # ---------------------------------------------------------------------------
@@ -132,8 +129,16 @@ def _available_workflow_actions(user, document: Document) -> list:
         actions.append(("submit", _("Submit for Review"), DocumentPermissions.SUBMIT))
 
     if status in {DocumentStatus.PENDING_REVIEW, DocumentStatus.UNDER_REVIEW}:
-        actions.append(("approve_review", _("Approve & Forward"), DocumentPermissions.REVIEW))
-        actions.append(("return", _("Return for Correction"), DocumentPermissions.RETURN_FOR_CORRECTION))
+        actions.append(
+            ("approve_review", _("Approve & Forward"), DocumentPermissions.REVIEW)
+        )
+        actions.append(
+            (
+                "return",
+                _("Return for Correction"),
+                DocumentPermissions.RETURN_FOR_CORRECTION,
+            )
+        )
 
     if status == DocumentStatus.PENDING_APPROVAL:
         actions.append(("approve", _("Approve"), DocumentPermissions.APPROVE))
@@ -151,9 +156,7 @@ def _available_workflow_actions(user, document: Document) -> list:
         actions.append(("restore", _("Restore"), DocumentPermissions.RESTORE))
 
     return [
-        (value, label)
-        for value, label, permission in actions
-        if _can(user, permission)
+        (value, label) for value, label, permission in actions if _can(user, permission)
     ]
 
 
@@ -173,12 +176,14 @@ def _apply_service_errors(form, exc: ValidationError | PermissionDenied) -> None
 
 def _scoped_document(user, pk, *, include_archived: bool = False) -> Document:
     return get_object_or_404(
-        Document.objects.filter(
-            Q(owner=user) | Q(created_by=user) | Q(is_deleted=False),
-            pk=pk,
-        )
-        if not include_archived
-        else Document.objects.filter(pk=pk),
+        (
+            Document.objects.filter(
+                Q(owner=user) | Q(created_by=user) | Q(is_deleted=False),
+                pk=pk,
+            )
+            if not include_archived
+            else Document.objects.filter(pk=pk)
+        ),
         pk=pk,
     )
 
@@ -218,8 +223,12 @@ class DocumentDashboardView(DocumentPermissionMixin, TemplateView):
                     .select_related("category", "document_type")
                     .order_by("-created_at")[:6]
                 ),
-                "can_upload": _can(user, DocumentPermissions.UPLOAD, DocumentPermissions.CREATE),
-                "can_manage_categories": _can(user, DocumentPermissions.MANAGE_CATEGORIES),
+                "can_upload": _can(
+                    user, DocumentPermissions.UPLOAD, DocumentPermissions.CREATE
+                ),
+                "can_manage_categories": _can(
+                    user, DocumentPermissions.MANAGE_CATEGORIES
+                ),
                 "can_view_audit": _can(user, DocumentPermissions.VIEW_AUDIT),
             }
         )
@@ -262,8 +271,14 @@ class DocumentListView(DocumentPermissionMixin, ListView):
             qs = qs.filter(confidentiality_level=confidentiality)
         sort_by = self.request.GET.get("sort", "-created_at")
         valid_sorts = {
-            "-created_at", "created_at", "-updated_at", "updated_at",
-            "title", "-title", "-file_size", "file_size",
+            "-created_at",
+            "created_at",
+            "-updated_at",
+            "updated_at",
+            "title",
+            "-title",
+            "-file_size",
+            "file_size",
         }
         if sort_by not in valid_sorts:
             sort_by = "-created_at"
@@ -296,12 +311,16 @@ class MyDocumentsView(DocumentPermissionMixin, ListView):
     permission_required = DocumentPermissions.VIEW
 
     def get_queryset(self):
-        return Document.objects.filter(
-            Q(owner=self.request.user) | Q(created_by=self.request.user),
-            is_deleted=False,
-        ).select_related(
-            "category", "document_type", "folder", "owner", "created_by"
-        ).order_by("-updated_at")
+        return (
+            Document.objects.filter(
+                Q(owner=self.request.user) | Q(created_by=self.request.user),
+                is_deleted=False,
+            )
+            .select_related(
+                "category", "document_type", "folder", "owner", "created_by"
+            )
+            .order_by("-updated_at")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -348,7 +367,9 @@ class DocumentCreateView(DocumentPermissionMixin, FormView):
                 tags=data.get("tags"),
                 effective_date=data.get("effective_date"),
                 expiry_date=data.get("expiry_date"),
-                keywords=data.get("keywords", "").split(",") if data.get("keywords") else [],
+                keywords=(
+                    data.get("keywords", "").split(",") if data.get("keywords") else []
+                ),
             )
         except (ValidationError, PermissionDenied) as exc:
             _apply_service_errors(form, exc)
@@ -370,8 +391,15 @@ class DocumentDetailView(DocumentPermissionMixin, DetailView):
 
     def get_queryset(self):
         return Document.objects.filter(is_deleted=False).select_related(
-            "category", "document_type", "folder", "owner", "created_by",
-            "updated_by", "approved_by", "published_by", "retention_category",
+            "category",
+            "document_type",
+            "folder",
+            "owner",
+            "created_by",
+            "updated_by",
+            "approved_by",
+            "published_by",
+            "retention_category",
         )
 
     def get_context_data(self, **kwargs):
@@ -453,9 +481,7 @@ class DocumentMetadataUpdateView(DocumentPermissionMixin, FormView):
         context["entity_label"] = "Document"
         context["is_update"] = True
         context["object"] = self.document
-        context["cancel_url"] = redirect(
-            "documents:detail", pk=self.document.pk
-        ).url
+        context["cancel_url"] = redirect("documents:detail", pk=self.document.pk).url
         return context
 
     def form_valid(self, form):
@@ -476,7 +502,9 @@ class DocumentMetadataUpdateView(DocumentPermissionMixin, FormView):
                 expiry_date=data.get("expiry_date"),
                 review_date=data.get("review_date"),
                 renewal_date=data.get("renewal_date"),
-                keywords=data.get("keywords", "").split(",") if data.get("keywords") else [],
+                keywords=(
+                    data.get("keywords", "").split(",") if data.get("keywords") else []
+                ),
             )
         except (ValidationError, PermissionDenied) as exc:
             _apply_service_errors(form, exc)
@@ -508,7 +536,7 @@ class DocumentPreviewView(DocumentPermissionMixin, View):
             )
             return response
         except (OSError, FileNotFoundError):
-            raise Http404("File not found.")
+            raise Http404("File not found.") from None
 
 
 # ── Download ─────────────────────────────────────────────────────────────
@@ -533,7 +561,7 @@ class DocumentDownloadView(DocumentPermissionMixin, View):
             )
             return response
         except (OSError, FileNotFoundError):
-            raise Http404("File not found.")
+            raise Http404("File not found.") from None
 
 
 # ── Version Upload ───────────────────────────────────────────────────────
@@ -551,9 +579,7 @@ class DocumentVersionUploadView(DocumentPermissionMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["document"] = self.document
-        context["cancel_url"] = redirect(
-            "documents:detail", pk=self.document.pk
-        ).url
+        context["cancel_url"] = redirect("documents:detail", pk=self.document.pk).url
         return context
 
     def form_valid(self, form):
@@ -610,9 +636,7 @@ class DocumentCheckoutView(DocumentPermissionMixin, FormView):
         context = super().get_context_data(**kwargs)
         context["document"] = self.document
         context["title"] = "Check out document"
-        context["cancel_url"] = redirect(
-            "documents:detail", pk=self.document.pk
-        ).url
+        context["cancel_url"] = redirect("documents:detail", pk=self.document.pk).url
         return context
 
     def form_valid(self, form):
@@ -651,9 +675,7 @@ class DocumentCheckinView(DocumentPermissionMixin, FormView):
         context = super().get_context_data(**kwargs)
         context["document"] = self.document
         context["title"] = "Check in document"
-        context["cancel_url"] = redirect(
-            "documents:detail", pk=self.document.pk
-        ).url
+        context["cancel_url"] = redirect("documents:detail", pk=self.document.pk).url
         return context
 
     def form_valid(self, form):
@@ -729,9 +751,7 @@ class DocumentWorkflowActionView(DocumentPermissionMixin, FormView):
         context["action_choices"] = _available_workflow_actions(
             self.request.user, self.document
         )
-        context["cancel_url"] = redirect(
-            "documents:detail", pk=self.document.pk
-        ).url
+        context["cancel_url"] = redirect("documents:detail", pk=self.document.pk).url
         return context
 
     def form_valid(self, form):
@@ -743,9 +763,13 @@ class DocumentWorkflowActionView(DocumentPermissionMixin, FormView):
             if action == "submit":
                 submit_for_review(user=user, document=document)
             elif action == "approve_review":
-                review_document(user=user, document=document, approve=True, comments=comments)
+                review_document(
+                    user=user, document=document, approve=True, comments=comments
+                )
             elif action == "return":
-                review_document(user=user, document=document, approve=False, comments=comments)
+                review_document(
+                    user=user, document=document, approve=False, comments=comments
+                )
             elif action == "approve":
                 approve_document(user=user, document=document, comments=comments)
             elif action == "publish":
@@ -913,9 +937,7 @@ class DocumentShareCreateView(DocumentPermissionMixin, FormView):
         context = super().get_context_data(**kwargs)
         context["document"] = self.document
         context["title"] = "Share document"
-        context["cancel_url"] = redirect(
-            "documents:detail", pk=self.document.pk
-        ).url
+        context["cancel_url"] = redirect("documents:detail", pk=self.document.pk).url
         return context
 
     def form_valid(self, form):
@@ -977,9 +999,7 @@ class DocumentHoldCreateView(DocumentPermissionMixin, FormView):
         context = super().get_context_data(**kwargs)
         context["document"] = self.document
         context["title"] = "Apply hold"
-        context["cancel_url"] = redirect(
-            "documents:detail", pk=self.document.pk
-        ).url
+        context["cancel_url"] = redirect("documents:detail", pk=self.document.pk).url
         return context
 
     def form_valid(self, form):
@@ -1036,9 +1056,7 @@ class DocumentDisposalRequestView(DocumentPermissionMixin, FormView):
         context = super().get_context_data(**kwargs)
         context["document"] = self.document
         context["title"] = "Request disposal"
-        context["cancel_url"] = redirect(
-            "documents:detail", pk=self.document.pk
-        ).url
+        context["cancel_url"] = redirect("documents:detail", pk=self.document.pk).url
         return context
 
     def form_valid(self, form):
@@ -1084,9 +1102,7 @@ class DocumentFolderCreateView(DocumentPermissionMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         parent_pk = self.request.GET.get("parent")
-        context["parent_folder"] = (
-            get_folder_by_id(parent_pk) if parent_pk else None
-        )
+        context["parent_folder"] = get_folder_by_id(parent_pk) if parent_pk else None
         context["cancel_url"] = redirect("documents:folder_list").url
         return context
 
@@ -1219,24 +1235,32 @@ class DocumentAuditLogView(DocumentPermissionMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["audit_records"] = DocumentAuditRecord.objects.filter(
-            Q(entity_type="Document", entity_id=str(self.object.pk))
-            | Q(entity_type="DocumentVersion", entity_id__in=[
-                str(v.pk) for v in self.object.versions.all()
-            ])
-        ).select_related("changed_by").order_by("-created_at")
+        context["audit_records"] = (
+            DocumentAuditRecord.objects.filter(
+                Q(entity_type="Document", entity_id=str(self.object.pk))
+                | Q(
+                    entity_type="DocumentVersion",
+                    entity_id__in=[str(v.pk) for v in self.object.versions.all()],
+                )
+            )
+            .select_related("changed_by")
+            .order_by("-created_at")
+        )
         return context
 
 
 class DocumentAuditLogListView(DocumentPermissionMixin, ListView):
     """Global audit log across all documents."""
+
     template_name = "documents/document_audit_log.html"
     context_object_name = "audit_records"
     permission_required = DocumentPermissions.VIEW_AUDIT
     paginate_by = 50
 
     def get_queryset(self):
-        return DocumentAuditRecord.objects.select_related("changed_by").order_by("-created_at")
+        return DocumentAuditRecord.objects.select_related("changed_by").order_by(
+            "-created_at"
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

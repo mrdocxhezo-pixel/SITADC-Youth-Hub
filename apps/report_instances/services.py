@@ -8,14 +8,10 @@ to HTTP 400 responses.
 
 from __future__ import annotations
 
-import hashlib
-import json
 from typing import Any
 
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
-from django.utils.text import slugify
 
 from apps.reports.constants import (
     ReportStatus,
@@ -26,7 +22,6 @@ from apps.reports.models import (
     DynamicField,
     ReportConfiguration,
     ReportTemplate,
-    ReportTemplateVersion,
 )
 
 from .models import (
@@ -37,17 +32,14 @@ from .models import (
     ReportEvidence,
     ReportExport,
     ReportFieldResponse,
-    ReportGroupResponse,
     ReportReminder,
     ReportSectionResponse,
     ReportStatusHistory,
     ReportSubmission,
-    ReportTableResponse,
     ReportTimelineEvent,
     ReportValidationResult,
     ReportVersion,
 )
-
 
 # ---------------------------------------------------------------------------
 # Reference Number Generation
@@ -245,7 +237,10 @@ def update_report(
         report.status = ReportStatus.IN_PROGRESS
         fields_to_update.append("status")
         _record_status_change(
-            report, from_status, ReportStatus.IN_PROGRESS, "UPDATED",
+            report,
+            from_status,
+            ReportStatus.IN_PROGRESS,
+            "UPDATED",
             performed_by=updated_by,
         )
 
@@ -346,15 +341,11 @@ def validate_report(
 
     # Build a map of existing field responses for quick lookup.
     existing_responses = {
-        fr.field_id: fr
-        for fr in report.field_responses.select_related("field").all()
+        fr.field_id: fr for fr in report.field_responses.select_related("field").all()
     }
 
     # Build a map of existing section responses for quick lookup.
-    section_responses_map = {
-        sr.section_id: sr
-        for sr in report.section_responses.all()
-    }
+    section_responses_map = {sr.section_id: sr for sr in report.section_responses.all()}
 
     # Determine which sections to validate: only ALWAYS-visible sections
     # and sections that have already been started.
@@ -377,12 +368,14 @@ def validate_report(
         total_rules += 1
         fr = existing_responses.get(field.id)
         if fr is None or (fr.value is None or fr.value == ""):
-            errors.append({
-                "field": str(field.id),
-                "field_label": field.label,
-                "section_name": field.group.section.name,
-                "message": f"'{field.label}' is required.",
-            })
+            errors.append(
+                {
+                    "field": str(field.id),
+                    "field_label": field.label,
+                    "section_name": field.group.section.name,
+                    "message": f"'{field.label}' is required.",
+                }
+            )
         else:
             passed_rules += 1
 
@@ -391,16 +384,20 @@ def validate_report(
         total_rules += 1
         sr = section_responses_map.get(section.id)
         if sr is None or not sr.is_complete:
-            errors.append({
-                "section": str(section.id),
-                "section_name": section.name,
-                "message": f"Section '{section.name}' has not been completed.",
-            })
+            errors.append(
+                {
+                    "section": str(section.id),
+                    "section_name": section.name,
+                    "message": f"Section '{section.name}' has not been completed.",
+                }
+            )
         else:
             passed_rules += 1
 
     is_valid = len(errors) == 0
-    validation_status = ReportValidationStatus.PASSED if is_valid else ReportValidationStatus.FAILED
+    validation_status = (
+        ReportValidationStatus.PASSED if is_valid else ReportValidationStatus.FAILED
+    )
 
     result = ReportValidationResult.objects.create(
         report=report,
@@ -424,7 +421,10 @@ def validate_report(
     report.save(update_fields=["status"])
 
     _record_status_change(
-        report, from_status, report.status, "VALIDATED",
+        report,
+        from_status,
+        report.status,
+        "VALIDATED",
         performed_by=validated_by,
     )
     _record_timeline_event(
@@ -492,7 +492,10 @@ def submit_report(
     report.save(update_fields=["status", "submitted_at", "version_number"])
 
     _record_status_change(
-        report, from_status, ReportStatus.SUBMITTED, "SUBMITTED",
+        report,
+        from_status,
+        ReportStatus.SUBMITTED,
+        "SUBMITTED",
         notes=notes,
         performed_by=submitted_by,
     )
@@ -544,7 +547,10 @@ def withdraw_report(
     report.save(update_fields=["status", "submitted_at"])
 
     _record_status_change(
-        report, from_status, ReportStatus.DRAFT, "WITHDRAWN",
+        report,
+        from_status,
+        ReportStatus.DRAFT,
+        "WITHDRAWN",
         notes=reason,
         performed_by=withdrawn_by,
     )
@@ -596,7 +602,10 @@ def archive_report(report: Report, *, archived_by: Any = None) -> Report:
     report.save(update_fields=["status", "archived_at"])
 
     _record_status_change(
-        report, from_status, ReportStatus.ARCHIVED, "ARCHIVED",
+        report,
+        from_status,
+        ReportStatus.ARCHIVED,
+        "ARCHIVED",
         performed_by=archived_by,
     )
     _record_timeline_event(
@@ -618,7 +627,10 @@ def restore_report(report: Report, *, restored_by: Any = None) -> Report:
     restore_to = ReportStatus.SUBMITTED
 
     _record_status_change(
-        report, ReportStatus.ARCHIVED, restore_to, "RESTORED",
+        report,
+        ReportStatus.ARCHIVED,
+        restore_to,
+        "RESTORED",
         performed_by=restored_by,
     )
 
@@ -911,7 +923,10 @@ def start_review(
     report.save(update_fields=["status"])
 
     _record_status_change(
-        report, from_status, ReportStatus.UNDER_REVIEW, "REVIEW_STARTED",
+        report,
+        from_status,
+        ReportStatus.UNDER_REVIEW,
+        "REVIEW_STARTED",
         performed_by=reviewed_by,
     )
     _record_timeline_event(
@@ -950,14 +965,21 @@ def return_report(
     report.save(update_fields=["status"])
 
     _record_status_change(
-        report, from_status, ReportStatus.RETURNED_FOR_CORRECTION, "RETURNED",
+        report,
+        from_status,
+        ReportStatus.RETURNED_FOR_CORRECTION,
+        "RETURNED",
         notes=reason,
         performed_by=returned_by,
     )
     _record_timeline_event(
         report,
         "REPORT_RETURNED",
-        f"Report returned for correction: {reason}" if reason else "Report returned for correction.",
+        (
+            f"Report returned for correction: {reason}"
+            if reason
+            else "Report returned for correction."
+        ),
         actor=returned_by,
     )
     return report
@@ -990,7 +1012,10 @@ def approve_report(
     report.save(update_fields=["status", "approved_at"])
 
     _record_status_change(
-        report, from_status, ReportStatus.APPROVED, "APPROVED",
+        report,
+        from_status,
+        ReportStatus.APPROVED,
+        "APPROVED",
         notes=notes,
         performed_by=approved_by,
     )
@@ -1029,14 +1054,21 @@ def reject_report(
     report.save(update_fields=["status"])
 
     _record_status_change(
-        report, from_status, ReportStatus.REJECTED, "REJECTED",
+        report,
+        from_status,
+        ReportStatus.REJECTED,
+        "REJECTED",
         notes=reason,
         performed_by=rejected_by,
     )
     _record_timeline_event(
         report,
         "REPORT_REJECTED",
-        f"Report rejected by {rejected_by}: {reason}" if reason else f"Report rejected by {rejected_by}.",
+        (
+            f"Report rejected by {rejected_by}: {reason}"
+            if reason
+            else f"Report rejected by {rejected_by}."
+        ),
         actor=rejected_by,
     )
     return report
@@ -1057,7 +1089,10 @@ def finalize_report(
     report.save(update_fields=["status"])
 
     _record_status_change(
-        report, from_status, ReportStatus.FINALIZED, "FINALIZED",
+        report,
+        from_status,
+        ReportStatus.FINALIZED,
+        "FINALIZED",
         performed_by=finalized_by,
     )
     _record_timeline_event(

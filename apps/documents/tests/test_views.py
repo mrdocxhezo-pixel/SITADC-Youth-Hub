@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from django.test import Client
 from django.urls import reverse
 
 from ..constants import DocumentStatus
@@ -171,9 +170,7 @@ class DocumentWorkflowActionViewTests(DocumentsTestCase):
             reverse("documents:workflow_action", args=[document.pk]),
             {"action": "submit", "comments": "Please review"},
         )
-        self.assertRedirects(
-            response, reverse("documents:detail", args=[document.pk])
-        )
+        self.assertRedirects(response, reverse("documents:detail", args=[document.pk]))
         document.refresh_from_db()
         self.assertEqual(document.status, DocumentStatus.PENDING_REVIEW)
 
@@ -186,9 +183,7 @@ class DocumentWorkflowActionViewTests(DocumentsTestCase):
             reverse("documents:workflow_action", args=[document.pk]),
             {"action": "approve_review", "comments": "Looks good"},
         )
-        self.assertRedirects(
-            response, reverse("documents:detail", args=[document.pk])
-        )
+        self.assertRedirects(response, reverse("documents:detail", args=[document.pk]))
         document.refresh_from_db()
         self.assertEqual(document.status, DocumentStatus.PENDING_APPROVAL)
 
@@ -201,9 +196,7 @@ class DocumentWorkflowActionViewTests(DocumentsTestCase):
             reverse("documents:workflow_action", args=[document.pk]),
             {"action": "return", "comments": "Needs edits"},
         )
-        self.assertRedirects(
-            response, reverse("documents:detail", args=[document.pk])
-        )
+        self.assertRedirects(response, reverse("documents:detail", args=[document.pk]))
         document.refresh_from_db()
         self.assertEqual(document.status, DocumentStatus.RETURNED_FOR_CORRECTION)
 
@@ -217,9 +210,7 @@ class DocumentWorkflowActionViewTests(DocumentsTestCase):
             reverse("documents:workflow_action", args=[document.pk]),
             {"action": "approve", "comments": "Approved"},
         )
-        self.assertRedirects(
-            response, reverse("documents:detail", args=[document.pk])
-        )
+        self.assertRedirects(response, reverse("documents:detail", args=[document.pk]))
         document.refresh_from_db()
         self.assertEqual(document.status, DocumentStatus.APPROVED)
 
@@ -234,9 +225,7 @@ class DocumentWorkflowActionViewTests(DocumentsTestCase):
             reverse("documents:workflow_action", args=[document.pk]),
             {"action": "publish"},
         )
-        self.assertRedirects(
-            response, reverse("documents:detail", args=[document.pk])
-        )
+        self.assertRedirects(response, reverse("documents:detail", args=[document.pk]))
         document.refresh_from_db()
         self.assertEqual(document.status, DocumentStatus.PUBLISHED)
 
@@ -247,9 +236,7 @@ class DocumentWorkflowActionViewTests(DocumentsTestCase):
             reverse("documents:workflow_action", args=[document.pk]),
             {"action": "archive", "comments": "No longer needed"},
         )
-        self.assertRedirects(
-            response, reverse("documents:detail", args=[document.pk])
-        )
+        self.assertRedirects(response, reverse("documents:detail", args=[document.pk]))
         document.refresh_from_db()
         self.assertEqual(document.status, DocumentStatus.ARCHIVED)
 
@@ -262,12 +249,8 @@ class DocumentWorkflowActionViewTests(DocumentsTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No actions available for this document status")
-        available = list(
-            response.context["form"].fields["action"].choices
-        )
-        self.assertEqual(
-            [value for value, _ in available if value], []
-        )
+        available = list(response.context["form"].fields["action"].choices)
+        self.assertEqual([value for value, _ in available if value], [])
 
     def _transition_document(self, document, action: str):
         view = reverse("documents:workflow_action", args=[document.pk])

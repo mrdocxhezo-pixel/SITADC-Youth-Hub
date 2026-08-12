@@ -29,8 +29,7 @@ def validate_quiet_hours(start: str, end: str) -> None:
             continue
         if not re.match(TIME_PATTERN, value):
             raise ValidationError(
-                _("%(label)s must be in HH:MM (24-hour) format.")
-                % {"label": label}
+                _("%(label)s must be in HH:MM (24-hour) format.") % {"label": label}
             )
     if start and end and start == end:
         raise ValidationError(_("Quiet hours start and end must differ."))
@@ -83,7 +82,9 @@ def validate_channels(channels: list) -> None:
         raise ValidationError(_("Channels must be a list."))
     for channel in channels:
         if channel not in DeliveryChannel.values:
-            raise ValidationError(_("Unknown delivery channel: %(channel)s") % {"channel": channel})
+            raise ValidationError(
+                _("Unknown delivery channel: %(channel)s") % {"channel": channel}
+            )
 
 
 def validate_delivery_retry_policy(

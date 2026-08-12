@@ -1,9 +1,9 @@
 """Constants for the Document Management module."""
+
 from __future__ import annotations
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
 
 # ---------------------------------------------------------------------------
 # Document Statuses
@@ -288,41 +288,74 @@ class TimelineEventType(models.TextChoices):
 # ---------------------------------------------------------------------------
 
 
-ALLOWED_DOCUMENT_EXTENSIONS = frozenset({
-    "pdf", "docx", "xlsx", "pptx", "txt", "csv", "odt",
-    "png", "jpg", "jpeg", "webp",
-    "mp3", "wav", "mp4", "mov",
-})
+ALLOWED_DOCUMENT_EXTENSIONS = frozenset(
+    {
+        "pdf",
+        "docx",
+        "xlsx",
+        "pptx",
+        "txt",
+        "csv",
+        "odt",
+        "png",
+        "jpg",
+        "jpeg",
+        "webp",
+        "mp3",
+        "wav",
+        "mp4",
+        "mov",
+    }
+)
 
 ALLOWED_ARCHIVE_EXTENSIONS = frozenset({"zip"})
 
-BLOCKED_EXTENSIONS = frozenset({
-    "exe", "bat", "cmd", "msi", "dll", "js", "vbs", "scr", "ps1",
-    "sh", "php", "py", "rb", "jar", "com", "pif", "application",
-})
+BLOCKED_EXTENSIONS = frozenset(
+    {
+        "exe",
+        "bat",
+        "cmd",
+        "msi",
+        "dll",
+        "js",
+        "vbs",
+        "scr",
+        "ps1",
+        "sh",
+        "php",
+        "py",
+        "rb",
+        "jar",
+        "com",
+        "pif",
+        "application",
+    }
+)
 
 # ---------------------------------------------------------------------------
 # MIME Type Mapping
 # ---------------------------------------------------------------------------
 
 
-ALLOWED_MIME_TYPES = frozenset({
-    "application/pdf",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    "text/plain",
-    "text/csv",
-    "application/vnd.oasis.opendocument.text",
-    "image/png",
-    "image/jpeg",
-    "image/webp",
-    "audio/mpeg",
-    "audio/wav",
-    "video/mp4",
-    "video/quicktime",
-    "application/zip",
-})
+ALLOWED_MIME_TYPES = frozenset(
+    {
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "text/plain",
+        "text/csv",
+        "application/vnd.oasis.opendocument.text",
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+        "audio/mpeg",
+        "audio/wav",
+        "video/mp4",
+        "video/quicktime",
+        "application/zip",
+    }
+)
 
 # ---------------------------------------------------------------------------
 # File Size Limits (bytes)
@@ -360,14 +393,16 @@ FILE_SIZE_LIMITS = {
 # ---------------------------------------------------------------------------
 
 
-PREVIEWABLE_MIME_TYPES = frozenset({
-    "application/pdf",
-    "image/png",
-    "image/jpeg",
-    "image/webp",
-    "text/plain",
-    "text/csv",
-})
+PREVIEWABLE_MIME_TYPES = frozenset(
+    {
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+        "text/plain",
+        "text/csv",
+    }
+)
 
 # ---------------------------------------------------------------------------
 # Permission Codenames

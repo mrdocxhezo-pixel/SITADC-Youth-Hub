@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from django.urls import reverse
-from django.utils import timezone
 
 from apps.notifications.constants import (
     AnnouncementAudience,
@@ -11,7 +10,6 @@ from apps.notifications.constants import (
     DeliveryChannel,
     NotificationCategory,
     NotificationPriority,
-    NotificationStatus,
     NotificationType,
     ReadStatus,
 )
@@ -108,7 +106,9 @@ class NotificationActionViewTests(NotificationsTestCase):
 
     def test_mark_read_post(self):
         response = self.client.post(
-            reverse("notifications:notification_mark_read", args=[self.notification.pk]),
+            reverse(
+                "notifications:notification_mark_read", args=[self.notification.pk]
+            ),
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 200)
@@ -257,9 +257,7 @@ class RuleViewTests(NotificationsTestCase):
             },
         )
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(
-            NotificationRule.objects.filter(name="New Rule").exists()
-        )
+        self.assertTrue(NotificationRule.objects.filter(name="New Rule").exists())
 
     def test_rule_update_view(self):
         response = self.client.post(
@@ -334,9 +332,7 @@ class AnnouncementViewTests(NotificationsTestCase):
 
     def test_announcement_publish_view(self):
         response = self.client.post(
-            reverse(
-                "notifications:announcement_publish", args=[self.announcement.pk]
-            )
+            reverse("notifications:announcement_publish", args=[self.announcement.pk])
         )
         self.assertEqual(response.status_code, 302)
         self.announcement.refresh_from_db()
@@ -346,9 +342,7 @@ class AnnouncementViewTests(NotificationsTestCase):
         self.client.logout()
         self.login_as(self.viewer)
         response = self.client.post(
-            reverse(
-                "notifications:announcement_publish", args=[self.announcement.pk]
-            )
+            reverse("notifications:announcement_publish", args=[self.announcement.pk])
         )
         self.assertEqual(response.status_code, 302)
         self.announcement.refresh_from_db()
@@ -357,9 +351,7 @@ class AnnouncementViewTests(NotificationsTestCase):
     def test_announcement_unpublish_view(self):
         self.announcement.publish(self.officer)
         self.client.post(
-            reverse(
-                "notifications:announcement_unpublish", args=[self.announcement.pk]
-            )
+            reverse("notifications:announcement_unpublish", args=[self.announcement.pk])
         )
         self.announcement.refresh_from_db()
         self.assertFalse(self.announcement.is_published)
@@ -369,16 +361,12 @@ class AnnouncementViewTests(NotificationsTestCase):
         self.client.logout()
         self.login_as(self.viewer)
         response = self.client.post(
-            reverse(
-                "notifications:announcement_dismiss", args=[self.announcement.pk]
-            ),
+            reverse("notifications:announcement_dismiss", args=[self.announcement.pk]),
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["ok"], True)
-        self.assertTrue(
-            self.announcement.dismissals.filter(user=self.viewer).exists()
-        )
+        self.assertTrue(self.announcement.dismissals.filter(user=self.viewer).exists())
 
 
 class AdminListViewTests(NotificationsTestCase):

@@ -53,7 +53,10 @@ class Command(BaseCommand):
                 pending = NotificationDelivery.objects.filter(
                     status=DeliveryStatus.QUEUED
                 ).count()
-                self.stdout.write(f"[dry-run] {pending} queued delivery attempt(s) would be processed.")
+                self.stdout.write(
+                    f"[dry-run] {pending} queued delivery attempt(s) would "
+                    "be processed."
+                )
             else:
                 result = ProcessDeliveriesService(user=None).execute(limit=limit)
                 self.stdout.write(
@@ -68,7 +71,11 @@ class Command(BaseCommand):
                 from apps.notifications.selectors import expired_notifications
 
                 count = expired_notifications().count()
-                self.stdout.write(f"[dry-run] {count} notification(s) would be expired.")
+                self.stdout.write(
+                    f"[dry-run] {count} notification(s) would be expired."
+                )
             else:
                 count = ProcessExpiredService(user=None).execute()
-                self.stdout.write(self.style.SUCCESS(f"Expired {count} notification(s)."))
+                self.stdout.write(
+                    self.style.SUCCESS(f"Expired {count} notification(s).")
+                )

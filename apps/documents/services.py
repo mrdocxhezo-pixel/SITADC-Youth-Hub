@@ -11,11 +11,9 @@ from __future__ import annotations
 import hashlib
 import logging
 import os
-import uuid
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
-from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -28,8 +26,8 @@ from .constants import (
     CheckoutStatus,
     ConfidentialityLevel,
     DisposalStatus,
-    DocumentStatus,
     DocumentPermissions,
+    DocumentStatus,
     HoldStatus,
     HoldType,
     PublicationStatus,
@@ -38,7 +36,6 @@ from .constants import (
 )
 from .exceptions import (
     CircularFolderError,
-    DocumentAccessDeniedError,
     DocumentApprovalError,
     DocumentArchiveError,
     DocumentCheckoutError,
@@ -46,14 +43,10 @@ from .exceptions import (
     DocumentHoldError,
     DocumentManagementError,
     DocumentPublicationError,
-    DocumentReferenceError,
     DocumentShareError,
     DocumentStorageError,
     DocumentVersionError,
     DocumentWorkflowError,
-    FileSizeExceededError,
-    UnsupportedFileTypeError,
-    UnsafeFileError,
 )
 from .models import (
     Document,
@@ -68,7 +61,6 @@ from .models import (
     DocumentTimelineEvent,
     DocumentType,
     DocumentVersion,
-    RetentionCategory,
 )
 from .validators import (
     generate_checksum,
@@ -127,18 +119,17 @@ def _generate_document_reference_number(
 
     if document_type and document_type.code:
         mapped = _TYPE_PREFIX_MAP.get(document_type.code.upper())
-        if mapped:
-            prefix = mapped
-        else:
-            prefix = document_type.code.upper()[:3]
+        prefix = mapped if mapped else document_type.code.upper()[:3]
     elif category and category.code:
         prefix = category.code.upper()[:3]
 
     sequence = DocumentAuditRecord.objects.count() + 1
     reference = f"SITADC/{prefix}/{year}/{sequence:06d}"
 
-    while Document.objects.filter(reference_number=reference).exists() or \
-            DocumentFolder.objects.filter(reference_number=reference).exists():
+    while (
+        Document.objects.filter(reference_number=reference).exists()
+        or DocumentFolder.objects.filter(reference_number=reference).exists()
+    ):
         sequence += 1
         reference = f"SITADC/{prefix}/{year}/{sequence:06d}"
 
@@ -162,7 +153,9 @@ def _build_audit_snapshot(document: Document) -> dict:
         "is_sensitive": document.is_sensitive,
         "owner": str(document.owner_id) if document.owner_id else None,
         "category": str(document.category_id) if document.category_id else None,
-        "document_type": str(document.document_type_id) if document.document_type_id else None,
+        "document_type": (
+            str(document.document_type_id) if document.document_type_id else None
+        ),
         "folder": str(document.folder_id) if document.folder_id else None,
         "current_version_number": document.current_version_number,
     }
@@ -370,9 +363,7 @@ def update_document_metadata(
 
     for field, value in kwargs.items():
         if field not in allowed_fields:
-            raise ValidationError(
-                _("Unsupported field: %(field)s") % {"field": field}
-            )
+            raise ValidationError(_("Unsupported field: %(field)s") % {"field": field})
         setattr(document, field, value)
 
     document.updated_by = user
@@ -450,15 +441,20 @@ def upload_new_version(
     if previous_version:
         previous_version.is_current = False
         previous_version.superseded_date = timezone.localdate()
-        previous_version.save(update_fields=["is_current", "superseded_date", "updated_at"])
+        previous_version.save(
+            update_fields=["is_current", "superseded_date", "updated_at"]
+        )
 
     new_version_number = document.current_version_number + 1
     if version_type == VersionType.MAJOR:
         version_label = f"{new_version_number}.0"
     else:
-        minor_seq = document.versions.filter(
-            version_type=VersionType.MINOR,
-        ).count() + 1
+        minor_seq = (
+            document.versions.filter(
+                version_type=VersionType.MINOR,
+            ).count()
+            + 1
+        )
         version_label = f"{document.current_version_number}.{minor_seq}"
 
     version = DocumentVersion(
@@ -490,18 +486,20 @@ def upload_new_version(
     document.file_size = file_obj.size
     document.checksum = checksum
     document.updated_by = user
-    document.save(update_fields=[
-        "current_version_number",
-        "file",
-        "original_filename",
-        "stored_filename",
-        "file_extension",
-        "mime_type",
-        "file_size",
-        "checksum",
-        "updated_by",
-        "updated_at",
-    ])
+    document.save(
+        update_fields=[
+            "current_version_number",
+            "file",
+            "original_filename",
+            "stored_filename",
+            "file_extension",
+            "mime_type",
+            "file_size",
+            "checksum",
+            "updated_by",
+            "updated_at",
+        ]
+    )
 
     from_data = _build_audit_snapshot(document) if previous_version else {}
     _record_audit(
@@ -585,7 +583,9 @@ def checkout_document(
         user,
         to_data={
             "document": document.reference_number,
-            "expected_return_date": str(expected_return_date) if expected_return_date else None,
+            "expected_return_date": (
+                str(expected_return_date) if expected_return_date else None
+            ),
         },
         notes="Document checked out.",
     )
@@ -686,7 +686,9 @@ def cancel_checkout(user, checkout: DocumentCheckout) -> None:
     checkout.status = CheckoutStatus.CANCELLED
     checkout.cancelled_at = timezone.now()
     checkout.cancelled_by = user
-    checkout.save(update_fields=["status", "cancelled_at", "cancelled_by", "updated_at"])
+    checkout.save(
+        update_fields=["status", "cancelled_at", "cancelled_by", "updated_at"]
+    )
 
     _record_audit(
         "DocumentCheckout",
@@ -719,7 +721,9 @@ def force_release_checkout(user, checkout: DocumentCheckout) -> None:
     checkout.status = CheckoutStatus.FORCE_RELEASED
     checkout.checked_in_at = timezone.now()
     checkout.cancelled_by = user
-    checkout.save(update_fields=["status", "checked_in_at", "cancelled_by", "updated_at"])
+    checkout.save(
+        update_fields=["status", "checked_in_at", "cancelled_by", "updated_at"]
+    )
 
     _record_audit(
         "DocumentCheckout",
@@ -768,7 +772,9 @@ def submit_for_review(user, document: Document) -> Document:
     document.status = DocumentStatus.PENDING_REVIEW
     document.approval_status = "PENDING_REVIEW"
     document.updated_by = user
-    document.save(update_fields=["status", "approval_status", "updated_by", "updated_at"])
+    document.save(
+        update_fields=["status", "approval_status", "updated_by", "updated_at"]
+    )
 
     _record_audit(
         "Document",
@@ -832,7 +838,9 @@ def review_document(
         notes = comments or "Document returned for correction."
 
     document.updated_by = user
-    document.save(update_fields=["status", "approval_status", "updated_by", "updated_at"])
+    document.save(
+        update_fields=["status", "approval_status", "updated_by", "updated_at"]
+    )
 
     _record_audit(
         "Document",
@@ -891,14 +899,16 @@ def approve_document(
     document.approved_by = user
     document.approved_at = now
     document.updated_by = user
-    document.save(update_fields=[
-        "status",
-        "approval_status",
-        "approved_by",
-        "approved_at",
-        "updated_by",
-        "updated_at",
-    ])
+    document.save(
+        update_fields=[
+            "status",
+            "approval_status",
+            "approved_by",
+            "approved_at",
+            "updated_by",
+            "updated_at",
+        ]
+    )
 
     _record_audit(
         "Document",
@@ -952,14 +962,16 @@ def publish_document(user, document: Document) -> Document:
     document.published_by = user
     document.published_at = now
     document.updated_by = user
-    document.save(update_fields=[
-        "status",
-        "publication_status",
-        "published_by",
-        "published_at",
-        "updated_by",
-        "updated_at",
-    ])
+    document.save(
+        update_fields=[
+            "status",
+            "publication_status",
+            "published_by",
+            "published_at",
+            "updated_by",
+            "updated_at",
+        ]
+    )
 
     _record_audit(
         "Document",
@@ -1004,12 +1016,14 @@ def unpublish_document(user, document: Document) -> Document:
     document.status = DocumentStatus.APPROVED
     document.publication_status = PublicationStatus.NOT_PUBLISHED
     document.updated_by = user
-    document.save(update_fields=[
-        "status",
-        "publication_status",
-        "updated_by",
-        "updated_at",
-    ])
+    document.save(
+        update_fields=[
+            "status",
+            "publication_status",
+            "updated_by",
+            "updated_at",
+        ]
+    )
 
     _record_audit(
         "Document",
@@ -1063,13 +1077,15 @@ def archive_document(user, document: Document, reason: str = "") -> Document:
     document.archived_at = now
     document.is_archived = True
     document.updated_by = user
-    document.save(update_fields=[
-        "status",
-        "archived_at",
-        "is_archived",
-        "updated_by",
-        "updated_at",
-    ])
+    document.save(
+        update_fields=[
+            "status",
+            "archived_at",
+            "is_archived",
+            "updated_by",
+            "updated_at",
+        ]
+    )
 
     _record_audit(
         "Document",
@@ -1122,14 +1138,16 @@ def restore_document(user, document: Document, reason: str = "") -> Document:
     document.archived_at = None
     document.is_archived = False
     document.updated_by = user
-    document.save(update_fields=[
-        "status",
-        "publication_status",
-        "archived_at",
-        "is_archived",
-        "updated_by",
-        "updated_at",
-    ])
+    document.save(
+        update_fields=[
+            "status",
+            "publication_status",
+            "archived_at",
+            "is_archived",
+            "updated_by",
+            "updated_at",
+        ]
+    )
 
     _record_audit(
         "Document",
@@ -1303,7 +1321,9 @@ def apply_hold(
     else:
         document.legal_hold = True
     document.updated_by = user
-    document.save(update_fields=["legal_hold", "safeguarding_hold", "updated_by", "updated_at"])
+    document.save(
+        update_fields=["legal_hold", "safeguarding_hold", "updated_by", "updated_at"]
+    )
 
     _record_audit(
         "DocumentHold",
@@ -1357,7 +1377,12 @@ def release_hold(user, hold: DocumentHold, reason: str = "") -> None:
     ).exclude(pk=hold.pk)
 
     has_other_legal = other_active_holds.filter(
-        hold_type__in={HoldType.LEGAL, HoldType.REGULATORY, HoldType.INVESTIGATION, HoldType.OTHER},
+        hold_type__in={
+            HoldType.LEGAL,
+            HoldType.REGULATORY,
+            HoldType.INVESTIGATION,
+            HoldType.OTHER,
+        },
     ).exists()
     has_other_safeguarding = other_active_holds.filter(
         hold_type=HoldType.SAFEGUARDING,
@@ -1426,13 +1451,17 @@ def request_disposal(
 
     retention_category = document.retention_category
     if not retention_category:
-        raise DocumentDisposalError(
-            _("Document has no retention category assigned.")
-        )
+        raise DocumentDisposalError(_("Document has no retention category assigned."))
 
     if retention_category.retention_period_days is not None:
-        trigger_date = document.created_at.date() if hasattr(document.created_at, "date") else timezone.localdate()
-        retention_end = trigger_date + timedelta(days=retention_category.retention_period_days)
+        trigger_date = (
+            document.created_at.date()
+            if hasattr(document.created_at, "date")
+            else timezone.localdate()
+        )
+        retention_end = trigger_date + timedelta(
+            days=retention_category.retention_period_days
+        )
         if timezone.localdate() < retention_end:
             raise DocumentDisposalError(
                 _("Retention period has not yet elapsed. Retention ends: %(date)s.")
@@ -1493,14 +1522,14 @@ def approve_disposal(
     _require_permission(user, DocumentPermissions.APPROVE_DISPOSAL)
 
     if disposal_request.status != DisposalStatus.REQUESTED:
-        raise DocumentDisposalError(
-            _("Only requested disposals can be approved.")
-        )
+        raise DocumentDisposalError(_("Only requested disposals can be approved."))
 
     disposal_request.status = DisposalStatus.APPROVED
     disposal_request.approved_by = user
     disposal_request.updated_by = user
-    disposal_request.save(update_fields=["status", "approved_by", "updated_by", "updated_at"])
+    disposal_request.save(
+        update_fields=["status", "approved_by", "updated_by", "updated_at"]
+    )
 
     _record_audit(
         "DocumentDisposalRequest",
@@ -1530,11 +1559,11 @@ def complete_disposal(
     Sets the document status to DISPOSED.
     """
     if disposal_request.status != DisposalStatus.APPROVED:
-        raise DocumentDisposalError(
-            _("Only approved disposals can be completed.")
-        )
+        raise DocumentDisposalError(_("Only approved disposals can be completed."))
 
-    valid_methods = {m[0] for m in DocumentDisposalRequest._meta.get_field("disposal_method").choices}
+    valid_methods = {
+        m[0] for m in DocumentDisposalRequest._meta.get_field("disposal_method").choices
+    }
     if disposal_method not in valid_methods:
         raise ValidationError(
             _("Invalid disposal method: %(method)s") % {"method": disposal_method}
@@ -1545,13 +1574,15 @@ def complete_disposal(
     disposal_request.disposal_method = disposal_method
     disposal_request.disposal_date = now.date()
     disposal_request.updated_by = user
-    disposal_request.save(update_fields=[
-        "status",
-        "disposal_method",
-        "disposal_date",
-        "updated_by",
-        "updated_at",
-    ])
+    disposal_request.save(
+        update_fields=[
+            "status",
+            "disposal_method",
+            "disposal_date",
+            "updated_by",
+            "updated_at",
+        ]
+    )
 
     document = disposal_request.document
     document.status = DocumentStatus.DISPOSED
@@ -1601,13 +1632,15 @@ def delete_document(user, document: Document) -> None:
     document.deleted_at = timezone.now()
     document.deleted_by = user
     document.updated_by = user
-    document.save(update_fields=[
-        "is_deleted",
-        "deleted_at",
-        "deleted_by",
-        "updated_by",
-        "updated_at",
-    ])
+    document.save(
+        update_fields=[
+            "is_deleted",
+            "deleted_at",
+            "deleted_by",
+            "updated_by",
+            "updated_at",
+        ]
+    )
 
     _record_audit(
         "Document",
@@ -1634,13 +1667,15 @@ def restore_deleted_document(user, document: Document) -> None:
     document.deleted_at = None
     document.deleted_by = None
     document.updated_by = user
-    document.save(update_fields=[
-        "is_deleted",
-        "deleted_at",
-        "deleted_by",
-        "updated_by",
-        "updated_at",
-    ])
+    document.save(
+        update_fields=[
+            "is_deleted",
+            "deleted_at",
+            "deleted_by",
+            "updated_by",
+            "updated_at",
+        ]
+    )
 
     _record_audit(
         "Document",
@@ -1707,7 +1742,9 @@ def create_folder(
 
 
 @transaction.atomic
-def move_folder(folder: DocumentFolder, new_parent: DocumentFolder | None) -> DocumentFolder:
+def move_folder(
+    folder: DocumentFolder, new_parent: DocumentFolder | None
+) -> DocumentFolder:
     """Move a folder to a new parent.
 
     Validates that no circular hierarchy would be created.
@@ -1811,7 +1848,10 @@ def get_document_download_path(
         raise DocumentStorageError(_("No version available for this document."))
     if version.file:
         return version.file.path
-    raise DocumentStorageError(_("No file found for version %(version)s.") % {"version": version.version_number})
+    raise DocumentStorageError(
+        _("No file found for version %(version)s.")
+        % {"version": version.version_number}
+    )
 
 
 def verify_document_checksum(
@@ -1841,5 +1881,5 @@ def verify_document_checksum(
                 hasher.update(chunk)
         computed = hasher.hexdigest()
         return computed == version.checksum
-    except (OSError, IOError):
+    except OSError:
         return False

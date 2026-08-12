@@ -2,19 +2,18 @@
 
 from __future__ import annotations
 
+from django.db import IntegrityError
 from django.utils import timezone
 
 from apps.notifications.constants import (
     DeliveryStatus,
     NotificationPriority,
-    NotificationStatus,
     NotificationType,
     ReadStatus,
 )
 from apps.notifications.models import (
     AnnouncementDelivery,
     Notification,
-    NotificationDelivery,
     NotificationEvent,
     NotificationPreference,
     SystemAnnouncement,
@@ -73,9 +72,13 @@ class NotificationModelTests(NotificationsTestCase):
     def test_queryset_filters(self):
         notification = self.create_notification(self.manager, recipient=self.viewer)
         self.assertTrue(
-            Notification.objects.for_user(self.viewer).filter(pk=notification.pk).exists()
+            Notification.objects.for_user(self.viewer)
+            .filter(pk=notification.pk)
+            .exists()
         )
-        self.assertEqual(Notification.objects.unread().filter(pk=notification.pk).count(), 1)
+        self.assertEqual(
+            Notification.objects.unread().filter(pk=notification.pk).count(), 1
+        )
 
 
 class NotificationDeliveryModelTests(NotificationsTestCase):
@@ -149,7 +152,7 @@ class NotificationEventModelTests(NotificationsTestCase):
         self.assertFalse(event.processed)
 
     def test_event_deduplication_key_indexed(self):
-        event = NotificationEvent.objects.create(
+        NotificationEvent.objects.create(
             event_type="meeting.scheduled",
             source_app="meetings",
             deduplication_key="abc-123",
@@ -190,7 +193,7 @@ class SystemAnnouncementModelTests(NotificationsTestCase):
         AnnouncementDelivery.objects.create(
             announcement=self.announcement, recipient=self.viewer
         )
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             AnnouncementDelivery.objects.create(
                 announcement=self.announcement, recipient=self.viewer
             )

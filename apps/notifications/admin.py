@@ -94,7 +94,15 @@ class NotificationDeliveryAdmin(admin.ModelAdmin):
 
 @admin.register(NotificationTemplate)
 class NotificationTemplateAdmin(admin.ModelAdmin):
-    list_display = ("code", "name", "category", "channel", "priority", "version", "is_active")
+    list_display = (
+        "code",
+        "name",
+        "category",
+        "channel",
+        "priority",
+        "version",
+        "is_active",
+    )
     list_filter = ("category", "channel", "priority", "is_active")
     search_fields = ("code", "name", "event_type")
 
@@ -151,7 +159,13 @@ class SystemAnnouncementAdmin(admin.ModelAdmin):
 
 @admin.register(AnnouncementDelivery)
 class AnnouncementDeliveryAdmin(ReadOnlyMixin, admin.ModelAdmin):
-    list_display = ("announcement", "recipient", "delivered_at", "read_at", "dismissed_at")
+    list_display = (
+        "announcement",
+        "recipient",
+        "delivered_at",
+        "read_at",
+        "dismissed_at",
+    )
     list_filter = ("delivered_at",)
     search_fields = ("announcement__title", "recipient__email")
 
@@ -171,6 +185,13 @@ class NotificationAuditRecordAdmin(ReadOnlyMixin, admin.ModelAdmin):
 
 @admin.register(NotificationDigest)
 class NotificationDigestAdmin(ReadOnlyMixin, admin.ModelAdmin):
-    list_display = ("user", "frequency", "notification_count", "period_start", "period_end", "sent_at")
+    list_display = (
+        "user",
+        "frequency",
+        "notification_count",
+        "period_start",
+        "period_end",
+        "sent_at",
+    )
     list_filter = ("frequency",)
     search_fields = ("user__email",)

@@ -1,4 +1,5 @@
 """Secure storage backend for the Document Management module."""
+
 from __future__ import annotations
 
 import os

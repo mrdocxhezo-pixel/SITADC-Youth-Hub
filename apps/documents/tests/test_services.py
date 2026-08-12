@@ -2,30 +2,23 @@
 
 from __future__ import annotations
 
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import PermissionDenied
 
 from ..constants import (
     CheckoutStatus,
-    ConfidentialityLevel,
     DocumentStatus,
-    HoldStatus,
-    HoldType,
 )
 from ..exceptions import (
-    DocumentApprovalError,
     DocumentArchiveError,
     DocumentCheckoutError,
     DocumentManagementError,
-    DocumentPublicationError,
+    DocumentShareError,
+    DocumentVersionError,
     DocumentWorkflowError,
 )
 from ..models import (
-    Document,
     DocumentAuditRecord,
-    DocumentCheckout,
-    DocumentShare,
     DocumentTimelineEvent,
-    DocumentVersion,
 )
 from .base import DocumentsTestCase
 
@@ -152,7 +145,7 @@ class UploadNewVersionTests(DocumentsTestCase):
         document = self._upload_document()
         archive_document(self.manager, document)
         new_file = self._make_file("v3.pdf", b"%PDF-1.4 version 3")
-        with self.assertRaises(Exception):
+        with self.assertRaises(DocumentVersionError):
             upload_new_version(self.manager, document, new_file)
 
 
@@ -334,7 +327,7 @@ class ShareTests(DocumentsTestCase):
         document = self._upload_document()
         share = share_document(self.manager, document, self.viewer)
         revoke_share(self.manager, share)
-        with self.assertRaises(Exception):
+        with self.assertRaises(DocumentShareError):
             revoke_share(self.manager, share)
 
 

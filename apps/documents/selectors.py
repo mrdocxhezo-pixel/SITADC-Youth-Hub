@@ -1,4 +1,5 @@
 """Read-only query selectors for the Document Management module."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -33,19 +34,23 @@ def get_document_by_id(document_id: str) -> Document:
     return get_object_or_404(Document, pk=document_id)
 
 
-def get_documents_for_user(user: "User"):
-    return Document.objects.filter(
-        Q(owner=user) | Q(created_by=user),
-        is_deleted=False,
-    ).select_related(
-        "category", "document_type", "folder", "owner", "created_by"
-    ).distinct()
+def get_documents_for_user(user: User):
+    return (
+        Document.objects.filter(
+            Q(owner=user) | Q(created_by=user),
+            is_deleted=False,
+        )
+        .select_related("category", "document_type", "folder", "owner", "created_by")
+        .distinct()
+    )
 
 
 def get_recent_documents(limit: int = 20):
-    return Document.objects.filter(is_deleted=False).select_related(
-        "category", "document_type", "owner"
-    ).order_by("-created_at")[:limit]
+    return (
+        Document.objects.filter(is_deleted=False)
+        .select_related("category", "document_type", "owner")
+        .order_by("-created_at")[:limit]
+    )
 
 
 def get_documents_expiring_soon(days: int = 30):
@@ -66,14 +71,12 @@ def get_published_documents():
     )
 
 
-def search_documents(query: str, user: "User | None" = None):
+def search_documents(query: str, user: User | None = None):
     qs = Document.objects.search(query).select_related(
         "category", "document_type", "folder", "owner"
     )
     if user:
-        qs = qs.filter(
-            Q(owner=user) | Q(created_by=user)
-        ).distinct()
+        qs = qs.filter(Q(owner=user) | Q(created_by=user)).distinct()
     return qs
 
 
@@ -107,7 +110,9 @@ def get_document_library_queryset(
 
 
 def get_all_categories():
-    return DocumentCategory.objects.filter(is_active=True).order_by("sort_order", "name")
+    return DocumentCategory.objects.filter(is_active=True).order_by(
+        "sort_order", "name"
+    )
 
 
 def get_category_by_id(category_id: str) -> DocumentCategory:
@@ -147,9 +152,9 @@ def get_root_folders():
 
 
 def get_folder_children(folder):
-    return DocumentFolder.objects.filter(
-        parent=folder, is_deleted=False
-    ).order_by("sort_order", "name")
+    return DocumentFolder.objects.filter(parent=folder, is_deleted=False).order_by(
+        "sort_order", "name"
+    )
 
 
 def get_folder_by_id(folder_id: str) -> DocumentFolder:
@@ -194,7 +199,7 @@ def get_active_checkout(document: Document) -> DocumentCheckout | None:
     return document.checkouts.filter(status="ACTIVE").first()
 
 
-def get_checked_out_documents(user: "User | None" = None):
+def get_checked_out_documents(user: User | None = None):
     qs = DocumentCheckout.objects.filter(status="ACTIVE").select_related(
         "document", "checked_out_by"
     )
@@ -220,10 +225,8 @@ def get_document_shares(document: Document):
     ).select_related("shared_with_user", "shared_by")
 
 
-def get_shared_with_user(user: "User"):
-    return DocumentShare.objects.for_user(user).select_related(
-        "document", "shared_by"
-    )
+def get_shared_with_user(user: User):
+    return DocumentShare.objects.for_user(user).select_related("document", "shared_by")
 
 
 # ---------------------------------------------------------------------------
@@ -248,7 +251,7 @@ def get_active_holds():
 # ---------------------------------------------------------------------------
 
 
-def get_document_dashboard_stats(user: "User"):
+def get_document_dashboard_stats(user: User):
     """Return aggregated document statistics for the dashboard."""
     base_qs = Document.objects.filter(is_deleted=False)
     return {
@@ -262,9 +265,7 @@ def get_document_dashboard_stats(user: "User"):
         "expiring_soon": Document.objects.expiring_soon(30).count(),
         "expired": Document.objects.expired_documents().count(),
         "checked_out": DocumentCheckout.objects.filter(status="ACTIVE").count(),
-        "total_storage": base_qs.aggregate(
-            total=Sum("file_size")
-        )["total"] or 0,
+        "total_storage": base_qs.aggregate(total=Sum("file_size"))["total"] or 0,
         "documents_by_category": list(
             DocumentCategory.objects.filter(is_active=True)
             .annotate(count=Count("documents"))

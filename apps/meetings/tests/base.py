@@ -31,6 +31,7 @@ class MeetingsTestCase(TestCase):
         # Ensure permissions exist even if running with --nomigrations
         from django.apps import apps
         from django.contrib.auth.management import create_permissions
+
         for app_config in apps.get_app_configs():
             app_config.models_module = True
             create_permissions(app_config, verbosity=0)
@@ -38,6 +39,7 @@ class MeetingsTestCase(TestCase):
         # Ensure reference numbering scheme exists
         from apps.references.constants import ReferenceModules, SequenceResetPeriod
         from apps.references.models import ReferenceNumberScheme
+
         for scheme in (
             {
                 "code": "calendar",
@@ -82,20 +84,27 @@ class MeetingsTestCase(TestCase):
 
         # Assign permissions using RBAC helper (handles caching)
         from django.contrib.contenttypes.models import ContentType
-        ct, _ = ContentType.objects.get_or_create(
-            app_label="meetings", model="meeting"
-        )
+
+        ct, _ = ContentType.objects.get_or_create(app_label="meetings", model="meeting")
         p_manage, _ = Permission.objects.get_or_create(
-            codename="meetings.manage", content_type=ct, defaults={"name": "Manage meetings"}
+            codename="meetings.manage",
+            content_type=ct,
+            defaults={"name": "Manage meetings"},
         )
         p_create, _ = Permission.objects.get_or_create(
-            codename="meetings.create", content_type=ct, defaults={"name": "Create meetings"}
+            codename="meetings.create",
+            content_type=ct,
+            defaults={"name": "Create meetings"},
         )
         p_update, _ = Permission.objects.get_or_create(
-            codename="meetings.update", content_type=ct, defaults={"name": "Update meetings"}
+            codename="meetings.update",
+            content_type=ct,
+            defaults={"name": "Update meetings"},
         )
         p_view, _ = Permission.objects.get_or_create(
-            codename="meetings.view", content_type=ct, defaults={"name": "View meetings"}
+            codename="meetings.view",
+            content_type=ct,
+            defaults={"name": "View meetings"},
         )
 
         # Manager gets full control
@@ -121,7 +130,7 @@ class MeetingsTestCase(TestCase):
         )
 
     def login_as(self, user):
-        """Helper to properly authenticate a test user using the custom User model (email)."""
+        """Helper to authenticate a test user using the custom User model (email)."""
         return self.client.login(email=user.email, password=self.password)
 
     def grant_permissions(self, user, *codenames: str):
@@ -131,6 +140,7 @@ class MeetingsTestCase(TestCase):
 
     def create_calendar(self, user, **kwargs):
         from apps.meetings.services import CalendarService
+
         defaults = {
             "name": "Test Calendar",
             "calendar_type": CalendarType.TEAM,
@@ -143,6 +153,7 @@ class MeetingsTestCase(TestCase):
 
     def create_event(self, user, calendar, **kwargs):
         from apps.meetings.services import CalendarEventService
+
         defaults = {
             "title": "Test Event",
             "event_type": EventType.MEETING,
@@ -158,6 +169,7 @@ class MeetingsTestCase(TestCase):
 
     def create_meeting(self, user, **kwargs):
         from apps.meetings.services import MeetingService
+
         defaults = {
             "title": "Test Meeting",
             "meeting_type": MeetingType.STAFF,

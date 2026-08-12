@@ -99,8 +99,12 @@ class EventPermissionTests(MeetingsTestCase):
             {
                 "title": "New Event",
                 "event_type": EventType.MEETING,
-                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=2, hours=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (
+                    timezone.now() + timezone.timedelta(days=2, hours=1)
+                ).strftime("%Y-%m-%dT%H:%M"),
                 "organizer": self.manager.pk,
             },
         )
@@ -108,12 +112,16 @@ class EventPermissionTests(MeetingsTestCase):
 
     def test_viewer_cannot_create_event(self):
         self.login_as(self.viewer)
-        response = self.client.get(reverse("meetings:event_create", args=[self.calendar.pk]))
+        response = self.client.get(
+            reverse("meetings:event_create", args=[self.calendar.pk])
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_outsider_cannot_view_event(self):
         self.login_as(self.outsider)
-        response = self.client.get(reverse("meetings:event_detail", args=[self.event.pk]))
+        response = self.client.get(
+            reverse("meetings:event_detail", args=[self.event.pk])
+        )
         self.assertEqual(response.status_code, 403)
 
 
@@ -136,8 +144,12 @@ class MeetingPermissionTests(MeetingsTestCase):
             {
                 "title": "New Meeting",
                 "meeting_type": MeetingType.STAFF,
-                "start_at": (timezone.now() + timezone.timedelta(days=3)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=3, hours=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=3)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (
+                    timezone.now() + timezone.timedelta(days=3, hours=1)
+                ).strftime("%Y-%m-%dT%H:%M"),
                 "organizer": self.manager.pk,
             },
         )
@@ -150,7 +162,9 @@ class MeetingPermissionTests(MeetingsTestCase):
 
     def test_outsider_cannot_view_meeting(self):
         self.login_as(self.outsider)
-        response = self.client.get(reverse("meetings:meeting_detail", args=[self.meeting.pk]))
+        response = self.client.get(
+            reverse("meetings:meeting_detail", args=[self.meeting.pk])
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_manager_can_update_own_meeting(self):
@@ -160,8 +174,12 @@ class MeetingPermissionTests(MeetingsTestCase):
             {
                 "title": "Updated Meeting",
                 "meeting_type": MeetingType.STAFF,
-                "start_at": (timezone.now() + timezone.timedelta(days=3)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=3, hours=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=3)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (
+                    timezone.now() + timezone.timedelta(days=3, hours=1)
+                ).strftime("%Y-%m-%dT%H:%M"),
                 "organizer": self.manager.pk,
             },
         )
@@ -174,8 +192,12 @@ class MeetingPermissionTests(MeetingsTestCase):
             {
                 "title": "Hacked",
                 "meeting_type": MeetingType.STAFF,
-                "start_at": (timezone.now() + timezone.timedelta(days=3)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=3, hours=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=3)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (
+                    timezone.now() + timezone.timedelta(days=3, hours=1)
+                ).strftime("%Y-%m-%dT%H:%M"),
                 "organizer": self.manager.pk,
             },
         )

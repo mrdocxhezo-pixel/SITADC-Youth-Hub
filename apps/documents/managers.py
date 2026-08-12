@@ -1,4 +1,5 @@
 """Custom managers and querysets for the Document Management module."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -88,7 +89,7 @@ class DocumentQuerySet(models.QuerySet):
     def by_folder(self, folder_id: str) -> models.QuerySet:
         return self.filter(folder_id=folder_id)
 
-    def by_owner(self, user: "User") -> models.QuerySet:
+    def by_owner(self, user: User) -> models.QuerySet:
         return self.filter(owner=user)
 
     def by_status(self, status: str) -> models.QuerySet:
@@ -110,11 +111,9 @@ class DocumentQuerySet(models.QuerySet):
         threshold = timezone.now() - timezone.timedelta(days=days)
         return self.filter(created_at__gte=threshold)
 
-    def for_user(self, user: "User") -> models.QuerySet:
+    def for_user(self, user: User) -> models.QuerySet:
         """Return documents accessible to the given user based on ownership."""
-        return self.filter(
-            models.Q(owner=user) | models.Q(created_by=user)
-        ).distinct()
+        return self.filter(models.Q(owner=user) | models.Q(created_by=user)).distinct()
 
     def search(self, query: str) -> models.QuerySet:
         """Simple search across title, description, reference_number, keywords."""
@@ -218,7 +217,7 @@ class DocumentShareQuerySet(models.QuerySet):
     def for_document(self, document) -> models.QuerySet:
         return self.filter(document=document)
 
-    def for_user(self, user: "User") -> models.QuerySet:
+    def for_user(self, user: User) -> models.QuerySet:
         return self.filter(shared_with_user=user, is_active=True)
 
     def expired(self) -> models.QuerySet:
@@ -238,7 +237,7 @@ class DocumentAuditRecordManager(models.Manager):
     def for_entity(self, entity_type: str, entity_id: str) -> models.QuerySet:
         return self.filter(entity_type=entity_type, entity_id=entity_id)
 
-    def for_user(self, user: "User") -> models.QuerySet:
+    def for_user(self, user: User) -> models.QuerySet:
         return self.filter(changed_by=user)
 
 

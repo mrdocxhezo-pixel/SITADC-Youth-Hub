@@ -58,7 +58,7 @@ class CalendarModelTests(MeetingsTestCase):
         self.assertNotEqual(cal1.reference, cal2.reference)
 
     def test_calendar_invalid_end_before_start(self):
-        cal = self.create_calendar(self.manager)
+        self.create_calendar(self.manager)
         # This is not directly validated on Calendar, but we test it's a valid model
 
 
@@ -78,6 +78,7 @@ class CalendarEventModelTests(MeetingsTestCase):
 
     def test_event_end_before_start_raises(self):
         from django.utils import timezone
+
         with self.assertRaises(ValidationError):
             evt = CalendarEvent(
                 title="Bad Event",
@@ -102,6 +103,7 @@ class CalendarShareModelTests(MeetingsTestCase):
 
     def test_create_calendar_share(self):
         from apps.meetings.constants import CalendarShareLevel
+
         share = CalendarShare.objects.create(
             calendar=self.calendar,
             user=self.officer,
@@ -150,6 +152,7 @@ class MeetingParticipantModelTests(MeetingsTestCase):
 
     def test_create_participant_with_user(self):
         from apps.meetings.constants import ParticipantRole, ParticipantType
+
         participant = MeetingParticipant.objects.create(
             meeting=self.meeting,
             user=self.officer,
@@ -182,6 +185,7 @@ class MeetingAgendaModelTests(MeetingsTestCase):
 
     def test_create_agenda(self):
         from apps.meetings.constants import AgendaStatus
+
         agenda = MeetingAgenda.objects.create(
             meeting=self.meeting,
             title="Test Agenda",
@@ -198,13 +202,13 @@ class MeetingAgendaModelTests(MeetingsTestCase):
             title="Test Agenda",
             prepared_by=self.manager,
         )
-        item1 = AgendaItem.objects.create(
+        AgendaItem.objects.create(
             agenda=agenda,
             item_number=1,
             display_order=10,
             title="Item 1",
         )
-        item2 = AgendaItem.objects.create(
+        AgendaItem.objects.create(
             agenda=agenda,
             item_number=2,
             display_order=5,
@@ -246,6 +250,7 @@ class MeetingMinutesModelTests(MeetingsTestCase):
 
     def test_create_minutes(self):
         from apps.meetings.constants import MinutesStatus
+
         minutes = MeetingMinutes.objects.create(
             meeting=self.meeting,
             title="Test Minutes",
@@ -271,6 +276,7 @@ class MeetingActionItemModelTests(MeetingsTestCase):
 
     def test_create_action_item(self):
         from apps.meetings.constants import ActionPriority, ActionStatus
+
         action = MeetingActionItem.objects.create(
             meeting=self.meeting,
             description="Test action item",
@@ -291,6 +297,7 @@ class MeetingDecisionModelTests(MeetingsTestCase):
 
     def test_create_decision(self):
         from apps.meetings.constants import DecisionStatus, DecisionType
+
         decision = MeetingDecision.objects.create(
             meeting=self.meeting,
             decision_text="Test decision",
@@ -310,6 +317,7 @@ class MeetingDocumentModelTests(MeetingsTestCase):
     def test_create_document(self):
         from apps.documents.models import Document
         from apps.meetings.constants import MeetingDocumentType
+
         document = Document.objects.create(
             reference_number="DOC-MTG-TEST-001",
             title="Test Document",
@@ -334,6 +342,7 @@ class MeetingDocumentModelTests(MeetingsTestCase):
 class MeetingVenueModelTests(MeetingsTestCase):
     def test_create_venue(self):
         from apps.meetings.constants import VenueType
+
         venue = MeetingVenue.objects.create(
             name="Board Room",
             venue_type=VenueType.BOARDROOM,
@@ -353,6 +362,7 @@ class MeetingVenueModelTests(MeetingsTestCase):
 class MeetingTemplateModelTests(MeetingsTestCase):
     def test_create_template(self):
         from apps.meetings.constants import MeetingType
+
         template = MeetingTemplate.objects.create(
             name="Standard Meeting Template",
             code="STD-MTG",

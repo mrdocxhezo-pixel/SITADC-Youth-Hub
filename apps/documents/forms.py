@@ -1,4 +1,5 @@
 """Forms for the Document Management module."""
+
 from __future__ import annotations
 
 import json
@@ -17,10 +18,8 @@ from .models import (
     DocumentShare,
     DocumentTag,
     DocumentType,
-    DocumentVersion,
     RetentionCategory,
 )
-
 
 # ---------------------------------------------------------------------------
 # Document Upload Form
@@ -183,9 +182,10 @@ class DocumentWorkflowActionForm(forms.Form):
     def __init__(self, *args, action_choices=None, **kwargs):
         super().__init__(*args, **kwargs)
         if action_choices:
-            self.fields["action"].choices = [("", _("Choose an action..."))] + list(
-                action_choices
-            )
+            self.fields["action"].choices = [
+                ("", _("Choose an action...")),
+                *list(action_choices),
+            ]
 
 
 # ---------------------------------------------------------------------------
@@ -219,7 +219,9 @@ class DocumentCheckinForm(forms.Form):
     file = forms.FileField(
         required=False,
         label=_("Updated File"),
-        help_text=_("Upload the edited file, or leave empty to check in without changes."),
+        help_text=_(
+            "Upload the edited file, or leave empty to check in without changes."
+        ),
     )
     checkin_notes = forms.CharField(
         required=False,
@@ -282,7 +284,8 @@ class DocumentSearchForm(forms.Form):
         label=_("Folder"),
     )
     status = forms.ChoiceField(
-        choices=[("", _("All Statuses"))] + [
+        choices=[
+            ("", _("All Statuses")),
             ("DRAFT", _("Draft")),
             ("UPLOADED", _("Uploaded")),
             ("PENDING_REVIEW", _("Pending Review")),
@@ -300,7 +303,7 @@ class DocumentSearchForm(forms.Form):
         label=_("Status"),
     )
     confidentiality_level = forms.ChoiceField(
-        choices=[("", _("All Levels"))] + ConfidentialityLevel.choices,
+        choices=[("", _("All Levels")), *ConfidentialityLevel.choices],
         required=False,
         label=_("Confidentiality"),
     )
@@ -330,7 +333,13 @@ class DocumentFolderForm(forms.ModelForm):
 
     class Meta:
         model = DocumentFolder
-        fields = ["name", "description", "parent", "sort_order", "confidentiality_level"]
+        fields = [
+            "name",
+            "description",
+            "parent",
+            "sort_order",
+            "confidentiality_level",
+        ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
         }

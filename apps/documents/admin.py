@@ -1,4 +1,5 @@
 """Admin configuration for the Document Management module."""
+
 from __future__ import annotations
 
 from django.contrib import admin
@@ -20,7 +21,6 @@ from .models import (
     DocumentVersion,
     RetentionCategory,
 )
-
 
 # ---------------------------------------------------------------------------
 # Inline Admin Classes
@@ -58,7 +58,13 @@ class DocumentHoldInline(admin.TabularInline):
 class DocumentTimelineEventInline(admin.TabularInline):
     model = DocumentTimelineEvent
     extra = 0
-    readonly_fields = ["event_type", "actor", "previous_status", "new_status", "created_at"]
+    readonly_fields = [
+        "event_type",
+        "actor",
+        "previous_status",
+        "new_status",
+        "created_at",
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -76,7 +82,14 @@ class DocumentCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(DocumentType)
 class DocumentTypeAdmin(admin.ModelAdmin):
-    list_display = ["name", "code", "category", "requires_approval", "requires_versioning", "is_active"]
+    list_display = [
+        "name",
+        "code",
+        "category",
+        "requires_approval",
+        "requires_versioning",
+        "is_active",
+    ]
     list_filter = ["is_active", "category", "requires_approval"]
     search_fields = ["name", "code"]
     prepopulated_fields = {"code": ("name",)}
@@ -137,7 +150,12 @@ class DocumentAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     ]
-    inlines = [DocumentVersionInline, DocumentShareInline, DocumentHoldInline, DocumentTimelineEventInline]
+    inlines = [
+        DocumentVersionInline,
+        DocumentShareInline,
+        DocumentHoldInline,
+        DocumentTimelineEventInline,
+    ]
 
 
 @admin.register(DocumentVersion)
@@ -256,7 +274,14 @@ class DocumentAuditRecordAdmin(admin.ModelAdmin):
 
 @admin.register(DocumentTimelineEvent)
 class DocumentTimelineEventAdmin(admin.ModelAdmin):
-    list_display = ["document", "event_type", "actor", "previous_status", "new_status", "created_at"]
+    list_display = [
+        "document",
+        "event_type",
+        "actor",
+        "previous_status",
+        "new_status",
+        "created_at",
+    ]
     list_filter = ["event_type"]
     search_fields = ["document__title"]
     readonly_fields = [
@@ -272,7 +297,12 @@ class DocumentTimelineEventAdmin(admin.ModelAdmin):
 
 @admin.register(DocumentSettings)
 class DocumentSettingsAdmin(admin.ModelAdmin):
-    list_display = ["max_upload_size", "enable_checkout", "enable_versioning", "default_confidentiality"]
+    list_display = [
+        "max_upload_size",
+        "enable_checkout",
+        "enable_versioning",
+        "default_confidentiality",
+    ]
 
     def has_add_permission(self, request):
         return not DocumentSettings.objects.exists()

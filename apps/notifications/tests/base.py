@@ -31,6 +31,7 @@ class NotificationsTestCase(TestCase):
         # Ensure permissions exist even if running with --nomigrations.
         from django.apps import apps
         from django.contrib.auth.management import create_permissions
+
         for app_config in apps.get_app_configs():
             app_config.models_module = True
             create_permissions(app_config, verbosity=0)
@@ -38,6 +39,7 @@ class NotificationsTestCase(TestCase):
         # Ensure reference numbering schemes exist.
         from apps.references.constants import ReferenceModules, SequenceResetPeriod
         from apps.references.models import ReferenceNumberScheme
+
         ReferenceNumberScheme.objects.update_or_create(
             code="notification",
             defaults={
@@ -147,6 +149,7 @@ class NotificationsTestCase(TestCase):
 
     def create_template(self, user, **kwargs):
         from apps.notifications.services import TemplateService
+
         defaults = {
             "code": kwargs.pop("code", "test_template"),
             "name": "Test Template",
@@ -161,6 +164,7 @@ class NotificationsTestCase(TestCase):
 
     def create_rule(self, user, **kwargs):
         from apps.notifications.services import RuleService
+
         defaults = {
             "name": "Test Rule",
             "event_type": "test.event",
@@ -175,6 +179,7 @@ class NotificationsTestCase(TestCase):
 
     def create_notification(self, user, **kwargs):
         from apps.notifications.services import NotificationService
+
         defaults = {
             "recipient": kwargs.pop("recipient", self.viewer),
             "title": "Test Notification",
@@ -191,6 +196,7 @@ class NotificationsTestCase(TestCase):
 
     def create_announcement(self, user, **kwargs):
         from apps.notifications.services import AnnouncementService
+
         defaults = {
             "title": "Test Announcement",
             "message": "A test announcement message.",

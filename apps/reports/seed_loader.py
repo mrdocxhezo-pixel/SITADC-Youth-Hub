@@ -8,8 +8,6 @@ Seeds:
 
 from __future__ import annotations
 
-from typing import Any
-
 from django.db import transaction
 
 from .constants import FieldType, ReportingFrequency, ReportTemplateStatus
@@ -129,9 +127,7 @@ def _seed_template_schema(
                 options = field_def.get("options", [])
                 if options and ft in ("DROPDOWN", "MULTI_SELECT", "RADIO"):
                     # Remove stale options
-                    existing_values = set(
-                        field.options.values_list("value", flat=True)
-                    )
+                    existing_values = set(field.options.values_list("value", flat=True))
                     new_values = {opt.lower().replace(" ", "_") for opt in options}
                     for opt_val in existing_values - new_values:
                         field.options.filter(value=opt_val).delete()
@@ -239,9 +235,7 @@ def seed_report_builder_defaults() -> dict[str, int]:
         template.save(update_fields=["current_version"])
 
         # Seed schema (sections -> groups -> fields -> options)
-        schema_stats = _seed_template_schema(
-            template, tpl_def.get("sections", [])
-        )
+        schema_stats = _seed_template_schema(template, tpl_def.get("sections", []))
         stats["sections"] += schema_stats["sections"]
         stats["groups"] += schema_stats["groups"]
         stats["fields"] += schema_stats["fields"]

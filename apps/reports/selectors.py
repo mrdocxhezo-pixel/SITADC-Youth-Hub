@@ -80,6 +80,7 @@ def get_report_template_by_slug(slug: str, user=None):
     ``template_queryset``; otherwise the object is returned without checks.
     """
     from .models import ReportTemplate
+
     qs = ReportTemplate.objects.all()
     if user is not None:
         qs = template_queryset(user, include_archived=True)

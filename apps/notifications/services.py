@@ -9,14 +9,11 @@ invariants (delivery state machine, deduplication, quiet hours, digests).
 from __future__ import annotations
 
 import logging
-import re
+from collections.abc import Iterable
 from datetime import timedelta
-from typing import Iterable
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
 from django.db.models import Count, Q
 from django.template import Engine
 from django.template.exceptions import TemplateSyntaxError
@@ -25,10 +22,8 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.services import BaseService
 from apps.rbac.authorization import (
-    get_active_role_assignments,
     user_has_permission,
 )
-from apps.references.constants import ReferenceModules
 from apps.references.services import (
     ConfirmReferenceAssignmentService,
     ReferenceNumberService,
@@ -37,7 +32,8 @@ from apps.references.services import (
 from .constants import (
     ALLOWED_TEMPLATE_VARIABLES,
     DEFAULT_NOTIFICATION_EXPIRY_DAYS,
-    MAX_DELIVERY_RETRIES,
+    REFERENCE_MODULE_ANNOUNCEMENTS,
+    REFERENCE_MODULE_NOTIFICATIONS,
     AnnouncementAudience,
     DeliveryChannel,
     DeliveryStatus,
@@ -47,24 +43,14 @@ from .constants import (
     NotificationStatus,
     NotificationType,
     ReadStatus,
-    REFERENCE_MODULE_ANNOUNCEMENTS,
-    REFERENCE_MODULE_NOTIFICATIONS,
-    REFERENCE_PREFIX_ANNOUNCEMENT,
-    REFERENCE_PREFIX_NOTIFICATION,
 )
 from .exceptions import (
-    AnnouncementError,
-    BulkNotificationError,
-    NotificationDeliveryError,
     NotificationPermissionDenied,
-    NotificationRecipientError,
     NotificationRuleError,
-    NotificationSchedulingError,
     TemplateRenderError,
 )
 from .models import (
     AnnouncementDelivery,
-    AnnouncementDismissal,
     Notification,
     NotificationAuditRecord,
     NotificationDelivery,
@@ -85,7 +71,6 @@ from .permissions import (
     NOTIFICATION_MANAGE_RULES,
     NOTIFICATION_MANAGE_TEMPLATES,
     NOTIFICATION_SEND,
-    NOTIFICATION_UPDATE,
 )
 
 User = get_user_model()
@@ -170,7 +155,7 @@ def render_template_text(template_text: str, context: dict) -> str:
         return tpl.render(context)
     except TemplateSyntaxError as exc:
         raise TemplateRenderError(str(exc)) from exc
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise TemplateRenderError(str(exc)) from exc
 
 
@@ -259,14 +244,20 @@ class NotificationService(BaseService):
             channels = [DeliveryChannel.IN_APP]
 
         if deduplication_key:
-            existing = Notification.objects.filter(
-                recipient=recipient, deduplication_key=deduplication_key
-            ).exclude(status=NotificationStatus.EXPIRED).first()
+            existing = (
+                Notification.objects.filter(
+                    recipient=recipient, deduplication_key=deduplication_key
+                )
+                .exclude(status=NotificationStatus.EXPIRED)
+                .first()
+            )
             if existing:
                 return existing
 
         if expiry_at is None:
-            expiry_at = timezone.now() + timedelta(days=DEFAULT_NOTIFICATION_EXPIRY_DAYS)
+            expiry_at = timezone.now() + timedelta(
+                days=DEFAULT_NOTIFICATION_EXPIRY_DAYS
+            )
 
         if scheduled_at is None:
             status = NotificationStatus.PENDING
@@ -341,7 +332,10 @@ class NotificationService(BaseService):
             notification.pk,
             "CREATED",
             self.user,
-            to_data={"reference": notification.reference, "status": notification.status},
+            to_data={
+                "reference": notification.reference,
+                "status": notification.status,
+            },
             notes="Notification created.",
         )
         return notification
@@ -628,7 +622,9 @@ class NotificationEventService(BaseService):
                         source_app=event.source_app,
                         source_model=event.source_model,
                         source_object_id=event.source_object_id,
-                        source_object_reference=event.payload.get("reference_number", ""),
+                        source_object_reference=event.payload.get(
+                            "reference_number", ""
+                        ),
                         organization_unit=event.organization_unit,
                         deep_link=event.payload.get("deep_link", ""),
                         deduplication_key=(
@@ -639,8 +635,10 @@ class NotificationEventService(BaseService):
                         event=event,
                     )
                     created += 1
-                except Exception as exc:  # noqa: BLE001
-                    logger.exception("Failed to create notification from event %s", event.pk)
+                except Exception as exc:
+                    logger.exception(
+                        "Failed to create notification from event %s", event.pk
+                    )
                     raise NotificationRuleError(str(exc)) from exc
 
         event.processed = True
@@ -648,7 +646,9 @@ class NotificationEventService(BaseService):
         event.save(update_fields=["processed", "processed_at"])
         return created
 
-    def _resolve_rule_recipients(self, rule: NotificationRule, event: NotificationEvent) -> list:
+    def _resolve_rule_recipients(
+        self, rule: NotificationRule, event: NotificationEvent
+    ) -> list:
         recipients: list = []
         if rule.recipient_user_id:
             recipients.append(rule.recipient_user)
@@ -795,9 +795,9 @@ class PublishAnnouncementService(BaseService):
     """Publish an announcement and fan out to its audience."""
 
     def _execute(self, announcement: SystemAnnouncement) -> SystemAnnouncement:
-        if not user_has_permission(self.user, ANNOUNCEMENT_PUBLISH) and not user_has_permission(
-            self.user, ANNOUNCEMENT_MANAGE
-        ):
+        if not user_has_permission(
+            self.user, ANNOUNCEMENT_PUBLISH
+        ) and not user_has_permission(self.user, ANNOUNCEMENT_MANAGE):
             raise PermissionDenied
         if not announcement.is_published:
             announcement.publish(self.user)
@@ -817,7 +817,7 @@ class PublishAnnouncementService(BaseService):
         created = 0
         for recipient in recipients.iterator():
             try:
-                notification = NotificationService(user=self.user).execute(
+                NotificationService(user=self.user).execute(
                     recipient=recipient,
                     title=announcement.title,
                     message=announcement.message,
@@ -842,7 +842,7 @@ class PublishAnnouncementService(BaseService):
                     defaults={"delivered_at": timezone.now()},
                 )
                 created += 1
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 logger.warning(
                     "Skipped announcement delivery to %s: %s", recipient, exc
                 )
@@ -853,9 +853,9 @@ class UnpublishAnnouncementService(BaseService):
     """Unpublish an announcement, hiding it immediately."""
 
     def _execute(self, announcement: SystemAnnouncement) -> SystemAnnouncement:
-        if not user_has_permission(self.user, ANNOUNCEMENT_PUBLISH) and not user_has_permission(
-            self.user, ANNOUNCEMENT_MANAGE
-        ):
+        if not user_has_permission(
+            self.user, ANNOUNCEMENT_PUBLISH
+        ) and not user_has_permission(self.user, ANNOUNCEMENT_MANAGE):
             raise PermissionDenied
         announcement.unpublish(self.user)
         record_notification_audit(
@@ -1059,7 +1059,7 @@ class ProcessDeliveriesService(BaseService):
                     delivery.mark_delivered()
                 self._update_aggregate_status(delivery.notification)
                 delivered += 1
-            except Exception as exc:  # noqa: BLE001
+            except Exception:
                 logger.exception("Delivery failed for %s", delivery.pk)
                 delivery.mark_failed(
                     category="provider_error",
@@ -1071,9 +1071,7 @@ class ProcessDeliveriesService(BaseService):
         return {"processed": processed, "delivered": delivered, "failed": failed}
 
     def _update_aggregate_status(self, notification: Notification) -> None:
-        statuses = set(
-            notification.delivery_attempts.values_list("status", flat=True)
-        )
+        statuses = set(notification.delivery_attempts.values_list("status", flat=True))
         if DeliveryStatus.DELIVERED in statuses:
             new_status = NotificationStatus.DELIVERED
         elif DeliveryStatus.SENT in statuses or DeliveryStatus.QUEUED in statuses:

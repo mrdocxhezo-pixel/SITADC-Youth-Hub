@@ -1,4 +1,5 @@
 """Tests for Phase 19 fail-closed permission-aware selectors."""
+
 from __future__ import annotations
 
 from apps.reports.models import ReportCategory
@@ -13,12 +14,15 @@ from apps.reports.tests.base import ReportsTestCase
 
 # ── template_queryset ──────────────────────────────────────────────────────
 
+
 class TemplateQuerysetTests(ReportsTestCase):
     def setUp(self):
         super().setUp()
         svc = ReportTemplateService(user=self.manager)
         cat = ReportCategory.objects.first()
-        self.template = svc.create(code="sel-tpl", title="Selector Template", category=cat)
+        self.template = svc.create(
+            code="sel-tpl", title="Selector Template", category=cat
+        )
 
     def test_manager_sees_templates(self):
         qs = template_queryset(self.manager)
@@ -34,6 +38,7 @@ class TemplateQuerysetTests(ReportsTestCase):
 
     def test_anonymous_user_sees_nothing(self):
         from django.contrib.auth.models import AnonymousUser
+
         qs = template_queryset(AnonymousUser())
         self.assertFalse(qs.exists())
 
@@ -54,6 +59,7 @@ class TemplateQuerysetTests(ReportsTestCase):
 
 # ── category_queryset ──────────────────────────────────────────────────────
 
+
 class CategoryQuerysetTests(ReportsTestCase):
     def test_manager_sees_categories(self):
         qs = category_queryset(self.manager)
@@ -69,11 +75,13 @@ class CategoryQuerysetTests(ReportsTestCase):
 
     def test_anonymous_sees_nothing(self):
         from django.contrib.auth.models import AnonymousUser
+
         qs = category_queryset(AnonymousUser())
         self.assertFalse(qs.exists())
 
 
 # ── user_can_access_template ───────────────────────────────────────────────
+
 
 class UserCanAccessTemplateTests(ReportsTestCase):
     def setUp(self):
@@ -97,6 +105,7 @@ class UserCanAccessTemplateTests(ReportsTestCase):
 
 # ── visible_audit_records ──────────────────────────────────────────────────
 
+
 class VisibleAuditRecordsTests(ReportsTestCase):
     def test_manager_can_see_audit_records(self):
         # Audit records may be empty but the queryset itself should not fail
@@ -109,5 +118,6 @@ class VisibleAuditRecordsTests(ReportsTestCase):
 
     def test_anonymous_sees_nothing(self):
         from django.contrib.auth.models import AnonymousUser
+
         records = visible_audit_records(AnonymousUser())
         self.assertFalse(list(records))

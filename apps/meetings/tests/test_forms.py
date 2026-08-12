@@ -24,6 +24,7 @@ from apps.meetings.forms import (
     MeetingTemplateForm,
     MeetingVenueForm,
 )
+from apps.meetings.models import Meeting, MeetingTemplate
 from apps.meetings.tests.base import MeetingsTestCase
 
 
@@ -80,8 +81,12 @@ class CalendarEventFormTests(MeetingsTestCase):
                 "title": "Test Event",
                 "event_type": EventType.MEETING,
                 "calendar": self.calendar.pk,
-                "start_at": (timezone.now() + timezone.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=1, hours=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=1)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (
+                    timezone.now() + timezone.timedelta(days=1, hours=1)
+                ).strftime("%Y-%m-%dT%H:%M"),
                 "organizer": self.manager.pk,
                 "status": EventStatus.DRAFT,
             },
@@ -95,8 +100,12 @@ class CalendarEventFormTests(MeetingsTestCase):
                 "title": "Bad Event",
                 "event_type": EventType.MEETING,
                 "calendar": self.calendar.pk,
-                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (timezone.now() + timezone.timedelta(days=1)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
                 "organizer": self.manager.pk,
                 "status": EventStatus.DRAFT,
             },
@@ -112,8 +121,12 @@ class MeetingFormTests(MeetingsTestCase):
             data={
                 "title": "Test Meeting",
                 "meeting_type": MeetingType.STAFF,
-                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=2, hours=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (
+                    timezone.now() + timezone.timedelta(days=2, hours=1)
+                ).strftime("%Y-%m-%dT%H:%M"),
                 "organizer": self.manager.pk,
                 "mode": MeetingMode.IN_PERSON,
                 "status": MeetingStatus.DRAFT,
@@ -127,8 +140,12 @@ class MeetingFormTests(MeetingsTestCase):
             data={
                 "title": "Bad Meeting",
                 "meeting_type": MeetingType.STAFF,
-                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M"),
-                "end_at": (timezone.now() + timezone.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M"),
+                "start_at": (timezone.now() + timezone.timedelta(days=2)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "end_at": (timezone.now() + timezone.timedelta(days=1)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
                 "organizer": self.manager.pk,
                 "mode": MeetingMode.IN_PERSON,
                 "status": MeetingStatus.DRAFT,
@@ -248,7 +265,9 @@ class MeetingActionItemFormTests(MeetingsTestCase):
                 "description": "Test action",
                 "owner": self.officer.pk,
                 "priority": "MEDIUM",
-                "due_date": (timezone.now().date() + timezone.timedelta(days=7)).isoformat(),
+                "due_date": (
+                    timezone.now().date() + timezone.timedelta(days=7)
+                ).isoformat(),
             },
         )
         self.assertTrue(form.is_valid())

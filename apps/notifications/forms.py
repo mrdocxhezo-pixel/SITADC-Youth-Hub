@@ -15,14 +15,9 @@ from apps.rbac.selectors import get_active_roles
 
 from .constants import (
     AnnouncementAudience,
-    AnnouncementType,
     DeliveryChannel,
-    DigestFrequency,
     NotificationCategory,
     NotificationPriority,
-    NotificationType,
-    QuietHoursPolicy,
-    ReminderFrequency,
 )
 from .models import (
     NotificationPreference,
@@ -89,7 +84,9 @@ class NotificationTemplateForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         if "organization_unit" in self.fields:
-            self.fields["organization_unit"].queryset = OrganizationUnit.objects.active()
+            self.fields["organization_unit"].queryset = (
+                OrganizationUnit.objects.active()
+            )
         self.fields["required_variables"].help_text = _(
             "Comma-separated variable names expected by the template."
         )
@@ -168,7 +165,9 @@ class NotificationRuleForm(forms.ModelForm):
         if "recipient_user" in self.fields:
             self.fields["recipient_user"].required = False
         if "organization_unit" in self.fields:
-            self.fields["organization_unit"].queryset = OrganizationUnit.objects.active()
+            self.fields["organization_unit"].queryset = (
+                OrganizationUnit.objects.active()
+            )
             self.fields["organization_unit"].required = False
         if "channels" in self.fields:
             self.fields["channels"].queryset = None
@@ -199,7 +198,9 @@ class NotificationRuleForm(forms.ModelForm):
             try:
                 value = [int(v.strip()) for v in value.split(",") if v.strip()]
             except ValueError as exc:
-                raise ValidationError(_("Reminder offsets must be integers (hours).")) from exc
+                raise ValidationError(
+                    _("Reminder offsets must be integers (hours).")
+                ) from exc
         validate_reminder_offsets(value or [])
         return value or []
 
@@ -265,7 +266,9 @@ class AnnouncementForm(forms.ModelForm):
             self.fields["audience_units"].queryset = OrganizationUnit.objects.active()
             self.fields["audience_units"].required = False
         if "organization_unit" in self.fields:
-            self.fields["organization_unit"].queryset = OrganizationUnit.objects.active()
+            self.fields["organization_unit"].queryset = (
+                OrganizationUnit.objects.active()
+            )
             self.fields["organization_unit"].required = False
 
     def clean(self):
@@ -281,7 +284,9 @@ class AnnouncementForm(forms.ModelForm):
             AnnouncementAudience.REGIONS,
             AnnouncementAudience.DISTRICTS,
         ) and not cleaned.get("audience_units"):
-            self.add_error("audience_units", _("Select at least one organization unit."))
+            self.add_error(
+                "audience_units", _("Select at least one organization unit.")
+            )
         return cleaned
 
 
@@ -314,7 +319,9 @@ class NotificationPreferenceForm(forms.ModelForm):
             "digest_frequency": forms.Select(attrs={"class": BOOTSTRAP_SELECT}),
             "digest_timezone": forms.TextInput(attrs=_widget()),
             "digest_channels": forms.CheckboxSelectMultiple(),
-            "quiet_hours_enabled": forms.CheckboxInput(attrs={"class": BOOTSTRAP_CHECK}),
+            "quiet_hours_enabled": forms.CheckboxInput(
+                attrs={"class": BOOTSTRAP_CHECK}
+            ),
             "quiet_hours_start": forms.TextInput(
                 attrs=_widget({"placeholder": "22:00"})
             ),
@@ -356,12 +363,12 @@ class NotificationSearchForm(forms.Form):
     )
     category = forms.ChoiceField(
         required=False,
-        choices=[("", _("All categories"))] + list(NotificationCategory.choices),
+        choices=[("", _("All categories")), *list(NotificationCategory.choices)],
         widget=forms.Select(attrs={"class": BOOTSTRAP_SELECT}),
     )
     priority = forms.ChoiceField(
         required=False,
-        choices=[("", _("All priorities"))] + list(NotificationPriority.choices),
+        choices=[("", _("All priorities")), *list(NotificationPriority.choices)],
         widget=forms.Select(attrs={"class": BOOTSTRAP_SELECT}),
     )
     read_status = forms.ChoiceField(

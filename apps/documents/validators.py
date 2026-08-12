@@ -1,10 +1,10 @@
 """File validators for the Document Management module."""
+
 from __future__ import annotations
 
 import hashlib
 import os
 
-from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
@@ -48,7 +48,11 @@ def validate_file_size(file_obj, document_type=None) -> None:
     ext = os.path.splitext(file_obj.name)[1].lower().lstrip(".")
     max_size = FILE_SIZE_LIMITS.get(ext, 20 * 1024 * 1024)
 
-    if document_type and hasattr(document_type, "max_file_size") and document_type.max_file_size:
+    if (
+        document_type
+        and hasattr(document_type, "max_file_size")
+        and document_type.max_file_size
+    ):
         max_size = document_type.max_file_size
 
     if size > max_size:
@@ -78,9 +82,17 @@ def validate_mime_type(file_obj) -> str:
         ext = os.path.splitext(file_obj.name)[1].lower().lstrip(".")
         ext_to_mime = {
             "pdf": "application/pdf",
-            "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "docx": (
+                "application/vnd.openxmlformats-officedocument."
+                "wordprocessingml.document"
+            ),
+            "xlsx": (
+                "application/vnd.openxmlformats-officedocument." "spreadsheetml.sheet"
+            ),
+            "pptx": (
+                "application/vnd.openxmlformats-officedocument."
+                "presentationml.presentation"
+            ),
             "txt": "text/plain",
             "csv": "text/csv",
             "png": "image/png",
@@ -96,9 +108,9 @@ def validate_mime_type(file_obj) -> str:
         expected = ext_to_mime.get(ext)
         if expected and detected != expected:
             raise UnsafeFileError(
-                _("File content does not match its extension. Detected: {detected}").format(
-                    detected=detected
-                )
+                _(
+                    "File content does not match its extension. Detected: {detected}"
+                ).format(detected=detected)
             )
 
     return detected or ""
@@ -109,9 +121,16 @@ def _guess_mime_from_extension(filename: str) -> str:
     ext = os.path.splitext(filename)[1].lower().lstrip(".")
     ext_to_mime = {
         "pdf": "application/pdf",
-        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "docx": (
+            "application/vnd.openxmlformats-officedocument." "wordprocessingml.document"
+        ),
+        "xlsx": (
+            "application/vnd.openxmlformats-officedocument." "spreadsheetml.sheet"
+        ),
+        "pptx": (
+            "application/vnd.openxmlformats-officedocument."
+            "presentationml.presentation"
+        ),
         "txt": "text/plain",
         "csv": "text/csv",
         "odt": "application/vnd.oasis.opendocument.text",
@@ -147,7 +166,9 @@ def safe_filename(filename: str) -> str:
     return f"{safe_name}{ext.lower()}"
 
 
-def detect_duplicate(file_obj, checksum: str, filename: str, file_size: int) -> dict | None:
+def detect_duplicate(
+    file_obj, checksum: str, filename: str, file_size: int
+) -> dict | None:
     """Check for potential duplicate files based on checksum."""
     from .models import DocumentVersion
 

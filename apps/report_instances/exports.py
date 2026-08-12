@@ -26,20 +26,24 @@ def _build_export_data(report: Any) -> dict[str, Any]:
 
     evidence = []
     for e in report.evidence_items.all():
-        evidence.append({
-            "type": e.get_evidence_type_display(),
-            "filename": e.original_filename,
-            "description": e.description,
-            "verified": e.is_verified,
-        })
+        evidence.append(
+            {
+                "type": e.get_evidence_type_display(),
+                "filename": e.original_filename,
+                "description": e.description,
+                "verified": e.is_verified,
+            }
+        )
 
     attachments = []
     for a in report.attachments.all():
-        attachments.append({
-            "filename": a.original_filename,
-            "size": a.file_size,
-            "description": a.description,
-        })
+        attachments.append(
+            {
+                "filename": a.original_filename,
+                "size": a.file_size,
+                "description": a.description,
+            }
+        )
 
     return {
         "reference_number": report.reference_number,
@@ -80,7 +84,8 @@ def export_html(report: Any) -> HttpResponse:
         f"<title>{data['title']}</title>",
         "<style>",
         "body { font-family: Arial, sans-serif; margin: 40px; }",
-        "h1 { color: #1a5276; border-bottom: 2px solid #1a5276; padding-bottom: 10px; }",
+        "h1 { color: #1a5276; border-bottom: 2px solid #1a5276; "
+        "padding-bottom: 10px; }",
         "h2 { color: #2c3e50; margin-top: 30px; }",
         "table { border-collapse: collapse; width: 100%; margin: 15px 0; }",
         "th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }",
@@ -88,13 +93,15 @@ def export_html(report: Any) -> HttpResponse:
         ".badge { padding: 3px 8px; border-radius: 4px; font-size: 12px; }",
         ".badge-success { background: #28a745; color: white; }",
         ".badge-warning { background: #ffc107; color: black; }",
-        ".section { margin: 20px 0; padding: 15px; border: 1px solid #eee; border-radius: 5px; }",
+        ".section { margin: 20px 0; padding: 15px; border: 1px solid #eee; "
+        "border-radius: 5px; }",
         "</style></head><body>",
         f"<h1>{data['title']}</h1>",
         f"<p><strong>Reference:</strong> {data['reference_number']}</p>",
         f"<p><strong>Template:</strong> {data['template']}</p>",
         f"<p><strong>Category:</strong> {data['category']}</p>",
-        f"<p><strong>Status:</strong> <span class='badge badge-success'>{data['status']}</span></p>",
+        f"<p><strong>Status:</strong> <span class='badge "
+        f"badge-success'>{data['status']}</span></p>",
         f"<p><strong>Confidentiality:</strong> {data['confidentiality']}</p>",
         f"<p><strong>Owner:</strong> {data['owner']}</p>",
         f"<p><strong>Department:</strong> {data['department']}</p>",
@@ -122,29 +129,42 @@ def export_html(report: Any) -> HttpResponse:
 
     if data["evidence"]:
         html_parts.append("<h2>Evidence</h2>")
-        html_parts.append("<table><tr><th>Type</th><th>File</th><th>Description</th><th>Verified</th></tr>")
+        html_parts.append(
+            "<table><tr><th>Type</th><th>File</th><th>Description</th><th>Verified</th></tr>"
+        )
         for e in data["evidence"]:
             verified = "Yes" if e["verified"] else "No"
-            html_parts.append(f"<tr><td>{e['type']}</td><td>{e['filename']}</td><td>{e['description']}</td><td>{verified}</td></tr>")
+            html_parts.append(
+                f"<tr><td>{e['type']}</td><td>{e['filename']}</td><td>{e['description']}</td><td>{verified}</td></tr>"
+            )
         html_parts.append("</table>")
 
     if data["attachments"]:
         html_parts.append("<h2>Attachments</h2>")
-        html_parts.append("<table><tr><th>File</th><th>Size</th><th>Description</th></tr>")
+        html_parts.append(
+            "<table><tr><th>File</th><th>Size</th><th>Description</th></tr>"
+        )
         for a in data["attachments"]:
-            html_parts.append(f"<tr><td>{a['filename']}</td><td>{a['size']}</td><td>{a['description']}</td></tr>")
+            html_parts.append(
+                f"<tr><td>{a['filename']}</td><td>{a['size']}</td><td>{a['description']}</td></tr>"
+            )
         html_parts.append("</table>")
 
     if data["notes"]:
         html_parts.append(f"<h2>Notes</h2><p>{data['notes']}</p>")
 
-    html_parts.append(f"<hr><p><small>Generated on {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}</small></p>")
+    html_parts.append(
+        f"<hr><p><small>Generated on "
+        f"{timezone.now().strftime('%Y-%m-%d %H:%M:%S')}</small></p>"
+    )
     html_parts.append("</body></html>")
 
     html_content = "\n".join(html_parts)
 
     response = HttpResponse(html_content, content_type="text/html")
-    response["Content-Disposition"] = f'attachment; filename="{report.reference_number}.html"'
+    response["Content-Disposition"] = (
+        f'attachment; filename="{report.reference_number}.html"'
+    )
     return response
 
 
@@ -202,7 +222,9 @@ def export_csv(report: Any) -> HttpResponse:
     csv_content = output.getvalue()
 
     response = HttpResponse(csv_content, content_type="text/csv")
-    response["Content-Disposition"] = f'attachment; filename="{report.reference_number}.csv"'
+    response["Content-Disposition"] = (
+        f'attachment; filename="{report.reference_number}.csv"'
+    )
     return response
 
 
@@ -218,7 +240,9 @@ def export_json(report: Any) -> HttpResponse:
     json_content = json.dumps(data, indent=2, default=str)
 
     response = HttpResponse(json_content, content_type="application/json")
-    response["Content-Disposition"] = f'attachment; filename="{report.reference_number}.json"'
+    response["Content-Disposition"] = (
+        f'attachment; filename="{report.reference_number}.json"'
+    )
     return response
 
 
@@ -231,7 +255,7 @@ def export_xlsx(report: Any) -> HttpResponse:
     """Export report as XLSX. Falls back to CSV if openpyxl is not installed."""
     try:
         import openpyxl
-        from openpyxl.styles import Font, PatternFill, Alignment
+        from openpyxl.styles import Font, PatternFill
 
         wb = openpyxl.Workbook()
         ws = wb.active
@@ -241,7 +265,9 @@ def export_xlsx(report: Any) -> HttpResponse:
 
         # Styles
         header_font = Font(bold=True, size=12)
-        header_fill = PatternFill(start_color="1A5276", end_color="1A5276", fill_type="solid")
+        header_fill = PatternFill(
+            start_color="1A5276", end_color="1A5276", fill_type="solid"
+        )
         header_font_white = Font(bold=True, size=12, color="FFFFFF")
 
         # Title
@@ -308,7 +334,9 @@ def export_xlsx(report: Any) -> HttpResponse:
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response["Content-Disposition"] = f'attachment; filename="{report.reference_number}.xlsx"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="{report.reference_number}.xlsx"'
+        )
 
         wb.save(response)
         return response
@@ -328,11 +356,11 @@ def export_pdf(report: Any) -> HttpResponse:
     try:
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import A4
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
         from reportlab.lib.units import inch
         from reportlab.platypus import (
-            SimpleDocTemplate,
             Paragraph,
+            SimpleDocTemplate,
             Spacer,
             Table,
             TableStyle,
@@ -369,15 +397,19 @@ def export_pdf(report: Any) -> HttpResponse:
         ]
 
         info_table = Table(info_data, colWidths=[2 * inch, 4 * inch])
-        info_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (0, -1), colors.grey),
-            ("TEXTCOLOR", (0, 0), (0, -1), colors.whitesmoke),
-            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-            ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 10),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-        ]))
+        info_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (0, -1), colors.grey),
+                    ("TEXTCOLOR", (0, 0), (0, -1), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
         elements.append(info_table)
         elements.append(Spacer(1, 20))
 
@@ -388,7 +420,9 @@ def export_pdf(report: Any) -> HttpResponse:
                 elements.append(Paragraph(f"<b>{section_name}</b>", styles["Normal"]))
                 if isinstance(section_data, dict):
                     for key, value in section_data.items():
-                        elements.append(Paragraph(f"  {key}: {value}", styles["Normal"]))
+                        elements.append(
+                            Paragraph(f"  {key}: {value}", styles["Normal"])
+                        )
                 elements.append(Spacer(1, 8))
 
         # Fields
@@ -399,28 +433,36 @@ def export_pdf(report: Any) -> HttpResponse:
                 field_data.append([field_name, str(field_value)])
 
             field_table = Table(field_data, colWidths=[3 * inch, 3 * inch])
-            field_table.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("FONTSIZE", (0, 0), (-1, -1), 9),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ]))
+            field_table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 9),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ]
+                )
+            )
             elements.append(field_table)
 
         # Footer
         elements.append(Spacer(1, 30))
-        elements.append(Paragraph(
-            f"Generated on {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
-            styles["Normal"],
-        ))
+        elements.append(
+            Paragraph(
+                f"Generated on {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                styles["Normal"],
+            )
+        )
 
         doc.build(elements)
 
         buffer.seek(0)
         response = HttpResponse(buffer, content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="{report.reference_number}.pdf"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="{report.reference_number}.pdf"'
+        )
         return response
 
     except ImportError:

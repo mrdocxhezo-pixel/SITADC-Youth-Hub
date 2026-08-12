@@ -40,18 +40,28 @@ class ReportAdmin(admin.ModelAdmin):
         "archived_at",
     )
     ordering = ("-created_at",)
-    raw_id_fields = ("template", "template_version", "category", "owner", "assigned_reviewer")
+    raw_id_fields = (
+        "template",
+        "template_version",
+        "category",
+        "owner",
+        "assigned_reviewer",
+    )
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.select_related(
-            "template", "category", "owner", "assigned_reviewer"
-        )
+        return qs.select_related("template", "category", "owner", "assigned_reviewer")
 
 
 @admin.register(ReportVersion)
 class ReportVersionAdmin(admin.ModelAdmin):
-    list_display = ("report", "version_number", "status_at_version", "author", "created_at")
+    list_display = (
+        "report",
+        "version_number",
+        "status_at_version",
+        "author",
+        "created_at",
+    )
     list_filter = ("status_at_version",)
     search_fields = ("report__reference_number", "report__title")
     readonly_fields = (
@@ -69,7 +79,13 @@ class ReportVersionAdmin(admin.ModelAdmin):
 
 @admin.register(ReportSubmission)
 class ReportSubmissionAdmin(admin.ModelAdmin):
-    list_display = ("report", "submission_number", "status", "submitted_by", "submitted_at")
+    list_display = (
+        "report",
+        "submission_number",
+        "status",
+        "submitted_by",
+        "submitted_at",
+    )
     list_filter = ("status",)
     search_fields = ("report__reference_number",)
     readonly_fields = ("submitted_at",)
@@ -88,7 +104,13 @@ class ReportCommentAdmin(admin.ModelAdmin):
 
 @admin.register(ReportAttachment)
 class ReportAttachmentAdmin(admin.ModelAdmin):
-    list_display = ("report", "original_filename", "file_size", "uploaded_by", "created_at")
+    list_display = (
+        "report",
+        "original_filename",
+        "file_size",
+        "uploaded_by",
+        "created_at",
+    )
     search_fields = ("report__reference_number", "original_filename")
     raw_id_fields = ("report", "uploaded_by")
     ordering = ("-created_at",)
@@ -96,7 +118,13 @@ class ReportAttachmentAdmin(admin.ModelAdmin):
 
 @admin.register(ReportEvidence)
 class ReportEvidenceAdmin(admin.ModelAdmin):
-    list_display = ("report", "evidence_type", "original_filename", "is_verified", "created_at")
+    list_display = (
+        "report",
+        "evidence_type",
+        "original_filename",
+        "is_verified",
+        "created_at",
+    )
     list_filter = ("evidence_type", "is_verified")
     search_fields = ("report__reference_number", "original_filename")
     raw_id_fields = ("report", "uploaded_by", "verified_by")
@@ -114,7 +142,14 @@ class ReportAssignmentAdmin(admin.ModelAdmin):
 
 @admin.register(ReportValidationResult)
 class ReportValidationResultAdmin(admin.ModelAdmin):
-    list_display = ("report", "is_valid", "total_rules", "passed_rules", "failed_rules", "created_at")
+    list_display = (
+        "report",
+        "is_valid",
+        "total_rules",
+        "passed_rules",
+        "failed_rules",
+        "created_at",
+    )
     list_filter = ("is_valid",)
     search_fields = ("report__reference_number",)
     raw_id_fields = ("report", "validated_by")

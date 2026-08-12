@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from django.core.exceptions import PermissionDenied
-from django.test import Client
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.urls import reverse
 
 from ..constants import ConfidentialityLevel
-from ..exceptions import DocumentShareError
-from ..models import DocumentShare
+from ..exceptions import DocumentCheckoutError
 from .base import DocumentsTestCase
 
 
@@ -104,9 +102,8 @@ class ShareAccessTests(DocumentsTestCase):
         self.assertIsNotNone(share.revoked_at)
 
     def test_share_records_audit(self):
-        from ..services import share_document
-
         from ..models import DocumentAuditRecord
+        from ..services import share_document
 
         document = self._upload_document()
         share_document(self.manager, document, self.viewer)
@@ -118,9 +115,8 @@ class ShareAccessTests(DocumentsTestCase):
         self.assertTrue(audit)
 
     def test_revoke_records_audit(self):
-        from ..services import revoke_share, share_document
-
         from ..models import DocumentAuditRecord
+        from ..services import revoke_share, share_document
 
         document = self._upload_document()
         share = share_document(self.manager, document, self.viewer)
@@ -140,7 +136,9 @@ class ConfidentialDocumentTests(DocumentsTestCase):
         document = self._upload_document(
             confidentiality_level=ConfidentialityLevel.CONFIDENTIAL
         )
-        self.assertEqual(document.confidentiality_level, ConfidentialityLevel.CONFIDENTIAL)
+        self.assertEqual(
+            document.confidentiality_level, ConfidentialityLevel.CONFIDENTIAL
+        )
 
     def test_highly_confidential_document_upload(self):
         document = self._upload_document(
@@ -159,7 +157,7 @@ class CheckoutSecurityTests(DocumentsTestCase):
 
         document = self._upload_document()
         checkout_document(self.manager, document)
-        with self.assertRaises(Exception):
+        with self.assertRaises(DocumentCheckoutError):
             checkout_document(self.officer, document)
 
     def test_owner_can_checkin_own_checkout(self):
@@ -171,7 +169,7 @@ class CheckoutSecurityTests(DocumentsTestCase):
         self.assertIsNotNone(version)
 
     def test_non_owner_needs_cancel_permission_to_checkin(self):
-        from ..services import checkout_document, cancel_checkout
+        from ..services import cancel_checkout, checkout_document
 
         document = self._upload_document()
         checkout = checkout_document(self.manager, document)
@@ -198,7 +196,7 @@ class AuditImmutabilityTests(DocumentsTestCase):
     def test_audit_records_cannot_be_deleted(self):
         from ..models import DocumentAuditRecord
 
-        document = self._upload_document()
+        self._upload_document()
         audit = DocumentAuditRecord.objects.first()
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValidationError):
             audit.delete()

@@ -39,9 +39,7 @@ class Command(BaseCommand):
             if schema_errors:
                 problems += 1
                 self.stdout.write(
-                    self.style.ERROR(
-                        f"{template.reference_number} ({template.code}):"
-                    )
+                    self.style.ERROR(f"{template.reference_number} ({template.code}):")
                 )
                 for error in schema_errors:
                     self.stdout.write(self.style.ERROR(f"  - {error}"))

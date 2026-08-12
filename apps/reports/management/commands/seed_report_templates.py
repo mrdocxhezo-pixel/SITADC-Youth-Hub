@@ -6,7 +6,10 @@ from apps.reports.seed_loader import seed_report_builder_defaults
 
 
 class Command(BaseCommand):
-    help = "Idempotently seed Phase 19 report builder data: categories, templates, schemas."
+    help = (
+        "Idempotently seed Phase 19 report builder data: categories, "
+        "templates, schemas."
+    )
 
     def handle(self, *args, **options):
         stats = seed_report_builder_defaults()

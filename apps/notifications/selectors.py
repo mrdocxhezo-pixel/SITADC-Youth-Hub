@@ -23,9 +23,9 @@ from .models import (
     NotificationDelivery,
     NotificationDigest,
     NotificationEvent,
+    NotificationPreference,
     NotificationRule,
     NotificationTemplate,
-    NotificationPreference,
     SystemAnnouncement,
 )
 
@@ -49,9 +49,11 @@ def active_notifications(user) -> QuerySet:
 
 def unread_notifications(user) -> QuerySet:
     """Unread notifications for the user."""
-    return notification_queryset(user).filter(
-        read_status=ReadStatus.UNREAD, is_archived=False
-    ).recent_first()
+    return (
+        notification_queryset(user)
+        .filter(read_status=ReadStatus.UNREAD, is_archived=False)
+        .recent_first()
+    )
 
 
 def action_required_notifications(user) -> QuerySet:
@@ -201,9 +203,11 @@ def category_breakdown(user) -> list[dict]:
     return [
         {
             "code": row["category"],
-            "label": NotificationCategory(row["category"]).label
-            if row["category"] in NotificationCategory.values
-            else row["category"],
+            "label": (
+                NotificationCategory(row["category"]).label
+                if row["category"] in NotificationCategory.values
+                else row["category"]
+            ),
             "count": row["total"],
         }
         for row in rows

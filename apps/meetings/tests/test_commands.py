@@ -161,7 +161,9 @@ class SendMeetingRemindersCommandTests(MeetingsTestCase):
 
     def test_send_reminders_type_filter(self):
         """Test --type filter works."""
-        output = self.call_command("send_meeting_reminders", "--dry-run", "--type=event")
+        output = self.call_command(
+            "send_meeting_reminders", "--dry-run", "--type=event"
+        )
         self.assertIn("Dry run complete", output)
 
 
@@ -170,6 +172,7 @@ class HelperMethods:
 
     def call_command(self, command, *args, **kwargs):
         from io import StringIO
+
         out = StringIO()
         call_command(command, *args, stdout=out, **kwargs)
         return out.getvalue()
@@ -179,14 +182,20 @@ class HelperMethods:
 class ValidateMeetingDataCommandTests(ValidateMeetingDataCommandTests, HelperMethods):
     pass
 
+
 class ArchiveOldMeetingsCommandTests(ArchiveOldMeetingsCommandTests, HelperMethods):
     pass
 
-class GenerateMeetingReferencesCommandTests(GenerateMeetingReferencesCommandTests, HelperMethods):
+
+class GenerateMeetingReferencesCommandTests(
+    GenerateMeetingReferencesCommandTests, HelperMethods
+):
     pass
+
 
 class CleanupMeetingDataCommandTests(CleanupMeetingDataCommandTests, HelperMethods):
     pass
+
 
 class SendMeetingRemindersCommandTests(SendMeetingRemindersCommandTests, HelperMethods):
     pass

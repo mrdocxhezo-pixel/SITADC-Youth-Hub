@@ -3,29 +3,22 @@
 from __future__ import annotations
 
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import IntegrityError
 from django.utils import timezone
 
 from apps.notifications.constants import (
     AnnouncementAudience,
-    DeliveryChannel,
     DeliveryStatus,
     NotificationCategory,
-    NotificationPriority,
     NotificationStatus,
-    NotificationType,
     ReadStatus,
 )
 from apps.notifications.models import (
     AnnouncementDelivery,
     Notification,
     NotificationAuditRecord,
-    NotificationDelivery,
     NotificationDigest,
-    NotificationEvent,
     NotificationPreference,
-    NotificationRule,
-    NotificationTemplate,
-    SystemAnnouncement,
 )
 from apps.notifications.services import (
     AcknowledgeNotificationService,
@@ -65,12 +58,8 @@ class NotificationServiceTests(NotificationsTestCase):
         self.assertEqual(notification.status, NotificationStatus.CANCELLED)
 
     def test_create_deduplication(self):
-        first = self.create_notification(
-            self.manager, deduplication_key="dedup-key-1"
-        )
-        second = self.create_notification(
-            self.manager, deduplication_key="dedup-key-1"
-        )
+        first = self.create_notification(self.manager, deduplication_key="dedup-key-1")
+        second = self.create_notification(self.manager, deduplication_key="dedup-key-1")
         self.assertEqual(first.pk, second.pk)
 
     def test_create_requires_permission(self):
@@ -165,9 +154,7 @@ class ReadServiceTests(NotificationsTestCase):
 
     def test_audit_records_created(self):
         MarkNotificationReadService(user=self.viewer).execute(self.notification)
-        self.assertTrue(
-            NotificationAuditRecord.objects.filter(action="READ").exists()
-        )
+        self.assertTrue(NotificationAuditRecord.objects.filter(action="READ").exists())
 
 
 class NotificationEventServiceTests(NotificationsTestCase):
@@ -180,7 +167,9 @@ class NotificationEventServiceTests(NotificationsTestCase):
         self.assertTrue(event.processed)
 
     def test_event_creates_notifications_for_rule_recipient(self):
-        self.create_rule(self.officer, event_type="test.event", recipient_user=self.viewer)
+        self.create_rule(
+            self.officer, event_type="test.event", recipient_user=self.viewer
+        )
         event = NotificationEventService(user=self.manager).execute(
             event_type="test.event",
             source_app="tests",
@@ -189,9 +178,7 @@ class NotificationEventServiceTests(NotificationsTestCase):
         event.refresh_from_db()
         self.assertTrue(event.processed)
         self.assertTrue(
-            Notification.objects.for_user(self.viewer)
-            .filter(event=event)
-            .exists()
+            Notification.objects.for_user(self.viewer).filter(event=event).exists()
         )
 
     def test_event_deduplication(self):
@@ -246,7 +233,7 @@ class RuleServiceTests(NotificationsTestCase):
 
     def test_duplicate_rule_name_raises(self):
         self.create_rule(self.officer, name="Duplicate", event_type="test.event")
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             self.create_rule(self.officer, name="Duplicate", event_type="test.event")
 
 
@@ -265,9 +252,7 @@ class AnnouncementServiceTests(NotificationsTestCase):
         self.assertTrue(self.announcement.is_published)
         # Everyone audience -> all four test users receive a notification.
         self.assertEqual(
-            AnnouncementDelivery.objects.filter(
-                announcement=self.announcement
-            ).count(),
+            AnnouncementDelivery.objects.filter(announcement=self.announcement).count(),
             4,
         )
 
@@ -313,7 +298,7 @@ class ProcessExpiredServiceTests(NotificationsTestCase):
 
 class DigestServiceTests(NotificationsTestCase):
     def test_digest_generated_for_eligible(self):
-        preference = NotificationPreference.objects.create(
+        NotificationPreference.objects.create(
             user=self.viewer, digest_frequency="WEEKLY"
         )
         self.create_notification(

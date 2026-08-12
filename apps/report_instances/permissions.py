@@ -80,27 +80,27 @@ def can_update_report(request: HttpRequest, report: Report) -> bool:
         return False
     if check_permission(request, UPDATE):
         return True
-    if check_permission(request, UPDATE_OWN) and report.owner_id == request.user.id:
-        return True
-    return False
+    return bool(
+        check_permission(request, UPDATE_OWN) and report.owner_id == request.user.id
+    )
 
 
 def can_submit_report(request: HttpRequest, report: Report) -> bool:
     """Check if the user can submit a specific report."""
     if check_permission(request, SUBMIT):
         return True
-    if check_permission(request, SUBMIT_OWN) and report.owner_id == request.user.id:
-        return True
-    return False
+    return bool(
+        check_permission(request, SUBMIT_OWN) and report.owner_id == request.user.id
+    )
 
 
 def can_withdraw_report(request: HttpRequest, report: Report) -> bool:
     """Check if the user can withdraw a specific report."""
     if not report.is_submitted:
         return False
-    if report.owner_id != request.user.id and not check_permission(request, WITHDRAW):
-        return False
-    return True
+    return not (
+        report.owner_id != request.user.id and not check_permission(request, WITHDRAW)
+    )
 
 
 def can_validate_report(request: HttpRequest) -> bool:

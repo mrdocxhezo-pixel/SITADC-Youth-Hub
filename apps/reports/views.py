@@ -9,6 +9,7 @@ templates, categories, versions or settings.
 from __future__ import annotations
 
 import logging
+import re
 
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -797,12 +798,9 @@ def _parse_json(raw):
 # ── Category Browse / Template Selection ─────────────────────────────────
 
 
-import re as _re
-
-
 def _natural_sort_key(code: str):
     """Return a sort key that handles A1, A2, ..., A10 correctly."""
-    parts = _re.split(r"(\d+)", code)
+    parts = re.split(r"(\d+)", code)
     return [int(p) if p.isdigit() else p.lower() for p in parts]
 
 
@@ -862,9 +860,7 @@ class CategoryTemplateListView(ReportPermissionMixin, ListView):
             ReportCategory.objects.filter(is_active=True),
             pk=self.kwargs["pk"],
         )
-        qs = template_queryset(self.request.user).filter(
-            category=self.category
-        )
+        qs = template_queryset(self.request.user).filter(category=self.category)
         return _sort_templates_naturally(qs)
 
     def get_context_data(self, **kwargs):
