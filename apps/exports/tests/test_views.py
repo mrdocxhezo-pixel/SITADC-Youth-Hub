@@ -58,16 +58,12 @@ class ExportCreateViewTests(ExportsTestCase):
 
     def test_viewer_cannot_create(self):
         self.assertTrue(self.login_as(self.viewer))
-        response = self.client.post(
-            reverse("exports:create"), self._create_payload()
-        )
+        response = self.client.post(reverse("exports:create"), self._create_payload())
         self.assertEqual(response.status_code, 403)
 
     def test_manager_creates_and_redirects_to_detail(self):
         self.assertTrue(self.login_as(self.manager))
-        response = self.client.post(
-            reverse("exports:create"), self._create_payload()
-        )
+        response = self.client.post(reverse("exports:create"), self._create_payload())
         self.assertEqual(response.status_code, 302)
         export = ExportRequest.objects.latest("created_at")
         self.assertIn(str(export.pk), response.url)

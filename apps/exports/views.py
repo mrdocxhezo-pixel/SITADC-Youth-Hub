@@ -100,11 +100,7 @@ def _format_choices(user):
     enabled = config.enabled_formats or list(DEFAULT_ENABLED_FORMATS)
     from .permissions import user_can_use_format
 
-    return [
-        (fmt, fmt)
-        for fmt in enabled
-        if user_can_use_format(user, fmt)
-    ]
+    return [(fmt, fmt) for fmt in enabled if user_can_use_format(user, fmt)]
 
 
 class ExportHomeView(TemplateView):
@@ -144,9 +140,7 @@ class ExportCreateView(View):
             format_choices=_format_choices(request.user),
         )
         if not form.is_valid():
-            messages.error(
-                request, _("Please correct the export form and try again.")
-            )
+            messages.error(request, _("Please correct the export form and try again."))
             return redirect(reverse("exports:home"))
 
         source_type = form.cleaned_data["source_type"]
@@ -161,8 +155,7 @@ class ExportCreateView(View):
                 request_obj=request,
             )
             export_request.is_sensitive = bool(
-                include_sensitive
-                and export_request.source_type == "BENEFICIARY"
+                include_sensitive and export_request.source_type == "BENEFICIARY"
             )
             export_request.save(update_fields=["is_sensitive", "updated_at"])
             generated = GenerateExportService(user=request.user).execute(
@@ -216,12 +209,9 @@ class ExportDetailView(TemplateView):
         context["export"] = export_request
         context["activity"] = export_request.activity.all()
         context["can_download"] = user_can_download(self.request.user)
-        context["can_cancel"] = (
-            not export_request.is_finished
-            and (
-                self.request.user.is_superuser
-                or self.request.user.has_perm("exports.cancel")
-            )
+        context["can_cancel"] = not export_request.is_finished and (
+            self.request.user.is_superuser
+            or self.request.user.has_perm("exports.cancel")
         )
         return context
 

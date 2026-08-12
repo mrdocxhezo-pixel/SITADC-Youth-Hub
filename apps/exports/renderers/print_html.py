@@ -23,26 +23,25 @@ class PrintHTMLRenderer(BaseRenderer):
 
     format = ExportFormat.PRINT_HTML
 
-    def render(
-        self, dataset: ExportDataset, configuration: Any
-    ) -> RenderResult:
+    def render(self, dataset: ExportDataset, configuration: Any) -> RenderResult:
         context = {
             "dataset": dataset,
             "organization_name": configuration.organization_name,
             "short_name": configuration.short_name,
             "headers": [escape(h) for h in dataset.column_labels],
             "rows": [
-                [escape(cell_to_text(value)) for value in row]
-                for row in dataset.rows
+                [escape(cell_to_text(value)) for value in row] for row in dataset.rows
             ],
             "meta_rows": self._build_meta(dataset),
             "sections": [
                 (
                     escape(heading),
                     [
-                        block
-                        if isinstance(block, list)
-                        else escape(cell_to_text(block))
+                        (
+                            block
+                            if isinstance(block, list)
+                            else escape(cell_to_text(block))
+                        )
                         for block in blocks
                     ],
                 )

@@ -99,9 +99,7 @@ class ExportConfigurationForm(forms.Form):
     organization_name = forms.CharField(
         label=_("Organization name"), max_length=300, required=False
     )
-    short_name = forms.CharField(
-        label=_("Short name"), max_length=120, required=False
-    )
+    short_name = forms.CharField(label=_("Short name"), max_length=120, required=False)
     contact_email = forms.EmailField(label=_("Contact email"), required=False)
     website = forms.URLField(label=_("Website"), required=False)
 
@@ -166,6 +164,4 @@ class ExportTemplateForm(forms.Form):
     watermark_text = forms.CharField(
         label=_("Watermark text"), max_length=80, required=False
     )
-    is_active = forms.BooleanField(
-        label=_("Active"), required=False, initial=True
-    )
+    is_active = forms.BooleanField(label=_("Active"), required=False, initial=True)

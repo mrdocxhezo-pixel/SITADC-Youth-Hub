@@ -193,9 +193,7 @@ class ExportTemplate(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel
         default=ExportSourceType.REPORT,
         db_index=True,
     )
-    formats = models.JSONField(
-        _("Supported formats"), default=list, blank=True
-    )
+    formats = models.JSONField(_("Supported formats"), default=list, blank=True)
     page_size = models.CharField(
         _("Page size"),
         max_length=10,
@@ -215,12 +213,8 @@ class ExportTemplate(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel
     confidentiality_marking = models.BooleanField(
         _("Confidentiality marking"), default=True
     )
-    watermark_text = models.CharField(
-        _("Watermark text"), max_length=80, blank=True
-    )
-    default_columns = models.JSONField(
-        _("Default columns"), default=list, blank=True
-    )
+    watermark_text = models.CharField(_("Watermark text"), max_length=80, blank=True)
+    default_columns = models.JSONField(_("Default columns"), default=list, blank=True)
     is_active = models.BooleanField(_("Active"), default=True, db_index=True)
     version = models.PositiveIntegerField(_("Version"), default=1)
 

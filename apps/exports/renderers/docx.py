@@ -23,9 +23,7 @@ class DOCXRenderer(BaseRenderer):
 
     format = ExportFormat.DOCX
 
-    def render(
-        self, dataset: ExportDataset, configuration: Any
-    ) -> RenderResult:
+    def render(self, dataset: ExportDataset, configuration: Any) -> RenderResult:
         from docx import Document
         from docx.enum.section import WD_ORIENT
         from docx.enum.table import WD_TABLE_ALIGNMENT
@@ -123,9 +121,7 @@ class DOCXRenderer(BaseRenderer):
             )
 
         if not dataset.columns and not dataset.rows and not dataset.sections:
-            document.add_paragraph(
-                "No records matched the requested export criteria."
-            )
+            document.add_paragraph("No records matched the requested export criteria.")
 
         # Approval block
         if dataset.approval:
@@ -176,9 +172,7 @@ class DOCXRenderer(BaseRenderer):
         for row in body:
             cells = table.add_row().cells
             for col_index, value in enumerate(row):
-                cells[col_index].text = str(
-                    neutralize_spreadsheet_value(value)
-                )
+                cells[col_index].text = str(neutralize_spreadsheet_value(value))
                 for paragraph in cells[col_index].paragraphs:
                     for r in paragraph.runs:
                         r.font.size = Pt(9)

@@ -48,9 +48,7 @@ class PDFRenderer(BaseRenderer):
                 return ImageReader(candidate)
         return None
 
-    def render(
-        self, dataset: ExportDataset, configuration: Any
-    ) -> RenderResult:
+    def render(self, dataset: ExportDataset, configuration: Any) -> RenderResult:
         from reportlab.lib import colors
         from reportlab.lib.units import mm
         from reportlab.pdfgen import canvas

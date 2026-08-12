@@ -21,17 +21,13 @@ class CSVRenderer(BaseRenderer):
 
     format = ExportFormat.CSV
 
-    def render(
-        self, dataset: ExportDataset, configuration: Any
-    ) -> RenderResult:
+    def render(self, dataset: ExportDataset, configuration: Any) -> RenderResult:
         buffer = io.StringIO()
         writer = csv.writer(buffer, quoting=csv.QUOTE_MINIMAL)
 
         writer.writerow(dataset.column_labels)
         for row in dataset.rows:
-            writer.writerow(
-                [neutralize_spreadsheet_value(value) for value in row]
-            )
+            writer.writerow([neutralize_spreadsheet_value(value) for value in row])
 
         content = "\ufeff" + buffer.getvalue()
         return RenderResult(

@@ -21,9 +21,7 @@ class XLSXRenderer(BaseRenderer):
 
     format = ExportFormat.XLSX
 
-    def render(
-        self, dataset: ExportDataset, configuration: Any
-    ) -> RenderResult:
+    def render(self, dataset: ExportDataset, configuration: Any) -> RenderResult:
         from openpyxl import Workbook
         from openpyxl.styles import Alignment, Font, PatternFill
         from openpyxl.utils import get_column_letter

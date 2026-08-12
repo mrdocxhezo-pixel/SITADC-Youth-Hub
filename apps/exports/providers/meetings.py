@@ -38,10 +38,11 @@ class MeetingProvider(BaseProvider):
         ExportColumn(
             "organizer",
             "Organizer",
-            accessor=lambda obj: obj.organizer.get_full_name()
-            or obj.organizer.email
-            if obj.organizer_id
-            else "",
+            accessor=lambda obj: (
+                obj.organizer.get_full_name() or obj.organizer.email
+                if obj.organizer_id
+                else ""
+            ),
         ),
         ExportColumn("status", "Status"),
         ExportColumn("quorum_met", "Quorum Met"),

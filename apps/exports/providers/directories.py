@@ -50,9 +50,9 @@ class VolunteerDirectoryProvider(BaseProvider):
         ExportColumn(
             "volunteer_type",
             "Type",
-            accessor=lambda obj: obj.volunteer_type.name
-            if obj.volunteer_type_id
-            else "",
+            accessor=lambda obj: (
+                obj.volunteer_type.name if obj.volunteer_type_id else ""
+            ),
         ),
         ExportColumn("availability", "Availability"),
         ExportColumn("region", "Region"),
@@ -90,9 +90,9 @@ class MemberDirectoryProvider(BaseProvider):
         ExportColumn(
             "membership_type",
             "Type",
-            accessor=lambda obj: obj.membership_type.name
-            if obj.membership_type_id
-            else "",
+            accessor=lambda obj: (
+                obj.membership_type.name if obj.membership_type_id else ""
+            ),
         ),
         ExportColumn(
             "level",
@@ -137,9 +137,9 @@ class LeadershipDirectoryProvider(BaseProvider):
         ExportColumn(
             "organizational_unit",
             "Unit",
-            accessor=lambda obj: obj.organizational_unit.name
-            if obj.organizational_unit_id
-            else "",
+            accessor=lambda obj: (
+                obj.organizational_unit.name if obj.organizational_unit_id else ""
+            ),
         ),
         ExportColumn("term_status", "Term Status"),
         ExportColumn("appointment_date", "Appointment Date"),
@@ -175,16 +175,16 @@ class StakeholderDirectoryProvider(BaseProvider):
         ExportColumn(
             "relationship_type",
             "Relationship",
-            accessor=lambda obj: obj.relationship_type.name
-            if obj.relationship_type_id
-            else "",
+            accessor=lambda obj: (
+                obj.relationship_type.name if obj.relationship_type_id else ""
+            ),
         ),
         ExportColumn(
             "classification",
             "Classification",
-            accessor=lambda obj: obj.classification.name
-            if obj.classification_id
-            else "",
+            accessor=lambda obj: (
+                obj.classification.name if obj.classification_id else ""
+            ),
         ),
         ExportColumn("province_or_region", "Region"),
         ExportColumn("district", "District"),

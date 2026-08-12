@@ -81,11 +81,7 @@ class BaseProvider(ABC):
         """
         if include_sensitive or self.can_export_sensitive(user):
             return list(self.columns_catalogue)
-        return [
-            column
-            for column in self.columns_catalogue
-            if not column.sensitive
-        ]
+        return [column for column in self.columns_catalogue if not column.sensitive]
 
     def column_keys(self, user, *, include_sensitive: bool = False) -> list[str]:
         return [
@@ -139,9 +135,7 @@ class BaseProvider(ABC):
         if selected_columns:
             keys = set(selected_columns)
             columns = [
-                column
-                for column in all_columns
-                if column.key in keys
+                column for column in all_columns if column.key in keys
             ] or all_columns
         else:
             columns = all_columns

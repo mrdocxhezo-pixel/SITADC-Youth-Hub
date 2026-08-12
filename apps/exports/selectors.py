@@ -94,6 +94,10 @@ def export_templates(user) -> QuerySet[ExportTemplate]:
 
 def downloadable_exports(user) -> QuerySet[ExportRequest]:
     """Completed, not-yet-expired exports the actor may download."""
-    return export_request_queryset(user).filter(
-        status=ExportStatus.COMPLETED,
-    ).filter(_not_expired())
+    return (
+        export_request_queryset(user)
+        .filter(
+            status=ExportStatus.COMPLETED,
+        )
+        .filter(_not_expired())
+    )

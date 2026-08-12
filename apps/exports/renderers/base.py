@@ -130,9 +130,7 @@ class BaseRenderer:
     def default_extension(self) -> str:
         return FORMAT_EXTENSIONS.get(self.format, "bin")
 
-    def render(
-        self, dataset: ExportDataset, configuration: Any
-    ) -> RenderResult:
+    def render(self, dataset: ExportDataset, configuration: Any) -> RenderResult:
         raise NotImplementedError("Renderers must implement render().")
 
 

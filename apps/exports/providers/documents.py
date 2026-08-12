@@ -29,9 +29,7 @@ class DocumentProvider(BaseProvider):
         ExportColumn(
             "document_type",
             "Document Type",
-            accessor=lambda obj: obj.document_type.name
-            if obj.document_type_id
-            else "",
+            accessor=lambda obj: obj.document_type.name if obj.document_type_id else "",
         ),
         ExportColumn(
             "category",
