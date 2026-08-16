@@ -2,6 +2,8 @@ from django.urls import path
 
 from . import views
 
+app_name = "rbac"
+
 urlpatterns = [
     path("", views.rbac_index_view, name="rbac_index"),
     path("access-denied/", views.access_denied_view, name="access_denied"),
@@ -45,5 +47,6 @@ urlpatterns = [
         name="role_assignment_revoke",
     ),
     path("permissions/", views.permission_list_view, name="permission_list"),
+    path("permissions/matrix/", views.permission_matrix_view, name="permission_matrix"),
     path("scopes/", views.access_scope_list_view, name="access_scope_list"),
 ]

@@ -3,9 +3,9 @@
 {% block title %}{% trans "New Transfer" %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:transfer_list' %}" class="text-decoration-none">Transfers</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'organizations:transfer_list' %}" class="text-decoration-none">Transfers</a></li>
     <li class="breadcrumb-item active" aria-current="page">New Transfer</li>
 {% endblock %}
 {% block dashboard_content %}
@@ -15,7 +15,7 @@
             <p class="page-subtitle mb-0">Move a person between units and positions</p>
         </div>
         <div>
-            <a href="{% url 'core:transfer_list' %}"
+            <a href="{% url 'organizations:transfer_list' %}"
                class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i> Back to Transfers
             </a>
@@ -83,7 +83,7 @@
                     {% if form.reason.errors %}<div class="invalid-feedback d-block">{% for error in form.reason.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
                 <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
-                    <a href="{% url 'core:transfer_list' %}" class="btn btn-light">Cancel</a>
+                    <a href="{% url 'organizations:transfer_list' %}" class="btn btn-light">Cancel</a>
                     <button type="submit" class="btn btn-primary-brand px-4">
                         <i class="bi bi-arrow-left-right me-1"></i> Record Transfer
                     </button>

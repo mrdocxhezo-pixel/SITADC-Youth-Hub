@@ -3,9 +3,9 @@
 {% block title %}{{ unit.name }} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:unit_list' %}" class="text-decoration-none">Units</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'organizations:unit_list' %}" class="text-decoration-none">Units</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ unit.name }}</li>
 {% endblock %}
 {% block dashboard_content %}
@@ -23,11 +23,11 @@
             </p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{% url 'core:unit_update' unit_id=unit.pk %}"
+            <a href="{% url 'organizations:unit_update' unit_id=unit.pk %}"
                class="btn btn-outline-primary-brand btn-sm">
                 <i class="bi bi-pencil me-1"></i> Edit
             </a>
-            <a href="{% url 'core:position_create' %}"
+            <a href="{% url 'organizations:position_create' %}"
                class="btn btn-primary-brand btn-sm">
                 <i class="bi bi-plus-lg me-1"></i> New Position
             </a>
@@ -50,14 +50,14 @@
                         <dt class="col-sm-4 text-muted small">Parent unit</dt>
                         <dd class="col-sm-8">
                             {% if unit.parent %}
-                                <a href="{% url 'core:unit_detail' unit_id=unit.parent.pk %}"
+                                <a href="{% url 'organizations:unit_detail' unit_id=unit.parent.pk %}"
                                    class="text-decoration-none">{{ unit.parent.name }}</a>
 {% else %}—{% endif %}
     </dd>
 <dt class="col-sm-4 text-muted small">Unit head</dt>
 <dd class="col-sm-8">
     {% if unit.unit_head %}
-        <a href="{% url 'core:position_detail' slug=unit.unit_head.slug %}"
+        <a href="{% url 'organizations:position_detail' slug=unit.unit_head.slug %}"
            class="text-decoration-none">{{ unit.unit_head.title }}</a>
 {% else %}—{% endif %}
     </dd>
@@ -88,39 +88,39 @@
         <div class="card-body">
             <h6 class="fw-bold mb-3">Quick Actions</h6>
             <div class="d-grid gap-2">
-                <a href="{% url 'core:unit_update' unit_id=unit.pk %}"
+                <a href="{% url 'organizations:unit_update' unit_id=unit.pk %}"
                    class="btn btn-outline-primary-brand btn-sm text-start">
                     <i class="bi bi-pencil me-2"></i> Edit Unit
                 </a>
-                <a href="{% url 'core:position_list' %}?unit={{ unit.pk }}"
+                <a href="{% url 'organizations:position_list' %}?unit={{ unit.pk }}"
                    class="btn btn-outline-primary-brand btn-sm text-start">
                     <i class="bi bi-person-badge me-2"></i> View Positions
                 </a>
-                <a href="{% url 'core:vacancy_list' %}?unit={{ unit.pk }}"
+                <a href="{% url 'organizations:vacancy_list' %}?unit={{ unit.pk }}"
                    class="btn btn-outline-primary-brand btn-sm text-start">
                     <i class="bi bi-briefcase me-2"></i> View Vacancies
                 </a>
                 {% if request.user|has_perm:'organizations.manage' %}
                     {% if unit.is_archived %}
-                        <form method="post" action="{% url 'core:unit_restore' unit_id=unit.pk %}">
+                        <form method="post" action="{% url 'organizations:unit_restore' unit_id=unit.pk %}">
                             {% csrf_token %}
                             <button type="submit"
                                     class="btn btn-outline-secondary btn-sm w-100 text-start"><i class="bi bi-arrow-counterclockwise me-2"></i> Restore Unit</button>
                         </form>
                     {% else %}
-                        <form method="post" action="{% url 'core:unit_archive' unit_id=unit.pk %}">
+                        <form method="post" action="{% url 'organizations:unit_archive' unit_id=unit.pk %}">
                             {% csrf_token %}
                             <button type="submit"
                                     class="btn btn-outline-secondary btn-sm w-100 text-start"><i class="bi bi-archive me-2"></i> Archive Unit</button>
                         </form>
                         {% if unit.status == 'ACTIVE' %}
-                            <form method="post" action="{% url 'core:unit_status' unit_id=unit.pk %}">
+                            <form method="post" action="{% url 'organizations:unit_status' unit_id=unit.pk %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="status" value="INACTIVE">
                                 <button type="submit" class="btn btn-outline-warning btn-sm w-100 text-start"><i class="bi bi-pause-circle me-2"></i> Deactivate Unit</button>
                             </form>
                         {% else %}
-                            <form method="post" action="{% url 'core:unit_status' unit_id=unit.pk %}">
+                            <form method="post" action="{% url 'organizations:unit_status' unit_id=unit.pk %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="status" value="ACTIVE">
                                 <button type="submit" class="btn btn-outline-success btn-sm w-100 text-start"><i class="bi bi-play-circle me-2"></i> Activate Unit</button>
@@ -138,7 +138,7 @@
         <div class="card border-0 h-100">
             <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
                 <h6 class="fw-bold mb-0">Positions</h6>
-                <a href="{% url 'core:position_list' %}?unit={{ unit.pk }}"
+                <a href="{% url 'organizations:position_list' %}?unit={{ unit.pk }}"
                    class="small text-decoration-none">View all</a>
             </div>
             <div class="card-body p-0">
@@ -146,7 +146,7 @@
                     <ul class="list-group list-group-flush">
                         {% for position in positions %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <a href="{% url 'core:position_detail' slug=position.slug %}"
+                                <a href="{% url 'organizations:position_detail' slug=position.slug %}"
                                    class="text-decoration-none">{{ position.title }}</a>
                                 <span class="small text-muted">{{ position.classification.name|default:"Unclassified" }}</span>
                             </li>
@@ -168,7 +168,7 @@
                     <ul class="list-group list-group-flush">
                         {% for child in children %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <a href="{% url 'core:unit_detail' unit_id=child.pk %}"
+                                <a href="{% url 'organizations:unit_detail' unit_id=child.pk %}"
                                    class="text-decoration-none">{{ child.name }}</a>
                                 <span class="badge bg-light text-dark border">{{ child.get_unit_type_display }}</span>
                             </li>

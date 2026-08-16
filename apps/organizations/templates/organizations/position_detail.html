@@ -3,9 +3,9 @@
 {% block title %}{{ position.title }} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:position_list' %}" class="text-decoration-none">Positions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'organizations:position_list' %}" class="text-decoration-none">Positions</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ position.title }}</li>
 {% endblock %}
 {% block dashboard_content %}
@@ -27,15 +27,15 @@
             </p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{% url 'core:position_reporting' slug=position.slug %}"
+            <a href="{% url 'organizations:position_reporting' slug=position.slug %}"
                class="btn btn-outline-primary-brand btn-sm">
                 <i class="bi bi-diagram-2 me-1"></i> Reporting
             </a>
-            <a href="{% url 'core:acting_create' slug=position.slug %}"
+            <a href="{% url 'organizations:acting_create' slug=position.slug %}"
                class="btn btn-outline-primary-brand btn-sm">
                 <i class="bi bi-person-plus me-1"></i> Acting
             </a>
-            <a href="{% url 'core:position_assign' slug=position.slug %}"
+            <a href="{% url 'organizations:position_assign' slug=position.slug %}"
                class="btn btn-primary-brand btn-sm">
                 <i class="bi bi-person-check me-1"></i> Appoint
             </a>
@@ -49,7 +49,7 @@
                     <dl class="row mb-0">
                         <dt class="col-sm-4 text-muted small">Organizational unit</dt>
                         <dd class="col-sm-8">
-                            <a href="{% url 'core:unit_detail' unit_id=position.organizational_unit.pk %}"
+                            <a href="{% url 'organizations:unit_detail' unit_id=position.organizational_unit.pk %}"
                                class="text-decoration-none">{{ position.organizational_unit.name }}</a>
                         </dd>
                         <dt class="col-sm-4 text-muted small">Classification</dt>
@@ -67,7 +67,7 @@
                         <dt class="col-sm-4 text-muted small">Primary supervisor</dt>
                         <dd class="col-sm-8">
                             {% if position.primary_supervisor %}
-                                <a href="{% url 'core:position_detail' slug=position.primary_supervisor.slug %}"
+                                <a href="{% url 'organizations:position_detail' slug=position.primary_supervisor.slug %}"
                                    class="text-decoration-none">{{ position.primary_supervisor.title }}</a>
 {% else %}—{% endif %}
     </dd>
@@ -94,7 +94,7 @@
             <ol class="mb-3">
                 {% for node in chain %}
                     <li>
-                        <a href="{% url 'core:position_detail' slug=node.slug %}"
+                        <a href="{% url 'organizations:position_detail' slug=node.slug %}"
                            class="text-decoration-none {% if node.pk == position.pk %}fw-bold{% endif %}">{{ node.title }}</a>
                         {% if node.is_protected %}<span class="badge bg-danger-subtle text-danger">Protected</span>{% endif %}
                     </li>
@@ -102,35 +102,35 @@
             </ol>
             <h6 class="fw-bold mb-3">Quick Actions</h6>
             <div class="d-grid gap-2">
-                <a href="{% url 'core:position_update' slug=position.slug %}"
+                <a href="{% url 'organizations:position_update' slug=position.slug %}"
                    class="btn btn-outline-primary-brand btn-sm text-start">
                     <i class="bi bi-pencil me-2"></i> Edit Position
                 </a>
                 {% if request.user|has_perm:'organizations.manage' %}
                     {% if position.is_archived %}
                         <form method="post"
-                              action="{% url 'core:position_restore' slug=position.slug %}">
+                              action="{% url 'organizations:position_restore' slug=position.slug %}">
                             {% csrf_token %}
                             <button type="submit"
                                     class="btn btn-outline-secondary btn-sm w-100 text-start"><i class="bi bi-arrow-counterclockwise me-2"></i> Restore Position</button>
                         </form>
                     {% else %}
                         <form method="post"
-                              action="{% url 'core:position_archive' slug=position.slug %}">
+                              action="{% url 'organizations:position_archive' slug=position.slug %}">
                             {% csrf_token %}
                             <button type="submit"
                                     class="btn btn-outline-secondary btn-sm w-100 text-start"><i class="bi bi-archive me-2"></i> Archive Position</button>
                         </form>
                         {% if position.status == 'ACTIVE' %}
                             <form method="post"
-                                  action="{% url 'core:position_status' slug=position.slug %}">
+                                  action="{% url 'organizations:position_status' slug=position.slug %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="status" value="INACTIVE">
                                 <button type="submit" class="btn btn-outline-warning btn-sm w-100 text-start"><i class="bi bi-pause-circle me-2"></i> Deactivate Position</button>
                             </form>
                         {% else %}
                             <form method="post"
-                                  action="{% url 'core:position_status' slug=position.slug %}">
+                                  action="{% url 'organizations:position_status' slug=position.slug %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="status" value="ACTIVE">
                                 <button type="submit" class="btn btn-outline-success btn-sm w-100 text-start"><i class="bi bi-play-circle me-2"></i> Activate Position</button>
@@ -148,7 +148,7 @@
         <div class="card border-0 h-100">
             <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
                 <h6 class="fw-bold mb-0">Appointments</h6>
-                <a href="{% url 'core:position_assign' slug=position.slug %}"
+                <a href="{% url 'organizations:position_assign' slug=position.slug %}"
                    class="small text-decoration-none">New appointment</a>
             </div>
             <div class="card-body p-0">
@@ -180,7 +180,7 @@
                                         <td class="text-end">
                                             {% if assignment.status == 'ACTIVE' and request.user|has_perm:'organizations.assign' %}
                                                 <form method="post"
-                                                      action="{% url 'core:assignment_end' assignment_id=assignment.pk %}"
+                                                      action="{% url 'organizations:assignment_end' assignment_id=assignment.pk %}"
                                                       class="d-inline">
                                                     {% csrf_token %}
                                                     <button type="submit"
@@ -206,7 +206,7 @@
         <div class="card border-0 h-100">
             <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
                 <h6 class="fw-bold mb-0">Acting Appointments</h6>
-                <a href="{% url 'core:acting_create' slug=position.slug %}"
+                <a href="{% url 'organizations:acting_create' slug=position.slug %}"
                    class="small text-decoration-none">New acting</a>
             </div>
             <div class="card-body p-0">
@@ -238,7 +238,7 @@
                                         <td class="text-end">
                                             {% if appointment.status == 'ACTIVE' and request.user|has_perm:'organizations.assign' %}
                                                 <form method="post"
-                                                      action="{% url 'core:acting_end' acting_id=appointment.pk %}"
+                                                      action="{% url 'organizations:acting_end' acting_id=appointment.pk %}"
                                                       class="d-inline">
                                                     {% csrf_token %}
                                                     <button type="submit"
@@ -270,7 +270,7 @@
             <ul class="list-group list-group-flush">
                 {% for subordinate in subordinates %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <a href="{% url 'core:position_detail' slug=subordinate.slug %}"
+                        <a href="{% url 'organizations:position_detail' slug=subordinate.slug %}"
                            class="text-decoration-none">{{ subordinate.title }}</a>
                         <span class="small text-muted">{{ subordinate.organizational_unit.name }}</span>
                     </li>

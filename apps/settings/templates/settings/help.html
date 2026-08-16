@@ -1,0 +1,421 @@
+{% extends "settings/base.html" %}
+{% load static i18n %}
+
+{% block settings_title %}{% trans "Help & Support" %}{% endblock %}
+{% block page_title %}{% trans "Help & Support" %}{% endblock %}
+{% block page_description %}{% trans "Get help, view documentation, and contact support." %}{% endblock %}
+
+{% block settings_content %}
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <!-- Search Help -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="text-center py-4">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 mb-3 d-inline-flex">
+                        <i class="bi bi-search fs-3" aria-hidden="true"></i>
+                    </div>
+                    <h5 class="mb-2">{% trans "Search Help Center" %}</h5>
+                    <p class="text-muted mb-4">{% trans "Find answers to common questions instantly." %}</p>
+                    <form class="row g-2 justify-content-center" action="{% url 'search:home' %}" method="get">
+                        <div class="col-12 col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted" aria-hidden="true"></i></span>
+                                <input type="search" name="q" class="form-control form-control-lg border-start-0" placeholder="{% trans 'Search help articles...' %}" aria-label="Search help">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <button type="submit" class="btn btn-primary btn-lg">{% trans "Search" %}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Topics -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Popular Topics" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <a href="#" class="text-decoration-none d-block p-3 border rounded-3 h-100 topic-card">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2">
+                                    <i class="bi bi-person-gear fs-4" aria-hidden="true"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-medium mb-1">{% trans "Account & Profile" %}</h6>
+                                    <p class="text-muted small mb-0">{% trans "Manage your account, profile, and preferences" %}</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <a href="#" class="text-decoration-none d-block p-3 border rounded-3 h-100 topic-card">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="bg-success bg-opacity-10 text-success rounded-3 p-2">
+                                    <i class="bi bi-shield-lock fs-4" aria-hidden="true"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-medium mb-1">{% trans "Security & Privacy" %}</h6>
+                                    <p class="text-muted small mb-0">{% trans "Password, 2FA, sessions, and data privacy" %}</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <a href="#" class="text-decoration-none d-block p-3 border rounded-3 h-100 topic-card">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-2">
+                                    <i class="bi bi-bell fs-4" aria-hidden="true"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-medium mb-1">{% trans "Notifications" %}</h6>
+                                    <p class="text-muted small mb-0">{% trans "Configure email, push, and in-app notifications" %}</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <a href="#" class="text-decoration-none d-block p-3 border rounded-3 h-100 topic-card">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="bg-info bg-opacity-10 text-info rounded-3 p-2">
+                                    <i class="bi bi-file-earmark-text fs-4" aria-hidden="true"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-medium mb-1">{% trans "Reports & Documents" %}</h6>
+                                    <p class="text-muted small mb-0">{% trans "Create, submit, and manage reports" %}</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <a href="#" class="text-decoration-none d-block p-3 border rounded-3 h-100 topic-card">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="bg-purple bg-opacity-10 text-purple rounded-3 p-2">
+                                    <i class="bi bi-people fs-4" aria-hidden="true"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-medium mb-1">{% trans "Teams & Collaboration" %}</h6>
+                                    <p class="text-muted small mb-0">{% trans "Work with teams, meetings, and projects" %}</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <a href="#" class="text-decoration-none d-block p-3 border rounded-3 h-100 topic-card">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-2">
+                                    <i class="bi bi-gear fs-4" aria-hidden="true"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-medium mb-1">{% trans "System Administration" %}</h6>
+                                    <p class="text-muted small mb-0">{% trans "User management, settings, and configuration" %}</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Quick Links" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <a href="#" class="text-decoration-none d-flex align-items-center gap-3 p-3 border rounded-3">
+                            <i class="bi bi-book fs-4 text-primary" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "User Guide" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <a href="#" class="text-decoration-none d-flex align-items-center gap-3 p-3 border rounded-3">
+                            <i class="bi bi-question-circle fs-4 text-success" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "FAQ" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <a href="#" class="text-decoration-none d-flex align-items-center gap-3 p-3 border rounded-3">
+                            <i class="bi bi-file-earmark-code fs-4 text-info" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "API Documentation" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <a href="#" class="text-decoration-none d-flex align-items-center gap-3 p-3 border rounded-3">
+                            <i class="bi bi-video fs-4 text-warning" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "Video Tutorials" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <a href="#" class="text-decoration-none d-flex align-items-center gap-3 p-3 border rounded-3">
+                            <i class="bi bi-chat-left-text fs-4 text-danger" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "Community Forum" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <a href="#" class="text-decoration-none d-flex align-items-center gap-3 p-3 border rounded-3">
+                            <i class="bi bi-graph-up fs-4 text-purple" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "System Status" %}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Support -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Contact Support" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="#" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="supportName" class="form-label fw-medium">{% trans "Your Name" %}</label>
+                            <input type="text" class="form-control" id="supportName" required value="{{ request.user.get_full_name }}">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="supportEmail" class="form-label fw-medium">{% trans "Email Address" %}</label>
+                            <input type="email" class="form-control" id="supportEmail" required value="{{ request.user.email }}">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="supportCategory" class="form-label fw-medium">{% trans "Category" %}</label>
+                            <select class="form-select" id="supportCategory" required>
+                                <option value="" disabled selected>{% trans "Select category" %}</option>
+                                <option value="technical">{% trans "Technical Issue" %}</option>
+                                <option value="account">{% trans "Account & Access" %}</option>
+                                <option value="billing">{% trans "Billing & Subscription" %}</option>
+                                <option value="feature">{% trans "Feature Request" %}</option>
+                                <option value="security">{% trans "Security Concern" %}</option>
+                                <option value="other">{% trans "Other" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="supportPriority" class="form-label fw-medium">{% trans "Priority" %}</label>
+                            <select class="form-select" id="supportPriority">
+                                <option value="low">{% trans "Low" %}</option>
+                                <option value="normal" selected>{% trans "Normal" %}</option>
+                                <option value="high">{% trans "High" %}</option>
+                                <option value="urgent">{% trans "Urgent" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="supportSubject" class="form-label fw-medium">{% trans "Subject" %}</label>
+                            <input type="text" class="form-control" id="supportSubject" required placeholder="{% trans 'Brief summary of your issue' %}">
+                        </div>
+                        <div class="col-12">
+                            <label for="supportMessage" class="form-label fw-medium">{% trans "Message" %}</label>
+                            <textarea class="form-control" id="supportMessage" rows="5" required placeholder="{% trans 'Describe your issue in detail...' %}"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="supportAttachLogs" checked>
+                                <label class="form-check-label" for="supportAttachLogs">{% trans "Include system logs and diagnostics (recommended)" %}</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">{% trans "Submit Ticket" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Report a Problem -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Report a Problem" %}</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">{% trans "Found a bug or experiencing an issue? Let us know." %}</p>
+                <div class="d-grid gap-2 d-md-flex">
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#reportBugModal">
+                        <i class="bi bi-bug me-2" aria-hidden="true"></i>{% trans "Report a Bug" %}
+                    </button>
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="bi bi-lightbulb me-2" aria-hidden="true"></i>{% trans "Request a Feature" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Info -->
+    <div class="col-12 col-lg-4">
+        <!-- System Info -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "About SITADC Youth Hub" %}</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 mb-3 d-inline-flex">
+                    <i class="bi bi-building fs-2" aria-hidden="true"></i>
+                </div>
+                <h6 class="fw-bold mb-1">SITADC Youth Hub</h6>
+                <p class="text-muted small mb-3">Version 1.0.0</p>
+                <p class="text-muted small mb-3">{% trans "Enterprise organizational management system for Sustainable Initiatives Through Transformative Actions for Development in Communities (SITADC) Youth Organization." %}</p>
+                <hr class="my-3">
+                <div class="text-start small">
+                    <p class="mb-1"><strong>{% trans "Organization:" %}</strong> SITADC Youth Organization</p>
+                    <p class="mb-1"><strong>{% trans "Email:" %}</strong> <a href="mailto:info@sitadc.org" class="text-decoration-none">info@sitadc.org</a></p>
+                    <p class="mb-1"><strong>{% trans "Support:" %}</strong> <a href="mailto:support@sitadc.org" class="text-decoration-none">support@sitadc.org</a></p>
+                    <p class="mb-1"><strong>{% trans "Website:" %}</strong> <a href="https://sitadc.org" class="text-decoration-none" target="_blank">sitadc.org</a></p>
+                    <p class="mb-0"><strong>{% trans "Built with:" %}</strong> Django, Bootstrap 5</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Hours -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Support Hours" %}</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0 small">
+                    <dt class="col-6 text-muted">{% trans "Monday - Friday" %}</dt>
+                    <dd class="col-6 mb-2">08:00 - 17:00 CAT</dd>
+                    <dt class="col-6 text-muted">{% trans "Saturday" %}</dt>
+                    <dd class="col-6 mb-2">09:00 - 13:00 CAT</dd>
+                    <dt class="col-6 text-muted">{% trans "Sunday" %}</dt>
+                    <dd class="col-6 mb-2">{% trans "Closed" %}</dd>
+                    <dt class="col-6 text-muted">{% trans "Emergency" %}</dt>
+                    <dd class="col-6 mb-0">24/7 (Critical issues)</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Response Times -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Response Times" %}</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0 small">
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>{% trans "Urgent" %}</span>
+                        <span class="fw-medium text-danger">{% trans "< 1 hour" %}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>{% trans "High" %}</span>
+                        <span class="fw-medium text-warning">{% trans "< 4 hours" %}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>{% trans "Normal" %}</span>
+                        <span class="fw-medium text-info">{% trans "< 24 hours" %}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>{% trans "Low" %}</span>
+                        <span class="fw-medium text-success">{% trans "< 48 hours" %}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "System Status" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="fw-medium">{% trans "Overall Status" %}</span>
+                    <span class="badge bg-success">{% trans "Operational" %}</span>
+                </div>
+                <ul class="list-unstyled mb-0 small">
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>{% trans "Core Services" %}</span>
+                        <span class="text-success"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>{% trans "OK" %}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>{% trans "Database" %}</span>
+                        <span class="text-success"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>{% trans "OK" %}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>{% trans "Email Service" %}</span>
+                        <span class="text-success"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>{% trans "OK" %}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>{% trans "File Storage" %}</span>
+                        <span class="text-success"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>{% trans "OK" %}</span>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                        <span>{% trans "API" %}</span>
+                        <span class="text-success"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>{% trans "OK" %}</span>
+                    </li>
+                </ul>
+                <a href="#" class="btn btn-link btn-sm p-0 mt-2">{% trans "View Detailed Status" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Bug Modal -->
+<div class="modal fade" id="reportBugModal" tabindex="-1" aria-labelledby="reportBugModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportBugModalLabel"><i class="bi bi-bug me-2" aria-hidden="true"></i>{% trans "Report a Bug" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="#" novalidate>
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="bugTitle" class="form-label fw-medium">{% trans "Title" %}</label>
+                            <input type="text" class="form-control" id="bugTitle" required placeholder="{% trans 'Brief bug description' %}">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="bugSeverity" class="form-label fw-medium">{% trans "Severity" %}</label>
+                            <select class="form-select" id="bugSeverity" required>
+                                <option value="low">{% trans "Low" %}</option>
+                                <option value="medium" selected>{% trans "Medium" %}</option>
+                                <option value="high">{% trans "High" %}</option>
+                                <option value="critical">{% trans "Critical" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="bugDescription" class="form-label fw-medium">{% trans "Description" %}</label>
+                            <textarea class="form-control" id="bugDescription" rows="4" required placeholder="{% trans 'Steps to reproduce, expected behavior, actual behavior...' %}"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="bugUrl" class="form-label fw-medium">{% trans "URL (if applicable)" %}</label>
+                            <input type="url" class="form-control" id="bugUrl" placeholder="{% trans 'https://...' %}">
+                        </div>
+                        <div class="col-12">
+                            <label for="bugScreenshot" class="form-label fw-medium">{% trans "Screenshot" %}</label>
+                            <input type="file" class="form-control" id="bugScreenshot" accept="image/*">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="bugIncludeLogs" checked>
+                                <label class="form-check-label" for="bugIncludeLogs">{% trans "Include browser console logs and system info" %}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-danger">{% trans "Submit Bug Report" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.topic-card:hover {
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    transition: all 0.2s ease;
+}
+</style>
+{% endblock settings_content %}

@@ -9,10 +9,7 @@ from apps.meetings.constants import (
     MeetingStatus,
     MeetingType,
 )
-from apps.meetings.models import (
-    Calendar,
-    Meeting,
-)
+from apps.meetings.models import Calendar, Meeting
 from apps.meetings.tests.base import MeetingsTestCase
 
 

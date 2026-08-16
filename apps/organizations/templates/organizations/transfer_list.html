@@ -3,7 +3,7 @@
 {% block title %}{% trans "Transfers" %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
     <li class="breadcrumb-item active" aria-current="page">Transfers</li>
 {% endblock %}
@@ -14,7 +14,7 @@
             <p class="page-subtitle mb-0">Track the movement of staff between units and positions</p>
         </div>
         <div>
-            <a href="{% url 'core:transfer_create' %}"
+            <a href="{% url 'organizations:transfer_create' %}"
                class="btn btn-primary-brand btn-sm">
                 <i class="bi bi-plus-lg me-1"></i> New Transfer
             </a>
@@ -58,7 +58,7 @@
                                     <td class="text-end">
                                         {% if request.user|has_perm:'organizations.assign' and transfer.status == 'PENDING' %}
                                             <form method="post"
-                                                  action="{% url 'core:transfer_approve' transfer_id=transfer.pk %}"
+                                                  action="{% url 'organizations:transfer_approve' transfer_id=transfer.pk %}"
                                                   class="d-inline">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-sm btn-outline-primary" title="Approve">
@@ -68,7 +68,7 @@
                                         {% endif %}
                                         {% if request.user|has_perm:'organizations.assign' and transfer.status == 'APPROVED' %}
                                             <form method="post"
-                                                  action="{% url 'core:transfer_complete' transfer_id=transfer.pk %}"
+                                                  action="{% url 'organizations:transfer_complete' transfer_id=transfer.pk %}"
                                                   class="d-inline">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-sm btn-outline-success" title="Complete">
@@ -84,7 +84,7 @@
                 </div>
             {% else %}
                 <div class="p-4">
-                    {% url 'core:transfer_create' as transfer_create_url %}
+                    {% url 'organizations:transfer_create' as transfer_create_url %}
                     {% include 'components/empty_state.html' with icon='bi-arrow-left-right' title='No transfers' message='Personnel transfers will appear here once recorded.' action_url=transfer_create_url action_label='New Transfer' %}
                 </div>
             {% endif %}

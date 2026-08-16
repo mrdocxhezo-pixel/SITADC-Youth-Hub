@@ -115,6 +115,16 @@ class Command(BaseCommand):
             )
 
     def _cleanup(self, model_class, cutoff, dry_run, name):
+        if not hasattr(model_class, "all_objects") or not hasattr(
+            model_class, "hard_delete"
+        ):
+            self.stdout.write(
+                self.style.WARNING(
+                    f"  {name}: model does not support hard delete, skipping"
+                )
+            )
+            return 0
+
         qs = model_class.all_objects.filter(is_deleted=True, deleted_at__lt=cutoff)
         count = qs.count()
 

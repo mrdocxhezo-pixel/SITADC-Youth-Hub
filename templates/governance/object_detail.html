@@ -1,0 +1,42 @@
+{% extends "governance/base.html" %}
+
+{% block title %}{{ object }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ object }}</h1>
+<div class="row">
+    <div class="col-md-6">
+        {% for field in object._meta.fields %}
+            {% if not field.auto_created and not field.is_relation or field.one_to_one or field.many_to_one %}
+                <div class="mb-3">
+                    <strong>{{ field.verbose_name }}:</strong>
+                    {% if field.choices %}
+                        {{ object.get_{{ field.name }}_display }}
+                    {% else %}
+                        {{ object.(field.name) }}
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="col-md-6">
+        {% for field in object._meta.many_to_many %}
+            <div class="mb-3">
+                <strong>{{ field.verbose_name }}:</strong>
+                {% for item in field.value|default_if_none:"" %}
+                    {{ item }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+<div class="mt-4">
+    <a href="{{ list_url }}" class="btn btn-secondary">Back to List</a>
+    {% if perms.governance.change_%(model_name)s %}
+    <a href="{% url 'governance:%(model_name)s_update' object.pk %}" class="btn btn-outline-primary">Edit</a>
+    {% endif %}
+    {% if perms.governance.delete_%(model_name)s %}
+    <a href="{% url 'governance:%(model_name)s_delete' object.pk %}" class="btn btn-outline-danger">Delete</a>
+    {% endif %}
+</div>
+{% endblock %}

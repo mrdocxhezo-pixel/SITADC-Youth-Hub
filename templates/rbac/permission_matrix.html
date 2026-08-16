@@ -1,0 +1,98 @@
+{% extends "layouts/dashboard.html" %}
+{% load i18n %}
+{% load rbac_tags %}
+{% block title %}{% trans "Permission Matrix" %} - SITADC Youth Hub{% endblock %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'rbac:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'rbac:permission_list' %}" class="text-decoration-none">Permissions</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Matrix</li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Permission Matrix</h1>
+            <p class="page-subtitle mb-0">See which active roles hold each permission in a category</p>
+        </div>
+        <a href="{% url 'rbac:permission_list' %}"
+           class="btn btn-outline-primary-brand btn-sm">
+            <i class="bi bi-key me-1"></i> Permission Catalogue
+        </a>
+    </div>
+    <form method="get" class="row g-2 mb-4">
+        <div class="col-12 col-md-6 col-lg-4">
+            <label for="category-select" class="visually-hidden">Select category</label>
+            <select id="category-select" name="category" class="form-select">
+                {% for cat in categories %}
+                    <option value="{{ cat.code }}" {% if cat.code == selected_code %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary-brand" type="submit">
+                <i class="bi bi-filter me-1"></i> Apply
+            </button>
+        </div>
+    </form>
+    {% if category %}
+        <div class="card border-0">
+            <div class="card-header bg-white border-0 pt-3 pb-0">
+                <h6 class="fw-bold mb-0">{{ category.name }}</h6>
+                <p class="text-muted small mb-0">{{ permissions|length }} permissions &times; {{ roles|length }} roles</p>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle">
+                        <caption class="visually-hidden">
+                            Permission grants per role for {{ category.name }}
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Permission</th>
+                                {% for role in roles %}
+                                    <th scope="col" class="text-center small" title="{{ role.name }}">
+                                        <span class="d-inline-block text-truncate" style="max-width: 110px;">
+                                            {{ role.name }}
+                                        </span>
+                                    </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for permission in permissions %}
+                                <tr>
+                                    <td>
+                                        <code>{{ permission.codename }}</code>
+                                        <div class="small text-muted">{{ permission.name }}</div>
+                                    </td>
+                                    {% for role in roles %}
+                                        <td class="text-center">
+                                            {% if permission.id in role_grants|get_item:role.id %}
+                                                <i class="bi bi-check-circle-fill text-success" title="Granted"></i>
+                                                <span class="visually-hidden">Granted</span>
+                                            {% else %}
+                                                <span class="text-muted" title="Not granted">&mdash;</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="{{ roles|length|add:1 }}" class="text-center text-muted py-4">
+                                        No permissions in this category.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="p-4">
+            {% include 'components/empty_state.html' with icon='bi-grid-3x3-gap' title='No category selected' message='Select a permission category to view its matrix.' %}
+        </div>
+    {% endif %}
+{% endblock %}

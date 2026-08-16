@@ -1,0 +1,67 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Financial Accounts - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Financial Accounts</h2>
+        <p class="text-muted">Manage your organization's financial accounts.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:financial_account_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Financial Account
+        </a>
+    </div>
+</div>
+
+{% if accounts %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Account Type</th>
+                <th class="text-end">Status</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>{{ account.name }}</td>
+                <td>{{ account.code }}</td>
+                <td>{{ account.get_account_type_display }}</td>
+                <td class="text-end">
+                    {% if account.is_active %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <a href="{% url 'finance:financial_account_update' account.id %}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'finance:financial_account_delete' account.id %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center py-4">No financial accounts found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No financial accounts found.
+</div>
+{% endif %}
+{% endblock %}

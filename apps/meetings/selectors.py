@@ -77,6 +77,8 @@ def calendar_queryset(user, *, include_archived: bool = False) -> QuerySet:
     """Calendars the actor may know exist."""
     manager = Calendar.all_objects if include_archived else Calendar.objects
     queryset = manager.all()
+    if not include_archived:
+        queryset = queryset.filter(is_deleted=False)
     if not _authenticated(user) or not _can_view_calendars(user):
         return queryset.none()
     return queryset
@@ -89,6 +91,10 @@ def visible_calendars(user, *, include_archived: bool = False) -> QuerySet:
         return queryset
     if not user_can_view_confidential(user):
         queryset = queryset.filter(confidentiality_level__in=_NON_SENSITIVE_LEVELS)
+
+    # CALENDAR_MANAGE and superusers bypass visibility scoping
+    if user.is_superuser or user_has_permission(user, CALENDAR_MANAGE):
+        return queryset
 
     scope_ids = _scope_ids(user)
     queryset = queryset.filter(Q_calendar_visible_to(user, scope_ids))
@@ -113,6 +119,8 @@ def event_queryset(user, *, include_archived: bool = False) -> QuerySet:
     """Events the actor may know exist."""
     manager = CalendarEvent.all_objects if include_archived else CalendarEvent.objects
     queryset = manager.all()
+    if not include_archived:
+        queryset = queryset.filter(is_deleted=False)
     if not _authenticated(user):
         return queryset.none()
     if not (user.is_superuser or _can_view_meetings(user) or _can_view_calendars(user)):
@@ -131,6 +139,7 @@ def visible_events(user, *, include_archived: bool = False) -> QuerySet:
     )
     if not user_can_view_confidential(user):
         queryset = queryset.filter(confidentiality_level__in=_NON_SENSITIVE_LEVELS)
+    queryset = queryset.exclude(status=EventStatus.CANCELLED)
     return queryset
 
 
@@ -138,6 +147,8 @@ def meeting_queryset(user, *, include_archived: bool = False) -> QuerySet:
     """Meetings the actor may know exist."""
     manager = Meeting.all_objects if include_archived else Meeting.objects
     queryset = manager.all()
+    if not include_archived:
+        queryset = queryset.filter(is_deleted=False)
     if not _authenticated(user) or not _can_view_meetings(user):
         return queryset.none()
     return queryset
@@ -150,6 +161,7 @@ def visible_meetings(user, *, include_archived: bool = False) -> QuerySet:
         return queryset
     if not user_can_view_confidential(user):
         queryset = queryset.filter(confidentiality_level__in=_NON_SENSITIVE_LEVELS)
+    queryset = queryset.exclude(status=MeetingStatus.COMPLETED)
     return queryset
 
 
@@ -181,6 +193,8 @@ def venue_queryset(user, *, include_archived: bool = False) -> QuerySet:
     """Venues the actor may browse."""
     manager = MeetingVenue.all_objects if include_archived else MeetingVenue.objects
     queryset = manager.all()
+    if not include_archived:
+        queryset = queryset.filter(is_deleted=False)
     if not _authenticated(user) or not _can_view_meetings(user):
         return queryset.none()
     return queryset

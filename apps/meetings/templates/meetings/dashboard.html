@@ -5,7 +5,7 @@
         {% include "meetings/includes/module_nav.html" %}
         <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
             <div>
-                <h1 class="h2 mb-1">Calendar &amp; Meetings</h1>
+                <h1 class="h2 mb-1">{% autoescape off %}Calendar & Meetings{% endautoescape %}</h1>
                 <p class="text-muted mb-0">Coordinate calendars, meetings, minutes and action items.</p>
             </div>
             <div class="d-flex gap-2">
@@ -149,3 +149,12 @@
         </div>
     </div>
 {% endblock dashboard_content %}
+
+
+
+
+
+
+
+
+

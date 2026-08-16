@@ -174,6 +174,8 @@ class VirtualMeetingProvider(models.TextChoices):
 class ParticipantType(models.TextChoices):
     """Category of meeting participant."""
 
+    INTERNAL = "INTERNAL", _("Internal")
+    EXTERNAL = "EXTERNAL", _("External")
     USER = "USER", _("User")
     LEADER = "LEADER", _("Leader")
     MEMBER = "MEMBER", _("Member")

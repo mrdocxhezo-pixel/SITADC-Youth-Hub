@@ -13,3 +13,4 @@ class StatusConstants(models.TextChoices):
     APPROVED = "APPROVED", _("Approved")
     REJECTED = "REJECTED", _("Rejected")
     ARCHIVED = "ARCHIVED", _("Archived")
+    ACTIVE = "ACTIVE", _("Active")

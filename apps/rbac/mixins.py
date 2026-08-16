@@ -66,7 +66,7 @@ class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def handle_no_permission(self):
         if self.raise_exception:
             raise PermissionDenied
-        return redirect("core:access_denied")
+        return redirect("rbac:access_denied")
 
 
 class ScopeRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -84,4 +84,4 @@ class ScopeRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def handle_no_permission(self):
         if self.raise_exception:
             raise PermissionDenied
-        return redirect("core:access_denied")
+        return redirect("rbac:access_denied")

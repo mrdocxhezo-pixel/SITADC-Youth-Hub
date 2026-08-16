@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ budget }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row justify-content-between mb-4">
+            <div class="col-auto">
+                <h1>{{ budget }}</h1>
+            </div>
+            <div class="col-auto">
+                <a href="{% url 'finance:budget_list' %}" class="btn btn-outline-secondary">Back to List</a>
+                <a href="{% url 'finance:budget_update' budget.pk %}" class="btn btn-outline-primary">Edit</a>
+                <a href="{% url 'finance:budget_delete' budget.pk %}" class="btn btn-outline-danger">Delete</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Budget Details</h5>
+                        <p><strong>Name:</strong> {{ budget.name }}</p>
+                        <p><strong>Code:</strong> {{ budget.code }}</p>
+                        <p><strong>Budget Type:</strong> {{ budget.get_budget_type_display }}</p>
+                        <p><strong>Financial Year:</strong> {{ budget.financial_year }}</p>
+                        <p><strong>Total Amount:</strong> {{ budget.total_amount }}</p>
+                        <p><strong>Allocated Amount:</strong> {{ budget.allocated_amount }}</p>
+                        <p><strong>Spent Amount:</strong> {{ budget.spent_amount }}</p>
+                        <p><strong>Start Date:</strong> {{ budget.start_date }}</p>
+                        <p><strong>End Date:</strong> {{ budget.end_date }}</p>
+                        <p><strong>Is Revised:</strong> {{ budget.is_revised|yesno }}</p>
+                        <p><strong>Revised Amount:</strong> {{ budget.revised_amount }}</p>
+                        <p><strong>Programme:</strong> {{ budget.programme }}</p>
+                        <p><strong>Project:</strong> {{ budget.project }}</p>
+                        <p><strong>Department:</strong> {{ budget.department }}</p>
+                        <p><strong>Activity:</strong> {{ budget.activity }}</p>
+                        <p><strong>Grant:</strong> {{ budget.grant }}</p>
+                        <p><strong>Description:</strong> {{ budget.description|linebreaks }}</p>
+                        <p><strong>Active:</strong> {{ budget.is_active|yesno }}</p>
+                        <p><strong>Created At:</strong> {{ budget.created_at }}</p>
+                        <p><strong>Updated At:</strong> {{ budget.updated_at }}</p>
+                        <p><strong>Created By:</strong> {{ budget.created_by }}</p>
+                        <p><strong>Updated By:</strong> {{ budget.updated_by }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

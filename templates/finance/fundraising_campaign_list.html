@@ -1,0 +1,73 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Fundraising Campaigns - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Fundraising Campaigns</h2>
+        <p class="text-muted">Manage your organization's fundraising campaigns.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:fundraising_campaign_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Fundraising Campaign
+        </a>
+    </div>
+</div>
+
+{% if campaigns %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Campaign Number</th>
+                <th>Campaign Type</th>
+                <th class="text-end">Target Amount</th>
+                <th class="text-end">Amount Raised</th>
+                <th class="text-end">Progress</th>
+                <th>Status</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for campaign in campaigns %}
+            <tr>
+                <td>{{ campaign.name }}</td>
+                <td>{{ campaign.campaign_number }}</td>
+                <td>{{ campaign.get_campaign_type_display }}</td>
+                <td class="text-end">{{ campaign.target_amount|floatformat:2 }}</td>
+                <td class="text-end">{{ campaign.amount_raised|floatformat:2 }}</td>
+                <td class="text-end">
+                    {% if campaign.target_amount > 0 %}
+                    {{ campaign.progress_percentage|floatformat:1 }}%
+                    {% else %}
+                    0%
+                    {% endif %}
+                </td>
+                <td>{{ campaign.get_status_display }}</td>
+                <td class="text-end">
+                    <a href="{% url 'finance:fundraising_campaign_update' campaign.id %}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'finance:fundraising_campaign_delete' campaign.id %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center py-4">No fundraising campaigns found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No fundraising campaigns found.
+</div>
+{% endif %}
+{% endblock %}

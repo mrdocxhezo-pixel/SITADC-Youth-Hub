@@ -5,12 +5,16 @@ from .base import *  # noqa: F403
 DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-development-secret-key")
 
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,testserver").split(",")
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",  # noqa: F405
+        # Use a file-based test database so --reuse-db can skip the (very
+        # slow) full migration graph rebuild on every test run. The file is
+        # pre-seeded by the migrate step and reused thereafter.
+        "TEST": {"NAME": BASE_DIR / "test_db.sqlite3"},
     }
 }
 

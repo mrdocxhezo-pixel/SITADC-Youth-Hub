@@ -1,0 +1,197 @@
+{% extends "settings/base.html" %}
+{% load static i18n %}
+
+{% block settings_title %}{% trans "Account Settings" %}{% endblock %}
+{% block page_title %}{% trans "Account Settings" %}{% endblock %}
+{% block page_description %}{% trans "Manage your profile information, contact details, and account preferences." %}{% endblock %}
+
+{% block settings_content %}
+<div class="row g-4">
+    <!-- Profile Information -->
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Profile Information" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:account' %}" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="{{ profile_form.first_name.id_for_label }}" class="form-label fw-medium">{{ profile_form.first_name.label }}</label>
+                            {{ profile_form.first_name }}
+                            {% if profile_form.first_name.errors %}
+                            <div class="text-danger small mt-1">{{ profile_form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ profile_form.last_name.id_for_label }}" class="form-label fw-medium">{{ profile_form.last_name.label }}</label>
+                            {{ profile_form.last_name }}
+                            {% if profile_form.last_name.errors %}
+                            <div class="text-danger small mt-1">{{ profile_form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ profile_form.username.id_for_label }}" class="form-label fw-medium">{{ profile_form.username.label }}</label>
+                            {{ profile_form.username }}
+                            {% if profile_form.username.errors %}
+                            <div class="text-danger small mt-1">{{ profile_form.username.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ profile_form.email.id_for_label }}" class="form-label fw-medium">{{ profile_form.email.label }}</label>
+                            {{ profile_form.email }}
+                            {% if profile_form.email.errors %}
+                            <div class="text-danger small mt-1">{{ profile_form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ profile_form.phone_number.id_for_label }}" class="form-label fw-medium">{{ profile_form.phone_number.label }}</label>
+                            {{ profile_form.phone_number }}
+                            {% if profile_form.phone_number.errors %}
+                            <div class="text-danger small mt-1">{{ profile_form.phone_number.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h6 class="fw-medium mb-3">{% trans "Additional Details" %}</h6>
+                    <div class="row g-3">
+                        {% for field in profile_form %}
+                            {% if field.name not in "first_name last_name username email phone_number" and not field.is_hidden %}
+                            <div class="col-12 col-md-6">
+                                <label for="{{ field.id_for_label }}" class="form-label fw-medium">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% if field.errors %}
+                                <div class="text-danger small mt-1">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{% url 'settings:settings_dashboard' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Profile Photo -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Profile Photo" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:account' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_photo">
+
+                    <div class="row g-4 align-items-center">
+                        <div class="col-auto">
+                            {% if user.profile.profile_photo %}
+                            <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.full_name }}" class="rounded-circle border" style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                                <span class="fs-1 fw-bold">{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="{{ photo_form.profile_photo.id_for_label }}" class="form-label fw-medium">{% trans "Upload New Photo" %}</label>
+                                {{ photo_form.profile_photo }}
+                                {% if photo_form.profile_photo.help_text %}
+                                <div class="form-text">{{ photo_form.profile_photo.help_text }}</div>
+                                {% endif %}
+                                {% if photo_form.profile_photo.errors %}
+                                <div class="text-danger small mt-1">{{ photo_form.profile_photo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="btn btn-primary">{% trans "Update Photo" %}</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Info -->
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Account Status" %}</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted small">{% trans "Status" %}</dt>
+                    <dd class="col-sm-7 mb-2 fw-medium">
+                        <span class="badge bg-success">{% trans "Active" %}</span>
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted small">{% trans "Email Verified" %}</dt>
+                    <dd class="col-sm-7 mb-2">
+                        {% if user.email_verified %}
+                        <i class="bi bi-check-circle-fill text-success me-1" aria-hidden="true"></i>{% trans "Yes" %}
+                        {% else %}
+                        <i class="bi bi-x-circle-fill text-danger me-1" aria-hidden="true"></i>{% trans "No" %}
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted small">{% trans "Phone Verified" %}</dt>
+                    <dd class="col-sm-7 mb-2">
+                        {% if user.phone_verified %}
+                        <i class="bi bi-check-circle-fill text-success me-1" aria-hidden="true"></i>{% trans "Yes" %}
+                        {% else %}
+                        <i class="bi bi-x-circle-fill text-danger me-1" aria-hidden="true"></i>{% trans "No" %}
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted small">{% trans "Member Since" %}</dt>
+                    <dd class="col-sm-7 mb-2">{{ user.created_at|date:"F j, Y" }}</dd>
+
+                    <dt class="col-sm-5 text-muted small">{% trans "Last Login" %}</dt>
+                    <dd class="col-sm-7 mb-2">{{ user.last_login|date:"F j, Y H:i"|default:"Never" }}</dd>
+
+                    <dt class="col-sm-5 text-muted small">{% trans "Role" %}</dt>
+                    <dd class="col-sm-7 mb-0">
+                        {% if user.role_assignments.exists %}
+                        {{ user.role_assignments.first.role.name }}
+                        {% else %}
+                        <span class="text-muted">{% trans "No role assigned" %}</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="card border-0 shadow-sm mt-4 h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0 text-danger"><i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>{% trans "Danger Zone" %}</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-4">{% trans "These actions are irreversible. Please proceed with caution." %}</p>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'settings:security' %}" class="btn btn-outline-danger text-start">
+                        <i class="bi bi-key me-2" aria-hidden="true"></i>
+                        {% trans "Change Password" %}
+                    </a>
+                    <a href="{% url 'settings:sessions' %}" class="btn btn-outline-danger text-start">
+                        <i class="bi bi-x-circle me-2" aria-hidden="true"></i>
+                        {% trans "Sign Out All Sessions" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock settings_content %}

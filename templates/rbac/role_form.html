@@ -3,8 +3,8 @@
 {% block title %}{% if mode == 'create' %}{% trans "New Role" %}{% else %}{% trans "Edit Role" %}{% endif %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:role_list' %}" class="text-decoration-none">Roles</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'rbac:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'rbac:role_list' %}" class="text-decoration-none">Roles</a></li>
     <li class="breadcrumb-item active" aria-current="page">{% if mode == 'create' %}New Role{% else %}Edit {{ role.name }}{% endif %}</li>
 {% endblock %}
 {% block dashboard_content %}
@@ -14,7 +14,7 @@
             <p class="page-subtitle mb-0">Define the role metadata and the permissions it grants</p>
         </div>
         <div>
-            <a href="{% url 'core:role_list' %}"
+            <a href="{% url 'rbac:role_list' %}"
                class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i> Back to Roles
             </a>
@@ -84,7 +84,7 @@
                     <div class="alert alert-danger mt-3 mb-0">{% for error in form.permission_codes.errors %}{{ error }}{% endfor %}</div>
                 {% endif %}
                 <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
-                    <a href="{% url 'core:role_list' %}" class="btn btn-light">Cancel</a>
+                    <a href="{% url 'rbac:role_list' %}" class="btn btn-light">Cancel</a>
                     <button type="submit" class="btn btn-primary-brand px-4">
                         <i class="bi bi-check-lg me-1"></i> {% if mode == 'create' %}Create Role{% else %}Save Changes{% endif %}
                     </button>

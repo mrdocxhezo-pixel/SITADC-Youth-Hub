@@ -18,9 +18,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "apps.core.apps.CoreConfig",
     "apps.accounts.apps.AccountsConfig",
-    "apps.rbac.apps.RbacConfig",
-    "apps.organizations.apps.OrganizationsConfig",
-    "apps.references.apps.ReferencesConfig",
     "apps.leadership.apps.LeadershipConfig",
     "apps.volunteers.apps.VolunteersConfig",
     "apps.memberships.apps.MembershipsConfig",
@@ -37,6 +34,14 @@ INSTALLED_APPS = [
     "apps.notifications.apps.NotificationsConfig",
     "apps.search.apps.SearchConfig",
     "apps.exports.apps.ExportsConfig",
+    "apps.governance.apps.GovernanceConfig",
+    "apps.rbac.apps.RbacConfig",
+    "apps.references.apps.ReferencesConfig",
+    "apps.system_settings.apps.SystemSettingsConfig",
+    "apps.settings.apps.SettingsConfig",
+    "apps.finance.apps.FinanceConfig",
+    "apps.organizations.apps.OrganizationsConfig",
+    "apps.dashboard.apps.DashboardConfig",
 ]
 
 MIDDLEWARE = [
@@ -48,14 +53,8 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "apps.accounts.middleware.SessionTrackerMiddleware",
-    "apps.accounts.middleware.SessionTimeoutMiddleware",
-    "apps.core.middleware.CurrentUserMiddleware",
+    "apps.rbac.middleware.AuthorizationMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "apps.core.middleware.OrganizationContextMiddleware",
-    "apps.core.middleware.TimezoneMiddleware",
-    "apps.core.middleware.MaintenanceModeMiddleware",
-    "apps.core.middleware.AuditContextMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -81,7 +80,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # noqa: E501
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -145,13 +144,13 @@ LOGGING = {
             "level": "DEBUG",
             "propagate": False,
         },
-    },
+    }
 }
 
 # Authentication Settings
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "core:login"
-LOGIN_REDIRECT_URL = "core:dashboard_preview"
+LOGIN_REDIRECT_URL = "dashboard:home"
 LOGOUT_REDIRECT_URL = "core:login"
 
 # Session Cookie and Inactivity configurations

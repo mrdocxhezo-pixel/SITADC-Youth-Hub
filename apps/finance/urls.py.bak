@@ -1,0 +1,92 @@
+"""URL configuration for Finance and Resource Mobilization (Phase 27)."""
+
+from django.urls import path
+from . import views
+
+app_name = 'finance'
+
+urlpatterns = [
+    # Budget URLs
+    path('budgets/', views.budget_list, name='budget_list'),
+    path('budgets/create/', views.budget_create, name='budget_create'),
+    path('budgets/<int:pk>/update/', views.budget_update, name='budget_update'),
+    path('budgets/<int:pk>/delete/', views.budget_delete, name='budget_delete'),
+    path('budgets/<int:pk>/', views.budget_detail, name='budget_detail'),
+    
+    # Budget Allocation URLs
+    path('budget-allocations/', views.budget_allocation_list, name='budget_allocation_list'),
+    path('budget-allocations/create/', views.budget_allocation_create, name='budget_allocation_create'),
+    path('budget-allocations/<int:pk>/update/', views.budget_allocation_update, name='budget_allocation_update'),
+    path('budget-allocations/<int:pk>/delete/', views.budget_allocation_delete, name='budget_allocation_delete'),
+    path('budget-allocations/<int:pk>/', views.budget_allocation_detail, name='budget_allocation_detail'),
+    
+    # Donation URLs
+    path('donations/', views.donation_list, name='donation_list'),
+    path('donations/create/', views.donation_create, name='donation_create'),
+    path('donations/<int:pk>/update/', views.donation_update, name='donation_update'),
+    path('donations/<int:pk>/delete/', views.donation_delete, name='donation_delete'),
+    path('donations/<int:pk>/', views.donation_detail, name='donation_detail'),
+    
+    # Expense URLs
+    path('expenses/', views.expense_list, name='expense_list'),
+    path('expenses/create/', views.expense_create, name='expense_create'),
+    path('expenses/<int:pk>/update/', views.expense_update, name='expense_update'),
+    path('expenses/<int:pk>/delete/', views.expense_delete, name='expense_delete'),
+    path('expenses/<int:pk>/', views.expense_detail, name='expense_detail'),
+    
+    # Financial Year URLs
+    path('financial-years/', views.financial_year_list, name='financial_year_list'),
+    path('financial-years/create/', views.financial_year_create, name='financial_year_create'),
+    path('financial-years/<int:pk>/update/', views.financial_year_update, name='financial_year_update'),
+    path('financial-years/<int:pk>/delete/', views.financial_year_delete, name='financial_year_delete'),
+    path('financial-years/<int:pk>/', views.financial_year_detail, name='financial_year_detail'),
+    
+    # Fund URLs
+    path('funds/', views.fund_list, name='fund_list'),
+    path('funds/create/', views.fund_create, name='fund_create'),
+    path('funds/<int:pk>/update/', views.fund_update, name='fund_update'),
+    path('funds/<int:pk>/delete/', views.fund_delete, name='fund_delete'),
+    path('funds/<int:pk>/', views.fund_detail, name='fund_detail'),
+    
+    # Grant URLs
+    path('grants/', views.grant_list, name='grant_list'),
+    path('grants/create/', views.grant_create, name='grant_create'),
+    path('grants/<int:pk>/update/', views.grant_update, name='grant_update'),
+    path('grants/<int:pk>/delete/', views.grant_delete, name='grant_delete'),
+    path('grants/<int:pk>/', views.grant_detail, name='grant_detail'),
+    
+    # Invoice URLs
+    path('invoices/', views.invoice_list, name='invoice_list'),
+    path('invoices/create/', views.invoice_create, name='invoice_create'),
+    path('invoices/<int:pk>/update/', views.invoice_update, name='invoice_update'),
+    path('invoices/<int:pk>/delete/', views.invoice_delete, name='invoice_delete'),
+    path('invoices/<int:pk>/', views.invoice_detail, name='invoice_detail'),
+    
+    # Investment URLs
+    path('investments/', views.investment_list, name='investment_list'),
+    path('investments/create/', views.investment_create, name='investment_create'),
+    path('investments/<int:pk>/update/', views.investment_update, name='investment_update'),
+    path('investments/<int:pk>/delete/', views.investment_delete, name='investment_delete'),
+    path('investments/<int:pk>/', views.investment_detail, name='investment_detail'),
+    
+    # Loan URLs
+    path('loans/', views.loan_list, name='loan_list'),
+    path('loans/create/', views.loan_create, name='loan_create'),
+    path('loans/<int:pk>/update/', views.loan_update, name='loan_update'),
+    path('loans/<int:pk>/delete/', views.loan_delete, name='loan_delete'),
+    path('loans/<int:pk>//', views.loan_detail, name='loan_detail'),
+    
+    # Sponsorship URLs
+    path('sponsorships/', views.sponsorship_list, name='sponsorship_list'),
+    path('sponsorships/create/', views.sponsorship_create, name='sponsorship_create'),
+    path('sponsorships/<int:pk>/update/', views.sponsorship_update, name='sponsorship_update'),
+    path('sponsorships/<int:pk>/delete/', views.sponsorship_delete, name='sponsorship_delete'),
+    path('sponsorships/<int:pk>/', views.sponsorship_detail, name='sponsorship_detail'),
+    
+    # Transaction URLs
+    path('transactions/', views.transaction_list, name='transaction_list'),
+    path('transactions/create/', views.transaction_create, name='transaction_create'),
+    path('transactions/<int:pk>/update/', views.transaction_update, name='transaction_update'),
+    path('transactions/<int:pk>/delete/', views.transaction_delete, name='transaction_delete'),
+    path('transactions/<int:pk>/', views.transaction_detail, name='transaction_detail'),
+]

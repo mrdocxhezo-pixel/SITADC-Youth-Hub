@@ -1,0 +1,117 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ governance_meeting.title }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ governance_meeting.title }}</h2>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:governance_meeting_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+        <a href="{% url 'governance:governance_meeting_update' governance_meeting.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Meeting Details</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Meeting Type</dt>
+                    <dd class="col-sm-9">{{ governance_meeting.get_meeting_type_display }}</dd>
+                    
+                    <dt class="col-sm-3">Scheduled Date</dt>
+                    <dd class="col-sm-9">{{ governance_meeting.scheduled_date|date:"M d, Y, H:i" }}</dd>
+                    
+                    <dt class="col-sm-3">Duration</dt>
+                    <dd class="col-sm-9">{{ governance_meeting.duration_minutes }} minutes</dd>
+                    
+                    <dt class="col-sm-3">Location</dt>
+                    <dd class="col-sm-9">{{ governance_meeting.location }}</dd>
+                    
+                    <dt class="col-sm-3">Status</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge bg-{{ governance_meeting.status|lower }}">{{ governance_meeting.get_status_display }}</span>
+                    </dd>
+                    
+                    <dt class="col-sm-3">Attendance Required</dt>
+                    <dd class="col-sm-9">
+                        {% if governance_meeting.attendance_required %}
+                        <span class="badge bg-success">Yes</span>
+                        {% else %}
+                        <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </dd>
+                    
+                    <dt class="col-sm-3">Description</dt>
+                    <dd class="col-sm-9">{{ governance_meeting.description|linebreaks }}</dd>
+                    
+                    <dt class="col-sm-3">Notes</dt>
+                    <dd class="col-sm-9">{{ governance_meeting.notes|linebreaks }}</dd>
+                    
+                    <dt class="col-sm-3">Created By</dt>
+                    <dd class="col-sm-9">{{ governance_meeting.created_by.get_full_name }}</dd>
+                    
+                    <dt class="col-sm-3">Created At</dt>
+                    <dd class="col-sm-9">{{ governance_meeting.created_at|date:"M d, Y, H:i" }}</dd>
+                    
+                    <dt class="col-sm-3">Updated By</dt>
+                    <dd class="col-sm-9">{{ governance_meeting.updated_by.get_full_name }}</dd>
+                    
+                    <dt class="col-sm-3">Updated At</dt>
+                    <dd class="col-sm-9">{{ governance_meeting.updated_at|date:"M d, Y, H:i" }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Meeting Attendance</h5>
+            </div>
+            <div class="card-body">
+                {% if attendances %}
+                <div class="list-group">
+                    {% for attendance in attendances %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ attendance.attendee.get_full_name }}</h6>
+                            <small>{{ attendance.get_attendance_status_display }}</small>
+                        </div>
+                        <p class="mb-1">{{ attendance.notes|linebreaks }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-center text-muted">No attendance records found for this meeting.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Record Attendance</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'governance:meeting_attendance_create' governance_meeting.pk %}">
+                    {% csrf_token %}
+                    {{ attendance_form.as_p }}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check-circle me-1"></i> Record Attendance
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

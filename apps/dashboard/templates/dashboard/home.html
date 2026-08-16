@@ -1,0 +1,60 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Dashboard - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+{% include 'components/page_header.html' with title='Dashboard' subtitle='Overview of your organizational activities' %}
+
+<!-- Notification Bell Button -->
+<div class="d-flex justify-content-end mb-3">
+    <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="notification-toggle">
+        <i class="bi bi-bell me-1"></i>
+        <span id="notification-badge" class="badge bg-danger rounded-pill ms-1" style="display: none;">0</span>
+    </button>
+    <a href="{% url 'notifications:dashboard' %}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-list-task me-1"></i> View All Notifications
+    </a>
+</div>
+
+<!-- Welcome Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <img src="{% static 'images/app_logo.png' %}" alt="SITADC Youth Hub Logo" class="img-fluid" style="width: 40px; height: 40px;">
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="mb-1">Welcome back, {{ user.get_full_name|default:user.username }}!</h5>
+                        <p class="mb-0 text-muted">
+                            {% if user_profile %}
+                                {{ user_profile.position|default:'--' }} | 
+                                {{ user_profile.organizational_unit|default:'--' }}
+                            {% else %}
+                                -- | --
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4" id="stats-row">
+    <!-- Stats will be loaded here via JavaScript -->
+</div>
+
+<!-- Main Content Area -->
+<div class="row g-3" id="main-content">
+    <!-- Widgets will be loaded here via JavaScript -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+{% endblock extra_js %}

@@ -1,0 +1,82 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Delete {{ title }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Delete {{ title }}</h2>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:financial_account_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Confirm Deletion</h5>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to delete the following financial account?</p>
+                
+                <dl class="row">
+                    <dt class="col-sm-3">Name:</dt>
+                    <dd class="col-sm-9">{{ object.name }}</dd>
+                    
+                    <dt class="col-sm-3">Code:</dt>
+                    <dd class="col-sm-9">{{ object.code }}</dd>
+                    
+                    <dt class="col-sm-3">Account Type:</dt>
+                    <dd class="col-sm-9">{{ object.get_account_type_display }}</dd>
+                    
+                    <dt class="col-sm-3">Status:</dt>
+                    <dd class="col-sm-9">
+                        {% if object.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+                
+                {% if object.description %}
+                <div class="mt-4">
+                    <h6>Description:</h6>
+                    <p>{{ object.description }}</p>
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-danger me-md-2">
+                            <i class="bi bi-trash me-1"></i> Delete {{ title }}
+                        </button>
+                        <a href="{% url 'finance:financial_account_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-1"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card bg-light h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Help</h5>
+            </div>
+            <div class="card-body">
+                <p>Deleting a financial account will permanently remove it from the system. This action cannot be undone.</p>
+                <hr>
+                <p><strong>Note:</strong> If this financial account is being used by other records (such as transactions), you may need to reassign those records before deletion.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

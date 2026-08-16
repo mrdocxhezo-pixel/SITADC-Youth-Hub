@@ -3,7 +3,7 @@
 {% block title %}{% trans "Organizational Units" %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
     <li class="breadcrumb-item active" aria-current="page">Units</li>
 {% endblock %}
@@ -14,7 +14,7 @@
             <p class="page-subtitle mb-0">Directorates, departments, regions, districts, communities and teams</p>
         </div>
         <div>
-            <a href="{% url 'core:unit_create' %}"
+            <a href="{% url 'organizations:unit_create' %}"
                class="btn btn-primary-brand btn-sm">
                 <i class="bi bi-plus-lg me-1"></i> New Unit
             </a>
@@ -37,7 +37,7 @@
                         <i class="bi bi-funnel me-1"></i> Filter
                     </button>
                     {% if active_type %}
-                        <a href="{% url 'core:unit_list' %}" class="btn btn-light btn-sm">Clear</a>
+                        <a href="{% url 'organizations:unit_list' %}" class="btn btn-light btn-sm">Clear</a>
                     {% endif %}
                 </div>
             </form>
@@ -64,7 +64,7 @@
                             {% for unit in units %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'core:unit_detail' unit_id=unit.pk %}"
+                                        <a href="{% url 'organizations:unit_detail' unit_id=unit.pk %}"
                                            class="fw-semibold text-decoration-none">{{ unit.name }}</a>
                                         {% if unit.is_archived %}<span class="badge badge-status badge-archived ms-1">Archived</span>{% endif %}
                                         <div class="text-muted small">{{ unit.identifier }}</div>
@@ -82,12 +82,12 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-end">
-                                        <a href="{% url 'core:unit_detail' unit_id=unit.pk %}"
+                                        <a href="{% url 'organizations:unit_detail' unit_id=unit.pk %}"
                                            class="btn btn-sm btn-outline-secondary"
                                            title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="{% url 'core:unit_update' unit_id=unit.pk %}"
+                                        <a href="{% url 'organizations:unit_update' unit_id=unit.pk %}"
                                            class="btn btn-sm btn-outline-secondary"
                                            title="Edit">
                                             <i class="bi bi-pencil"></i>
@@ -100,7 +100,7 @@
                 </div>
             {% else %}
                 <div class="p-4">
-                    {% url 'core:unit_create' as unit_create_url %}
+                    {% url 'organizations:unit_create' as unit_create_url %}
                     {% include 'components/empty_state.html' with icon='bi-diagram-3' title='No units found' message='Organizational units will appear here once created.' action_url=unit_create_url action_label='Create Unit' %}
                 </div>
             {% endif %}

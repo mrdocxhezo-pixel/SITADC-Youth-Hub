@@ -1,0 +1,29 @@
+{% extends "system_settings/base.html" %}
+
+{% block title %}{{ system_setting.key }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ system_setting.key }}</h1>
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <strong>Key:</strong> {{ system_setting.key }}
+        </div>
+        <div class="mb-3">
+            <strong>Value:</strong> {{ system_setting.value }}
+        </div>
+        <div class="mb-3">
+            <strong>Description:</strong> {{ system_setting.description }}
+        </div>
+    </div>
+</div>
+<div class="mt-4>
+    <a href="{% url 'system_settings:system_settings_list' %}" class="btn btn-secondary">Back to List</a>
+    {% if perms.system_settings.change_systemsettings %}
+    <a href="{% url 'system_settings:system_settings_update' system_setting.pk %}" class="btn btn-outline-primary">Edit</a>
+    {% endif %}
+    {% if perms.system_settings.delete_systemsettings %}
+    <a href="{% url 'system_settings:system_settings_delete' system_setting.pk %}" class="btn btn-outline-danger">Delete</a>
+    {% endif %}
+</div>
+{% endblock %}

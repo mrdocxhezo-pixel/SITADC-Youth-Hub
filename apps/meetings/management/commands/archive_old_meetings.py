@@ -63,11 +63,13 @@ class Command(BaseCommand):
             )
             for mtg in meetings_qs[:10]:
                 self.stdout.write(
-                    "  Meeting: " f"{mtg.reference} - {mtg.title} (ended {mtg.end_at})"
+                    f"  Meeting {mtg.pk}: {mtg.reference} - {mtg.title} "
+                    f"(ended {mtg.end_at})"
                 )
             for evt in events_qs[:10]:
                 self.stdout.write(
-                    "  Event: " f"{evt.reference} - {evt.title} (ended {evt.end_at})"
+                    f"  Event {evt.pk}: {evt.reference} - {evt.title} "
+                    f"(ended {evt.end_at})"
                 )
             return
 

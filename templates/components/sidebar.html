@@ -1,6 +1,8 @@
 {% load rbac_tags %}
 <nav id="sidebar"
-     class="dashboard-sidebar py-3 shadow-sm d-flex flex-column h-100 bg-white">
+     class="dashboard-sidebar py-3 shadow-sm d-flex flex-column h-100 bg-white"
+     aria-label="Main navigation"
+     role="navigation">
     <!-- Brand Area -->
     <div class="px-4 mb-4 mt-3 position-relative text-center">
         <a href="{% url 'core:home' %}"
@@ -9,178 +11,218 @@
             {% include 'components/branding/logo.html' with logo_class="sidebar-logo" %}
             <span class="fs-5 fw-bold text-primary-brand text-wrap px-2 text-center brand-font">SITADC Youth Hub</span>
         </a>
-        <button id="sidebarToggle"
-                class="btn btn-link d-md-none text-dark p-0 position-absolute top-0 end-0 me-3 mt-1">
-            <i class="bi bi-x-lg fs-5"></i>
+        <button id="sidebarClose"
+                class="btn btn-link d-md-none text-dark p-0 position-absolute top-0 end-0 me-3 mt-1"
+                aria-label="Close navigation"
+                aria-expanded="false"
+                aria-controls="sidebar">
+            <i class="bi bi-x-lg fs-5" aria-hidden="true"></i>
         </button>
     </div>
     <!-- Navigation Links -->
     <div class="px-3 flex-grow-1 overflow-auto">
-        <ul class="nav nav-pills flex-column mb-auto gap-1">
-            <li class="nav-item">
-                <a href="#"
-                   class="nav-link active bg-primary-brand text-white rounded-3 d-flex align-items-center py-2 px-3">
-                    <i class="bi bi-speedometer2 me-3 fs-5"></i> Dashboard
+        <ul class="nav nav-pills flex-column mb-auto gap-1" role="list">
+            <li class="nav-item" role="none">
+                <a href="{% url 'dashboard:home' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'home' or request.resolver_match.namespace == 'dashboard' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                   {% if request.resolver_match.url_name == 'home' or request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}
+                   role="menuitem">
+                    <i class="bi bi-speedometer2 me-3 fs-5" aria-hidden="true"></i> Dashboard
                 </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" role="none">
                 <a href="{% url 'leadership:dashboard' %}"
-                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
-                    <i class="bi bi-people me-3 fs-5 text-muted"></i> Leadership
+                   class="nav-link {% if request.resolver_match.namespace == 'leadership' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                   {% if request.resolver_match.namespace == 'leadership' %}aria-current="page"{% endif %}
+                   role="menuitem">
+                    <i class="bi bi-people me-3 fs-5 text-muted" aria-hidden="true"></i> Leadership
                 </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" role="none">
                 <a href="{% url 'memberships:dashboard' %}"
-                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
-                    <i class="bi bi-person-badge me-3 fs-5 text-muted"></i> Membership
+                   class="nav-link {% if request.resolver_match.namespace == 'memberships' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                   {% if request.resolver_match.namespace == 'memberships' %}aria-current="page"{% endif %}
+                   role="menuitem">
+                    <i class="bi bi-person-badge me-3 fs-5 text-muted" aria-hidden="true"></i> Membership
                 </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" role="none">
                 <a href="{% url 'volunteers:dashboard' %}"
-                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
-                    <i class="bi bi-heart me-3 fs-5 text-muted"></i> Volunteers
+                   class="nav-link {% if request.resolver_match.namespace == 'volunteers' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                   {% if request.resolver_match.namespace == 'volunteers' %}aria-current="page"{% endif %}
+                   role="menuitem">
+                    <i class="bi bi-heart me-3 fs-5 text-muted" aria-hidden="true"></i> Volunteers
                 </a>
             </li>
             {% if request.user|has_perm:"partners.view" or request.user|has_perm:"partners.view_directory" or request.user|has_perm:"partners.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'stakeholders:dashboard' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'stakeholders' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'stakeholders' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-building-gear me-3 fs-5"></i> Stakeholders
+                       {% if request.resolver_match.namespace == 'stakeholders' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-building-gear me-3 fs-5" aria-hidden="true"></i> Stakeholders
                     </a>
                 </li>
             {% endif %}
             {% if request.user|has_perm:"programmes.view" or request.user|has_perm:"projects.view" or request.user|has_perm:"programmes.manage" or request.user|has_perm:"projects.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'programs:dashboard' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'programs' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'programs' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-kanban me-3 fs-5"></i> Programs
+                       {% if request.resolver_match.namespace == 'programs' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-kanban me-3 fs-5" aria-hidden="true"></i> Programs
                     </a>
                 </li>
             {% endif %}
             {% if request.user|has_perm:"beneficiaries.view" or request.user|has_perm:"beneficiaries.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'beneficiaries:dashboard' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'beneficiaries' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'beneficiaries' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-people me-3 fs-5"></i> Beneficiaries
+                       {% if request.resolver_match.namespace == 'beneficiaries' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-people me-3 fs-5" aria-hidden="true"></i> Beneficiaries
                     </a>
                 </li>
             {% endif %}
             {% if request.user|has_perm:"meal.view" or request.user|has_perm:"meal.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'meal:dashboard' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'meal' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'meal' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-graph-up me-3 fs-5"></i> MEAL
+                       {% if request.resolver_match.namespace == 'meal' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-graph-up me-3 fs-5" aria-hidden="true"></i> MEAL
                     </a>
                 </li>
             {% endif %}
             {% if request.user|has_perm:"report_templates.view" or request.user|has_perm:"report_templates.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'reports:dashboard' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'reports' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'reports' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-file-earmark-bar-graph me-3 fs-5"></i> Reports
+                       {% if request.resolver_match.namespace == 'reports' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-file-earmark-bar-graph me-3 fs-5" aria-hidden="true"></i> Reports
                     </a>
                 </li>
             {% endif %}
-            <li class="nav-item">
+            <li class="nav-item" role="none">
                 <a href="{% url 'report_instances:dashboard' %}"
                    class="nav-link {% if request.resolver_match.namespace == 'report_instances' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                   {% if request.resolver_match.namespace == 'report_instances' %}aria-current="page"{% endif %}>
-                    <i class="bi bi-clipboard-check me-3 fs-5"></i> Report Management
+                   {% if request.resolver_match.namespace == 'report_instances' %}aria-current="page"{% endif %}
+                   role="menuitem">
+                    <i class="bi bi-clipboard-check me-3 fs-5" aria-hidden="true"></i> Report Management
                 </a>
             </li>
             {% if request.user|has_perm:"reviews.view" or request.user|has_perm:"reviews.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'reviews:dashboard' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'reviews' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'reviews' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-check2-square me-3 fs-5"></i> Reviews
+                       {% if request.resolver_match.namespace == 'reviews' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-check2-square me-3 fs-5" aria-hidden="true"></i> Reviews
                     </a>
                 </li>
             {% endif %}
             {% if request.user|has_perm:"documents.view" or request.user|has_perm:"documents.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'documents:dashboard' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'documents' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'documents' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-folder2-open me-3 fs-5"></i> Documents
+                       {% if request.resolver_match.namespace == 'documents' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-folder2-open me-3 fs-5" aria-hidden="true"></i> Documents
                     </a>
                 </li>
             {% endif %}
             {% if request.user|has_perm:"registers.view" or request.user|has_perm:"registers.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'registers:dashboard' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'registers' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'registers' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-journal-bookmark me-3 fs-5"></i> Registers
+                       {% if request.resolver_match.namespace == 'registers' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-journal-bookmark me-3 fs-5" aria-hidden="true"></i> Registers
                     </a>
                 </li>
             {% endif %}
             {% if request.user|has_perm:"meetings.view" or request.user|has_perm:"calendars.view" or request.user|has_perm:"meetings.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'meetings:dashboard' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'meetings' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'meetings' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-calendar3 me-3 fs-5"></i> Calendar &amp; Meetings
+                       {% if request.resolver_match.namespace == 'meetings' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-calendar3 me-3 fs-5" aria-hidden="true"></i> Calendar & Meetings
                     </a>
                 </li>
             {% endif %}
             {% if request.user|has_perm:"notifications.view" or request.user|has_perm:"notifications.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'notifications:dashboard' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'notifications' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'notifications' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-bell me-3 fs-5"></i> Notifications
+                       {% if request.resolver_match.namespace == 'notifications' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-bell me-3 fs-5" aria-hidden="true"></i> Notifications
                     </a>
                 </li>
             {% endif %}
             {% if request.user|has_perm:"search.view" or request.user|has_perm:"search.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'search:home' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'search' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'search' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-search me-3 fs-5"></i> Search
+                       {% if request.resolver_match.namespace == 'search' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-search me-3 fs-5" aria-hidden="true"></i> Search
                     </a>
                 </li>
             {% endif %}
             {% if request.user|has_perm:"exports.view" or request.user|has_perm:"exports.manage" %}
-                <li class="nav-item">
+                <li class="nav-item" role="none">
                     <a href="{% url 'exports:home' %}"
                        class="nav-link {% if request.resolver_match.namespace == 'exports' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
-                       {% if request.resolver_match.namespace == 'exports' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-file-earmark-arrow-down me-3 fs-5"></i> Exports
+                       {% if request.resolver_match.namespace == 'exports' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-file-earmark-arrow-down me-3 fs-5" aria-hidden="true"></i> Exports
                     </a>
                 </li>
             {% endif %}
-            <li class="nav-item">
-                <a href="{% url 'core:organizations_index' %}"
-                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
-                    <i class="bi bi-diagram-3 me-3 fs-5 text-muted"></i> Organization
+            <li class="nav-item" role="none">
+                <a href="{% url 'governance:governance_dashboard' %}"
+                   class="nav-link {% if request.resolver_match.namespace == 'governance' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                   {% if request.resolver_match.namespace == 'governance' %}aria-current="page"{% endif %}
+                   role="menuitem">
+                    <i class="bi bi-shield-check me-3 fs-5" aria-hidden="true"></i> Governance
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{% url 'core:references_index' %}"
-                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
-                    <i class="bi bi-hash me-3 fs-5 text-muted"></i> Reference Numbers
+            <li class="nav-item" role="none">
+                <a href="{% url 'organizations:organizations_index' %}"
+                   class="nav-link {% if request.resolver_match.namespace == 'organizations' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                   {% if request.resolver_match.namespace == 'organizations' %}aria-current="page"{% endif %}
+                   role="menuitem">
+                    <i class="bi bi-diagram-3 me-3 fs-5 text-muted" aria-hidden="true"></i> Organization
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{% url 'core:rbac_index' %}"
-                   class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
-                    <i class="bi bi-shield-lock me-3 fs-5 text-muted"></i> Roles &amp; Permissions
+            <li class="nav-item" role="none">
+                <a href="{% url 'references:references_index' %}"
+                   class="nav-link {% if request.resolver_match.namespace == 'references' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                   {% if request.resolver_match.namespace == 'references' %}aria-current="page"{% endif %}
+                   role="menuitem">
+                    <i class="bi bi-hash me-3 fs-5 text-muted" aria-hidden="true"></i> Reference Numbers
+                </a>
+            </li>
+            <li class="nav-item" role="none">
+                <a href="{% url 'rbac:rbac_index' %}"
+                   class="nav-link {% if request.resolver_match.namespace == 'rbac' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                   {% if request.resolver_match.namespace == 'rbac' %}aria-current="page"{% endif %}
+                   role="menuitem">
+                    <i class="bi bi-shield-lock me-3 fs-5 text-muted" aria-hidden="true"></i> Roles & Permissions
                 </a>
             </li>
         </ul>
     </div>
     <!-- Bottom Settings Link -->
     <div class="mt-auto px-3 pb-2 pt-3 border-top">
-        <a href="#"
-           class="nav-link link-dark rounded-3 d-flex align-items-center py-2 px-3">
-            <i class="bi bi-gear me-3 fs-5 text-muted"></i> Settings
+        <a href="{% url 'settings:settings_dashboard' %}"
+           class="nav-link {% if request.resolver_match.namespace == 'settings' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+           {% if request.resolver_match.namespace == 'settings' %}aria-current="page"{% endif %}
+           role="menuitem">
+            <i class="bi bi-gear me-3 fs-5 text-muted" aria-hidden="true"></i> Settings
         </a>
     </div>
 </nav>

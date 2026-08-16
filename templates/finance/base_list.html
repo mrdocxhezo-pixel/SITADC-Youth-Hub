@@ -1,0 +1,68 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ title }}</h2>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url create_url %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New {{ model_name }}
+        </a>
+    </div>
+</div>
+
+{% if objects %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in objects %}
+            <tr>
+                {% for field in fields %}
+                <td>
+                    {% if field|first == "_" %} 
+                        {{ object|attr:field|slice:"1:" }}
+                    {% else %}
+                        {{ object|attr:field }}
+                    {% endif %}
+                </td>
+                {% endfor %}
+                <td class="text-end">
+                    <a href="{% url detail_url object.id %}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{% url update_url object.id %}" class="btn btn-sm btn-outline-secondary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url delete_url object.id %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{{ headers|length }}" class="text-center py-4">
+                    No {{ model_name_plural }} found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No {{ model_name_plural }} found.
+</div>
+{% endif %}
+{% endblock %}

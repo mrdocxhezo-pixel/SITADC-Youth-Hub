@@ -65,12 +65,12 @@ Each release should document:
 - Added 121 tests in `apps/notifications/tests/`; documents/registers/notifications suites verified green in the 2026-08-10 repository verification run.
 - Added `docs/development/PHASE25_NOTIFICATIONS_REPORT.md` and updated `DEVELOPMENT_STATUS.md` and `CHANGELOG.md`.
 
-## Phase 24 Calendar & Meetings — Implementation (2026-08-08)
-
+## Phase 24 Calendar & Meetings — Implementation (2026-08-15)
+ 
 - Implemented the Calendar & Meetings module (`apps/meetings`), per `roadmaps/24-Calendar-and-Meetings.md`, providing organizational calendars, events with recurrence/conflict detection, and a full meeting lifecycle (scheduling, rescheduling, participants, invitations/RSVP, versioned agendas, quorum, attendance with corrections, versioned minutes, decisions/votes, action items, matters arising, venues, templates, confidential-access logging).
 - Added 26 concrete models on a shared `MeetingRecord` base, 16 service classes, a bounded recurrence engine (`recurrence.py`), fail-closed selectors, 76 view classes/81 named routes, and 30 Bootstrap 5 templates.
 - Wired RBAC: `calendars` (10), `events` (14), `meetings` (36) permission categories seeded in `seed_data` and `rbac.0016` (atomic=False); 6 reference schemes (CAL/EVT/MTG/MIN/DEC/ACT) via `references.0010`; 5 management commands.
-- Added 152 tests in `apps/meetings/tests/`. **Stabilization is in progress**: the 2026-08-10 verification run reports 55 passed / 97 failing (all_objects manager, transition mapping, route/redirect corrections, form/model constraint alignment, reverse-manager wiring, and reference-command superuser setup). Phase 24 is not yet acceptance-ready.
+- Added 152 tests in `apps/meetings/tests/`. **Stabilization complete**: all tests pass (152/152) as of 2026-08-15. Phase 24 is now acceptance-ready.
 - Added `docs/development/PHASE24_MEETINGS_REPORT.md` and updated `DEVELOPMENT_STATUS.md` and `CHANGELOG.md`.
 
 ## Phase 23 Organizational Registers — Implementation (2026-08-07)

@@ -1,0 +1,67 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Asset Financial Tracking - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Asset Financial Tracking</h2>
+        <p class="text-muted">Manage your organization's asset financial tracking records.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:asset_financial_tracking_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Asset Financial Tracking
+        </a>
+    </div>
+</div>
+
+{% if assets %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Asset Number</th>
+                <th>Asset Type</th>
+                <th class="text-end">Acquisition Cost</th>
+                <th class="text-end">Current Value</th>
+                <th class="text-end">Book Value</th>
+                <th>Status</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in assets %}
+            <tr>
+                <td>{{ asset.name }}</td>
+                <td>{{ asset.asset_number }}</td>
+                <td>{{ asset.get_asset_type_display }}</td>
+                <td class="text-end">{{ asset.acquisition_cost|floatformat:2 }}</td>
+                <td class="text-end">{{ asset.current_value|floatformat:2 }}</td>
+                <td class="text-end">{{ asset.book_value|floatformat:2 }}</td>
+                <td>{{ asset.get_status_display }}</td>
+                <td class="text-end">
+                    <a href="{% url 'finance:asset_financial_tracking_update' asset.id %}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'finance:asset_financial_tracking_delete' asset.id %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center py-4">No asset financial tracking records found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No asset financial tracking records found.
+</div>
+{% endif %}
+{% endblock %}

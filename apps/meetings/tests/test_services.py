@@ -196,13 +196,13 @@ class ParticipantServiceTests(MeetingsTestCase):
         participant = self.service.add_participant(
             meeting=self.meeting,
             user=self.officer,
-            participant_type=ParticipantType.INTERNAL,
+            participant_type=ParticipantType.MEMBER,
             role_in_meeting="ATTENDEE",
             is_required=True,
         )
         self.assertEqual(participant.meeting, self.meeting)
         self.assertEqual(participant.user, self.officer)
-        self.assertEqual(participant.participant_type, ParticipantType.INTERNAL)
+        self.assertEqual(participant.participant_type, ParticipantType.MEMBER)
         self.assertTrue(participant.is_required)
 
     def test_add_participant_external(self):
@@ -210,7 +210,7 @@ class ParticipantServiceTests(MeetingsTestCase):
             meeting=self.meeting,
             name="External Person",
             email="external@example.com",
-            participant_type=ParticipantType.EXTERNAL,
+            participant_type=ParticipantType.GUEST,
             role_in_meeting="PRESENTER",
         )
         self.assertIsNone(participant.user)
@@ -221,14 +221,14 @@ class ParticipantServiceTests(MeetingsTestCase):
         participant = self.service.add_participant(
             meeting=self.meeting,
             user=self.officer,
-            participant_type=ParticipantType.INTERNAL,
+            participant_type=ParticipantType.MEMBER,
         )
         updated = self.service.update_status(
             participant,
-            participant_status=ParticipantStatus.CONFIRMED,
+            participant_status=ParticipantStatus.ACCEPTED,
             rsvp_status="ACCEPTED",
         )
-        self.assertEqual(updated.participant_status, ParticipantStatus.CONFIRMED)
+        self.assertEqual(updated.participant_status, ParticipantStatus.ACCEPTED)
 
 
 class AgendaServiceTests(MeetingsTestCase):
@@ -394,7 +394,7 @@ class VenueServiceTests(MeetingsTestCase):
     def test_archive_venue(self):
         venue = self.service.create(
             name="To Archive",
-            venue_type=VenueType.HALL,
+            venue_type=VenueType.COMMUNITY_HALL,
         )
         archived = self.service.archive(venue)
         self.assertTrue(archived.is_archived)

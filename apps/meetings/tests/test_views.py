@@ -355,7 +355,7 @@ class VenueViewTests(MeetingsTestCase):
             reverse("meetings:venue_create"),
             {
                 "name": "New Venue",
-                "venue_type": "HALL",
+                "venue_type": "COMMUNITY_HALL",
                 "capacity": 50,
             },
         )
@@ -367,7 +367,7 @@ class VenueViewTests(MeetingsTestCase):
             reverse("meetings:venue_update", args=[self.venue.pk]),
             {
                 "name": "Updated Venue",
-                "venue_type": "HALL",
+                "venue_type": "COMMUNITY_HALL",
                 "capacity": 20,
             },
         )

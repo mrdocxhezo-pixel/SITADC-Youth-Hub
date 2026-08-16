@@ -1,0 +1,368 @@
+{% extends "settings/base.html" %}
+{% load static i18n %}
+
+{% block settings_title %}{% trans "System Settings" %}{% endblock %}
+{% block page_title %}{% trans "System Settings" %}{% endblock %}
+{% block page_description %}{% trans "Configure global system settings for SITADC Youth Hub." %}{% endblock %}
+
+{% block settings_content %}
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <!-- General System Configuration -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "General System Configuration" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:system' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.system_name.id_for_label }}" class="form-label fw-medium">{{ form.system_name.label }}</label>
+                            {{ form.system_name }}
+                            {% if form.system_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.system_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.system_short_name.id_for_label }}" class="form-label fw-medium">{{ form.system_short_name.label }}</label>
+                            {{ form.system_short_name }}
+                            {% if form.system_short_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.system_short_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.system_email.id_for_label }}" class="form-label fw-medium">{{ form.system_email.label }}</label>
+                            {{ form.system_email }}
+                            {% if form.system_email.errors %}
+                            <div class="text-danger small mt-1">{{ form.system_email.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.system_status.id_for_label }}" class="form-label fw-medium">{{ form.system_status.label }}</label>
+                            {{ form.system_status }}
+                            {% if form.system_status.errors %}
+                            <div class="text-danger small mt-1">{{ form.system_status.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Maintenance Mode -->
+                    <h6 class="fw-medium mb-3">{% trans "Maintenance Mode" %}</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                {{ form.maintenance_mode }}
+                                <label class="form-check-label fw-medium" for="{{ form.maintenance_mode.id_for_label }}">{{ form.maintenance_mode.label }}</label>
+                            </div>
+                            {% if form.maintenance_mode.errors %}
+                            <div class="text-danger small mt-1">{{ form.maintenance_mode.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label for="{{ form.maintenance_message.id_for_label }}" class="form-label fw-medium">{{ form.maintenance_message.label }}</label>
+                            {{ form.maintenance_message }}
+                            {% if form.maintenance_message.errors %}
+                            <div class="text-danger small mt-1">{{ form.maintenance_message.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label for="{{ form.maintenance_allowed_roles.id_for_label }}" class="form-label fw-medium">{{ form.maintenance_allowed_roles.label }}</label>
+                            {{ form.maintenance_allowed_roles }}
+                            {% if form.maintenance_allowed_roles.errors %}
+                            <div class="text-danger small mt-1">{{ form.maintenance_allowed_roles.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">{% trans "JSON array of role names/IDs allowed during maintenance" %}</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Session & Security -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Session & Security" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:system' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label for="{{ form.session_timeout_minutes.id_for_label }}" class="form-label fw-medium">{{ form.session_timeout_minutes.label }}</label>
+                            {{ form.session_timeout_minutes }}
+                            {% if form.session_timeout_minutes.errors %}
+                            <div class="text-danger small mt-1">{{ form.session_timeout_minutes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="{{ form.max_login_attempts.id_for_label }}" class="form-label fw-medium">{{ form.max_login_attempts.label }}</label>
+                            {{ form.max_login_attempts }}
+                            {% if form.max_login_attempts.errors %}
+                            <div class="text-danger small mt-1">{{ form.max_login_attempts.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="{{ form.lockout_duration_minutes.id_for_label }}" class="form-label fw-medium">{{ form.lockout_duration_minutes.label }}</label>
+                            {{ form.lockout_duration_minutes }}
+                            {% if form.lockout_duration_minutes.errors %}
+                            <div class="text-danger small mt-1">{{ form.lockout_duration_minutes.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Password Policy -->
+                    <h6 class="fw-medium mb-3">{% trans "Password Policy" %}</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-3">
+                            <label for="{{ form.password_min_length.id_for_label }}" class="form-label fw-medium">{{ form.password_min_length.label }}</label>
+                            {{ form.password_min_length }}
+                            {% if form.password_min_length.errors %}
+                            <div class="text-danger small mt-1">{{ form.password_min_length.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label for="{{ form.password_expiry_days.id_for_label }}" class="form-label fw-medium">{{ form.password_expiry_days.label }}</label>
+                            {{ form.password_expiry_days }}
+                            {% if form.password_expiry_days.errors %}
+                            <div class="text-danger small mt-1">{{ form.password_expiry_days.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">{% trans "Leave blank for no expiration" %}</div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="form-check form-switch mt-4">
+                                {{ form.password_require_uppercase }}
+                                <label class="form-check-label" for="{{ form.password_require_uppercase.id_for_label }}">{{ form.password_require_uppercase.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="form-check form-switch mt-4">
+                                {{ form.password_require_lowercase }}
+                                <label class="form-check-label" for="{{ form.password_require_lowercase.id_for_label }}">{{ form.password_require_lowercase.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="form-check form-switch mt-4">
+                                {{ form.password_require_digits }}
+                                <label class="form-check-label" for="{{ form.password_require_digits.id_for_label }}">{{ form.password_require_digits.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="form-check form-switch mt-4">
+                                {{ form.password_require_special }}
+                                <label class="form-check-label" for="{{ form.password_require_special.id_for_label }}">{{ form.password_require_special.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="form-check form-switch mt-4">
+                                {{ form.require_2fa_admin }}
+                                <label class="form-check-label" for="{{ form.require_2fa_admin.id_for_label }}">{{ form.require_2fa_admin.label }}</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- File Upload & Audit -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "File Upload & Audit" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:system' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.max_upload_size_mb.id_for_label }}" class="form-label fw-medium">{{ form.max_upload_size_mb.label }}</label>
+                            {{ form.max_upload_size_mb }}
+                            {% if form.max_upload_size_mb.errors %}
+                            <div class="text-danger small mt-1">{{ form.max_upload_size_mb.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.allowed_file_types.id_for_label }}" class="form-label fw-medium">{{ form.allowed_file_types.label }}</label>
+                            {{ form.allowed_file_types }}
+                            {% if form.allowed_file_types.errors %}
+                            <div class="text-danger small mt-1">{{ form.allowed_file_types.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">{% trans "JSON array of MIME types or extensions (e.g., ['pdf', 'docx', 'jpg'])" %}</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.audit_retention_days.id_for_label }}" class="form-label fw-medium">{{ form.audit_retention_days.label }}</label>
+                            {{ form.audit_retention_days }}
+                            {% if form.audit_retention_days.errors %}
+                            <div class="text-danger small mt-1">{{ form.audit_retention_days.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch mt-4">
+                                {{ form.audit_log_enabled }}
+                                <label class="form-check-label" for="{{ form.audit_log_enabled.id_for_label }}">{{ form.audit_log_enabled.label }}</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Backup Configuration -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Backup Configuration" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:system' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <div class="form-check form-switch mt-4">
+                                {{ form.backup_enabled }}
+                                <label class="form-check-label" for="{{ form.backup_enabled.id_for_label }}">{{ form.backup_enabled.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="{{ form.backup_frequency.id_for_label }}" class="form-label fw-medium">{{ form.backup_frequency.label }}</label>
+                            {{ form.backup_frequency }}
+                            {% if form.backup_frequency.errors %}
+                            <div class="text-danger small mt-1">{{ form.backup_frequency.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="{{ form.backup_retention_days.id_for_label }}" class="form-label fw-medium">{{ form.backup_retention_days.label }}</label>
+                            {{ form.backup_retention_days }}
+                            {% if form.backup_retention_days.errors %}
+                            <div class="text-danger small mt-1">{{ form.backup_retention_days.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "System Status" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="fw-medium mb-2">{% trans "Current Status" %}</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-success bg-opacity-10 text-success rounded-circle p-3">
+                            <i class="bi bi-check fs-4" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">{% trans "Operational" %}</h6>
+                            <small class="text-muted">{% trans "All systems running normally" %}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-3">
+
+                <dl class="row mb-0 small">
+                    <dt class="col-6 text-muted">{% trans "Version" %}</dt>
+                    <dd class="col-6 mb-2">1.0.0</dd>
+
+                    <dt class="col-6 text-muted">{% trans "Environment" %}</dt>
+                    <dd class="col-6 mb-2">{% trans "Production" %}</dd>
+
+                    <dt class="col-6 text-muted">{% trans "Database" %}</dt>
+                    <dd class="col-6 mb-2">SQLite</dd>
+
+                    <dt class="col-6 text-muted">{% trans "Cache" %}</dt>
+                    <dd class="col-6 mb-2">{% trans "Redis" %}</dd>
+
+                    <dt class="col-6 text-muted">{% trans "Storage" %}</dt>
+                    <dd class="col-6 mb-2">{% trans "Local" %}</dd>
+
+                    <dt class="col-6 text-muted">{% trans "Last Backup" %}</dt>
+                    <dd class="col-6 mb-0">{% trans "2 hours ago" %}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Quick Actions" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary text-start" type="button">
+                        <i class="bi bi-database me-2" aria-hidden="true"></i>{% trans "Trigger Backup" %}
+                    </button>
+                    <button class="btn btn-outline-primary text-start" type="button">
+                        <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>{% trans "Clear Cache" %}
+                    </button>
+                    <button class="btn btn-outline-primary text-start" type="button">
+                        <i class="bi bi-graph-up me-2" aria-hidden="true"></i>{% trans "View Metrics" %}
+                    </button>
+                    <button class="btn btn-outline-danger text-start" type="button">
+                        <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>{% trans "Enable Maintenance" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Summary -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Security Summary" %}</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0 small">
+                    <li class="mb-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-success" aria-hidden="true"></i>
+                        <span>{% trans "2FA Required for Admins" %}</li>
+                    </li>
+                    <li class="mb-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-success" aria-hidden="true"></i>
+                        <span>{% trans "Audit Logging Enabled" %}</li>
+                    </li>
+                    <li class="mb-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-success" aria-hidden="true"></i>
+                        <span>{% trans "Password Policy Enforced" %}</li>
+                    </li>
+                    <li class="mb-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-success" aria-hidden="true"></i>
+                        <span>{% trans "Session Timeout Active" %}</li>
+                    </li>
+                    <li class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-success" aria-hidden="true"></i>
+                        <span>{% trans "Account Lockout Protection" %}</li>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock settings_content %}

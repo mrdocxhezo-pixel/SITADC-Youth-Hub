@@ -1,0 +1,350 @@
+{% extends "settings/base.html" %}
+{% load static i18n %}
+
+{% block settings_title %}{% trans "Accessibility Settings" %}{% endblock %}
+{% block page_title %}{% trans "Accessibility" %}{% endblock %}
+{% block page_description %}{% trans "Customize accessibility features for a better experience." %}{% endblock %}
+
+{% block settings_content %}
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <!-- Visual Accessibility -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Visual Accessibility" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:accessibility' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 border rounded-3 h-100">
+                                <div class="form-check form-switch mb-2">
+                                    {{ form.high_contrast }}
+                                </div>
+                                <h6 class="fw-medium mb-1">{{ form.high_contrast.label }}</h6>
+                                <p class="text-muted small mb-0">{% trans "Increase color contrast for better readability" %}</p>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 border rounded-3 h-100">
+                                <div class="form-check form-switch mb-2">
+                                    {{ form.larger_text }}
+                                </div>
+                                <h6 class="fw-medium mb-1">{{ form.larger_text.label }}</h6>
+                                <p class="text-muted small mb-0">{% trans "Increase base font size across the application" %}</p>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 border rounded-3 h-100">
+                                <div class="form-check form-switch mb-2">
+                                    {{ form.focus_indicators }}
+                                </div>
+                                <h6 class="fw-medium mb-1">{{ form.focus_indicators.label }}</h6>
+                                <p class="text-muted small mb-0">{% trans "Show visible focus outlines for keyboard navigation" %}</p>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 border rounded-3 h-100">
+                                <div class="form-check form-switch mb-2">
+                                    {{ form.reduced_motion }}
+                                </div>
+                                <h6 class="fw-medium mb-1">{{ form.reduced_motion.label }}</h6>
+                                <p class="text-muted small mb-0">{% trans "Minimize animations and transitions" %}</p>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 border rounded-3 h-100">
+                                <div class="form-check form-switch mb-2">
+                                    {{ form.animations_enabled }}
+                                </div>
+                                <h6 class="fw-medium mb-1">{{ form.animations_enabled.label }}</h6>
+                                <p class="text-muted small mb-0">{% trans "Enable UI animations and transitions" %}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Text Size Presets -->
+                    <h6 class="fw-medium mb-3">{% trans "Text Size Preset" %}</h6>
+                    <div class="btn-group w-100" role="group" aria-label="Text size preset">
+                        <input type="radio" class="btn-check" name="text_size_preset" id="textSmall" value="small" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="textSmall"><i class="bi bi-type fs-5 me-1" aria-hidden="true"></i>{% trans "Small" %}</label>
+
+                        <input type="radio" class="btn-check" name="text_size_preset" id="textMedium" value="medium" checked autocomplete="off">
+                        <label class="btn btn-outline-primary" for="textMedium"><i class="bi bi-type fs-4 me-1" aria-hidden="true"></i>{% trans "Medium" %}</label>
+
+                        <input type="radio" class="btn-check" name="text_size_preset" id="textLarge" value="large" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="textLarge"><i class="bi bi-type fs-3 me-1" aria-hidden="true"></i>{% trans "Large" %}</label>
+
+                        <input type="radio" class="btn-check" name="text_size_preset" id="textXLarge" value="xlarge" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="textXLarge"><i class="bi bi-type fs-2 me-1" aria-hidden="true"></i>{% trans "Extra Large" %}</label>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Navigation & Interaction -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Navigation & Interaction" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="keyboardNav" checked>
+                            </div>
+                            <h6 class="fw-medium mb-1">{% trans "Enhanced Keyboard Navigation" %}</h6>
+                            <p class="text-muted small mb-0">{% trans "Additional keyboard shortcuts and focus management" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="skipLinks" checked>
+                            </div>
+                            <h6 class="fw-medium mb-1">{% trans "Skip Links" %}</h6>
+                            <p class="text-muted small mb-0">{% trans "Show skip to main content link" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="autoFocus" checked>
+                            </div>
+                            <h6 class="fw-medium mb-1">{% trans "Auto-focus Modals" %}</h6>
+                            <p class="text-muted small mb-0">{% trans "Automatically focus first element in dialogs" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="trapFocus" checked>
+                            </div>
+                            <h6 class="fw-medium mb-1">{% trans "Focus Trap in Modals" %}</h6>
+                            <p class="text-muted small mb-0">{% trans "Keep focus within open dialogs" %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen Reader & Announcements -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Screen Reader & Announcements" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="liveRegions" checked>
+                            </div>
+                            <h6 class="fw-medium mb-1">{% trans "Live Regions" %}</h6>
+                            <p class="text-muted small mb-0">{% trans "Announce dynamic content changes" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="announceNotifications" checked>
+                            </div>
+                            <h6 class="fw-medium mb-1">{% trans "Announce Notifications" %}</h6>
+                            <p class="text-muted small mb-0">{% trans "Read new notifications aloud" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="verboseLabels">
+                            </div>
+                            <h6 class="fw-medium mb-1">{% trans "Verbose Labels" %}</h6>
+                            <p class="text-muted small mb-0">{% trans "More descriptive ARIA labels" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 border rounded-3 h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="describeImages">
+                            </div>
+                            <h6 class="fw-medium mb-1">{% trans "Describe Images" %}</h6>
+                            <p class="text-muted small mb-0">{% trans "Auto-generate alt text for images" %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color & Contrast -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Color & Contrast Options" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-medium">{% trans "Color Blindness Support" %}</label>
+                        <div class="btn-group w-100" role="group" aria-label="Color blindness mode">
+                            <input type="radio" class="btn-check" name="color_blind" id="cbNone" value="none" checked autocomplete="off">
+                            <label class="btn btn-outline-primary" for="cbNone">{% trans "Off" %}</label>
+                            <input type="radio" class="btn-check" name="color_blind" id="cbProtanopia" value="protanopia" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="cbProtanopia">{% trans "Protanopia" %}</label>
+                            <input type="radio" class="btn-check" name="color_blind" id="cbDeuteranopia" value="deuteranopia" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="cbDeuteranopia">{% trans "Deuteranopia" %}</label>
+                            <input type="radio" class="btn-check" name="color_blind" id="cbTritanopia" value="tritanopia" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="cbTritanopia">{% trans "Tritanopia" %}</label>
+                            <input type="radio" class="btn-check" name="color_blind" id="cbAchromatopsia" value="achromatopsia" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="cbAchromatopsia">{% trans "Achromatopsia" %}</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accessibility Preview & Help -->
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Live Preview" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="preview-area p-3 border rounded-3" style="min-height: 250px;">
+                    <h6 class="fw-medium mb-2">{% trans "Sample Content" %}</h6>
+                    <p class="text-muted small mb-3">{% trans "This is how text will appear with your settings." %}</p>
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button class="btn btn-primary btn-sm">{% trans "Primary" %}</button>
+                        <button class="btn btn-secondary btn-sm">{% trans "Secondary" %}</button>
+                        <button class="btn btn-success btn-sm">{% trans "Success" %}</button>
+                        <button class="btn btn-danger btn-sm">{% trans "Danger" %}</button>
+                    </div>
+
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="previewCheck1" checked>
+                        <label class="form-check-label" for="previewCheck1">{% trans "Sample checkbox" %}</label>
+                    </div>
+
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="previewCheck2">
+                        <label class="form-check-label" for="previewCheck2">{% trans "Another option" %}</label>
+                    </div>
+
+                    <select class="form-select form-select-sm mb-3" aria-label="Sample select">
+                        <option selected>{% trans "Choose an option" %}</option>
+                        <option value="1">{% trans "Option One" %}</option>
+                        <option value="2">{% trans "Option Two" %}</option>
+                    </select>
+
+                    <div class="alert alert-info small mb-0" role="alert">
+                        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>{% trans "Changes apply immediately when saved." %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accessibility Shortcuts -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Keyboard Shortcuts" %}</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0 small">
+                    <dt class="col-4 text-muted"><kbd class="px-1">Alt</kbd> + <kbd class="px-1">S</kbd></dt>
+                    <dd class="col-8 mb-2">{% trans "Open Settings" %}</dd>
+
+                    <dt class="col-4 text-muted"><kbd class="px-1">Alt</kbd> + <kbd class="px-1">D</kbd></dt>
+                    <dd class="col-8 mb-2">{% trans "Open Dashboard" %}</dd>
+
+                    <dt class="col-4 text-muted"><kbd class="px-1">Alt</kbd> + <kbd class="px-1">N</kbd></dt>
+                    <dd class="col-8 mb-2">{% trans "Open Notifications" %}</dd>
+
+                    <dt class="col-4 text-muted"><kbd class="px-1">Alt</kbd> + <kbd class="px-1">H</kbd></dt>
+                    <dd class="col-8 mb-2">{% trans "Open Help" %}</dd>
+
+                    <dt class="col-4 text-muted"><kbd class="px-1">/</kbd></dt>
+                    <dd class="col-8 mb-2">{% trans "Focus Search" %}</dd>
+
+                    <dt class="col-4 text-muted"><kbd class="px-1">Esc</kbd></dt>
+                    <dd class="col-8 mb-0">{% trans "Close Modal / Sidebar" %}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Accessibility Resources -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Resources" %}</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0 small">
+                    <li class="mb-2"><a href="#" class="text-decoration-none"><i class="bi bi-link-45deg me-1" aria-hidden="true"></i>{% trans "WCAG 2.1 Guidelines" %}</a></li>
+                    <li class="mb-2"><a href="#" class="text-decoration-none"><i class="bi bi-link-45deg me-1" aria-hidden="true"></i>{% trans "ARIA Authoring Practices" %}</a></li>
+                    <li class="mb-2"><a href="#" class="text-decoration-none"><i class="bi bi-link-45deg me-1" aria-hidden="true"></i>{% trans "Screen Reader Testing" %}</a></li>
+                    <li><a href="#" class="text-decoration-none"><i class="bi bi-envelope me-1" aria-hidden="true"></i>{% trans "Report Accessibility Issue" %}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Live preview for accessibility settings
+    const highContrast = document.querySelector('[name="high_contrast"]');
+    const largerText = document.querySelector('[name="larger_text"]');
+    const reducedMotion = document.querySelector('[name="reduced_motion"]');
+    const animationsEnabled = document.querySelector('[name="animations_enabled"]');
+    const focusIndicators = document.querySelector('[name="focus_indicators"]');
+
+    const previewArea = document.querySelector('.preview-area');
+
+    function updatePreview() {
+        if (!previewArea) return;
+
+        // High contrast
+        if (highContrast?.checked) {
+            previewArea.classList.add('high-contrast');
+        } else {
+            previewArea.classList.remove('high-contrast');
+        }
+
+        // Larger text
+        if (largerText?.checked) {
+            previewArea.classList.add('larger-text');
+        } else {
+            previewArea.classList.remove('larger-text');
+        }
+
+        // Reduced motion
+        if (reducedMotion?.checked) {
+            previewArea.style.setProperty('--animation-duration', '0.01ms');
+        } else {
+            previewArea.style.removeProperty('--animation-duration');
+        }
+
+        // Focus indicators
+        if (focusIndicators?.checked) {
+            previewArea.classList.add('focus-visible');
+        } else {
+            previewArea.classList.remove('focus-visible');
+        }
+    }
+
+    [highContrast, largerText, reducedMotion, animationsEnabled, focusIndicators].forEach(el => {
+        if (el) el.addEventListener('change', updatePreview);
+    });
+
+    // Initial update
+    updatePreview();
+});
+</script>
+{% endblock settings_content %}

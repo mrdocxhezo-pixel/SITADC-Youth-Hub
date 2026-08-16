@@ -98,7 +98,7 @@ def role_create_view(request):
                     permissions=list(form.cleaned_data.get("permission_codes") or []),
                 )
                 messages.success(request, _("Role created successfully."))
-                return redirect("core:role_list")
+                return redirect("rbac:role_list")
             except ValidationError as e:
                 form.add_error(None, e)
     else:
@@ -113,7 +113,7 @@ def role_update_view(request, slug):
     role = get_object_or_404(Role.objects.all(), slug=slug)
     if not can_manage_role(request.user, role):
         messages.error(request, _("You are not authorized to manage this role."))
-        return redirect("core:role_detail", slug=role.slug)
+        return redirect("rbac:role_detail", slug=role.slug)
 
     if request.method == "POST":
         form = RoleForm(request.POST, instance=role)
@@ -130,7 +130,7 @@ def role_update_view(request, slug):
                     role=role, permissions=selected
                 )
                 messages.success(request, _("Role updated successfully."))
-                return redirect("core:role_detail", slug=role.slug)
+                return redirect("rbac:role_detail", slug=role.slug)
             except ValidationError as e:
                 form.add_error(None, e)
     else:
@@ -148,7 +148,7 @@ def role_permissions_view(request, slug):
     role = get_object_or_404(Role.objects.all(), slug=slug)
     if not can_manage_role(request.user, role):
         messages.error(request, _("You are not authorized to manage this role."))
-        return redirect("core:role_detail", slug=role.slug)
+        return redirect("rbac:role_detail", slug=role.slug)
 
     codes = request.POST.getlist("permission_codes")
     try:
@@ -158,7 +158,7 @@ def role_permissions_view(request, slug):
         messages.success(request, _("Role permissions updated successfully."))
     except ValidationError as e:
         messages.error(request, e.message)
-    return redirect("core:role_detail", slug=role.slug)
+    return redirect("rbac:role_detail", slug=role.slug)
 
 
 def _role_action_view(request, slug, service, success_message, action_name):
@@ -166,14 +166,14 @@ def _role_action_view(request, slug, service, success_message, action_name):
     role = get_object_or_404(Role.objects.all(), slug=slug)
     if not can_manage_role(request.user, role):
         messages.error(request, _("You are not authorized to manage this role."))
-        return redirect("core:role_detail", slug=role.slug)
+        return redirect("rbac:role_detail", slug=role.slug)
     try:
         service(user=request.user).execute(role=role)
         messages.success(request, success_message)
         logger.info(f"{action_name} role {role.slug} by {request.user}")
     except ValidationError as e:
         messages.error(request, e.message)
-    return redirect("core:role_detail", slug=role.slug)
+    return redirect("rbac:role_detail", slug=role.slug)
 
 
 @permission_required(ROLE_MANAGE_PERMISSION)
@@ -223,7 +223,7 @@ def role_clone_view(request, slug):
     source = get_object_or_404(Role.objects.all(), slug=slug)
     if not can_manage_role(request.user, source):
         messages.error(request, _("You are not authorized to manage this role."))
-        return redirect("core:role_detail", slug=source.slug)
+        return redirect("rbac:role_detail", slug=source.slug)
     form = RoleCloneForm(request.POST)
     if form.is_valid():
         try:
@@ -235,7 +235,7 @@ def role_clone_view(request, slug):
             messages.error(request, e.message)
     else:
         messages.error(request, _("Please provide a name for the cloned role."))
-    return redirect("core:role_detail", slug=source.slug)
+    return redirect("rbac:role_detail", slug=source.slug)
 
 
 @permission_required(ROLE_MANAGE_PERMISSION)
@@ -245,14 +245,14 @@ def role_delete_view(request, slug):
     role = get_object_or_404(Role.objects.all(), slug=slug)
     if not can_manage_role(request.user, role):
         messages.error(request, _("You are not authorized to manage this role."))
-        return redirect("core:role_detail", slug=role.slug)
+        return redirect("rbac:role_detail", slug=role.slug)
     try:
         DeleteRoleService(user=request.user).execute(role=role)
         messages.success(request, _("Role deleted successfully."))
-        return redirect("core:role_list")
+        return redirect("rbac:role_list")
     except ValidationError as e:
         messages.error(request, e.message)
-        return redirect("core:role_detail", slug=role.slug)
+        return redirect("rbac:role_detail", slug=role.slug)
 
 
 @permission_required(ROLE_VIEW_PERMISSION)
@@ -283,7 +283,7 @@ def role_assignment_create_view(request, slug):
     role = get_object_or_404(Role.objects.all(), slug=slug)
     if not can_manage_role(request.user, role):
         messages.error(request, _("You are not authorized to manage this role."))
-        return redirect("core:role_detail", slug=role.slug)
+        return redirect("rbac:role_detail", slug=role.slug)
     form = UserRoleAssignmentForm(request.POST)
     if form.is_valid():
         try:
@@ -303,7 +303,7 @@ def role_assignment_create_view(request, slug):
         for field, errors in form.errors.items():
             for error in errors:
                 messages.error(request, f"{field}: {error}")
-    return redirect("core:role_assignments", slug=role.slug)
+    return redirect("rbac:role_assignments", slug=role.slug)
 
 
 @permission_required(ROLE_MANAGE_PERMISSION)
@@ -317,20 +317,71 @@ def role_assignment_revoke_view(request, assignment_id):
         messages.success(request, _("Role assignment revoked successfully."))
     except ValidationError as e:
         messages.error(request, e.message)
-    return redirect("core:role_assignments", slug=role_slug)
+    return redirect("rbac:role_assignments", slug=role_slug)
 
 
 @permission_required(ROLE_VIEW_PERMISSION)
 def permission_list_view(request):
-    """List permission categories and their permissions."""
+    """List permission categories and their permissions, with search."""
+    query = request.GET.get("q", "").strip().lower()
     categories = selectors.get_permission_categories()
     permission_map = {}
     for category in categories:
-        permission_map[category.code] = selectors.get_permissions_by_category(category)
+        permissions = selectors.get_permissions_by_category(category)
+        if query:
+            permissions = permissions.filter(
+                Q(codename__icontains=query) | Q(name__icontains=query)
+            )
+        permission_map[category.code] = permissions
+    if query:
+        categories = [c for c in categories if permission_map[c.code]]
     return render(
         request,
         "rbac/permission_list.html",
-        {"categories": categories, "permission_map": permission_map},
+        {
+            "categories": categories,
+            "permission_map": permission_map,
+            "query": request.GET.get("q", ""),
+        },
+    )
+
+
+@permission_required(ROLE_VIEW_PERMISSION)
+def permission_matrix_view(request):
+    """Show the role-by-permission matrix for a selected category."""
+    categories = selectors.get_permission_categories()
+    selected_code = request.GET.get("category") or (
+        categories.first().code if categories.exists() else None
+    )
+    category = None
+    permissions = []
+    role_grants = {}
+    roles = selectors.get_active_roles()
+    if selected_code:
+        category = categories.filter(code=selected_code).first()
+    if category:
+        permissions = list(selectors.get_permissions_by_category(category))
+        permission_ids = [p.id for p in permissions]
+        from django.contrib.auth.models import Permission
+
+        for role in roles.select_related("group"):
+            granted = set(
+                role.permissions.filter(id__in=permission_ids).values_list(
+                    "id", flat=True
+                )
+            )
+            role_grants[role.id] = granted
+    return render(
+        request,
+        "rbac/permission_matrix.html",
+        {
+            "categories": categories,
+            "selected_code": selected_code,
+            "category": category,
+            "permissions": permissions,
+            "roles": roles,
+            "role_grants": role_grants,
+        },
     )
 
 

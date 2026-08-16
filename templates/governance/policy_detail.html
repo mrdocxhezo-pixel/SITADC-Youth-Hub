@@ -1,0 +1,62 @@
+{% extends "governance/base.html" %}
+
+{% block title %}{{ policy.title }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ policy.title }}</h1>
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <strong>Reference Number:</strong> {{ policy.reference_number }}
+        </div>
+        <div class="mb-3">
+            <strong>Governance Type:</strong> {{ policy.get_governance_type_display }}
+        </div>
+        <div class="mb-3">
+            <strong>Description:</strong><br>
+            {{ policy.description|linebreaks }}
+        </div>
+        <div class="mb-3">
+            <strong>Priority:</strong> {{ policy.get_priority_display }}
+        </div>
+        <div class="mb-3">
+            <strong>Confidentiality Level:</strong> {{ policy.get_confidentiality_level_display }}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <strong>Department:</strong> {{ policy.department }}
+        </div>
+        <div class="mb-3">
+            <strong>Programme:</strong> {{ policy.programme }}
+        </div>
+        <div class="mb-3">
+            <strong>Project:</strong> {{ policy.project }}
+        </div>
+        <div class="mb-3">
+            <strong>Region:</strong> {{ policy.region }}
+        </div>
+        <div class="mb-3">
+            <strong>Responsible Officer:</strong> {{ policy.responsible_officer.get_full_name|default:policy.responsible_officer.username }}
+        </div>
+        <div class="mb-3">
+            <strong>Effective Date:</strong> {{ policy.effective_date|date:"Y-m-d" }}
+        </div>
+        <div class="mb-3">
+            <strong>Expiry Date:</strong> {{ policy.expiry_date|date:"Y-m-d" }}
+        </div>
+        <div class="mb-3">
+            <strong>Review Date:</strong> {{ policy.review_date|date:"Y-m-d" }}
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <a href="{% url 'governance:policy_list' %}" class="btn btn-secondary">Back to List</a>
+    {% if perms.governance.change_policy %}
+    <a href="{% url 'governance:policy_update' policy.pk %}" class="btn btn-outline-primary">Edit</a>
+    {% endif %}
+    {% if perms.governance.delete_policy %}
+    <a href="{% url 'governance:policy_delete' policy.pk %}" class="btn btn-outline-danger">Delete</a>
+    {% endif %}
+</div>
+{% endblock %}

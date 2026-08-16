@@ -61,14 +61,14 @@ def test_reference_pages_require_login(client, db):
         "audit_list",
         "scheme_preview",
     ]:
-        response = client.get(reverse(f"core:{url_name}"))
+        response = client.get(reverse(f"references:{url_name}"))
         assert response.status_code in (302, 403)
 
 
 @pytest.mark.django_db
 def test_references_index_renders(client, admin):
     client.force_login(admin)
-    response = client.get(reverse("core:references_index"))
+    response = client.get(reverse("references:references_index"))
     assert response.status_code == 200
     assert b"Reference Numbering" in response.content
 
@@ -76,7 +76,7 @@ def test_references_index_renders(client, admin):
 @pytest.mark.django_db
 def test_scheme_list_renders(client, admin, scheme):
     client.force_login(admin)
-    response = client.get(reverse("core:scheme_list"))
+    response = client.get(reverse("references:scheme_list"))
     assert response.status_code == 200
     assert b"Schemes" in response.content
 
@@ -84,7 +84,7 @@ def test_scheme_list_renders(client, admin, scheme):
 @pytest.mark.django_db
 def test_scheme_detail_renders(client, admin, scheme):
     client.force_login(admin)
-    response = client.get(reverse("core:scheme_detail", args=[scheme.pk]))
+    response = client.get(reverse("references:scheme_detail", args=[scheme.pk]))
     assert response.status_code == 200
     assert b"Project" in response.content
 
@@ -92,7 +92,7 @@ def test_scheme_detail_renders(client, admin, scheme):
 @pytest.mark.django_db
 def test_registry_renders(client, admin):
     client.force_login(admin)
-    response = client.get(reverse("core:reference_registry"))
+    response = client.get(reverse("references:reference_registry"))
     assert response.status_code == 200
     assert b"Reference Registry" in response.content
 
@@ -100,7 +100,7 @@ def test_registry_renders(client, admin):
 @pytest.mark.django_db
 def test_preview_renders(client, admin):
     client.force_login(admin)
-    response = client.get(reverse("core:scheme_preview"))
+    response = client.get(reverse("references:scheme_preview"))
     assert response.status_code == 200
     assert b"Preview" in response.content
 
@@ -108,7 +108,7 @@ def test_preview_renders(client, admin):
 @pytest.mark.django_db
 def test_sequence_list_renders(client, admin):
     client.force_login(admin)
-    response = client.get(reverse("core:sequence_list"))
+    response = client.get(reverse("references:sequence_list"))
     assert response.status_code == 200
     assert b"Sequences" in response.content
 
@@ -116,7 +116,7 @@ def test_sequence_list_renders(client, admin):
 @pytest.mark.django_db
 def test_audit_list_renders(client, admin):
     client.force_login(admin)
-    response = client.get(reverse("core:audit_list"))
+    response = client.get(reverse("references:audit_list"))
     assert response.status_code == 200
     assert b"Audit Trail" in response.content
 
@@ -124,7 +124,7 @@ def test_audit_list_renders(client, admin):
 @pytest.mark.django_db
 def test_unauthorized_user_gets_403(client, plain_user):
     client.force_login(plain_user)
-    response = client.get(reverse("core:scheme_list"))
+    response = client.get(reverse("references:scheme_list"))
     assert response.status_code == 403
 
 
@@ -132,7 +132,7 @@ def test_unauthorized_user_gets_403(client, plain_user):
 def test_preview_post_renders_result(client, admin, scheme):
     client.force_login(admin)
     response = client.post(
-        reverse("core:scheme_preview"),
+        reverse("references:scheme_preview"),
         {"module": ReferenceModules.PROJECTS, "record_type": "project"},
     )
     assert response.status_code == 200
@@ -143,7 +143,7 @@ def test_preview_post_renders_result(client, admin, scheme):
 def test_scheme_create_post(client, admin):
     client.force_login(admin)
     response = client.post(
-        reverse("core:scheme_create"),
+        reverse("references:scheme_create"),
         {
             "name": "Report",
             "code": "report",

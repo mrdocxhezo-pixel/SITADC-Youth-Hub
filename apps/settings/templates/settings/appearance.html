@@ -1,0 +1,247 @@
+{% extends "settings/base.html" %}
+{% load static i18n %}
+
+{% block settings_title %}{% trans "Appearance Settings" %}{% endblock %}
+{% block page_title %}{% trans "Appearance & Personalization" %}{% endblock %}
+{% block page_description %}{% trans "Customize how SITADC Youth Hub looks and feels on your device." %}{% endblock %}
+
+{% block settings_content %}
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <!-- Theme -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Theme" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:appearance' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label fw-medium">{% trans "Color Mode" %}</label>
+                            <div class="btn-group w-100" role="group" aria-label="Theme selection">
+                                {% for value, label in form.theme.field.choices %}
+                                <input type="radio" class="btn-check" name="theme" id="theme_{{ value }}" value="{{ value }}" {% if form.theme.value == value %}checked{% endif %} autocomplete="off">
+                                <label class="btn btn-outline-primary flex-fill py-3 d-flex flex-column align-items-center gap-2" for="theme_{{ value }}">
+                                    <i class="bi bi-{% if value == 'light' %}sun{% elif value == 'dark' %}moon{% else %}cpu{% endif %} fs-3" aria-hidden="true"></i>
+                                    <span class="fw-medium">{{ label }}</span>
+                                    <small class="text-muted">
+                                        {% if value == 'light' %}{% trans "Always light" %}{% elif value == 'dark' %}{% trans "Always dark" %}{% else %}{% trans "Follow system" %}{% endif %}
+                                    </small>
+                                </label>
+                                {% endfor %}
+                            </div>
+                            {% if form.theme.errors %}
+                            <div class="text-danger small mt-1">{{ form.theme.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.accent_color.id_for_label }}" class="form-label fw-medium">{{ form.accent_color.label }}</label>
+                            {{ form.accent_color }}
+                            {% if form.accent_color.errors %}
+                            <div class="text-danger small mt-1">{{ form.accent_color.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">{% trans "Bootstrap color token (primary, secondary, success, danger, warning, info, etc.)" %}</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.density.id_for_label }}" class="form-label fw-medium">{{ form.density.label }}</label>
+                            {{ form.density }}
+                            {% if form.density.errors %}
+                            <div class="text-danger small mt-1">{{ form.density.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.dashboard_layout.id_for_label }}" class="form-label fw-medium">{{ form.dashboard_layout.label }}</label>
+                            {{ form.dashboard_layout }}
+                            {% if form.dashboard_layout.errors %}
+                            <div class="text-danger small mt-1">{{ form.dashboard_layout.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.sidebar_collapsed.id_for_label }}" class="form-label fw-medium d-flex align-items-center gap-2">
+                                {{ form.sidebar_collapsed }}
+                                {{ form.sidebar_collapsed.label }}
+                            </label>
+                            {% if form.sidebar_collapsed.errors %}
+                            <div class="text-danger small mt-1">{{ form.sidebar_collapsed.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                {{ form.animations_enabled }}
+                                <label class="form-check-label fw-medium" for="{{ form.animations_enabled.id_for_label }}">{{ form.animations_enabled.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                {{ form.reduced_motion }}
+                                <label class="form-check-label fw-medium" for="{{ form.reduced_motion.id_for_label }}">{{ form.reduced_motion.label }}</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Accessibility Preferences (Quick Access) -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Accessibility" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:accessibility' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                {{ accessibility_form.high_contrast }}
+                                <label class="form-check-label fw-medium" for="{{ accessibility_form.high_contrast.id_for_label }}">{{ accessibility_form.high_contrast.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                {{ accessibility_form.larger_text }}
+                                <label class="form-check-label fw-medium" for="{{ accessibility_form.larger_text.id_for_label }}">{{ accessibility_form.larger_text.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                {{ accessibility_form.focus_indicators }}
+                                <label class="form-check-label fw-medium" for="{{ accessibility_form.focus_indicators.id_for_label }}">{{ accessibility_form.focus_indicators.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                {{ accessibility_form.animations_enabled }}
+                                <label class="form-check-label fw-medium" for="{{ accessibility_form.animations_enabled.id_for_label }}">{{ accessibility_form.animations_enabled.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                {{ accessibility_form.reduced_motion }}
+                                <label class="form-check-label fw-medium" for="{{ accessibility_form.reduced_motion.id_for_label }}">{{ accessibility_form.reduced_motion.label }}</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary">{% trans "Save Accessibility Settings" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Panel -->
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Live Preview" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="preview-container p-3 rounded-3 border" style="min-height: 300px;">
+                    <div class="d-flex align-items-center gap-3 mb-3 p-3 bg-white rounded-3 border">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3">
+                            <i class="bi bi-speedometer2 fs-4" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">{% trans "Dashboard Card" %}</h6>
+                            <p class="text-muted small mb-0">{% trans "This is how cards will appear" %}</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button class="btn btn-primary w-100 py-2">{% trans "Primary" %}</button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary w-100 py-2">{% trans "Outline" %}</button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-success w-100 py-2">{% trans "Success" %}</button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-warning w-100 py-2">{% trans "Warning" %}</button>
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="previewSwitch" checked>
+                        <label class="form-check-label" for="previewSwitch">{% trans "Enable Animations" %}</label>
+                    </div>
+
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="previewReducedMotion">
+                        <label class="form-check-label" for="previewReducedMotion">{% trans "Reduced Motion" %}</label>
+                    </div>
+
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="previewHighContrast">
+                        <label class="form-check-label" for="previewHighContrast">{% trans "High Contrast" %}</label>
+                    </div>
+
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="previewLargerText">
+                        <label class="form-check-label" for="previewLargerText">{% trans "Larger Text" %}</label>
+                    </div>
+
+                    <p class="text-muted small mt-3 mb-0"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>{% trans "Changes apply immediately on save." %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Live preview updates
+    const themeRadios = document.querySelectorAll('input[name="theme"]');
+    const accentColor = document.querySelector('[name="accent_color"]');
+    const densitySelect = document.querySelector('[name="density"]');
+    const sidebarCollapsed = document.querySelector('[name="sidebar_collapsed"]');
+    const animationsEnabled = document.querySelector('[name="animations_enabled"]');
+    const reducedMotion = document.querySelector('[name="reduced_motion"]');
+
+    // Preview elements
+    const previewContainer = document.querySelector('.preview-container');
+    const previewSwitch = document.getElementById('previewSwitch');
+    const previewReducedMotion = document.getElementById('previewReducedMotion');
+    const previewHighContrast = document.getElementById('previewHighContrast');
+    const previewLargerText = document.getElementById('previewLargerText');
+
+    function updatePreview() {
+        // Theme
+        const theme = document.querySelector('input[name="theme"]:checked')?.value || 'system';
+        if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            previewContainer.classList.add('dark-mode');
+        } else {
+            previewContainer.classList.remove('dark-mode');
+        }
+
+        // Animations
+        previewContainer.style.setProperty('--animation-enabled', animationsEnabled?.checked ? '1' : '0');
+    }
+
+    themeRadios.forEach(radio => radio.addEventListener('change', updatePreview));
+    animationsEnabled?.addEventListener('change', updatePreview);
+    reducedMotion?.addEventListener('change', updatePreview);
+
+    // Initialize
+    updatePreview();
+});
+</script>
+{% endblock settings_content %}

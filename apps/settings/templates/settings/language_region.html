@@ -1,0 +1,334 @@
+{% extends "settings/base.html" %}
+{% load static i18n settings_tags %}
+
+{% block settings_title %}{% trans "Language & Region" %}{% endblock %}
+{% block page_title %}{% trans "Language, Region & Time" %}{% endblock %}
+{% block page_description %}{% trans "Configure your preferred language, timezone, date/time formats, and regional settings." %}{% endblock %}
+
+{% block settings_content %}
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <!-- Language Settings -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Language & Region" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:language_region' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.language.id_for_label }}" class="form-label fw-medium">{{ form.language.label }}</label>
+                            {{ form.language }}
+                            {% if form.language.errors %}
+                            <div class="text-danger small mt-1">{{ form.language.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.country.id_for_label }}" class="form-label fw-medium">{{ form.country.label }}</label>
+                            {{ form.country }}
+                            {% if form.country.errors %}
+                            <div class="text-danger small mt-1">{{ form.country.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.timezone.id_for_label }}" class="form-label fw-medium">{{ form.timezone.label }}</label>
+                            {{ form.timezone }}
+                            {% if form.timezone.errors %}
+                            <div class="text-danger small mt-1">{{ form.timezone.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">{% trans "IANA timezone identifier (e.g., Africa/Lusaka, America/New_York)" %}</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Date & Time Formats -->
+                    <h6 class="fw-medium mb-3">{% trans "Date & Time Formats" %}</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.date_format.id_for_label }}" class="form-label fw-medium">{{ form.date_format.label }}</label>
+                            {{ form.date_format }}
+                            {% if form.date_format.errors %}
+                            <div class="text-danger small mt-1">{{ form.date_format.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">
+                                {% trans "Examples:" %}
+                                <code>Y-m-d</code> (2024-01-15),
+                                <code>d/m/Y</code> (15/01/2024),
+                                <code>m/d/Y</code> (01/15/2024)
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.time_format.id_for_label }}" class="form-label fw-medium">{{ form.time_format.label }}</label>
+                            {{ form.time_format }}
+                            {% if form.time_format.errors %}
+                            <div class="text-danger small mt-1">{{ form.time_format.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">
+                                {% trans "Examples:" %}
+                                <code>H:i:s</code> (14:30:00),
+                                <code>h:i A</code> (02:30 PM)
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.currency_format.id_for_label }}" class="form-label fw-medium">{{ form.currency_format.label }}</label>
+                            {{ form.currency_format }}
+                            {% if form.currency_format.errors %}
+                            <div class="text-danger small mt-1">{{ form.currency_format.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.first_day_of_week.id_for_label }}" class="form-label fw-medium">{{ form.first_day_of_week.label }}</label>
+                            {{ form.first_day_of_week }}
+                            {% if form.first_day_of_week.errors %}
+                            <div class="text-danger small mt-1">{{ form.first_day_of_week.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Format Preview -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Format Preview" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-muted small">{% trans "Current Date" %}</label>
+                        <p class="fw-medium fs-5" id="previewDate">2024-01-15</p>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-muted small">{% trans "Current Time" %}</label>
+                        <p class="fw-medium fs-5" id="previewTime">14:30:00</p>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-muted small">{% trans "Currency" %}</label>
+                        <p class="fw-medium fs-5" id="previewCurrency">ZMW 1,234.56</p>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-muted small">{% trans "Week Starts" %}</label>
+                        <p class="fw-medium fs-5" id="previewWeekStart">{% trans "Monday" %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regional Preferences -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Regional Preferences" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="use24Hour" checked>
+                            <label class="form-check-label" for="use24Hour">{% trans "24-hour time format" %}</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="showSeconds">
+                            <label class="form-check-label" for="showSeconds">{% trans "Show seconds in time" %}</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="showTimezone" checked>
+                            <label class="form-check-label" for="showTimezone">{% trans "Show timezone in timestamps" %}</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="relativeTime" checked>
+                            <label class="form-check-label" for="relativeTime">{% trans "Use relative time (e.g., '2 hours ago')" %}</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help & Current Settings -->
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Current Settings" %}</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0 small">
+                    <dt class="col-sm-5 text-muted">{% trans "Language" %}</dt>
+                    <dd class="col-sm-7 mb-2">{{ user_settings.language|default:"en" }}</dd>
+
+                    <dt class="col-sm-5 text-muted">{% trans "Country" %}</dt>
+                    <dd class="col-sm-7 mb-2">{{ user_settings.country|default:"ZM" }}</dd>
+
+                    <dt class="col-sm-5 text-muted">{% trans "Timezone" %}</dt>
+                    <dd class="col-sm-7 mb-2">{{ user_settings.timezone|default:"Africa/Lusaka" }}</dd>
+
+                    <dt class="col-sm-5 text-muted">{% trans "Date Format" %}</dt>
+                    <dd class="col-sm-7 mb-2">{{ user_settings.date_format|default:"Y-m-d" }}</dd>
+
+                    <dt class="col-sm-5 text-muted">{% trans "Time Format" %}</dt>
+                    <dd class="col-sm-7 mb-2">{{ user_settings.time_format|default:"H:i:s" }}</dd>
+
+                    <dt class="col-sm-5 text-muted">{% trans "Currency" %}</dt>
+                    <dd class="col-sm-7 mb-2">{{ user_settings.currency_format|default:"ZMW" }}</dd>
+
+                    <dt class="col-sm-5 text-muted">{% trans "First Day of Week" %}</dt>
+                    <dd class="col-sm-7 mb-0">
+                        {{ user_settings.first_day_of_week|weekday_name }}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Supported Languages -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Supported Languages" %}</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0 small">
+                    <li class="mb-2 d-flex align-items-center gap-2">
+                        <span class="badge bg-primary">en</span>
+                        <span>{% trans "English" %}</span>
+                    </li>
+                    <li class="mb-2 d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary">bem</span>
+                        <span>{% trans "Bemba" %}</span>
+                    </li>
+                    <li class="mb-2 d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary">nya</span>
+                        <span>{% trans "Nyanja" %}</span>
+                    </li>
+                    <li class="mb-2 d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary">ton</span>
+                        <span>{% trans "Tonga" %}</span>
+                    </li>
+                    <li class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary">loz</span>
+                        <span>{% trans "Lozi" %}</span>
+                    </li>
+                </ul>
+                <p class="small text-muted mt-2 mb-0"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>{% trans "More languages coming soon." %}</p>
+            </div>
+        </div>
+
+        <!-- Timezone Helper -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Common Timezones" %}</h5>
+            </div>
+            <div class="card-body">
+                <select class="form-select form-select-sm" id="timezoneHelper" aria-label="Select timezone">
+                    <option value="" disabled selected>{% trans "Quick select..." %}</option>
+                    <optgroup label="Africa">
+                        <option value="Africa/Lusaka">Lusaka (CAT)</option>
+                        <option value="Africa/Harare">Harare (CAT)</option>
+                        <option value="Africa/Johannesburg">Johannesburg (SAST)</option>
+                        <option value="Africa/Nairobi">Nairobi (EAT)</option>
+                        <option value="Africa/Lagos">Lagos (WAT)</option>
+                    </optgroup>
+                    <optgroup label="Europe">
+                        <option value="Europe/London">London (GMT/BST)</option>
+                        <option value="Europe/Paris">Paris (CET/CEST)</option>
+                        <option value="Europe/Berlin">Berlin (CET/CEST)</option>
+                    </optgroup>
+                    <optgroup label="Americas">
+                        <option value="America/New_York">New York (EST/EDT)</option>
+                        <option value="America/Chicago">Chicago (CST/CDT)</option>
+                        <option value="America/Denver">Denver (MST/MDT)</option>
+                        <option value="America/Los_Angeles">Los Angeles (PST/PDT)</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update preview when form values change
+    const dateFormat = document.querySelector('[name="date_format"]');
+    const timeFormat = document.querySelector('[name="time_format"]');
+    const currencyFormat = document.querySelector('[name="currency_format"]');
+    const firstDayOfWeek = document.querySelector('[name="first_day_of_week"]');
+
+    const previewDate = document.getElementById('previewDate');
+    const previewTime = document.getElementById('previewTime');
+    const previewCurrency = document.getElementById('previewCurrency');
+    const previewWeekStart = document.getElementById('previewWeekStart');
+
+    const days = ['{% trans "Sunday" %}', '{% trans "Monday" %}', '{% trans "Tuesday" %}', '{% trans "Wednesday" %}', '{% trans "Thursday" %}', '{% trans "Friday" %}', '{% trans "Saturday" %}'];
+
+    function updatePreview() {
+        const now = new Date();
+
+        // Date preview
+        if (dateFormat && previewDate) {
+            const fmt = dateFormat.value || 'Y-m-d';
+            let dateStr = fmt
+                .replace('Y', now.getFullYear())
+                .replace('m', String(now.getMonth() + 1).padStart(2, '0'))
+                .replace('d', String(now.getDate()).padStart(2, '0'));
+            previewDate.textContent = dateStr;
+        }
+
+        // Time preview
+        if (timeFormat && previewTime) {
+            const fmt = timeFormat.value || 'H:i:s';
+            let hours = now.getHours();
+            let minutes = String(now.getMinutes()).padStart(2, '0');
+            let seconds = String(now.getSeconds()).padStart(2, '0');
+
+            let timeStr = fmt
+                .replace('H', String(hours).padStart(2, '0'))
+                .replace('h', String(hours % 12 || 12).padStart(2, '0'))
+                .replace('i', minutes)
+                .replace('s', seconds)
+                .replace('A', hours >= 12 ? 'PM' : 'AM');
+            previewTime.textContent = timeStr;
+        }
+
+        // Currency preview
+        if (currencyFormat && previewCurrency) {
+            const currency = currencyFormat.value || 'ZMW';
+            previewCurrency.textContent = currency + ' 1,234.56';
+        }
+
+        // Week start preview
+        if (firstDayOfWeek && previewWeekStart) {
+            const dayIndex = parseInt(firstDayOfWeek.value) || 0;
+            previewWeekStart.textContent = days[dayIndex];
+        }
+    }
+
+    [dateFormat, timeFormat, currencyFormat, firstDayOfWeek].forEach(el => {
+        if (el) el.addEventListener('change', updatePreview);
+    });
+
+    // Timezone helper
+    const timezoneHelper = document.getElementById('timezoneHelper');
+    const timezoneInput = document.querySelector('[name="timezone"]');
+    if (timezoneHelper && timezoneInput) {
+        timezoneHelper.addEventListener('change', function() {
+            if (this.value) {
+                timezoneInput.value = this.value;
+            }
+        });
+    }
+
+    // Initial update
+    updatePreview();
+});
+</script>
+{% endblock settings_content %}

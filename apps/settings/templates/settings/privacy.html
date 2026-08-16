@@ -1,0 +1,313 @@
+{% extends "settings/base.html" %}
+{% load static i18n %}
+
+{% block settings_title %}{% trans "Privacy Settings" %}{% endblock %}
+{% block page_title %}{% trans "Privacy Settings" %}{% endblock %}
+{% block page_description %}{% trans "Control who can see your profile, activity, and personal information." %}{% endblock %}
+
+{% block settings_content %}
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <!-- Profile Visibility -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Profile Visibility" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:privacy' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label fw-medium">{% trans "Profile Visibility" %}</label>
+                            <div class="row g-3">
+                                {% for value, label in form.profile_visibility.field.choices %}
+                                <div class="col-12 col-md-6 col-lg-3">
+                                    <input type="radio" class="btn-check" name="profile_visibility" id="profile_vis_{{ value }}" value="{{ value }}" {% if form.profile_visibility.value == value %}checked{% endif %} autocomplete="off">
+                                    <label class="btn btn-outline-primary w-100 p-3 h-100 d-flex flex-column align-items-center text-center" for="profile_vis_{{ value }}">
+                                        <i class="bi bi-{% if value == 'public' %}globe{% elif value == 'organization' %}building{% elif value == 'team' %}people{% else %}lock{% endif %} fs-3 mb-2" aria-hidden="true"></i>
+                                        <span class="fw-medium">{{ label }}</span>
+                                        <small class="text-muted">
+                                            {% if value == 'public' %}{% trans "Everyone" %}{% elif value == 'organization' %}{% trans "Org members" %}{% elif value == 'team' %}{% trans "Team only" %}{% else %}{% trans "Only you" %}{% endif %}
+                                        </small>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.profile_visibility.errors %}
+                            <div class="text-danger small mt-1">{{ form.profile_visibility.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-medium">{% trans "Contact Information Visibility" %}</label>
+                            <div class="row g-3">
+                                {% for value, label in form.contact_visibility.field.choices %}
+                                <div class="col-12 col-md-6 col-lg-3">
+                                    <input type="radio" class="btn-check" name="contact_visibility" id="contact_vis_{{ value }}" value="{{ value }}" {% if form.contact_visibility.value == value %}checked{% endif %} autocomplete="off">
+                                    <label class="btn btn-outline-primary w-100 p-3 h-100 d-flex flex-column align-items-center text-center" for="contact_vis_{{ value }}">
+                                        <i class="bi bi-{% if value == 'public' %}globe{% elif value == 'organization' %}building{% elif value == 'team' %}people{% else %}lock{% endif %} fs-3 mb-2" aria-hidden="true"></i>
+                                        <span class="fw-medium">{{ label }}</span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.contact_visibility.errors %}
+                            <div class="text-danger small mt-1">{{ form.contact_visibility.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-medium">{% trans "Activity Visibility" %}</label>
+                            <div class="row g-3">
+                                {% for value, label in form.activity_visibility.field.choices %}
+                                <div class="col-12 col-md-6 col-lg-3">
+                                    <input type="radio" class="btn-check" name="activity_visibility" id="activity_vis_{{ value }}" value="{{ value }}" {% if form.activity_visibility.value == value %}checked{% endif %} autocomplete="off">
+                                    <label class="btn btn-outline-primary w-100 p-3 h-100 d-flex flex-column align-items-center text-center" for="activity_vis_{{ value }}">
+                                        <i class="bi bi-{% if value == 'public' %}globe{% elif value == 'organization' %}building{% elif value == 'team' %}people{% else %}lock{% endif %} fs-3 mb-2" aria-hidden="true"></i>
+                                        <span class="fw-medium">{{ label }}</span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.activity_visibility.errors %}
+                            <div class="text-danger small mt-1">{{ form.activity_visibility.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                {{ form.show_online_status }}
+                                <label class="form-check-label fw-medium" for="{{ form.show_online_status.id_for_label }}">{{ form.show_online_status.label }}</label>
+                            </div>
+                            {% if form.show_online_status.errors %}
+                            <div class="text-danger small mt-1">{{ form.show_online_status.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                {{ form.directory_visibility }}
+                                <label class="form-check-label fw-medium" for="{{ form.directory_visibility.id_for_label }}">{{ form.directory_visibility.label }}</label>
+                            </div>
+                            {% if form.directory_visibility.errors %}
+                            <div class="text-danger small mt-1">{{ form.directory_visibility.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                {{ form.data_sharing }}
+                                <label class="form-check-label fw-medium" for="{{ form.data_sharing.id_for_label }}">{{ form.data_sharing.label }}</label>
+                            </div>
+                            {% if form.data_sharing.errors %}
+                            <div class="text-danger small mt-1">{{ form.data_sharing.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">{% trans "Allow anonymized data to be used for organizational analytics" %}</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Data Management -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Data Management" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 border rounded-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{% trans "Export Your Data" %}</h6>
+                                    <p class="text-muted small mb-0">{% trans "Download a copy of your personal data" %}</p>
+                                </div>
+                                <a href="#" class="btn btn-outline-primary btn-sm">{% trans "Export" %}</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 border rounded-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{% trans "Delete Account" %></h6>
+                                    <p class="text-muted small mb-0">{% trans "Permanently delete your account and data" %}</p>
+                                </div>
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">{% trans "Delete" %}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Communication Preferences -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Communication Preferences" %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings:privacy' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <h6 class="fw-medium mb-3">{% trans "Email Communications" %}</h6>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="marketingEmails" checked>
+                                <label class="form-check-label" for="marketingEmails">{% trans "Marketing & Promotional Emails" %}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="productUpdates" checked>
+                                <label class="form-check-label" for="productUpdates">{% trans "Product Updates & Announcements" %}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="securityEmails" checked>
+                                <label class="form-check-label" for="securityEmails">{% trans "Security Alerts (Cannot be disabled)" %}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="weeklyDigest" checked>
+                                <label class="form-check-label" for="weeklyDigest">{% trans "Weekly Digest" %}</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Explanations -->
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Understanding Visibility" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="privacyHelp">
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="privacyHeadingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#privacyCollapseOne" aria-expanded="false" aria-controls="privacyCollapseOne">
+                                {% trans "Public" %}
+                            </button>
+                        </h2>
+                        <div id="privacyCollapseOne" class="accordion-collapse collapse" aria-labelledby="privacyHeadingOne" data-bs-parent="#privacyHelp">
+                            <div class="accordion-body">
+                                <p class="small mb-0">{% trans "Visible to everyone on the internet, including search engines. Your profile may appear in search results." %}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="privacyHeadingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#privacyCollapseTwo" aria-expanded="false" aria-controls="privacyCollapseTwo">
+                                {% trans "Organization Only" %}
+                            </button>
+                        </h2>
+                        <div id="privacyCollapseTwo" class="accordion-collapse collapse" aria-labelledby="privacyHeadingTwo" data-bs-parent="#privacyHelp">
+                            <div class="accordion-body">
+                                <p class="small mb-0">{% trans "Visible only to authenticated members of SITADC Youth Hub. Not indexed by search engines." %}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="privacyHeadingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#privacyCollapseThree" aria-expanded="false" aria-controls="privacyCollapseThree">
+                                {% trans "Team Only" %}
+                            </button>
+                        </h2>
+                        <div id="privacyCollapseThree" class="accordion-collapse collapse" aria-labelledby="privacyHeadingThree" data-bs-parent="#privacyHelp">
+                            <div class="accordion-body">
+                                <p class="small mb-0">{% trans "Visible only to members of your direct team or organizational unit." %}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="privacyHeadingFour">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#privacyCollapseFour" aria-expanded="false" aria-controls="privacyCollapseFour">
+                                {% trans "Private" %}
+                            </button>
+                        </h2>
+                        <div id="privacyCollapseFour" class="accordion-collapse collapse" aria-labelledby="privacyHeadingFour" data-bs-parent="#privacyHelp">
+                            <div class="accordion-body">
+                                <p class="small mb-0">{% trans "Visible only to you and system administrators. Not visible to other organization members." %}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Rights -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Your Data Rights" %}</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0 small">
+                    <li class="mb-2"><i class="bi bi-check text-success me-2" aria-hidden="true"></i>{% trans "Access your personal data" %}</li>
+                    <li class="mb-2"><i class="bi bi-check text-success me-2" aria-hidden="true"></i>{% trans "Rectify inaccurate data" %}</li>
+                    <li class="mb-2"><i class="bi bi-check text-success me-2" aria-hidden="true"></i>{% trans "Request data deletion" %}</li>
+                    <li class="mb-2"><i class="bi bi-check text-success me-2" aria-hidden="true"></i>{% trans "Restrict processing" %}</li>
+                    <li class="mb-2"><i class="bi bi-check text-success me-2" aria-hidden="true"></i>{% trans "Data portability" %}</li>
+                    <li class="mb-2"><i class="bi bi-check text-success me-2" aria-hidden="true"></i>{% trans "Object to processing" %}</li>
+                </ul>
+                <hr class="my-3">
+                <p class="small text-muted mb-0">{% trans "Contact our Data Protection Officer at dpo@sitadc.org for data rights requests." %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteAccountModalLabel"><i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>{% trans "Delete Account" %}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "This action is irreversible. Deleting your account will:" %}</p>
+                <ul>
+                    <li>{% trans "Permanently remove your profile and all personal data" %}</li>
+                    <li>{% trans "Remove you from all teams and projects" %}</li>
+                    <li>{% trans "Delete your reports, documents, and activity history" %}</li>
+                    <li>{% trans "Revoke all active sessions immediately" %}</li>
+                </ul>
+                <div class="mb-3">
+                    <label for="deleteConfirmation" class="form-label fw-medium">{% trans "Type 'DELETE' to confirm" %}</label>
+                    <input type="text" class="form-control" id="deleteConfirmation" placeholder="DELETE">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-danger" disabled id="confirmDeleteBtn">{% trans "Delete My Account" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteInput = document.getElementById('deleteConfirmation');
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+    if (deleteInput && confirmBtn) {
+        deleteInput.addEventListener('input', function() {
+            confirmBtn.disabled = this.value !== 'DELETE';
+        });
+    }
+});
+</script>
+{% endblock settings_content %}

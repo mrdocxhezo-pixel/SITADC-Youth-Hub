@@ -1,0 +1,159 @@
+{% extends "settings/base.html" %}
+{% load static i18n %}
+
+{% block settings_title %}{% trans "Integrations" %}{% endblock %}
+{% block page_title %}{% trans "Integrations" %}{% endblock %}
+{% block page_description %}{% trans "Configure external service integrations for SITADC Youth Hub." %}{% endblock %}
+
+{% block header_actions %}
+<a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIntegrationModal">
+    <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>{% trans "Add Integration" %}
+</a>
+{% endblock %}
+
+{% block settings_content %}
+<div class="row g-4">
+    <div class="col-12">
+        <!-- Integrations List -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Configured Integrations" %}</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{% trans "Integration" %}</th>
+                                <th>{% trans "Type" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Last Sync" %}</th>
+                                <th>{% trans "Actions" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for integration in integrations %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2">
+                                            <i class="bi bi-{% if integration.integration_type == 'email' %}envelope{% elif integration.integration_type == 'auth' %}person-check{% elif integration.integration_type == 'storage' %}cloud{% elif integration.integration_type == 'notification' %}bell{% elif integration.integration_type == 'api' %}plug{% else %}puzzle{% endif %} fs-4" aria-hidden="true"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1 fw-medium">{{ integration.name }}</h6>
+                                            <small class="text-muted">{{ integration.slug }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ integration.get_integration_type_display }}</span>
+                                </td>
+                                <td>
+                                    {% if integration.is_active %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>{% trans "Active" %}
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>{% trans "Inactive" %}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if integration.last_sync %}
+                                    <span class="text-muted small">{{ integration.last_sync|timesince }} {% trans "ago" %}</span>
+                                    {% else %}
+                                    <span class="text-muted">{% trans "Never" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="#" class="btn btn-outline-primary" title="{% trans 'Edit' %}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
+                                        <a href="#" class="btn btn-outline-secondary" title="{% trans 'Test' %}"><i class="bi bi-play-circle" aria-hidden="true"></i></a>
+                                        <a href="#" class="btn btn-outline-danger" title="{% trans 'Delete' %}"><i class="bi bi-trash" aria-hidden="true"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <i class="bi bi-puzzle fs-1 text-muted d-block mb-2" aria-hidden="true"></i>
+                                    <h6 class="text-muted mb-2">{% trans "No integrations configured" %}</h6>
+                                    <p class="text-muted small mb-3">{% trans "Add your first integration to connect external services." %}</p>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIntegrationModal">
+                                        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>{% trans "Add Integration" %}
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Integration Modal -->
+<div class="modal fade" id="addIntegrationModal" tabindex="-1" aria-labelledby="addIntegrationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addIntegrationModalLabel">{% trans "Add Integration" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'settings:integrations' %}" novalidate>
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="id_name" class="form-label fw-medium">{% trans "Name" %}</label>
+                            <input type="text" class="form-control" id="id_name" name="name" required placeholder="{% trans 'e.g., SMTP Server' %}">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="id_slug" class="form-label fw-medium">{% trans "Slug" %}</label>
+                            <input type="text" class="form-control" id="id_slug" name="slug" required placeholder="{% trans 'e.g., smtp-server' %}">
+                        </div>
+                        <div class="col-12">
+                            <label for="id_description" class="form-label fw-medium">{% trans "Description" %}</label>
+                            <textarea class="form-control" id="id_description" name="description" rows="2" placeholder="{% trans 'Brief description of this integration' %}"></textarea>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="id_integration_type" class="form-label fw-medium">{% trans "Integration Type" %}</label>
+                            <select class="form-select" id="id_integration_type" name="integration_type" required>
+                                <option value="" disabled selected>{% trans "Select type" %}</option>
+                                <option value="email">{% trans "Email Service" %}</option>
+                                <option value="auth">{% trans "Authentication" %}</option>
+                                <option value="storage">{% trans "Storage" %}</option>
+                                <option value="notification">{% trans "Notifications" %}</option>
+                                <option value="api">{% trans "External API" %}</option>
+                                <option value="other">{% trans "Other" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch mt-4">
+                                <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active">
+                                <label class="form-check-label" for="id_is_active">{% trans "Active" %}</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label for="id_configuration" class="form-label fw-medium">{% trans "Configuration (JSON)" %}</label>
+                            <textarea class="form-control font-monospace" id="id_configuration" name="configuration" rows="5" placeholder='{"host": "smtp.example.com", "port": 587, "tls": true}'></textarea>
+                            <div class="form-text">{% trans "JSON configuration for the integration" %}</div>
+                        </div>
+                        <div class="col-12">
+                            <label for="id_credentials" class="form-label fw-medium">{% trans "Credentials (JSON)" %}</label>
+                            <textarea class="form-control font-monospace" id="id_credentials" name="credentials" rows="3" placeholder='{"username": "user", "password": "****"}'></textarea>
+                            <div class="form-text">{% trans "Sensitive credentials - will be encrypted" %}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-primary">{% trans "Create Integration" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock settings_content %}

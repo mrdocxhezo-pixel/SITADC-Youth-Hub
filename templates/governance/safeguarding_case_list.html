@@ -1,0 +1,130 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Safeguarding Cases - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Safeguarding Cases</h2>
+        <p class="text-muted">Manage safeguarding concerns and protection cases.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:safeguarding_case_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> New Safeguarding Case
+        </a>
+    </div>
+</div>
+
+{% if safeguarding_cases %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th class="text-end">Risk Level</th>
+                <th class="text-end">Date Reported</th>
+                <th class="text-end">Status</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for case in safeguarding_cases %}
+            <tr>
+                <td>{{ case.title }}</td>
+                <td>{{ case.get_case_category_display }}</td>
+                <td class="text-end">
+                    {% if case.risk_level == 'LOW' %}
+                    <span class="badge bg-success">{{ case.get_risk_level_display }}</span>
+                    {% elif case.risk_level == 'MEDIUM' %}
+                    <span class="badge bg-warning text-dark">{{ case.get_risk_level_display }}</span>
+                    {% elif case.risk_level == 'HIGH' %}
+                    <span class="badge bg-danger">{{ case.get_risk_level_display }}</span>
+                    {% elif case.risk_level == 'CRITICAL' %}
+                    <span class="badge bg-dark">{{ case.get_risk_level_display }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">{{ case.date_reported|date:"M d, Y H:i" }}</td>
+                <td class="text-end">
+                    {% if case.status == 'RESOLVED' %}
+                    <span class="badge bg-success">{{ case.get_status_display }}</span>
+                    {% elif case.status == 'INVESTIGATION' %}
+                    <span class="badge bg-info text-dark">{{ case.get_status_display }}</span>
+                    {% elif case.status == 'REPORTED' %}
+                    <span class="badge bg-warning text-dark">{{ case.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-secondary">{{ case.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <a href="{% url 'governance:safeguarding_case_detail' case.pk %}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{% url 'governance:safeguarding_case_update' case.pk %}" class="btn btn-sm btn-outline-secondary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'governance:safeguarding_case_delete' case.pk %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No safeguarding cases found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No safeguarding cases found.
+</div>
+{% endif %}
+
+{% if safeguarding_cases.has_other_pages %}
+<div class="mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if safeguarding_cases.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ safeguarding_cases.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" aria-hidden="true">&laquo;</span>
+            </li>
+            {% endif %}
+            
+            {% for num in safeguarding_cases.paginator.page_range %}
+            {% if safeguarding_cases.number == num %}
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if safeguarding_cases.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ safeguarding_cases.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" aria-hidden="true">&raquo;</span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+{% endblock %}

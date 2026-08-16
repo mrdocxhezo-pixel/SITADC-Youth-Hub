@@ -40,7 +40,7 @@ def _permission(code: str) -> Permission:
 def test_rbac_pages_require_login(client, db):
     """Verify unauthenticated users are redirected to login."""
     for url_name in ["rbac_index", "role_list", "permission_list", "access_scope_list"]:
-        response = client.get(reverse(f"core:{url_name}"))
+        response = client.get(reverse(f"rbac:{url_name}"))
         assert response.status_code in (302, 403)
         if response.status_code == 302:
             assert "/accounts/login" in response.url
@@ -50,7 +50,7 @@ def test_rbac_pages_require_login(client, db):
 def test_role_list_renders_for_admin(client, admin):
     """Verify the role list page renders for an admin."""
     client.force_login(admin)
-    response = client.get(reverse("core:role_list"))
+    response = client.get(reverse("rbac:role_list"))
     assert response.status_code == 200
     assert b"Roles" in response.content
 
@@ -60,7 +60,7 @@ def test_role_create_flow(client, admin):
     """Verify a full create-role POST flow."""
     client.force_login(admin)
     response = client.post(
-        reverse("core:role_create"),
+        reverse("rbac:role_create"),
         {
             "name": "Field Officer",
             "description": "Runs field activities.",
@@ -82,7 +82,7 @@ def test_role_detail_renders(client, admin):
     """Verify the role detail page renders seeded role data."""
     client.force_login(admin)
     role = Role.objects.get(slug="super-administrator")
-    response = client.get(reverse("core:role_detail", kwargs={"slug": role.slug}))
+    response = client.get(reverse("rbac:role_detail", kwargs={"slug": role.slug}))
     assert response.status_code == 200
     assert role.name.encode() in response.content
 
@@ -91,7 +91,7 @@ def test_role_detail_renders(client, admin):
 def test_permission_page_renders(client, admin):
     """Verify the permission catalogue page renders."""
     client.force_login(admin)
-    response = client.get(reverse("core:permission_list"))
+    response = client.get(reverse("rbac:permission_list"))
     assert response.status_code == 200
     assert b"Permission Catalogue" in response.content
 
@@ -100,7 +100,7 @@ def test_permission_page_renders(client, admin):
 def test_access_scope_page_renders(client, admin):
     """Verify the access scopes page renders."""
     client.force_login(admin)
-    response = client.get(reverse("core:access_scope_list"))
+    response = client.get(reverse("rbac:access_scope_list"))
     assert response.status_code == 200
     assert b"Access Scopes" in response.content
 
@@ -109,7 +109,7 @@ def test_access_scope_page_renders(client, admin):
 def test_access_denied_page_status(client, admin):
     """Verify the access-denied page returns 403."""
     client.force_login(admin)
-    response = client.get(reverse("core:access_denied"))
+    response = client.get(reverse("rbac:access_denied"))
     assert response.status_code == 403
 
 
@@ -117,7 +117,7 @@ def test_access_denied_page_status(client, admin):
 def test_unauthorized_user_gets_403(client, plain_user):
     """Verify a user without permission receives 403 (not the page)."""
     client.force_login(plain_user)
-    response = client.get(reverse("core:role_list"))
+    response = client.get(reverse("rbac:role_list"))
     assert response.status_code == 403
 
 
@@ -137,7 +137,7 @@ def test_assign_role_flow(client, admin):
     user.save()
     role = Role.objects.create(name="Assistant", slug="assistant")
     response = client.post(
-        reverse("core:role_assignment_create", kwargs={"slug": role.slug}),
+        reverse("rbac:role_assignment_create", kwargs={"slug": role.slug}),
         {"user": str(user.pk), "role": str(role.pk), "is_primary": "on"},
     )
     assert response.status_code == 302
@@ -159,7 +159,7 @@ def test_revoke_assignment_flow(client, admin):
         user=user, role=role, status="ACTIVE"
     )
     response = client.post(
-        reverse("core:role_assignment_revoke", kwargs={"assignment_id": assignment.pk})
+        reverse("rbac:role_assignment_revoke", kwargs={"assignment_id": assignment.pk})
     )
     assert response.status_code == 302
     assignment.refresh_from_db()
@@ -171,7 +171,7 @@ def test_role_archive_post(client, admin):
     """Verify the archive POST action redirects and archives."""
     client.force_login(admin)
     role = Role.objects.create(name="Expendable", slug="expendable")
-    response = client.post(reverse("core:role_archive", kwargs={"slug": role.slug}))
+    response = client.post(reverse("rbac:role_archive", kwargs={"slug": role.slug}))
     assert response.status_code == 302
     role.refresh_from_db()
     assert role.is_archived is True
@@ -182,5 +182,41 @@ def test_role_history_page_renders(client, admin):
     """Verify the role history page renders."""
     client.force_login(admin)
     role = Role.objects.get(slug="super-administrator")
-    response = client.get(reverse("core:role_history", kwargs={"slug": role.slug}))
+    response = client.get(reverse("rbac:role_history", kwargs={"slug": role.slug}))
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_permission_matrix_renders(client, admin):
+    """Verify the permission matrix page renders for an admin."""
+    client.force_login(admin)
+    response = client.get(reverse("rbac:permission_matrix"))
+    assert response.status_code == 200
+    assert b"Permission Matrix" in response.content
+
+
+@pytest.mark.django_db
+def test_permission_matrix_accepts_category_filter(client, admin):
+    """Verify the matrix honours the category query parameter."""
+    client.force_login(admin)
+    response = client.get(reverse("rbac:permission_matrix"), {"category": "reports"})
+    assert response.status_code == 200
+    assert b"Reports" in response.content
+
+
+@pytest.mark.django_db
+def test_permission_search_filters_catalogue(client, admin):
+    """Verify the permission catalogue supports keyword search."""
+    client.force_login(admin)
+    response = client.get(reverse("rbac:permission_list"), {"q": "reports.submit"})
+    assert response.status_code == 200
+    assert b"reports.submit" in response.content
+
+
+@pytest.mark.django_db
+def test_permission_search_empty_result(client, admin):
+    """Verify a non-matching search returns no categories."""
+    client.force_login(admin)
+    response = client.get(reverse("rbac:permission_list"), {"q": "zzznomatch"})
+    assert response.status_code == 200
+    assert b"No permissions found" in response.content

@@ -1,0 +1,71 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Bank Accounts - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Bank Accounts</h2>
+        <p class="text-muted">Manage your organization's bank accounts.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:bank_account_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Bank Account
+        </a>
+    </div>
+</div>
+
+{% if accounts %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Account Number</th>
+                <th>Bank</th>
+                <th>Account Type</th>
+                <th class="text-end">Current Balance</th>
+                <th class="text-end">Status</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>{{ account.name }}</td>
+                <td>{{ account.account_number }}</td>
+                <td>{{ account.bank_name }}</td>
+                <td>{{ account.get_account_type_display }}</td>
+                <td class="text-end">{{ account.current_balance|floatformat:2 }} {{ account.currency }}</td>
+                <td class="text-end">
+                    {% if account.is_active %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <a href="{% url 'finance:bank_account_update' account.id %}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'finance:bank_account_delete' account.id %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No bank accounts found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No bank accounts found.
+</div>
+{% endif %}
+{% endblock %}

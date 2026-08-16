@@ -12,7 +12,7 @@
             <p class="page-subtitle mb-0">Manage roles, permissions and organizational access scopes</p>
         </div>
         <div>
-            <a href="{% url 'core:role_create' %}"
+            <a href="{% url 'rbac:role_create' %}"
                class="btn btn-primary-brand btn-sm">
                 <i class="bi bi-plus-lg me-1"></i> New Role
             </a>
@@ -88,15 +88,19 @@
                     <h6 class="fw-bold mb-0">Quick Actions</h6>
                 </div>
                 <div class="card-body d-grid gap-2">
-                    <a href="{% url 'core:role_list' %}"
+                    <a href="{% url 'rbac:role_list' %}"
                        class="btn btn-outline-primary-brand btn-sm text-start">
                         <i class="bi bi-shield-lock me-2"></i> Manage Roles
                     </a>
-                    <a href="{% url 'core:permission_list' %}"
+                    <a href="{% url 'rbac:permission_list' %}"
                        class="btn btn-outline-primary-brand btn-sm text-start">
                         <i class="bi bi-key me-2"></i> Permission Catalogue
                     </a>
-                    <a href="{% url 'core:access_scope_list' %}"
+                    <a href="{% url 'rbac:permission_matrix' %}"
+                       class="btn btn-outline-primary-brand btn-sm text-start">
+                        <i class="bi bi-grid-3x3-gap me-2"></i> Permission Matrix
+                    </a>
+                    <a href="{% url 'rbac:access_scope_list' %}"
                        class="btn btn-outline-primary-brand btn-sm text-start">
                         <i class="bi bi-diagram-3 me-2"></i> Access Scopes
                     </a>

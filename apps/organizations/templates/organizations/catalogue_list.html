@@ -3,7 +3,7 @@
 {% block title %}{% trans "Organization Catalogues" %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
     <li class="breadcrumb-item active" aria-current="page">Catalogues</li>
 {% endblock %}
@@ -20,7 +20,7 @@
                 <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
                     <h5 class="mb-0">Organizational Levels</h5>
                     {% if request.user|has_perm:'organizations.manage' %}
-                        <a href="{% url 'core:level_create' %}"
+                        <a href="{% url 'organizations:level_create' %}"
                            class="btn btn-primary-brand btn-sm">
                             <i class="bi bi-plus-lg me-1"></i> New Level
                         </a>
@@ -53,7 +53,7 @@
                 <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
                     <h5 class="mb-0">Position Classifications</h5>
                     {% if request.user|has_perm:'organizations.manage' %}
-                        <a href="{% url 'core:classification_create' %}"
+                        <a href="{% url 'organizations:classification_create' %}"
                            class="btn btn-primary-brand btn-sm">
                             <i class="bi bi-plus-lg me-1"></i> New Classification
                         </a>

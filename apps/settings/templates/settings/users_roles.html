@@ -1,0 +1,36 @@
+{% extends "settings/base.html" %}
+{% load static i18n %}
+
+{% block settings_title %}{% trans "Users & Roles" %}{% endblock %}
+{% block page_title %}{% trans "Users & Roles" %}{% endblock %}
+{% block page_description %}{% trans "Manage users, roles, permissions, and access control." %}{% endblock %}
+
+{% block settings_content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 mb-3 d-inline-flex">
+                    <i class="bi bi-people-gear fs-2" aria-hidden="true"></i>
+                </div>
+                <h5 class="mb-2">{% trans "Users & Roles" %}</h5>
+                <p class="text-muted mb-4">{% trans "Manage user accounts, role assignments, permissions, and access control." %}</p>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    <a href="{% url 'rbac:rbac_index' %}" class="btn btn-primary">
+                        <i class="bi bi-shield-lock me-1" aria-hidden="true"></i>{% trans "Roles & Permissions" %}
+                    </a>
+                    <a href="{% url 'rbac:rbac_index' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus me-1" aria-hidden="true"></i>{% trans "User Management" %}
+                    </a>
+                    <a href="{% url 'rbac:rbac_index' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-key me-1" aria-hidden="true"></i>{% trans "Access Control" %}
+                    </a>
+                    <a href="{% url 'rbac:rbac_index' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-lines-fill me-1" aria-hidden="true"></i>{% trans "Role Assignments" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock settings_content %}

@@ -4,6 +4,8 @@ from django.urls import path
 
 from . import views
 
+app_name = "references"
+
 urlpatterns = [
     path("", views.references_index_view, name="references_index"),
     path("schemes/", views.scheme_list_view, name="scheme_list"),

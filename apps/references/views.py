@@ -130,7 +130,7 @@ def scheme_create_view(request):
                     notes=form.cleaned_data["notes"],
                 )
                 messages.success(request, _("Reference number scheme created."))
-                return redirect("core:scheme_detail", scheme_id=scheme.pk)
+                return redirect("references:scheme_detail", scheme_id=scheme.pk)
             except ValidationError as e:
                 form.add_error(None, e)
     else:
@@ -174,7 +174,7 @@ def scheme_update_view(request, scheme_id):
                     notes=form.cleaned_data["notes"],
                 )
                 messages.success(request, _("Reference number scheme updated."))
-                return redirect("core:scheme_detail", scheme_id=scheme.pk)
+                return redirect("references:scheme_detail", scheme_id=scheme.pk)
             except ValidationError as e:
                 form.add_error(None, e)
     else:
@@ -197,7 +197,7 @@ def scheme_activate_view(request, scheme_id):
         messages.success(request, _("Scheme activated."))
     except ValidationError as e:
         messages.error(request, e.message)
-    return redirect("core:scheme_detail", scheme_id=scheme.pk)
+    return redirect("references:scheme_detail", scheme_id=scheme.pk)
 
 
 @permission_required(REFERENCE_NUMBERS_ACTIVATE)
@@ -210,7 +210,7 @@ def scheme_deactivate_view(request, scheme_id):
         messages.success(request, _("Scheme deactivated."))
     except ValidationError as e:
         messages.error(request, e.message)
-    return redirect("core:scheme_detail", scheme_id=scheme.pk)
+    return redirect("references:scheme_detail", scheme_id=scheme.pk)
 
 
 @permission_required(REFERENCE_NUMBERS_ARCHIVE)
@@ -223,7 +223,7 @@ def scheme_archive_view(request, scheme_id):
         messages.success(request, _("Scheme archived."))
     except ValidationError as e:
         messages.error(request, e.message)
-    return redirect("core:scheme_detail", scheme_id=scheme.pk)
+    return redirect("references:scheme_detail", scheme_id=scheme.pk)
 
 
 @permission_required(REFERENCE_NUMBERS_ACTIVATE)
@@ -236,7 +236,7 @@ def scheme_restore_view(request, scheme_id):
         messages.success(request, _("Scheme restored."))
     except ValidationError as e:
         messages.error(request, e.message)
-    return redirect("core:scheme_detail", scheme_id=scheme.pk)
+    return redirect("references:scheme_detail", scheme_id=scheme.pk)
 
 
 @permission_required(REFERENCE_NUMBERS_RESET)
@@ -257,7 +257,7 @@ def scheme_reset_view(request, scheme_id):
                     _("Sequence reset; next value is %(next)s.")
                     % {"next": sequence.next_value},
                 )
-                return redirect("core:scheme_detail", scheme_id=scheme.pk)
+                return redirect("references:scheme_detail", scheme_id=scheme.pk)
             except ValidationError as e:
                 form.add_error(None, e)
     else:
@@ -382,4 +382,4 @@ def correct_reference_view(request, generated_id):
         )
     except ValidationError as e:
         messages.error(request, e.message)
-    return redirect("core:reference_registry")
+    return redirect("references:reference_registry")

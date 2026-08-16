@@ -1,0 +1,65 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Donors - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Donors</h2>
+        <p class="text-muted">Manage your organization's donors.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:donor_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Donor
+        </a>
+    </div>
+</div>
+
+{% if donors %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Donor Number</th>
+                <th>Donor Type</th>
+                <th class="text-end">Total Donated</th>
+                <th class="text-end">Year to Date Donated</th>
+                <th>Status</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for donor in donors %}
+            <tr>
+                <td>{{ donor.name }}</td>
+                <td>{{ donor.donor_number }}</td>
+                <td>{{ donor.get_donor_type_display }}</td>
+                <td class="text-end">{{ donor.total_donated|floatformat:2 }}</td>
+                <td class="text-end">{{ donor.year_to_date_donated|floatformat:2 }}</td>
+                <td>{{ donor.get_status_display }}</td>
+                <td class="text-end">
+                    <a href="{% url 'finance:donor_update' donor.id %}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'finance:donor_delete' donor.id %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No donors found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No donors found.
+</div>
+{% endif %}
+{% endblock %}

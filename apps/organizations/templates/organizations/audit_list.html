@@ -3,7 +3,7 @@
 {% block title %}{% trans "Organizational Audit Log" %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
     <li class="breadcrumb-item active" aria-current="page">Audit Log</li>
 {% endblock %}
@@ -32,7 +32,7 @@
                 <div class="col-12 col-md-auto">
                     <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-funnel me-1"></i> Filter</button>
                     {% if active_type %}
-                        <a href="{% url 'core:organization_audit' %}"
+                        <a href="{% url 'organizations:organization_audit' %}"
                            class="btn btn-light btn-sm">Clear</a>
                     {% endif %}
                 </div>

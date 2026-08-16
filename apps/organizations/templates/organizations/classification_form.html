@@ -3,9 +3,9 @@
 {% block title %}{% trans "New Position Classification" %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:catalogue_list' %}" class="text-decoration-none">Catalogues</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'organizations:catalogue_list' %}" class="text-decoration-none">Catalogues</a></li>
     <li class="breadcrumb-item active" aria-current="page">New Classification</li>
 {% endblock %}
 {% block dashboard_content %}
@@ -15,7 +15,7 @@
             <p class="page-subtitle mb-0">Add a classification category for positions</p>
         </div>
         <div>
-            <a href="{% url 'core:catalogue_list' %}"
+            <a href="{% url 'organizations:catalogue_list' %}"
                class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i> Back to Catalogues
             </a>
@@ -60,7 +60,7 @@
                     {% if form.description.errors %}<div class="invalid-feedback d-block">{% for error in form.description.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
                 <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
-                    <a href="{% url 'core:catalogue_list' %}" class="btn btn-light">Cancel</a>
+                    <a href="{% url 'organizations:catalogue_list' %}" class="btn btn-light">Cancel</a>
                     <button type="submit" class="btn btn-primary-brand px-4">
                         <i class="bi bi-check-lg me-1"></i> Create Classification
                     </button>

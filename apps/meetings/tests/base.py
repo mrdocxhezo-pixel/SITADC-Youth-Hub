@@ -83,36 +83,157 @@ class MeetingsTestCase(TestCase):
         cls.outsider = cls.create_test_user("outsider")
 
         # Assign permissions using RBAC helper (handles caching)
-        from django.contrib.contenttypes.models import ContentType
+        from django.contrib.auth.models import Permission
 
-        ct, _ = ContentType.objects.get_or_create(app_label="meetings", model="meeting")
-        p_manage, _ = Permission.objects.get_or_create(
-            codename="meetings.manage",
-            content_type=ct,
-            defaults={"name": "Manage meetings"},
-        )
-        p_create, _ = Permission.objects.get_or_create(
-            codename="meetings.create",
-            content_type=ct,
-            defaults={"name": "Create meetings"},
-        )
-        p_update, _ = Permission.objects.get_or_create(
-            codename="meetings.update",
-            content_type=ct,
-            defaults={"name": "Update meetings"},
-        )
-        p_view, _ = Permission.objects.get_or_create(
-            codename="meetings.view",
-            content_type=ct,
-            defaults={"name": "View meetings"},
+        # Get permissions created by RBAC migration (they use Role content type)
+        # Meeting permissions
+        p_meeting_manage = Permission.objects.get(codename="meetings.manage")
+        p_meeting_create = Permission.objects.get(codename="meetings.create")
+        p_meeting_update = Permission.objects.get(codename="meetings.update")
+        p_meeting_view = Permission.objects.get(codename="meetings.view")
+        p_meeting_manage_agendas = Permission.objects.get(codename="meetings.manage_agendas")
+        p_meeting_approve_agendas = Permission.objects.get(codename="meetings.approve_agendas")
+        p_meeting_manage_participants = Permission.objects.get(codename="meetings.manage_participants")
+        p_meeting_send_invitations = Permission.objects.get(codename="meetings.send_invitations")
+        p_meeting_record_attendance = Permission.objects.get(codename="meetings.record_attendance")
+        p_meeting_verify_attendance = Permission.objects.get(codename="meetings.verify_attendance")
+        p_meeting_check_in = Permission.objects.get(codename="meetings.check_in")
+        p_meeting_check_out = Permission.objects.get(codename="meetings.check_out")
+        p_meeting_manage_quorum = Permission.objects.get(codename="meetings.manage_quorum")
+        p_meeting_draft_minutes = Permission.objects.get(codename="meetings.draft_minutes")
+        p_meeting_submit_minutes = Permission.objects.get(codename="meetings.submit_minutes")
+        p_meeting_review_minutes = Permission.objects.get(codename="meetings.review_minutes")
+        p_meeting_approve_minutes = Permission.objects.get(codename="meetings.approve_minutes")
+        p_meeting_record_decisions = Permission.objects.get(codename="meetings.record_decisions")
+        p_meeting_manage_actions = Permission.objects.get(codename="meetings.manage_actions")
+        p_meeting_verify_actions = Permission.objects.get(codename="meetings.verify_actions")
+        p_meeting_escalate = Permission.objects.get(codename="meetings.escalate")
+        p_meeting_manage_templates = Permission.objects.get(codename="meetings.manage_templates")
+        p_meeting_manage_venues = Permission.objects.get(codename="meetings.manage_venues")
+        p_meeting_configure = Permission.objects.get(codename="meetings.configure")
+        p_meeting_view_confidential = Permission.objects.get(codename="meetings.view_confidential")
+
+        # Calendar permissions
+        p_calendar_manage = Permission.objects.get(codename="calendars.manage")
+        p_calendar_create = Permission.objects.get(codename="calendars.create")
+        p_calendar_update = Permission.objects.get(codename="calendars.update")
+        p_calendar_view = Permission.objects.get(codename="calendars.view")
+        p_calendar_share = Permission.objects.get(codename="calendars.share")
+        p_calendar_archive = Permission.objects.get(codename="calendars.archive")
+        p_calendar_restore = Permission.objects.get(codename="calendars.restore")
+        p_calendar_export = Permission.objects.get(codename="calendars.export")
+        p_calendar_view_confidential = Permission.objects.get(codename="calendars.view_confidential")
+
+        # Event permissions
+        p_event_manage = Permission.objects.get(codename="events.manage")
+        p_event_create = Permission.objects.get(codename="events.create")
+        p_event_update = Permission.objects.get(codename="events.update")
+        p_event_view = Permission.objects.get(codename="events.view")
+        p_event_schedule = Permission.objects.get(codename="events.schedule")
+        p_event_confirm = Permission.objects.get(codename="events.confirm")
+        p_event_complete = Permission.objects.get(codename="events.complete")
+        p_event_cancel = Permission.objects.get(codename="events.cancel")
+        p_event_archive = Permission.objects.get(codename="events.archive")
+        p_event_restore = Permission.objects.get(codename="events.restore")
+        p_event_export = Permission.objects.get(codename="events.export")
+        p_event_manage_reminders = Permission.objects.get(codename="events.manage_reminders")
+        p_event_view_confidential = Permission.objects.get(codename="events.view_confidential")
+
+        # Manager gets full control over all three
+        cls.manager.user_permissions.add(
+            p_meeting_manage,
+            p_meeting_create,
+            p_meeting_update,
+            p_meeting_view,
+            p_meeting_manage_agendas,
+            p_meeting_approve_agendas,
+            p_meeting_manage_participants,
+            p_meeting_send_invitations,
+            p_meeting_record_attendance,
+            p_meeting_verify_attendance,
+            p_meeting_check_in,
+            p_meeting_check_out,
+            p_meeting_manage_quorum,
+            p_meeting_draft_minutes,
+            p_meeting_submit_minutes,
+            p_meeting_review_minutes,
+            p_meeting_approve_minutes,
+            p_meeting_record_decisions,
+            p_meeting_manage_actions,
+            p_meeting_verify_actions,
+            p_meeting_escalate,
+            p_meeting_manage_templates,
+            p_meeting_manage_venues,
+            p_meeting_configure,
+            p_meeting_view_confidential,
+            p_calendar_manage,
+            p_calendar_create,
+            p_calendar_update,
+            p_calendar_view,
+            p_calendar_share,
+            p_calendar_archive,
+            p_calendar_restore,
+            p_calendar_export,
+            p_calendar_view_confidential,
+            p_event_manage,
+            p_event_create,
+            p_event_update,
+            p_event_view,
+            p_event_schedule,
+            p_event_confirm,
+            p_event_complete,
+            p_event_cancel,
+            p_event_archive,
+            p_event_restore,
+            p_event_export,
+            p_event_manage_reminders,
+            p_event_view_confidential,
         )
 
-        # Manager gets full control
-        cls.manager.user_permissions.add(p_manage)
-        # Officer can create / update / view
-        cls.officer.user_permissions.add(p_create, p_update, p_view)
-        # Viewer can only view
-        cls.viewer.user_permissions.add(p_view)
+        # Officer can create/update/view all three
+        cls.officer.user_permissions.add(
+            p_meeting_create,
+            p_meeting_update,
+            p_meeting_view,
+            p_meeting_manage_agendas,
+            p_meeting_manage_participants,
+            p_meeting_send_invitations,
+            p_meeting_record_attendance,
+            p_meeting_verify_attendance,
+            p_meeting_check_in,
+            p_meeting_check_out,
+            p_meeting_manage_quorum,
+            p_meeting_draft_minutes,
+            p_meeting_submit_minutes,
+            p_meeting_review_minutes,
+            p_meeting_manage_actions,
+            p_meeting_verify_actions,
+            p_calendar_create,
+            p_calendar_update,
+            p_calendar_view,
+            p_calendar_share,
+            p_calendar_export,
+            p_event_create,
+            p_event_update,
+            p_event_view,
+            p_event_schedule,
+            p_event_confirm,
+            p_event_complete,
+            p_event_cancel,
+            p_event_archive,
+            p_event_export,
+            p_event_manage_reminders,
+        )
+
+        # Viewer can only view all three
+        cls.viewer.user_permissions.add(
+            p_meeting_view,
+            p_calendar_view,
+            p_event_view,
+            p_calendar_view_confidential,
+            p_event_view_confidential,
+        )
+
         # Clear permission cache after assignment
         clear_permission_cache(cls.manager)
         clear_permission_cache(cls.officer)

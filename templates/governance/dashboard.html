@@ -1,0 +1,435 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Governance Dashboard - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid py-2">
+    <!-- Page Header -->
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="d-flex align-items-center">
+                <i class="bi bi-shield-check text-primary-brand me-2"></i>Governance Dashboard
+            </h1>
+            <p class="page-subtitle mb-0">Governance, risk, compliance and safeguarding at a glance.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
+            <a href="{% url 'governance:policy_create' %}" class="btn btn-primary-brand btn-sm">
+                <i class="bi bi-file-earmark-plus me-1"></i>Policy
+            </a>
+            <a href="{% url 'governance:risk_register_create' %}" class="btn btn-action btn-sm">
+                <i class="bi bi-shield-plus me-1"></i>Risk
+            </a>
+            <a href="{% url 'governance:incident_report_create' %}" class="btn btn-outline-primary-brand btn-sm">
+                <i class="bi bi-exclamation-octagon me-1"></i>Incident
+            </a>
+            <a href="{% url 'governance:governance_meeting_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-calendar-check me-1"></i>Meetings
+            </a>
+        </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-primary border-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(0,86,179,0.1);">
+                            <i class="bi bi-file-earmark-text fs-4 text-primary-brand"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-primary text-uppercase fw-bold mb-1">Active Policies</div>
+                        <div class="h3 mb-0 fw-bold text-gray-800">{{ total_policies }}</div>
+                        <div class="small text-muted">{{ pending_policies }} awaiting review</div>
+                    </div>
+                </div>
+                <a href="{% url 'governance:policy_list' %}" class="stretched-link" aria-label="View policies"></a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-success border-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(25,135,84,0.1);">
+                            <i class="bi bi-shield-exclamation fs-4 text-success"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-success text-uppercase fw-bold mb-1">Active Risks</div>
+                        <div class="h3 mb-0 fw-bold text-gray-800">{{ total_risks }}</div>
+                        <div class="small text-muted">{{ total_risks|default:0 }} on the register</div>
+                    </div>
+                </div>
+                <a href="{% url 'governance:risk_register_list' %}" class="stretched-link" aria-label="View risks"></a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-danger border-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(220,53,69,0.1);">
+                            <i class="bi bi-exclamation-triangle fs-4 text-danger"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-danger text-uppercase fw-bold mb-1">High Risks</div>
+                        <div class="h3 mb-0 fw-bold text-gray-800">{{ high_risks }}</div>
+                        <div class="small text-muted">{{ critical_risks }} critical</div>
+                    </div>
+                </div>
+                <a href="{% url 'governance:risk_register_list' %}" class="stretched-link" aria-label="View high risks"></a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-warning border-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(255,193,7,0.15);">
+                            <i class="bi bi-bell fs-4 text-warning"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-warning text-uppercase fw-bold mb-1">Unread Alerts</div>
+                        <div class="h3 mb-0 fw-bold text-gray-800">{{ unread_notifications }}</div>
+                        <div class="small text-muted">governance notifications</div>
+                    </div>
+                </div>
+                <a href="{% url 'governance:governance_notification_list' %}" class="stretched-link" aria-label="View notifications"></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance & Safeguarding Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(23,162,184,0.1);">
+                            <i class="bi bi-check2-circle fs-4" style="color: var(--sitadc-accent-cyan);"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Compliance Reqs</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ total_compliance_reqs }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'governance:compliance_requirement_list' %}" class="stretched-link" aria-label="View compliance requirements"></a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(102,16,242,0.1);">
+                            <i class="bi bi-gear fs-4" style="color: var(--sitadc-accent-indigo);"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Internal Controls</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ total_controls }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'governance:internal_control_list' %}" class="stretched-link" aria-label="View internal controls"></a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(220,53,69,0.1);">
+                            <i class="bi bi-person-badge fs-4 text-danger"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Safeguarding Cases</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ total_safeguarding_cases }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'governance:safeguarding_case_list' %}" class="stretched-link" aria-label="View safeguarding cases"></a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(111,66,193,0.1);">
+                            <i class="bi bi-journal-bookmark fs-4" style="color: var(--sitadc-accent-purple);"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Ethics Cases</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ total_ethics_cases }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'governance:ethics_case_list' %}" class="stretched-link" aria-label="View ethics cases"></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(220,53,69,0.1);">
+                            <i class="bi bi-exclamation-octagon fs-4 text-danger"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Incidents</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ total_incidents }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'governance:incident_report_list' %}" class="stretched-link" aria-label="View incidents"></a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(253,126,20,0.1);">
+                            <i class="bi bi-chat-left-text fs-4" style="color: var(--sitadc-action);"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Complaints</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ total_complaints }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'governance:complaint_list' %}" class="stretched-link" aria-label="View complaints"></a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(23,162,184,0.1);">
+                            <i class="bi bi-mic fs-4" style="color: var(--sitadc-accent-cyan);"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">Whistleblower</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ total_whistleblower_reports }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'governance:whistleblower_report_list' %}" class="stretched-link" aria-label="View whistleblower reports"></a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="rounded-3 p-3" style="background-color: rgba(52,58,64,0.08);">
+                            <i class="bi bi-arrows-expand fs-4 text-secondary"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted small">CAPAs</p>
+                        <p class="mb-0 fs-5 fw-bold">{{ total_capas }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'governance:corrective_preventive_action_list' %}" class="stretched-link" aria-label="View corrective actions"></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & Upcoming Meetings -->
+    <div class="row g-4">
+        <!-- Recent Policies -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold text-primary-brand"><i class="bi bi-file-earmark-text me-2"></i>Recent Policies</h6>
+                    <a href="{% url 'governance:policy_list' %}" class="btn btn-sm btn-link">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for policy in recent_policies %}
+                                <tr>
+                                    <td class="fw-semibold text-truncate" style="max-width: 180px;">
+                                        <a href="{% url 'governance:policy_detail' policy.pk %}" class="text-decoration-none">{{ policy.title }}</a>
+                                    </td>
+                                    <td>{{ policy.get_policy_category_display }}</td>
+                                    <td>
+                                        {% if policy.status == "ACTIVE" or policy.status == "APPROVED" %}
+                                            <span class="badge badge-status badge-approved">{{ policy.get_status_display }}</span>
+                                        {% elif policy.status == "PENDING_REVIEW" or policy.status == "RETURNED" %}
+                                            <span class="badge badge-status badge-pending">{{ policy.get_status_display }}</span>
+                                        {% elif policy.status == "REJECTED" %}
+                                            <span class="badge badge-status badge-rejected">{{ policy.get_status_display }}</span>
+                                        {% elif policy.status == "ARCHIVED" %}
+                                            <span class="badge badge-status badge-archived">{{ policy.get_status_display }}</span>
+                                        {% else %}
+                                            <span class="badge badge-status badge-draft">{{ policy.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-muted small">{{ policy.created_at|timesince }} ago</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="empty-state py-4">
+                                            <div class="empty-state-icon"><i class="bi bi-file-earmark-text"></i></div>
+                                            <p class="text-muted small mb-0">No policies recorded yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Recent Risks -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold text-primary-brand"><i class="bi bi-shield-exclamation me-2"></i>Recent Risks</h6>
+                    <a href="{% url 'governance:risk_register_list' %}" class="btn btn-sm btn-link">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Rating</th>
+                                    <th class="text-end">Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for risk in recent_risks %}
+                                <tr>
+                                    <td class="fw-semibold text-truncate" style="max-width: 180px;">
+                                        <a href="{% url 'governance:risk_register_detail' risk.pk %}" class="text-decoration-none">{{ risk.title }}</a>
+                                    </td>
+                                    <td>{{ risk.get_risk_category_display }}</td>
+                                    <td>
+                                        {% if risk.risk_rating == "CRITICAL" %}
+                                            <span class="badge bg-danger">{{ risk.risk_rating }}</span>
+                                        {% elif risk.risk_rating == "HIGH" %}
+                                            <span class="badge bg-warning text-dark">{{ risk.risk_rating }}</span>
+                                        {% elif risk.risk_rating == "MEDIUM" %}
+                                            <span class="badge bg-info text-dark">{{ risk.risk_rating }}</span>
+                                        {% else %}
+                                            <span class="badge bg-success">{{ risk.risk_rating }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-muted small">{{ risk.created_at|timesince }} ago</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="empty-state py-4">
+                                            <div class="empty-state-icon"><i class="bi bi-shield-exclamation"></i></div>
+                                            <p class="text-muted small mb-0">No risks recorded yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Recent Incidents -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold text-primary-brand"><i class="bi bi-exclamation-octagon me-2"></i>Recent Incidents</h6>
+                    <a href="{% url 'governance:incident_report_list' %}" class="btn btn-sm btn-link">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Severity</th>
+                                    <th class="text-end">Reported</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for incident in recent_incidents %}
+                                <tr>
+                                    <td class="fw-semibold text-truncate" style="max-width: 180px;">{{ incident.title }}</td>
+                                    <td>{{ incident.get_incident_category_display }}</td>
+                                    <td>
+                                        {% if incident.severity == "CRITICAL" %}
+                                            <span class="badge bg-danger">{{ incident.severity }}</span>
+                                        {% elif incident.severity == "HIGH" %}
+                                            <span class="badge bg-warning text-dark">{{ incident.severity }}</span>
+                                        {% elif incident.severity == "MEDIUM" %}
+                                            <span class="badge bg-info text-dark">{{ incident.severity }}</span>
+                                        {% else %}
+                                            <span class="badge bg-success">{{ incident.severity }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-muted small">{{ incident.date_reported|timesince }} ago</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="empty-state py-4">
+                                            <div class="empty-state-icon"><i class="bi bi-exclamation-octagon"></i></div>
+                                            <p class="text-muted small mb-0">No incidents recorded yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Upcoming Meetings -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold text-primary-brand"><i class="bi bi-calendar-check me-2"></i>Upcoming Meetings</h6>
+                    <a href="{% url 'governance:governance_meeting_list' %}" class="btn btn-sm btn-link">View All</a>
+                </div>
+                <div class="card-body">
+                    {% for meeting in upcoming_meetings %}
+                    <div class="d-flex align-items-start border rounded p-2 mb-2">
+                        <div class="flex-shrink-0 me-3 text-center">
+                            <div class="small text-uppercase text-muted">{{ meeting.scheduled_date|date:"M" }}</div>
+                            <div class="h5 mb-0 fw-bold text-primary-brand">{{ meeting.scheduled_date|date:"d" }}</div>
+                        </div>
+                        <div>
+                            <div class="fw-semibold">{{ meeting.title }}</div>
+                            <div class="small text-muted">
+                                {{ meeting.get_meeting_type_display }} &middot; {{ meeting.scheduled_date|date:"g:i A" }}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state py-4">
+                        <div class="empty-state-icon"><i class="bi bi-calendar-event"></i></div>
+                        <p class="text-muted small mb-0">No upcoming meetings scheduled.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

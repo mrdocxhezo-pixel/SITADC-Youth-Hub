@@ -1,0 +1,12 @@
+{% extends "governance/base.html" %}
+
+{% block title %}{{ placeholder_title }} - Governance{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+    <h4 class="alert-heading">{{ placeholder_title }}</h4>
+    <p>{{ placeholder_message }}</p>
+    <hr>
+    <a href="{% url 'governance:governance_dashboard' %}" class="btn btn-primary">Back to Governance Dashboard</a>
+</div>
+{% endblock %}

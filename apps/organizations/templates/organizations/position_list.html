@@ -3,7 +3,7 @@
 {% block title %}{% trans "Positions" %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
     <li class="breadcrumb-item active" aria-current="page">Positions</li>
 {% endblock %}
@@ -14,7 +14,7 @@
             <p class="page-subtitle mb-0">Official positions across the organizational structure</p>
         </div>
         <div>
-            <a href="{% url 'core:position_create' %}"
+            <a href="{% url 'organizations:position_create' %}"
                class="btn btn-primary-brand btn-sm">
                 <i class="bi bi-plus-lg me-1"></i> New Position
             </a>
@@ -44,7 +44,7 @@
                 <div class="col-12 col-md-auto">
                     <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-funnel me-1"></i> Filter</button>
                     {% if active_unit or vacancy_filter %}
-                        <a href="{% url 'core:position_list' %}" class="btn btn-light btn-sm">Clear</a>
+                        <a href="{% url 'organizations:position_list' %}" class="btn btn-light btn-sm">Clear</a>
                     {% endif %}
                 </div>
             </form>
@@ -70,7 +70,7 @@
                             {% for position in positions %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'core:position_detail' slug=position.slug %}"
+                                        <a href="{% url 'organizations:position_detail' slug=position.slug %}"
                                            class="fw-semibold text-decoration-none">{{ position.title }}</a>
                                         {% if position.is_protected %}<span class="badge bg-danger-subtle text-danger ms-1">Protected</span>{% endif %}
                                         {% if position.is_archived %}<span class="badge badge-status badge-archived ms-1">Archived</span>{% endif %}
@@ -79,7 +79,7 @@
                                     <td>{{ position.classification.name|default:"-" }}</td>
                                     <td>
                                         {% if position.primary_supervisor %}
-                                            <a href="{% url 'core:position_detail' slug=position.primary_supervisor.slug %}"
+                                            <a href="{% url 'organizations:position_detail' slug=position.primary_supervisor.slug %}"
                                                class="text-decoration-none">{{ position.primary_supervisor.title }}</a>
                             {% else %}-{% endif %}
                                 </td>
@@ -98,12 +98,12 @@
                                 {% endif %}
                                 </td>
                             <td class="text-end">
-                                <a href="{% url 'core:position_detail' slug=position.slug %}"
+                                <a href="{% url 'organizations:position_detail' slug=position.slug %}"
                                    class="btn btn-sm btn-outline-secondary"
                                    title="View">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{% url 'core:position_update' slug=position.slug %}"
+                                <a href="{% url 'organizations:position_update' slug=position.slug %}"
                                    class="btn btn-sm btn-outline-secondary"
                                    title="Edit">
                                     <i class="bi bi-pencil"></i>
@@ -116,7 +116,7 @@
                 </div>
             {% else %}
                 <div class="p-4">
-                    {% url 'core:position_create' as position_create_url %}
+                    {% url 'organizations:position_create' as position_create_url %}
                     {% include 'components/empty_state.html' with icon='bi-person-badge' title='No positions found' message='Positions will appear here once created.' action_url=position_create_url action_label='Create Position' %}
                 </div>
             {% endif %}

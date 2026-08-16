@@ -76,10 +76,7 @@ from .constants import (
     VoteType,
     VotingMethod,
 )
-from .validators import (
-    validate_recurrence_rule,
-    validate_time_range,
-)
+from .validators import validate_recurrence_rule, validate_time_range
 
 
 class MeetingRecord(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
@@ -250,7 +247,9 @@ class Calendar(
 ):
     """An organizational calendar to which events belong."""
 
-    reference = models.CharField(_("Reference"), max_length=80, unique=True, blank=True)
+    reference = models.CharField(
+        _("Reference"), max_length=80, unique=True, null=True, blank=True, default=None
+    )
     name = models.CharField(_("Name"), max_length=200)
     calendar_type = models.CharField(
         _("Calendar type"),
@@ -393,7 +392,9 @@ class CalendarShare(MeetingRecord):
 class CalendarEvent(MeetingRecord, SoftDeleteModel, ArchivableModel, NotesModel):
     """A single event on an organizational calendar."""
 
-    reference = models.CharField(_("Reference"), max_length=80, unique=True, blank=True)
+    reference = models.CharField(
+        _("Reference"), max_length=80, unique=True, null=True, blank=True, default=None
+    )
     calendar = models.ForeignKey(
         Calendar,
         on_delete=models.CASCADE,
@@ -656,7 +657,9 @@ class EventReminder(MeetingRecord):
 class Meeting(MeetingRecord, SoftDeleteModel, ArchivableModel, NotesModel):
     """A scheduled organizational meeting."""
 
-    reference = models.CharField(_("Reference"), max_length=80, unique=True, blank=True)
+    reference = models.CharField(
+        _("Reference"), max_length=80, unique=True, null=True, blank=True, default=None
+    )
     event = models.OneToOneField(
         CalendarEvent,
         on_delete=models.SET_NULL,
@@ -895,6 +898,14 @@ class Meeting(MeetingRecord, SoftDeleteModel, ArchivableModel, NotesModel):
         if self.is_confidential and not self.confidentiality_level:
             self.confidentiality_level = ConfidentialityLevel.CONFIDENTIAL
         super().save(*args, **kwargs)
+
+    @property
+    def minutes(self):
+        return self.minutes_versions
+
+    @property
+    def actions(self):
+        return self.action_items
 
 
 class MeetingParticipant(MeetingRecord, NotesModel):
@@ -1333,7 +1344,9 @@ class MeetingMinutes(MeetingRecord, NotesModel):
         related_name="minutes_versions",
         verbose_name=_("Meeting"),
     )
-    reference = models.CharField(_("Reference"), max_length=80, unique=True, blank=True)
+    reference = models.CharField(
+        _("Reference"), max_length=80, unique=True, null=True, blank=True, default=None
+    )
     version = models.PositiveIntegerField(_("Version"), default=1)
     title = models.CharField(_("Title"), max_length=255)
     summary = models.TextField(_("Summary"), blank=True)
@@ -1461,7 +1474,9 @@ class MeetingDecision(MeetingRecord, NotesModel):
         related_name="decisions",
         verbose_name=_("Meeting"),
     )
-    reference = models.CharField(_("Reference"), max_length=80, unique=True, blank=True)
+    reference = models.CharField(
+        _("Reference"), max_length=80, unique=True, null=True, blank=True, default=None
+    )
     agenda_item = models.ForeignKey(
         AgendaItem,
         on_delete=models.SET_NULL,
@@ -1603,7 +1618,9 @@ class MeetingActionItem(MeetingRecord, NotesModel):
         related_name="action_items",
         verbose_name=_("Meeting"),
     )
-    reference = models.CharField(_("Reference"), max_length=80, unique=True, blank=True)
+    reference = models.CharField(
+        _("Reference"), max_length=80, unique=True, null=True, blank=True, default=None
+    )
     agenda_item = models.ForeignKey(
         AgendaItem,
         on_delete=models.SET_NULL,

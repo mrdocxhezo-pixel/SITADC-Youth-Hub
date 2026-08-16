@@ -1,0 +1,333 @@
+{% extends "settings/base.html" %}
+{% load static i18n %}
+
+{% block settings_title %}{% trans "Settings" %}{% endblock %}
+
+{% block settings_content %}
+<!-- Account Status Card -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3">
+                        <i class="bi bi-person-check fs-4" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">{% trans "Account Status" %}</h6>
+                        <p class="mb-0 fw-semibold">
+                            <span class="badge bg-success">{% trans "Active" %}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="bg-success bg-opacity-10 text-success rounded-3 p-3 me-3">
+                        <i class="bi bi-shield-check fs-4" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">{% trans "Security Status" %}</h6>
+                        <p class="mb-0 fw-semibold">
+                            {% if security_score >= 80 %}
+                            <span class="badge bg-success">{% trans "Strong" %}</span>
+                            {% elif security_score >= 50 %}
+                            <span class="badge bg-warning">{% trans "Moderate" %}</span>
+                            {% else %}
+                            <span class="badge bg-danger">{% trans "Weak" %}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="bg-info bg-opacity-10 text-info rounded-3 p-3 me-3">
+                        <i class="bi bi-bell fs-4" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">{% trans "Notifications" %}</h6>
+                        <p class="mb-0 fw-semibold">
+                            {% if user_settings.email_notifications or user_settings.in_app_notifications %}
+                            <span class="badge bg-success">{% trans "Enabled" %}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{% trans "Disabled" %}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-3 me-3">
+                        <i class="bi bi-person-lines-fill fs-4" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">{% trans "Profile Completion" %}</h6>
+                        <p class="mb-0 fw-semibold">
+                            {% if profile_completion >= 80 %}
+                            <span class="badge bg-success">{{ profile_completion|default:0 }}%</span>
+                            {% elif profile_completion >= 50 %}
+                            <span class="badge bg-warning">{{ profile_completion|default:0 }}%</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ profile_completion|default:0 }}%</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-1">{% trans "Active Sessions" %}</h6>
+                        <p class="display-6 mb-0 fw-bold">{{ active_sessions|length }}</p>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+                        <i class="bi bi-devices fs-3" aria-hidden="true"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-1">{% trans "Last Password Change" %}</h6>
+                        <p class="mb-0 fw-semibold">
+                            {% if last_password_change %}
+                            {{ last_password_change|date:"M d, Y" }}
+                            {% else %}
+                            <span class="text-muted">{% trans "Never" %}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-3">
+                        <i class="bi bi-key fs-3" aria-hidden="true"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-1">{% trans "Last Login" %}</h6>
+                        <p class="mb-0 fw-semibold">
+                            {% if last_login %}
+                            {{ last_login|date:"M d, Y H:i" }}
+                            {% else %}
+                            <span class="text-muted">{% trans "Never" %}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="bg-info bg-opacity-10 text-info rounded-3 p-3">
+                        <i class="bi bi-box-arrow-in-right fs-3" aria-hidden="true"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Quick Actions" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'settings:account' %}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="bi bi-person fs-3" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "Edit Profile" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'settings:security' %}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="bi bi-shield-lock fs-3" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "Change Password" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'settings:appearance' %}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="bi bi-palette fs-3" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "Appearance" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'settings:notifications' %}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="bi bi-bell fs-3" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "Notifications" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'settings:sessions' %}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="bi bi-laptop fs-3" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "Manage Sessions" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'settings:privacy' %}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="bi bi-eye fs-3" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "Privacy Settings" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'settings:language_region' %}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="bi bi-globe fs-3" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "Language & Region" %}</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'settings:accessibility' %}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="bi bi-universal-access fs-3" aria-hidden="true"></i>
+                            <span class="fw-medium">{% trans "Accessibility" %}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity / Alerts -->
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{% trans "Recent Activity" %}</h5>
+                <a href="#" class="btn btn-link btn-sm p-0">{% trans "View All" %}</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for session in active_sessions|slice:":5" %}
+                    <div class="list-group-item d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2 me-3">
+                            <i class="bi bi-laptop fs-5" aria-hidden="true"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-medium">
+                                    {% if session.session_key == current_session_key %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2">{% trans "Current" %}</span>
+                                    {% endif %}
+                                    {{ session.user_agent|truncatechars:50 }}
+                                </h6>
+                                <small class="text-muted">{{ session.last_activity|timesince }} {% trans "ago" %}</small>
+                            </div>
+                            <div class="text-muted small">
+                                <i class="bi bi-geo-alt me-1" aria-hidden="true"></i> {{ session.ip_address|default:"Unknown" }} |
+                                <i class="bi bi-clock me-1 ms-2" aria-hidden="true"></i> {{ session.last_activity|date:"M d, Y H:i" }}
+                            </div>
+                        </div>
+                        {% if session.session_key != current_session_key %}
+                        <form method="post" action="{% url 'settings:sessions' %}" class="ms-auto" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="terminate">
+                            <input type="hidden" name="session_id" value="{{ session.id }}">
+                            <button type="submit" class="btn btn-link text-danger p-0" onclick="return confirm('{% trans 'Are you sure you want to terminate this session?' %}')">
+                                <i class="bi bi-x-circle fs-5" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2" aria-hidden="true"></i>
+                        {% trans "No active sessions found." %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0">{% trans "Security Recommendations" %}</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    {% if not request.user.email_verified %}
+                    <li class="mb-3 p-3 bg-warning bg-opacity-10 rounded-3">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-exclamation-triangle text-warning fs-5 mt-0.5" aria-hidden="true"></i>
+                            <div>
+                                <h6 class="mb-1">{% trans "Verify Email Address" %}</h6>
+                                <p class="mb-0 small text-muted">{% trans "Verify your email to enable password recovery and notifications." %}</p>
+                            </div>
+                        </div>
+                    </li>
+                    {% endif %}
+
+                    {% if not request.user.phone_verified %}
+                    <li class="mb-3 p-3 bg-warning bg-opacity-10 rounded-3">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-exclamation-triangle text-warning fs-5 mt-0.5" aria-hidden="true"></i>
+                            <div>
+                                <h6 class="mb-1">{% trans "Verify Phone Number" %}</h6>
+                                <p class="mb-0 small text-muted">{% trans "Add and verify your phone for SMS notifications and 2FA." %}</p>
+                            </div>
+                        </div>
+                    </li>
+                    {% endif %}
+
+                    {% if profile_completion < 100 %}
+                    <li class="mb-3 p-3 bg-info bg-opacity-10 rounded-3">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-info-circle text-info fs-5 mt-0.5" aria-hidden="true"></i>
+                            <div>
+                                <h6 class="mb-1">{% trans "Complete Your Profile" %}</h6>
+                                <p class="mb-0 small text-muted">{% trans "Your profile is {{ profile_completion }}% complete. Add missing information." %}</p>
+                            </div>
+                        </div>
+                    </li>
+                    {% endif %}
+
+                    <li class="p-3 bg-success bg-opacity-10 rounded-3">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-check-circle text-success fs-5 mt-0.5" aria-hidden="true"></i>
+                            <div>
+                                <h6 class="mb-1">{% trans "Account Security Good" %}</h6>
+                                <p class="mb-0 small text-muted">{% trans "No immediate security concerns detected." %}</p>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock settings_content %}

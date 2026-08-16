@@ -4,16 +4,39 @@
 {% block title %}{% trans "Permissions" %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'rbac:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
     <li class="breadcrumb-item active" aria-current="page">Permissions</li>
 {% endblock %}
 {% block dashboard_content %}
-    <div class="page-header mb-4">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1>Permission Catalogue</h1>
             <p class="page-subtitle mb-0">All permissions are organized into categories and granted through roles</p>
         </div>
+        <div>
+            <a href="{% url 'rbac:permission_matrix' %}"
+               class="btn btn-outline-primary-brand btn-sm">
+                <i class="bi bi-grid-3x3-gap me-1"></i> Permission Matrix
+            </a>
+        </div>
     </div>
+    <form method="get" class="row g-2 mb-4" role="search">
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+                <label for="permission-search" class="visually-hidden">Search permissions</label>
+                <input type="search" id="permission-search" name="q" value="{{ query }}"
+                       class="form-control" placeholder="Search by code or name...">
+                <button class="btn btn-primary-brand" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+    {% if query %}
+        <p class="text-muted mb-3">
+            Showing results for &ldquo;<strong>{{ query }}</strong>&rdquo; —
+            <a href="{% url 'rbac:permission_list' %}" class="text-decoration-none">Clear search</a>
+        </p>
+    {% endif %}
     {% for category in categories %}
         <div class="card border-0 mb-4">
             <div class="card-header bg-white border-0 pt-3 pb-2 d-flex justify-content-between align-items-center">

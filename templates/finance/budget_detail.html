@@ -1,0 +1,36 @@
+{% extends "finance/base.html" %}
+
+{% block title %}{{ budget.title }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ budget.title }}</h1>
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <strong>Reference Number:</strong> {{ budget.reference_number }}
+        </div>
+        <div class="mb-3">
+            <strong>Financial Year:</strong> {{ budget.financial_year }}
+        </div>
+        <div class="mb-3">
+            <strong>Amount:</strong> {{ budget.amount }}
+        </div>
+        <div class="mb-3>
+            <strong>Status:</strong> {{ budget.get_status_display }}
+        </div>
+        <div class="mb-3>
+            <strong>Description:</strong><br>
+            {{ budget.description|linebreaks }}
+        </div>
+    </div>
+</div>
+<div class="mt-4>
+    <a href="{% url 'finance:budget_list' %}" class="btn btn-secondary">Back to List</a>
+    {% if perms.finance.change_budget %}
+    <a href="{% url 'finance:budget_update' budget.pk %}" class="btn btn-outline-primary">Edit</a>
+    {% endif %}
+    {% if perms.finance.delete_budget %}
+    <a href="{% url 'finance:budget_delete' budget.pk %}" class="btn btn-outline-danger">Delete</a>
+    {% endif %}
+</div>
+{% endblock %}

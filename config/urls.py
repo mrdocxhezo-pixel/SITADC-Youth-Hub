@@ -6,6 +6,7 @@ from django.urls import include, path
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("apps.core.urls", namespace="core")),
+    path("dashboard/", include("apps.dashboard.urls", namespace="dashboard")),
     path("leadership/", include("apps.leadership.urls", namespace="leadership")),
     path("volunteers/", include("apps.volunteers.urls", namespace="volunteers")),
     path("memberships/", include("apps.memberships.urls", namespace="memberships")),
@@ -27,6 +28,12 @@ urlpatterns = [
     path(
         "notifications/", include("apps.notifications.urls", namespace="notifications")
     ),
+    path("governance/", include("apps.governance.urls", namespace="governance")),
+    path("system-settings/", include("apps.system_settings.urls", namespace="system_settings")),
+    path("settings/", include("apps.settings.urls", namespace="settings")),
+    path("organizations/", include("apps.organizations.urls", namespace="organizations")),
+    path("references/", include("apps.references.urls", namespace="references")),
+    path("rbac/", include("apps.rbac.urls", namespace="rbac")),
     path("search/", include("apps.search.urls", namespace="search")),
     path("exports/", include("apps.exports.urls", namespace="exports")),
 ]

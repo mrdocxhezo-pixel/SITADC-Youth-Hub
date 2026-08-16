@@ -6,6 +6,7 @@ applied through the fail-closed selectors.
 
 from __future__ import annotations
 
+import inspect
 import json as _json
 import logging
 
@@ -147,6 +148,28 @@ def _apply_service_errors(form, exc: ValidationError | PermissionDenied) -> None
         form.add_error(None, message)
 
 
+def _service_kwargs(service_cls, cleaned_data: dict, instance=None) -> dict:
+    """Build kwargs for service.execute() from form cleaned_data.
+
+    Filters to only parameters accepted by the service's _execute method,
+    merges missing required params from the instance (for updates), and
+    removes keys with None values.
+    """
+    sig = inspect.signature(service_cls._execute)
+    accepted = set(sig.parameters.keys()) - {"self", "instance"}
+    kwargs = {k: v for k, v in cleaned_data.items() if k in accepted and v is not None}
+    if instance is not None:
+        # For updates, fill missing required params from the instance
+        for name, param in sig.parameters.items():
+            if name in {"self", "instance"}:
+                continue
+            if name not in kwargs and param.default is param.empty:
+                kwargs[name] = getattr(instance, name, None)
+            elif name not in kwargs and param.default is not param.empty:
+                kwargs[name] = getattr(instance, name, param.default)
+    return kwargs
+
+
 def _scoped_calendar(user, pk, *, include_archived: bool = False):
     return get_object_or_404(
         calendar_queryset(user, include_archived=include_archived), pk=pk
@@ -214,6 +237,7 @@ class DashboardView(MeetingPermissionMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         meetings = visible_meetings(user)
+        all_meetings = meeting_queryset(user)  # includes COMPLETED
         actions = action_queryset(user)
         now = timezone.now()
         open_statuses = [
@@ -233,7 +257,7 @@ class DashboardView(MeetingPermissionMixin, TemplateView):
                         MeetingStatus.CONFIRMED,
                     ],
                 ).count(),
-                "completed_count": meetings.filter(
+                "completed_count": all_meetings.filter(
                     status=MeetingStatus.COMPLETED
                 ).count(),
                 "in_progress_count": meetings.filter(
@@ -339,11 +363,13 @@ class CalendarCreateView(MeetingPermissionMixin, FormView):
         return {"owner": self.request.user.pk, "calendar_type": CalendarType.TEAM}
 
     def form_valid(self, form):
-        data = dict(form.cleaned_data)
+        data = _service_kwargs(CalendarService, form.cleaned_data)
         data["owner"] = self.request.user
         try:
             instance = CalendarService(user=self.request.user).execute(**data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Calendar created."))
@@ -387,11 +413,12 @@ class CalendarUpdateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         calendar = self.get_object()
-        data = dict(form.cleaned_data)
-        data["owner"] = calendar.owner
+        data = _service_kwargs(CalendarService, form.cleaned_data, instance=calendar)
         try:
             CalendarService(user=self.request.user).execute(instance=calendar, **data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Calendar updated."))
@@ -553,13 +580,24 @@ class EventCreateView(MeetingPermissionMixin, FormView):
         return initial
 
     def form_valid(self, form):
-        data = dict(form.cleaned_data)
-        data["calendar"] = _scoped_visible_calendar(
-            self.request.user, data["calendar"].pk
+        calendar_pk = self.kwargs.get("calendar_pk") or form.cleaned_data.get(
+            "calendar"
         )
+        if calendar_pk:
+            calendar = _scoped_visible_calendar(
+                self.request.user,
+                calendar_pk.pk if hasattr(calendar_pk, "pk") else calendar_pk,
+            )
+        else:
+            calendar = None
+        data = _service_kwargs(CalendarEventService, form.cleaned_data)
+        if calendar:
+            data["calendar"] = calendar
         try:
             instance = CalendarEventService(user=self.request.user).execute(**data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Event created."))
@@ -612,13 +650,15 @@ class EventUpdateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         event = self.get_object()
-        data = dict(form.cleaned_data)
-        data["calendar"] = _scoped_visible_calendar(
-            self.request.user, data["calendar"].pk
-        )
+        data = _service_kwargs(CalendarEventService, form.cleaned_data, instance=event)
+        # calendar is required by service; if not in form, use event.calendar
+        if "calendar" not in data:
+            data["calendar"] = event.calendar
         try:
             CalendarEventService(user=self.request.user).execute(instance=event, **data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Event updated."))
@@ -638,11 +678,28 @@ class EventTransitionView(MeetingPermissionMixin, View):
 
     def post(self, request, pk, status):
         event = _scoped_visible_event(request.user, pk)
+        status_map = {
+            "cancelled": EventStatus.CANCELLED,
+            "cancel": EventStatus.CANCELLED,
+            "completed": EventStatus.COMPLETED,
+            "postponed": EventStatus.POSTPONED,
+            "rescheduled": EventStatus.RESCHEDULED,
+            "confirmed": EventStatus.CONFIRMED,
+            "scheduled": EventStatus.SCHEDULED,
+        }
+        mapped_status = status_map.get(status, status)
+        if mapped_status not in EventStatus.values:
+            messages.error(request, _("Invalid status: %s") % status)
+            return redirect("meetings:event_detail", pk=event.pk)
         try:
             CalendarEventService(user=request.user).transition(
-                instance=event, status=status, reason=request.POST.get("reason", "")
+                instance=event,
+                status=mapped_status,
+                reason=request.POST.get("reason", ""),
             )
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             messages.error(request, _("Transition failed: %s") % exc)
             return redirect("meetings:event_detail", pk=event.pk)
         messages.success(request, _("Event status updated."))
@@ -766,10 +823,12 @@ class MeetingCreateView(MeetingPermissionMixin, FormView):
         return initial
 
     def form_valid(self, form):
-        data = dict(form.cleaned_data)
+        data = _service_kwargs(MeetingService, form.cleaned_data)
         try:
             instance = MeetingService(user=self.request.user).execute(**data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Meeting scheduled."))
@@ -835,10 +894,12 @@ class MeetingUpdateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         meeting = self.get_object()
-        data = dict(form.cleaned_data)
+        data = _service_kwargs(MeetingService, form.cleaned_data, instance=meeting)
         try:
             MeetingService(user=self.request.user).execute(instance=meeting, **data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Meeting updated."))
@@ -859,11 +920,28 @@ class MeetingTransitionView(MeetingPermissionMixin, View):
     def post(self, request, pk, status):
         meeting = _scoped_visible_meeting(request.user, pk)
         reason = request.POST.get("reason", "")
+        # Map slug to MeetingStatus enum
+        status_map = {
+            "confirm": MeetingStatus.CONFIRMED,
+            "start": MeetingStatus.IN_PROGRESS,
+            "complete": MeetingStatus.COMPLETED,
+            "cancel": MeetingStatus.CANCELLED,
+            "cancelled": MeetingStatus.CANCELLED,
+            "postpone": MeetingStatus.POSTPONED,
+            "reschedule": MeetingStatus.RESCHEDULED,
+            "send": MeetingStatus.INVITATIONS_SENT,
+        }
+        mapped_status = status_map.get(status, status)
+        if mapped_status not in MeetingStatus.values:
+            messages.error(request, _("Invalid status: %s") % status)
+            return redirect("meetings:meeting_detail", pk=meeting.pk)
         try:
             MeetingService(user=request.user).transition(
-                instance=meeting, status=status, reason=reason
+                instance=meeting, status=mapped_status, reason=reason
             )
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             messages.error(request, _("Transition failed: %s") % exc)
             return redirect("meetings:meeting_detail", pk=meeting.pk)
         messages.success(request, _("Meeting status updated."))
@@ -922,13 +1000,13 @@ class MeetingRescheduleView(MeetingPermissionMixin, FormView):
 
     def get_form_class(self):
         class RescheduleForm(forms.Form):
-            new_start = forms.DateTimeField(
+            start_at = forms.DateTimeField(
                 label=_("New start"),
                 widget=forms.DateTimeInput(
                     attrs={"class": "form-control", "type": "datetime-local"}
                 ),
             )
-            new_end = forms.DateTimeField(
+            end_at = forms.DateTimeField(
                 label=_("New end"),
                 widget=forms.DateTimeInput(
                     attrs={"class": "form-control", "type": "datetime-local"}
@@ -948,11 +1026,13 @@ class MeetingRescheduleView(MeetingPermissionMixin, FormView):
         try:
             MeetingService(user=self.request.user).reschedule(
                 instance=meeting,
-                new_start=data["new_start"],
-                new_end=data["new_end"],
+                new_start=data["start_at"],
+                new_end=data["end_at"],
                 reason=data.get("reason", ""),
             )
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Meeting rescheduled."))
@@ -1036,13 +1116,15 @@ class ParticipantCreateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         meeting = self.get_meeting()
-        data = form.cleaned_data
-        data["name"] = data.pop("name_snapshot", "")
-        data["email"] = data.pop("email_snapshot", "")
-        data["phone"] = data.pop("phone_snapshot", "")
+        data = _service_kwargs(ParticipantService, form.cleaned_data)
+        data["name"] = form.cleaned_data.pop("name_snapshot", "") or ""
+        data["email"] = form.cleaned_data.pop("email_snapshot", "") or ""
+        data["phone"] = form.cleaned_data.pop("phone_snapshot", "") or ""
         try:
             ParticipantService(user=self.request.user).execute(meeting=meeting, **data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Participant added."))
@@ -1091,15 +1173,20 @@ class ParticipantUpdateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         meeting = self.get_meeting()
-        data = form.cleaned_data
-        data["name"] = data.pop("name_snapshot", "")
-        data["email"] = data.pop("email_snapshot", "")
-        data["phone"] = data.pop("phone_snapshot", "")
+        participant = self.get_participant()
+        data = _service_kwargs(
+            ParticipantService, form.cleaned_data, instance=participant
+        )
+        data["name"] = form.cleaned_data.pop("name_snapshot", "") or ""
+        data["email"] = form.cleaned_data.pop("email_snapshot", "") or ""
+        data["phone"] = form.cleaned_data.pop("phone_snapshot", "") or ""
         try:
             ParticipantService(user=self.request.user).execute(
-                meeting=meeting, instance=self.get_participant(), **data
+                meeting=meeting, instance=participant, **data
             )
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Participant updated."))
@@ -1219,11 +1306,13 @@ class AgendaCreateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         meeting = self.get_meeting()
-        data = form.cleaned_data
+        data = _service_kwargs(AgendaService, form.cleaned_data)
         data["meeting"] = meeting
         try:
             instance = AgendaService(user=self.request.user).execute(**data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Agenda created."))
@@ -1263,16 +1352,18 @@ class AgendaUpdateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         agenda = self.get_agenda()
-        data = form.cleaned_data
+        data = _service_kwargs(AgendaService, form.cleaned_data, instance=agenda)
         data["meeting"] = agenda.meeting
         try:
             AgendaService(user=self.request.user).execute(instance=agenda, **data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Agenda updated."))
         return redirect(
-            "meetings:agenda_detail", meeting_id=agenda.meeting_id, pk=agenda.pk
+            "meetings:agenda_detail", meeting_pk=agenda.meeting_id, pk=agenda.pk
         )
 
     def get_context_data(self, **kwargs):
@@ -1294,7 +1385,7 @@ class AgendaApproveView(MeetingPermissionMixin, View):
         else:
             messages.success(request, _("Agenda approved."))
         return redirect(
-            "meetings:agenda_detail", meeting_id=agenda.meeting_id, pk=agenda.pk
+            "meetings:agenda_detail", meeting_pk=meeting_pk, pk=pk
         )
 
 
@@ -1310,7 +1401,7 @@ class AgendaPublishView(MeetingPermissionMixin, View):
         else:
             messages.success(request, _("Agenda published."))
         return redirect(
-            "meetings:agenda_detail", meeting_id=agenda.meeting_id, pk=agenda.pk
+            "meetings:agenda_detail", meeting_pk=meeting_pk, pk=pk
         )
 
 
@@ -1348,7 +1439,7 @@ class AgendaItemCreateView(MeetingPermissionMixin, FormView):
             return self.form_invalid(form)
         messages.success(self.request, _("Agenda item added."))
         return redirect(
-            "meetings:agenda_detail", meeting_id=agenda.meeting_id, pk=agenda.pk
+            "meetings:agenda_detail", meeting_pk=agenda.meeting_id, pk=agenda.pk
         )
 
     def get_context_data(self, **kwargs):
@@ -1411,7 +1502,7 @@ class AgendaItemUpdateView(MeetingPermissionMixin, FormView):
             return self.form_invalid(form)
         messages.success(self.request, _("Agenda item updated."))
         return redirect(
-            "meetings:agenda_detail", meeting_id=agenda.meeting_id, pk=agenda.pk
+            "meetings:agenda_detail", meeting_pk=agenda.meeting_id, pk=agenda.pk
         )
 
     def get_context_data(self, **kwargs):
@@ -1430,7 +1521,7 @@ class AgendaItemDeleteView(MeetingPermissionMixin, View):
         AgendaService(user=request.user).delete_item(item=item)
         messages.success(request, _("Agenda item deleted."))
         return redirect(
-            "meetings:agenda_detail", meeting_id=agenda.meeting_id, pk=agenda.pk
+            "meetings:agenda_detail", meeting_pk=meeting_pk, pk=pk
         )
 
 
@@ -1596,11 +1687,13 @@ class MinutesCreateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         meeting = self.get_meeting()
-        data = form.cleaned_data
+        data = _service_kwargs(MinutesService, form.cleaned_data)
         data["meeting"] = meeting
         try:
             instance = MinutesService(user=self.request.user).execute(**data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Minutes drafted."))
@@ -1651,16 +1744,18 @@ class MinutesUpdateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         minutes = self.get_minutes()
-        data = form.cleaned_data
+        data = _service_kwargs(MinutesService, form.cleaned_data, instance=minutes)
         data["meeting"] = minutes.meeting
         try:
             MinutesService(user=self.request.user).execute(instance=minutes, **data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Minutes updated."))
         return redirect(
-            "meetings:minutes_detail", meeting_id=minutes.meeting_id, pk=minutes.pk
+            "meetings:minutes_detail", meeting_pk=minutes.meeting_id, pk=minutes.pk
         )
 
     def get_context_data(self, **kwargs):
@@ -1687,7 +1782,7 @@ class MinutesSubmitView(MeetingPermissionMixin, View):
         else:
             messages.success(request, _("Minutes submitted for review."))
         return redirect(
-            "meetings:minutes_detail", meeting_id=minutes.meeting_id, pk=minutes.pk
+            "meetings:minutes_detail", meeting_pk=meeting_pk, pk=pk
         )
 
 
@@ -1708,7 +1803,7 @@ class MinutesReviewView(MeetingPermissionMixin, View):
         else:
             messages.success(request, _("Minutes review started."))
         return redirect(
-            "meetings:minutes_detail", meeting_id=minutes.meeting_id, pk=minutes.pk
+            "meetings:minutes_detail", meeting_pk=meeting_pk, pk=pk
         )
 
 
@@ -1729,7 +1824,7 @@ class MinutesApproveView(MeetingPermissionMixin, View):
         else:
             messages.success(request, _("Minutes approved."))
         return redirect(
-            "meetings:minutes_detail", meeting_id=minutes.meeting_id, pk=minutes.pk
+            "meetings:minutes_detail", meeting_pk=meeting_pk, pk=pk
         )
 
 
@@ -1753,7 +1848,7 @@ class MinutesReturnView(MeetingPermissionMixin, View):
         else:
             messages.success(request, _("Minutes returned for correction."))
         return redirect(
-            "meetings:minutes_detail", meeting_id=minutes.meeting_id, pk=minutes.pk
+            "meetings:minutes_detail", meeting_pk=meeting_pk, pk=pk
         )
 
 
@@ -1798,7 +1893,7 @@ class MinuteSectionCreateView(MeetingPermissionMixin, FormView):
             return self.form_invalid(form)
         messages.success(self.request, _("Minutes section added."))
         return redirect(
-            "meetings:minutes_detail", meeting_id=minutes.meeting_id, pk=minutes.pk
+            "meetings:minutes_detail", meeting_pk=minutes.meeting_id, pk=minutes.pk
         )
 
     def get_context_data(self, **kwargs):
@@ -1825,11 +1920,13 @@ class DecisionCreateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         meeting = self.get_meeting()
-        data = form.cleaned_data
+        data = _service_kwargs(DecisionService, form.cleaned_data)
         data["meeting"] = meeting
         try:
             DecisionService(user=self.request.user).execute(**data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Decision recorded."))
@@ -1880,11 +1977,13 @@ class DecisionUpdateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         decision = self.get_decision()
-        data = form.cleaned_data
+        data = _service_kwargs(DecisionService, form.cleaned_data, instance=decision)
         data["meeting"] = decision.meeting
         try:
             DecisionService(user=self.request.user).execute(instance=decision, **data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Decision updated."))
@@ -1945,11 +2044,13 @@ class ActionItemCreateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         meeting = self.get_meeting()
-        data = form.cleaned_data
+        data = _service_kwargs(ActionItemService, form.cleaned_data)
         data["meeting"] = meeting
         try:
             ActionItemService(user=self.request.user).execute(**data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Action item created."))
@@ -1998,11 +2099,13 @@ class ActionItemUpdateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         action = self.get_action()
-        data = form.cleaned_data
+        data = _service_kwargs(ActionItemService, form.cleaned_data, instance=action)
         data["meeting"] = action.meeting
         try:
             ActionItemService(user=self.request.user).execute(instance=action, **data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Action item updated."))
@@ -2207,10 +2310,12 @@ class TemplateCreateView(MeetingPermissionMixin, FormView):
     form_class = MeetingTemplateForm
 
     def form_valid(self, form):
-        data = form.cleaned_data
+        data = _service_kwargs(TemplateService, form.cleaned_data)
         try:
             TemplateService(user=self.request.user).execute(**data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Meeting template created."))
@@ -2274,10 +2379,12 @@ class TemplateUpdateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         template = self.get_template()
-        data = form.cleaned_data
+        data = _service_kwargs(TemplateService, form.cleaned_data, instance=template)
         try:
             TemplateService(user=self.request.user).execute(instance=template, **data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Meeting template updated."))
@@ -2310,10 +2417,12 @@ class VenueCreateView(MeetingPermissionMixin, FormView):
         return kwargs
 
     def form_valid(self, form):
-        data = form.cleaned_data
+        data = _service_kwargs(VenueService, form.cleaned_data)
         try:
             VenueService(user=self.request.user).execute(**data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Meeting venue created."))
@@ -2362,10 +2471,12 @@ class VenueUpdateView(MeetingPermissionMixin, FormView):
 
     def form_valid(self, form):
         venue = self.get_venue()
-        data = form.cleaned_data
+        data = _service_kwargs(VenueService, form.cleaned_data, instance=venue)
         try:
             VenueService(user=self.request.user).execute(instance=venue, **data)
-        except (ValidationError, PermissionDenied) as exc:
+        except PermissionDenied:
+            raise
+        except ValidationError as exc:
             _apply_service_errors(form, exc)
             return self.form_invalid(form)
         messages.success(self.request, _("Meeting venue updated."))

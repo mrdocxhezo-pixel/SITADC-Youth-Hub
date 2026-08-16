@@ -11,6 +11,7 @@ import logging
 from datetime import timedelta
 from typing import Any
 
+from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -43,6 +44,7 @@ from .constants import (
     MeetingStatus,
     MinutesStatus,
     ParticipantStatus,
+    ParticipantType,
     PublicationStatus,
     QuorumType,
     ReminderChannel,
@@ -216,6 +218,47 @@ class _MeetingServiceMixin:
             notes=notes,
         )
 
+    def _allocate_reference_if_configured(
+        self, module: str, record_type: str, scheme_code: str, notes: str
+    ):
+        """Allocate a reference only when a scheme exists.
+
+        Sub-record types (agenda, minutes, decisions, actions, documents) do
+        not have a dedicated numbering scheme in every deployment, so their
+        reference allocation is best-effort.
+        """
+        from apps.references.exceptions import (
+            InactiveNumberingSchemeError,
+            MissingNumberingContextError,
+        )
+
+        try:
+            return self._allocate_reference(
+                module=module,
+                record_type=record_type,
+                scheme_code=scheme_code,
+                notes=notes,
+            )
+        except (MissingNumberingContextError, InactiveNumberingSchemeError):
+            logger.warning(
+                "reference_allocation_skipped",
+                extra={
+                    "meeting_event": {
+                        "module": module,
+                        "record_type": record_type,
+                        "scheme_code": scheme_code,
+                    }
+                },
+            )
+            return None
+
+    def _default_from_instance(self, kwargs: dict, instance, *fields: str) -> dict:
+        """Fill missing kwargs from the instance for partial updates."""
+        for field in fields:
+            if field not in kwargs:
+                kwargs[field] = getattr(instance, field)
+        return kwargs
+
     def _confirm_reference(self, generated, record_id: str) -> None:
         ConfirmReferenceAssignmentService(user=self.user).execute(
             reference=generated,
@@ -244,7 +287,9 @@ class CalendarService(BaseService, _MeetingServiceMixin):
         default_timezone: str = "UTC",
         color: str = "#0d6efd",
         is_default: bool = False,
+        is_confidential: bool | None = None,
         confidentiality_level: str = ConfidentialityLevel.INTERNAL,
+        is_active: bool = True,
         notes: str = "",
         instance: Calendar | None = None,
     ) -> Calendar:
@@ -266,7 +311,12 @@ class CalendarService(BaseService, _MeetingServiceMixin):
             "color": color,
             "is_default": is_default,
             "confidentiality_level": confidentiality_level,
-            "is_confidential": confidentiality_level in SENSITIVE_LEVELS,
+            "is_confidential": (
+                is_confidential
+                if is_confidential is not None
+                else confidentiality_level in SENSITIVE_LEVELS
+            ),
+            "is_active": is_active,
             "notes": notes,
         }
         if instance is None:
@@ -293,13 +343,27 @@ class CalendarService(BaseService, _MeetingServiceMixin):
         self._confirm_reference(generated, str(instance.pk))
         return instance
 
-    def archive(self, *, instance: Calendar) -> Calendar:
+    def create(self, *, owner=None, **kwargs) -> Calendar:
+        return self.execute(owner=owner or self.user, **kwargs)
+
+    def update(self, instance: Calendar, **kwargs) -> Calendar:
+        kwargs.setdefault("instance", instance)
+        self._default_from_instance(kwargs, instance, "owner")
+        return self.execute(**kwargs)
+
+    def soft_delete(self, instance: Calendar, *, notes: str = "") -> Calendar:
+        self._require_permission(CALENDAR_DELETE)
+        self._require_calendar_owner_or_manage(instance)
+        instance.delete(deleted_by=self.user)
+        return instance
+
+    def archive(self, instance: Calendar, *, notes: str = "") -> Calendar:
         self._require_permission(CALENDAR_DELETE)
         self._require_calendar_owner_or_manage(instance)
         instance.archive(archived_by=self.user)
         return instance
 
-    def restore(self, *, instance: Calendar) -> Calendar:
+    def restore(self, instance: Calendar) -> Calendar:
         self._require_permission(CALENDAR_MANAGE)
         instance.unarchive()
         return instance
@@ -370,6 +434,7 @@ class CalendarEventService(BaseService, _MeetingServiceMixin):
         access_scope=None,
         priority: str = "NORMAL",
         status: str = EventStatus.DRAFT,
+        is_confidential: bool | None = None,
         confidentiality_level: str = ConfidentialityLevel.INTERNAL,
         recurrence_rule: dict | None = None,
         reminder_config: list | None = None,
@@ -392,7 +457,7 @@ class CalendarEventService(BaseService, _MeetingServiceMixin):
             raise EventValidationError(str(exc)) from exc
 
         if end_at <= start_at:
-            raise EventValidationError(_("End time must be after the start time."))
+            raise ValidationError(_("End time must be after the start time."))
         self._check_conflict(
             calendar, start_at, end_at, exclude_pk=getattr(instance, "pk", None)
         )
@@ -418,7 +483,11 @@ class CalendarEventService(BaseService, _MeetingServiceMixin):
             "priority": priority,
             "status": status,
             "confidentiality_level": confidentiality_level,
-            "is_confidential": confidentiality_level in SENSITIVE_LEVELS,
+            "is_confidential": (
+                is_confidential
+                if is_confidential is not None
+                else confidentiality_level in SENSITIVE_LEVELS
+            ),
             "recurrence_rule": recurrence_rule,
             "is_recurring": bool(recurrence_rule and recurrence_rule.get("frequency")),
             "reminder_config": reminder_config or [],
@@ -447,6 +516,16 @@ class CalendarEventService(BaseService, _MeetingServiceMixin):
 
         self._ensure_occurrences(instance)
         return instance
+
+    def create(self, **kwargs) -> CalendarEvent:
+        return self.execute(**kwargs)
+
+    def update(self, instance: CalendarEvent, **kwargs) -> CalendarEvent:
+        kwargs.setdefault("instance", instance)
+        self._default_from_instance(
+            kwargs, instance, "calendar", "title", "start_at", "end_at"
+        )
+        return self.execute(**kwargs)
 
     def _check_conflict(self, calendar, start_at, end_at, exclude_pk=None) -> None:
         overlapping = CalendarEvent.objects.filter(
@@ -601,6 +680,21 @@ class MeetingService(BaseService, _MeetingServiceMixin):
             self._require_permission(MEETING_CREATE)
         else:
             self._require_permission(MEETING_UPDATE)
+            if not (
+                self.user.is_superuser
+                or user_has_permission(self.user, MEETING_MANAGE)
+                or self.user.pk
+                in (
+                    instance.organizer_id,
+                    instance.chairperson_id,
+                    instance.secretary_id,
+                    instance.minute_taker_id,
+                )
+                or instance.created_by_id == self.user.pk
+            ):
+                raise PermissionDenied(
+                    _("Only the meeting organizer may update this meeting.")
+                )
 
         if end_at <= start_at:
             raise MeetingSchedulingError(_("End time must be after the start time."))
@@ -687,12 +781,28 @@ class MeetingService(BaseService, _MeetingServiceMixin):
         )
         return instance
 
+    def create(self, **kwargs) -> Meeting:
+        meeting = self.execute(**kwargs)
+        if meeting.status == MeetingStatus.SCHEDULED:
+            meeting.status = MeetingStatus.DRAFT
+            meeting.save(update_fields=["status", "updated_at"])
+        return meeting
+
+    def update(self, instance: Meeting, **kwargs) -> Meeting:
+        kwargs.setdefault("instance", instance)
+        self._default_from_instance(kwargs, instance, "title", "start_at", "end_at")
+        return self.execute(**kwargs)
+
     def transition(
         self, *, instance: Meeting, status: str, reason: str = ""
     ) -> Meeting:
         self._require_permission(MEETING_UPDATE)
         allowed = {
-            MeetingStatus.DRAFT: {MeetingStatus.SCHEDULED, MeetingStatus.CANCELLED},
+            MeetingStatus.DRAFT: {
+                MeetingStatus.SCHEDULED,
+                MeetingStatus.CONFIRMED,
+                MeetingStatus.CANCELLED,
+            },
             MeetingStatus.SCHEDULED: {
                 MeetingStatus.INVITATIONS_SENT,
                 MeetingStatus.CONFIRMED,
@@ -706,6 +816,7 @@ class MeetingService(BaseService, _MeetingServiceMixin):
             },
             MeetingStatus.CONFIRMED: {
                 MeetingStatus.IN_PROGRESS,
+                MeetingStatus.COMPLETED,
                 MeetingStatus.POSTPONED,
                 MeetingStatus.CANCELLED,
             },
@@ -765,7 +876,7 @@ class MeetingService(BaseService, _MeetingServiceMixin):
         )
         return instance
 
-    def confirm(self, *, instance: Meeting) -> Meeting:
+    def confirm(self, instance: Meeting) -> Meeting:
         self._require_permission(MEETING_CONFIRM)
         return self.transition(instance=instance, status=MeetingStatus.CONFIRMED)
 
@@ -775,7 +886,7 @@ class MeetingService(BaseService, _MeetingServiceMixin):
         QuorumService(user=self.user).evaluate(meeting=meeting)
         return meeting
 
-    def complete(self, *, instance: Meeting, notes: str = "") -> Meeting:
+    def complete(self, instance: Meeting, *, notes: str = "") -> Meeting:
         self._require_permission(MEETING_COMPLETE)
         return self.transition(
             instance=instance, status=MeetingStatus.COMPLETED, reason=notes
@@ -831,7 +942,7 @@ class MeetingService(BaseService, _MeetingServiceMixin):
         self._activity(instance, "MEETING_POSTPONED", reason or "Meeting postponed.")
         return instance
 
-    def cancel(self, *, instance: Meeting, reason: str = "") -> Meeting:
+    def cancel(self, instance: Meeting, *, reason: str = "") -> Meeting:
         self._require_permission(MEETING_CANCEL)
         if instance.status in (
             MeetingStatus.CLOSED,
@@ -913,6 +1024,24 @@ class ParticipantService(BaseService, _MeetingServiceMixin):
             instance.updated_by = self.user
             instance.save()
         return instance
+
+    def add_participant(self, meeting, **kwargs) -> MeetingParticipant:
+        return self.execute(meeting=meeting, **kwargs)
+
+    def update_status(
+        self,
+        participant: MeetingParticipant,
+        *,
+        participant_status: str,
+        rsvp_status: str | None = None,
+    ) -> MeetingParticipant:
+        participant.participant_status = participant_status
+        if rsvp_status is not None:
+            participant.rsvp_status = rsvp_status
+        participant.save(
+            update_fields=["participant_status", "rsvp_status", "updated_at"]
+        )
+        return participant
 
     def invite(
         self,
@@ -1061,6 +1190,18 @@ class AgendaService(BaseService, _MeetingServiceMixin):
         meeting.save(update_fields=["agenda_status", "updated_at"])
         return instance
 
+    def create(
+        self, *, meeting: Meeting, title: str = "", prepared_by=None, **kwargs
+    ) -> MeetingAgenda:
+        return self.execute(
+            meeting=meeting, title=title, prepared_by=prepared_by or self.user, **kwargs
+        )
+
+    def update(self, instance: MeetingAgenda, **kwargs) -> MeetingAgenda:
+        kwargs.setdefault("instance", instance)
+        self._default_from_instance(kwargs, instance, "meeting", "prepared_by")
+        return self.execute(**kwargs)
+
     def add_item(
         self,
         *,
@@ -1135,7 +1276,7 @@ class AgendaService(BaseService, _MeetingServiceMixin):
                 display_order=index, item_number=index
             )
 
-    def approve(self, *, agenda: MeetingAgenda, approved_by=None) -> MeetingAgenda:
+    def approve(self, agenda: MeetingAgenda, *, approved_by=None) -> MeetingAgenda:
         self._require_permission(MEETING_APPROVE_AGENDAS)
         if agenda.status not in (AgendaStatus.DRAFT, AgendaStatus.UNDER_REVIEW):
             raise InvalidTransitionError(
@@ -1431,15 +1572,16 @@ class MinutesService(BaseService, _MeetingServiceMixin):
                 updated_by=self.user,
             )
             if not instance.reference:
-                generated = self._allocate_reference(
+                generated = self._allocate_reference_if_configured(
                     REFERENCE_MODULE_MEETINGS,
                     "minutes",
                     "meeting_minutes",
                     f"Minutes {instance.title}.",
                 )
-                instance.reference = generated.reference_number
-                instance.save(update_fields=["reference"])
-                self._confirm_reference(generated, str(instance.pk))
+                if generated is not None:
+                    instance.reference = generated.reference_number
+                    instance.save(update_fields=["reference"])
+                    self._confirm_reference(generated, str(instance.pk))
         else:
             instance.title = title or instance.title
             instance.summary = summary
@@ -1495,7 +1637,19 @@ class MinutesService(BaseService, _MeetingServiceMixin):
             instance.save()
         return instance
 
-    def submit(self, *, minutes: MeetingMinutes) -> MeetingMinutes:
+    def create(
+        self, *, meeting: Meeting, title: str = "", prepared_by=None, **kwargs
+    ) -> MeetingMinutes:
+        return self.execute(
+            meeting=meeting, title=title, prepared_by=prepared_by or self.user, **kwargs
+        )
+
+    def update(self, instance: MeetingMinutes, **kwargs) -> MeetingMinutes:
+        kwargs.setdefault("instance", instance)
+        self._default_from_instance(kwargs, instance, "meeting", "prepared_by")
+        return self.execute(**kwargs)
+
+    def submit(self, minutes: MeetingMinutes) -> MeetingMinutes:
         self._require_permission(MEETING_SUBMIT_MINUTES)
         if minutes.status != MinutesStatus.DRAFT:
             raise MinutesWorkflowError(
@@ -1618,28 +1772,55 @@ class DecisionService(BaseService, _MeetingServiceMixin):
             instance.save()
 
         if not instance.reference:
-            generated = self._allocate_reference(
+            generated = self._allocate_reference_if_configured(
                 REFERENCE_MODULE_MEETINGS,
                 "decision",
                 "meeting_decision",
                 f"Decision for {meeting.title}.",
             )
-            instance.reference = generated.reference_number
-            instance.save(update_fields=["reference"])
-            self._confirm_reference(generated, str(instance.pk))
+            if generated is not None:
+                instance.reference = generated.reference_number
+                instance.save(update_fields=["reference"])
+                self._confirm_reference(generated, str(instance.pk))
         meeting.decisions_recorded = True
         meeting.save(update_fields=["decisions_recorded", "updated_at"])
         return instance
+
+    def create(
+        self, *, meeting: Meeting, decision_text: str, **kwargs
+    ) -> MeetingDecision:
+        return self.execute(meeting=meeting, decision_text=decision_text, **kwargs)
+
+    def update(self, instance: MeetingDecision, **kwargs) -> MeetingDecision:
+        kwargs.setdefault("instance", instance)
+        self._default_from_instance(kwargs, instance, "meeting", "decision_text")
+        return self.execute(**kwargs)
 
     def record_vote(
         self,
         *,
         decision: MeetingDecision,
-        participant: MeetingParticipant,
+        participant: MeetingParticipant | get_user_model(),
         vote_type: str,
         comment: str = "",
     ) -> DecisionVote:
         self._require_permission(MEETING_RECORD_DECISIONS)
+        from apps.accounts.models import User
+
+        if isinstance(participant, User):
+            participant, _ = MeetingParticipant.objects.get_or_create(
+                meeting=decision.meeting,
+                user=participant,
+                defaults={
+                    "participant_type": ParticipantType.USER,
+                    "role_in_meeting": "ATTENDEE",
+                    "name_snapshot": participant.get_full_name()
+                    or participant.username,
+                    "email_snapshot": participant.email,
+                    "created_by": self.user,
+                    "updated_by": self.user,
+                },
+            )
         vote, _ = DecisionVote.objects.update_or_create(
             decision=decision,
             participant=participant,
@@ -1736,29 +1917,44 @@ class ActionItemService(BaseService, _MeetingServiceMixin):
             instance.save()
 
         if not instance.reference:
-            generated = self._allocate_reference(
+            generated = self._allocate_reference_if_configured(
                 REFERENCE_MODULE_MEETINGS,
                 "action",
                 "meeting_action",
                 f"Action for {meeting.title}.",
             )
-            instance.reference = generated.reference_number
-            instance.save(update_fields=["reference"])
-            self._confirm_reference(generated, str(instance.pk))
+            if generated is not None:
+                instance.reference = generated.reference_number
+                instance.save(update_fields=["reference"])
+                self._confirm_reference(generated, str(instance.pk))
         meeting.actions_recorded = True
         meeting.save(update_fields=["actions_recorded", "updated_at"])
         return instance
 
+    def create(
+        self, *, meeting: Meeting, description: str, owner=None, **kwargs
+    ) -> MeetingActionItem:
+        return self.execute(
+            meeting=meeting, description=description, owner=owner, **kwargs
+        )
+
+    def update(self, instance: MeetingActionItem, **kwargs) -> MeetingActionItem:
+        kwargs.setdefault("instance", instance)
+        self._default_from_instance(kwargs, instance, "meeting", "description")
+        return self.execute(**kwargs)
+
     def update_progress(
         self,
-        *,
         action: MeetingActionItem,
+        *,
         progress: int | None = None,
+        progress_percentage: int | None = None,
         status: str | None = None,
         comment: str = "",
         evidence: str = "",
     ) -> MeetingActionItem:
         self._require_permission(MEETING_MANAGE_ACTIONS)
+        progress = progress if progress is not None else progress_percentage
         if progress is not None and not 0 <= progress <= 100:
             raise ValidationError(_("Progress must be between 0 and 100."))
         previous_status = action.status
@@ -1865,7 +2061,7 @@ class ActionItemService(BaseService, _MeetingServiceMixin):
         return action
 
     def complete(
-        self, *, action: MeetingActionItem, evidence: str = ""
+        self, action: MeetingActionItem, *, evidence: str = ""
     ) -> MeetingActionItem:
         self._require_permission(MEETING_MANAGE_ACTIONS)
         return self.update_progress(
@@ -2114,6 +2310,26 @@ class TemplateService(BaseService, _MeetingServiceMixin):
             instance.save()
         return instance
 
+    def create(self, *, name: str, code: str, **kwargs) -> MeetingTemplate:
+        return self.execute(name=name, code=code, **kwargs)
+
+    def update(self, instance: MeetingTemplate, **kwargs) -> MeetingTemplate:
+        kwargs.setdefault("instance", instance)
+        self._default_from_instance(kwargs, instance, "name", "code")
+        return self.execute(**kwargs)
+
+    def activate(self, instance: MeetingTemplate) -> MeetingTemplate:
+        self._require_permission(MEETING_MANAGE_TEMPLATES)
+        instance.is_active = True
+        instance.save(update_fields=["is_active", "updated_at"])
+        return instance
+
+    def deactivate(self, instance: MeetingTemplate) -> MeetingTemplate:
+        self._require_permission(MEETING_MANAGE_TEMPLATES)
+        instance.is_active = False
+        instance.save(update_fields=["is_active", "updated_at"])
+        return instance
+
 
 class VenueService(BaseService, _MeetingServiceMixin):
     """Create and maintain meeting venues."""
@@ -2167,7 +2383,15 @@ class VenueService(BaseService, _MeetingServiceMixin):
             instance.save()
         return instance
 
-    def archive(self, *, instance: MeetingVenue) -> MeetingVenue:
+    def create(self, *, name: str, **kwargs) -> MeetingVenue:
+        return self.execute(name=name, **kwargs)
+
+    def update(self, instance: MeetingVenue, **kwargs) -> MeetingVenue:
+        kwargs.setdefault("instance", instance)
+        self._default_from_instance(kwargs, instance, "name")
+        return self.execute(**kwargs)
+
+    def archive(self, instance: MeetingVenue) -> MeetingVenue:
         self._require_permission(MEETING_MANAGE_VENUES)
         instance.archive(archived_by=self.user)
         return instance

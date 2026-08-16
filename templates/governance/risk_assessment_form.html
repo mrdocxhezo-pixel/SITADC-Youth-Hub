@@ -1,0 +1,162 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ title }}</h2>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:risk_assessment_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{{ title }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.risk_register.id_for_label }}" class="form-label">{{ form.risk_register.label }}</label>
+                            {{ form.risk_register }}
+                            {% if form.risk_register.help_text %}
+                            <small class="form-text text-muted">{{ form.risk_register.help_text }}</small>
+                            {% endif %}
+                            {% if form.risk_register.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.risk_register.errors|first }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.assessment_date.id_for_label }}" class="form-label">{{ form.assessment_date.label }}</label>
+                            {{ form.assessment_date }}
+                            {% if form.assessment_date.help_text %}
+                            <small class="form-text text-muted">{{ form.assessment_date.help_text }}</small>
+                            {% endif %}
+                            {% if form.assessment_date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.assessment_date.errors|first }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.assessor.id_for_label }}" class="form-label">{{ form.assessor.label }}</label>
+                            {{ form.assessor }}
+                            {% if form.assessor.help_text %}
+                            <small class="form-text text-muted">{{ form.assessor.help_text }}</small>
+                            {% endif %}
+                            {% if form.assessor.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.assessor.errors|first }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.review_date.id_for_label }}" class="form-label">{{ form.review_date.label }}</label>
+                            {{ form.review_date }}
+                            {% if form.review_date.help_text %}
+                            <small class="form-text text-muted">{{ form.review_date.help_text }}</small>
+                            {% endif %}
+                            {% if form.review_date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.review_date.errors|first }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.likelihood.id_for_label }}" class="form-label">{{ form.likelihood.label }}</label>
+                        {{ form.likelihood }}
+                        {% if form.likelihood.help_text %}
+                        <small class="form-text text-muted">{{ form.likelihood.help_text }}</small>
+                        {% endif %}
+                        {% if form.likelihood.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.likelihood.errors|first }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.impact.id_for_label }}" class="form-label">{{ form.impact.label }}</label>
+                        {{ form.impact }}
+                        {% if form.impact.help_text %}
+                        <small class="form-text text-muted">{{ form.impact.help_text }}</small>
+                        {% endif %}
+                        {% if form.impact.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.impact.errors|first }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.risk_rating.id_for_label }}" class="form-label">{{ form.risk_rating.label }}</label>
+                        {{ form.risk_rating }}
+                        {% if form.risk_rating.help_text %}
+                        <small class="form-text text-muted">{{ form.risk_rating.help_text }}</small>
+                        {% endif %}
+                        {% if form.risk_rating.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.risk_rating.errors|first }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.assessment_method.id_for_label }}" class="form-label">{{ form.assessment_method.label }}</label>
+                        {{ form.assessment_method }}
+                        {% if form.assessment_method.help_text %}
+                        <small class="form-text text-muted">{{ form.assessment_method.help_text }}</small>
+                        {% endif %}
+                        {% if form.assessment_method.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.assessment_method.errors|first }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">{{ form.notes.label }}</label>
+                        {{ form.notes }}
+                        {% if form.notes.help_text %}
+                        <small class="form-text text-muted">{{ form.notes.help_text }}</small>
+                        {% endif %}
+                        {% if form.notes.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.notes.errors|first }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Save
+                            </button>
+                            <a href="{% url 'governance:risk_assessment_list' %}" class="btn btn-outline-secondary ms-2">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

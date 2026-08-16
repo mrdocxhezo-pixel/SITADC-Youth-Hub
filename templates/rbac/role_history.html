@@ -3,9 +3,9 @@
 {% block title %}{% trans "History" %} - {{ role.name }} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:role_list' %}" class="text-decoration-none">Roles</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:role_detail' slug=role.slug %}"
+    <li class="breadcrumb-item"><a href="{% url 'rbac:rbac_index' %}" class="text-decoration-none">Roles &amp; Permissions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'rbac:role_list' %}" class="text-decoration-none">Roles</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'rbac:role_detail' slug=role.slug %}"
    class="text-decoration-none">{{ role.name }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">History</li>
 {% endblock %}
@@ -16,7 +16,7 @@
             <p class="page-subtitle mb-0">Immutable record of changes to this role</p>
         </div>
         <div>
-            <a href="{% url 'core:role_detail' slug=role.slug %}"
+            <a href="{% url 'rbac:role_detail' slug=role.slug %}"
                class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i> Back to Role
             </a>

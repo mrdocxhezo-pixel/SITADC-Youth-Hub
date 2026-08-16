@@ -3,10 +3,10 @@
 {% block title %}{% trans "New Appointment" %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:position_list' %}" class="text-decoration-none">Positions</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:position_detail' slug=position.slug %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:position_list' %}" class="text-decoration-none">Positions</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'organizations:position_detail' slug=position.slug %}"
    class="text-decoration-none">{{ position.title }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">New Appointment</li>
 {% endblock %}
@@ -17,7 +17,7 @@
             <p class="page-subtitle mb-0">Appoint a person to {{ position.title }}</p>
         </div>
         <div>
-            <a href="{% url 'core:position_detail' slug=position.slug %}"
+            <a href="{% url 'organizations:position_detail' slug=position.slug %}"
                class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i> Back to Position
             </a>
@@ -96,7 +96,7 @@
                     </div>
                 </div>
                 <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
-                    <a href="{% url 'core:position_detail' slug=position.slug %}"
+                    <a href="{% url 'organizations:position_detail' slug=position.slug %}"
                        class="btn btn-light">Cancel</a>
                     <button type="submit" class="btn btn-primary-brand px-4">
                         <i class="bi bi-person-check me-1"></i> Create Appointment

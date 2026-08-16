@@ -37,6 +37,11 @@
     --border-radius-sm: 0.25rem;
     --border-radius-md: 0.5rem;
     --border-radius-lg: 1rem;
+
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+    --transition-slow: 350ms ease;
 }
 
 body {
@@ -82,8 +87,9 @@ body {
     border-right: 1px solid var(--sitadc-gray-200);
     display: flex;
     flex-direction: column;
-    transition: all 0.3s;
-    z-index: 1000;
+    transition: transform var(--transition-normal), margin-left var(--transition-normal);
+    z-index: 1030;
+    will-change: transform;
 }
 
 .dashboard-content {
@@ -93,6 +99,7 @@ body {
     height: 100vh;
     overflow-y: auto;
     background-color: var(--sitadc-gray-100);
+    transition: margin-left var(--transition-normal);
 }
 
 .dashboard-topbar {
@@ -102,26 +109,85 @@ body {
     display: flex;
     align-items: center;
     padding: 0 1.5rem;
-    z-index: 900;
+    z-index: 1020;
 }
 
-/* Card Overrides */
-.card {
-    border: none;
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 1.5rem;
+/* Sidebar Backdrop (Mobile) */
+.sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1025;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
 }
 
-/* Sidebar Toggle State */
-@media (width <= 768px) {
+.sidebar-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Sidebar Toggle State - Mobile First Approach */
+@media (max-width: 767.98px) {
     .dashboard-sidebar {
-        margin-left: calc(var(--sidebar-width) * -1);
         position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        transform: translateX(calc(var(--sidebar-width) * -1));
+        box-shadow: var(--shadow-lg);
     }
 
     .dashboard-sidebar.show {
+        transform: translateX(0);
+    }
+
+    .dashboard-content {
         margin-left: 0;
+    }
+
+    body.sidebar-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+    }
+}
+
+/* Desktop - Sidebar Always Visible */
+@media (min-width: 768px) {
+    .dashboard-sidebar {
+        position: sticky;
+        top: 0;
+        transform: none !important;
+    }
+
+    .dashboard-sidebar.show {
+        transform: none !important;
+    }
+
+    .sidebar-backdrop {
+        display: none !important;
+    }
+
+    body.sidebar-open {
+        overflow: auto;
+        position: static;
+    }
+
+    .dashboard-content {
+        margin-left: 0;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-sidebar,
+    .dashboard-content,
+    .sidebar-backdrop,
+    .nav-link {
+        transition: none !important;
+        animation: none !important;
     }
 }
 
@@ -250,6 +316,35 @@ a:focus-visible {
     border-radius: var(--border-radius-sm);
 }
 
+/* Skip Link */
+.visually-hidden-focusable:not(:focus):not(:active) {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.visually-hidden-focusable:focus,
+.visually-hidden-focusable:active {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    background: #fff;
+    border: 2px solid #0d6efd;
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+    z-index: 1000;
+}
+
 /* ============================================
    Toast Container
    ============================================ */
@@ -276,4 +371,66 @@ a:focus-visible {
 .page-header .page-subtitle {
     font-size: 0.875rem;
     color: var(--sitadc-gray-800);
+}
+
+/* ============================================
+   Navigation Active States
+   ============================================ */
+.nav-link.active {
+    font-weight: 600;
+}
+
+.nav-link[aria-current="page"] {
+    position: relative;
+}
+
+.nav-link[aria-current="page"]::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background-color: currentColor;
+    border-radius: 0 2px 2px 0;
+}
+
+/* Sidebar Logo */
+.sidebar-logo {
+    width: 48px;
+    height: 48px;
+}
+
+/* Ensure active navigation items have good contrast */
+.text-white .bi {
+    color: inherit !important;
+}
+
+/* Improve text-muted contrast for better readability */
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* Ensure badge text has sufficient contrast */
+.bg-primary, .bg-secondary, .bg-success, .bg-danger, .bg-warning, .bg-info {
+    color: #fff !important;
+}
+
+/* Improve form control focus visibility */
+.form-control:focus,
+.form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Improve button focus visibility */
+.btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Improve focus outlines for custom elements */
+*[tabindex]:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
 }

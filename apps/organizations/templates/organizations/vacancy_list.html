@@ -3,7 +3,7 @@
 {% block title %}{% trans "Vacancies" %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
     <li class="breadcrumb-item active" aria-current="page">Vacancies</li>
 {% endblock %}
@@ -14,7 +14,7 @@
             <p class="page-subtitle mb-0">Track vacant positions and recruitment</p>
         </div>
         <div>
-            <a href="{% url 'core:vacancy_create' %}"
+            <a href="{% url 'organizations:vacancy_create' %}"
                class="btn btn-primary-brand btn-sm">
                 <i class="bi bi-plus-lg me-1"></i> New Vacancy
             </a>
@@ -36,7 +36,7 @@
                 <div class="col-12 col-md-auto">
                     <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-funnel me-1"></i> Filter</button>
                     {% if active_unit %}
-                        <a href="{% url 'core:vacancy_list' %}" class="btn btn-light btn-sm">Clear</a>
+                        <a href="{% url 'organizations:vacancy_list' %}" class="btn btn-light btn-sm">Clear</a>
                     {% endif %}
                 </div>
             </form>
@@ -61,7 +61,7 @@
                             {% for vacancy in vacancies %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'core:position_detail' slug=vacancy.position.slug %}"
+                                        <a href="{% url 'organizations:position_detail' slug=vacancy.position.slug %}"
                                            class="fw-semibold text-decoration-none">{{ vacancy.position.title }}</a>
                                         {% if vacancy.acting_appointment %}
                                             <span class="badge bg-info-subtle text-info ms-1">Acting cover</span>
@@ -80,7 +80,7 @@
                                     <td class="text-end">
                                         {% if request.user|has_perm:'organizations.manage' and vacancy.recruitment_status != 'FILLED' %}
                                             <form method="post"
-                                                  action="{% url 'core:vacancy_status' vacancy_id=vacancy.pk %}"
+                                                  action="{% url 'organizations:vacancy_status' vacancy_id=vacancy.pk %}"
                                                   class="d-inline">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="status" value="FILLED">
@@ -99,7 +99,7 @@
                 </div>
             {% else %}
                 <div class="p-4">
-                    {% url 'core:vacancy_create' as vacancy_create_url %}
+                    {% url 'organizations:vacancy_create' as vacancy_create_url %}
                     {% include 'components/empty_state.html' with icon='bi-briefcase' title='No vacancies' message='Vacancies will appear here once opened.' action_url=vacancy_create_url action_label='Open Vacancy' %}
                 </div>
             {% endif %}

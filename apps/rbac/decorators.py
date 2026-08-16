@@ -36,7 +36,7 @@ def permission_required(*permission_codes: str, login_url=None, raise_exception=
             if not user_has_all_permissions(request.user, list(permission_codes)):
                 if raise_exception:
                     raise PermissionDenied
-                return redirect("core:access_denied")
+                return redirect("rbac:access_denied")
             return view_func(request, *args, **kwargs)
 
         return _wrapped_view
@@ -58,7 +58,7 @@ def any_permission_required(
             if not user_has_any_permission(request.user, list(permission_codes)):
                 if raise_exception:
                     raise PermissionDenied
-                return redirect("core:access_denied")
+                return redirect("rbac:access_denied")
             return view_func(request, *args, **kwargs)
 
         return _wrapped_view
@@ -76,7 +76,7 @@ def role_required(*role_slugs: str, login_url=None, raise_exception=True):
             if not any(user_has_role(request.user, slug) for slug in role_slugs):
                 if raise_exception:
                     raise PermissionDenied
-                return redirect("core:access_denied")
+                return redirect("rbac:access_denied")
             return view_func(request, *args, **kwargs)
 
         return _wrapped_view
@@ -94,7 +94,7 @@ def scope_required(*scope_codes: str, login_url=None, raise_exception=True):
             if not any(user_has_scope(request.user, code) for code in scope_codes):
                 if raise_exception:
                     raise PermissionDenied
-                return redirect("core:access_denied")
+                return redirect("rbac:access_denied")
             return view_func(request, *args, **kwargs)
 
         return _wrapped_view

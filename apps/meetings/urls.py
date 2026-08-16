@@ -1,6 +1,6 @@
 """URL configuration for the Calendar & Meetings module."""
 
-from django.urls import path
+from django.urls import path, re_path
 
 from . import views
 
@@ -43,7 +43,11 @@ urlpatterns = [
     ),
     # Events
     path("events/", views.EventListView.as_view(), name="event_list"),
-    path("events/new/", views.EventCreateView.as_view(), name="event_create"),
+    re_path(
+        r"^events/new/(?:calendars/(?P<calendar_pk>[0-9a-f\-]{36})/)?$",
+        views.EventCreateView.as_view(),
+        name="event_create",
+    ),
     path(
         "calendars/<uuid:calendar_pk>/events/new/",
         views.EventCreateView.as_view(),

@@ -1,0 +1,65 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Grants - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Grants</h2>
+        <p class="text-muted">Manage your organization's grants.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:grant_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Grant
+        </a>
+    </div>
+</div>
+
+{% if grants %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Grant Number</th>
+                <th>Funding Agency</th>
+                <th class="text-end">Amount Awarded</th>
+                <th class="text-end">Currency</th>
+                <th>Status</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grant in grants %}
+            <tr>
+                <td>{{ grant.name }}</td>
+                <td>{{ grant.grant_number }}</td>
+                <td>{{ grant.funding_agency }}</td>
+                <td class="text-end">{{ grant.amount_awarded|floatformat:2 }}</td>
+                <td class="text-end">{{ grant.currency }}</td>
+                <td>{{ grant.get_status_display }}</td>
+                <td class="text-end">
+                    <a href="{% url 'finance:grant_update' grant.id %}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'finance:grant_delete' grant.id %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No grants found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No grants found.
+</div>
+{% endif %}
+{% endblock %}

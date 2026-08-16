@@ -72,7 +72,7 @@ class CalendarPermissionTests(MeetingsTestCase):
             reverse("meetings:calendar_share_create", args=[cal.pk]),
             {
                 "user": self.officer.pk,
-                "permission_level": "VIEW",
+                "permission_level": "VIEW_EVENTS",
             },
         )
         self.assertEqual(response.status_code, 302)
@@ -241,6 +241,7 @@ class MeetingPermissionTests(MeetingsTestCase):
             reverse("meetings:agenda_update", args=[self.meeting.pk, agenda.pk]),
             {
                 "title": "Updated Agenda",
+                "confidentiality_level": "INTERNAL",
             },
         )
         self.assertEqual(response.status_code, 302)
@@ -267,7 +268,7 @@ class MeetingPermissionTests(MeetingsTestCase):
             due_date=timezone.now().date() + timezone.timedelta(days=7),
         )
         response = self.client.post(
-            reverse("meetings:action_update", args=[self.meeting.pk, action.pk]),
+            reverse("meetings:action_item_update", args=[self.meeting.pk, action.pk]),
             {
                 "description": "Updated Action",
             },

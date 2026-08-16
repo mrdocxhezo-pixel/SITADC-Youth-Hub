@@ -3,9 +3,9 @@
 {% block title %}{% if mode == 'create' %}{% trans "New Unit" %}{% else %}{% trans "Edit Unit" %}{% endif %} - SITADC Youth Hub{% endblock %}
 {% block breadcrumb_items %}
     <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-decoration-none"><i class="bi bi-house"></i> Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:organizations_index' %}"
+    <li class="breadcrumb-item"><a href="{% url 'organizations:organizations_index' %}"
    class="text-decoration-none">Organization</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'core:unit_list' %}" class="text-decoration-none">Units</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'organizations:unit_list' %}" class="text-decoration-none">Units</a></li>
     <li class="breadcrumb-item active" aria-current="page">{% if mode == 'create' %}New Unit{% else %}Edit {{ unit.name }}{% endif %}</li>
 {% endblock %}
 {% block dashboard_content %}
@@ -15,7 +15,7 @@
             <p class="page-subtitle mb-0">Define the organizational unit and its place in the hierarchy</p>
         </div>
         <div>
-            <a href="{% url 'core:unit_list' %}"
+            <a href="{% url 'organizations:unit_list' %}"
                class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i> Back to Units
             </a>
@@ -126,7 +126,7 @@
                     {% if form.notes.errors %}<div class="invalid-feedback d-block">{% for error in form.notes.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
                 <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
-                    <a href="{% url 'core:unit_list' %}" class="btn btn-light">Cancel</a>
+                    <a href="{% url 'organizations:unit_list' %}" class="btn btn-light">Cancel</a>
                     <button type="submit" class="btn btn-primary-brand px-4">
                         <i class="bi bi-check-lg me-1"></i> {% if mode == 'create' %}Create Unit{% else %}Save Changes{% endif %}
                     </button>

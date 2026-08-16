@@ -11,10 +11,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
-from .constants import (
-    ConfidentialityLevel,
-    QuorumType,
-)
+from .constants import ConfidentialityLevel, QuorumType
 from .models import (
     AgendaItem,
     Calendar,
@@ -30,11 +27,7 @@ from .models import (
     MeetingTemplate,
     MeetingVenue,
 )
-from .selectors import (
-    access_scope_queryset,
-    organization_unit_queryset,
-    user_queryset,
-)
+from .selectors import access_scope_queryset, organization_unit_queryset, user_queryset
 from .validators import validate_recurrence_rule, validate_time_range
 
 BOOTSTRAP_TEXT = "form-control"
@@ -102,7 +95,16 @@ class CalendarForm(forms.ModelForm):
             _set_queryset(self, "organization_unit", organization_unit_queryset(user))
             _set_queryset(self, "access_scope", access_scope_queryset(user))
         _confidentiality_widget(self)
-        for field_name in ("organization_unit", "access_scope"):
+        for field_name in (
+            "organization_unit",
+            "access_scope",
+            "default_timezone",
+            "color",
+            "is_default",
+            "is_confidential",
+            "confidentiality_level",
+            "is_active",
+        ):
             self.fields[field_name].required = False
 
 
@@ -132,6 +134,8 @@ class CalendarShareForm(forms.ModelForm):
         if user is not None:
             _set_queryset(self, "user", user_queryset(user))
             _set_queryset(self, "organization_unit", organization_unit_queryset(user))
+        for field_name in ("organization_unit", "access_scope"):
+            self.fields[field_name].required = False
 
     def clean(self) -> None:
         cleaned = super().clean()
@@ -234,9 +238,12 @@ class CalendarEventForm(forms.ModelForm):
             _set_queryset(self, "organizer", user_queryset(user))
             _set_queryset(self, "program", program_queryset(user))
             _set_queryset(self, "project", project_queryset(user))
-            self.fields["calendar"].required = True
             _confidentiality_widget(self)
         for field_name in (
+            "calendar",
+            "timezone",
+            "priority",
+            "confidentiality_level",
             "host",
             "organizer",
             "program",
@@ -252,7 +259,10 @@ class CalendarEventForm(forms.ModelForm):
         start_at = cleaned.get("start_at")
         end_at = cleaned.get("end_at")
         if start_at and end_at:
-            validate_time_range(start_at, end_at)
+            try:
+                validate_time_range(start_at, end_at)
+            except ValidationError as exc:
+                self.add_error("end_at", exc)
         rule = cleaned.get("recurrence_rule")
         if rule:
             validate_recurrence_rule(rule)
@@ -407,6 +417,15 @@ class MeetingTemplateForm(forms.ModelForm):
             raise ValidationError(_("A fixed quorum value is required."))
         return value
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in (
+            "default_confidentiality",
+            "default_quorum_type",
+            "standard_duration_minutes",
+        ):
+            self.fields[field_name].required = False
+
 
 class MeetingForm(forms.ModelForm):
     class Meta:
@@ -526,6 +545,14 @@ class MeetingForm(forms.ModelForm):
             "organization_unit",
             "access_scope",
             "quorum_value",
+            "timezone",
+            "mode",
+            "venue_reservation_status",
+            "confidentiality_level",
+            "publication_status",
+            "expected_attendees",
+            "required_attendees",
+            "quorum_type",
         ):
             self.fields[field_name].required = False
 
@@ -534,7 +561,10 @@ class MeetingForm(forms.ModelForm):
         start_at = cleaned.get("start_at")
         end_at = cleaned.get("end_at")
         if start_at and end_at:
-            validate_time_range(start_at, end_at)
+            try:
+                validate_time_range(start_at, end_at)
+            except ValidationError as exc:
+                self.add_error("end_at", exc)
         return cleaned
 
 
@@ -566,8 +596,9 @@ class MeetingParticipantForm(forms.ModelForm):
             "accessibility_accommodation": forms.Textarea(attrs=_widget({"rows": 2})),
         }
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, meeting=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.meeting = meeting
         if user is not None:
             from .selectors import user_queryset
 
@@ -649,7 +680,13 @@ class AgendaItemForm(forms.ModelForm):
 
             _set_queryset(self, "presenter", presenter_queryset(user))
             _set_queryset(self, "related_document", related_document_queryset(user))
-        for field_name in ("presenter", "related_document", "start_time", "end_time"):
+        for field_name in (
+            "presenter",
+            "related_document",
+            "start_time",
+            "end_time",
+            "confidentiality_level",
+        ):
             self.fields[field_name].required = False
 
     def clean(self) -> None:
@@ -688,6 +725,8 @@ class MeetingMinutesForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
+        for field_name in ("publication_status", "confidentiality_level"):
+            self.fields[field_name].required = False
 
 
 class MeetingDecisionForm(forms.ModelForm):
@@ -750,6 +789,8 @@ class MeetingDecisionForm(forms.ModelForm):
             "effective_date",
             "review_date",
             "supporting_document",
+            "voting_method",
+            "confidentiality_level",
         ):
             self.fields[field_name].required = False
 
@@ -812,6 +853,8 @@ class MeetingActionItemForm(forms.ModelForm):
             "owner",
             "start_date",
             "due_date",
+            "priority",
+            "progress_percentage",
         ):
             self.fields[field_name].required = False
 
