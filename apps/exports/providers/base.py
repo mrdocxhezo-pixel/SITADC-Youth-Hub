@@ -17,11 +17,7 @@ from django.utils.text import capfirst
 
 from apps.rbac.authorization import user_has_permission
 
-from ..constants import (
-    SENSITIVE_SOURCE_TYPES,
-    ConfidentialityLevel,
-    ExportSourceType,
-)
+from ..constants import SENSITIVE_SOURCE_TYPES, ConfidentialityLevel, ExportSourceType
 from ..permissions import user_can_export_sensitive
 from ..renderers.base import ExportColumn, ExportDataset
 

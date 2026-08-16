@@ -2,7 +2,14 @@
 
 from django.contrib import admin
 
-from .models import ExportActivity, ExportConfiguration, ExportRequest, ExportTemplate
+from .models import (
+    ExportActivity,
+    ExportConfiguration,
+    ExportQueue,
+    ExportRequest,
+    ExportTemplate,
+    ScheduledExport,
+)
 
 
 class ImmutableActivityAdminMixin:
@@ -168,4 +175,61 @@ class ExportActivityAdmin(ImmutableActivityAdminMixin, admin.ModelAdmin):
         "ip_address",
         "user_agent",
         "created_at",
+    )
+
+
+@admin.register(ExportQueue)
+class ExportQueueAdmin(admin.ModelAdmin):
+    """Export queue management."""
+
+    list_display = (
+        "export_request",
+        "status",
+        "priority",
+        "attempts",
+        "scheduled_for",
+        "created_at",
+    )
+    list_filter = ("status", "priority")
+    search_fields = ("export_request__reference_number",)
+    readonly_fields = (
+        "id",
+        "export_request",
+        "status",
+        "priority",
+        "attempts",
+        "max_attempts",
+        "scheduled_for",
+        "started_at",
+        "completed_at",
+        "failure_summary",
+        "error_code",
+        "created_at",
+        "updated_at",
+    )
+
+
+@admin.register(ScheduledExport)
+class ScheduledExportAdmin(admin.ModelAdmin):
+    """Scheduled export configuration."""
+
+    list_display = (
+        "name",
+        "source_type",
+        "format",
+        "frequency",
+        "is_active",
+        "last_run_at",
+        "next_run_at",
+    )
+    list_filter = ("frequency", "is_active", "source_type", "format")
+    search_fields = ("name", "description")
+    readonly_fields = (
+        "id",
+        "created_by",
+        "updated_by",
+        "created_at",
+        "updated_at",
+        "last_run_at",
+        "next_run_at",
     )

@@ -17,6 +17,8 @@ EXPORTS_EXPORT_PDF = "exports.export_pdf"
 EXPORTS_EXPORT_DOCX = "exports.export_docx"
 EXPORTS_EXPORT_XLSX = "exports.export_xlsx"
 EXPORTS_EXPORT_CSV = "exports.export_csv"
+EXPORTS_EXPORT_PNG = "exports.export_png"
+EXPORTS_EXPORT_JPEG = "exports.export_jpeg"
 EXPORTS_EXPORT_REPORTS = "exports.export_reports"
 EXPORTS_EXPORT_DOCUMENTS = "exports.export_documents"
 EXPORTS_EXPORT_REGISTERS = "exports.export_registers"
@@ -28,6 +30,8 @@ EXPORTS_EXPORT_MEETINGS = "exports.export_meetings"
 EXPORTS_EXPORT_BENEFICIARIES = "exports.export_beneficiaries"
 EXPORTS_EXPORT_SENSITIVE = "exports.export_sensitive"
 EXPORTS_EXPORT_BULK = "exports.export_bulk"
+EXPORTS_QUEUE = "exports.queue"
+EXPORTS_SCHEDULE = "exports.schedule"
 EXPORTS_VIEW_HISTORY = "exports.view_history"
 EXPORTS_VIEW_ALL_HISTORY = "exports.view_all_history"
 EXPORTS_CANCEL = "exports.cancel"
@@ -42,6 +46,8 @@ FORMAT_PERMISSIONS = {
     "DOCX": EXPORTS_EXPORT_DOCX,
     "XLSX": EXPORTS_EXPORT_XLSX,
     "CSV": EXPORTS_EXPORT_CSV,
+    "PNG": EXPORTS_EXPORT_PNG,
+    "JPEG": EXPORTS_EXPORT_JPEG,
     "PRINT_HTML": EXPORTS_PRINT,
 }
 

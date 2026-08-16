@@ -341,6 +341,8 @@ class GenerateExportService(BaseService):
             request.record_count,
             request.file_size,
         )
+        # Send notification
+        ExportNotificationService.notify_export_completed(request, actor)
         return request
 
     @staticmethod
@@ -531,5 +533,485 @@ class ExpireStaleExportsService(BaseService):
         expired = 0
         for request in stale:
             request.mark_expired()
+            ExportNotificationService.notify_export_expired(request)
             expired += 1
         return expired
+
+
+class QueueExportService(BaseService):
+    """Enqueue an export request for batch/async processing."""
+
+    def _execute(
+        self,
+        export_request: ExportRequest,
+        *,
+        priority: int = 0,
+        scheduled_for=None,
+        request_obj=None,
+    ):
+        from .models import ExportQueue, ExportQueueStatus
+
+        request = export_request
+        actor = self.user
+        _require(actor, "exports.create", "exports.manage")
+
+        queue_entry, created = ExportQueue.objects.get_or_create(
+            export_request=request,
+            defaults={
+                "status": ExportQueueStatus.PENDING,
+                "priority": priority,
+                "scheduled_for": scheduled_for,
+            },
+        )
+        if not created:
+            queue_entry.status = ExportQueueStatus.PENDING
+            queue_entry.priority = priority
+            queue_entry.scheduled_for = scheduled_for
+            queue_entry.attempts = 0
+            queue_entry.save()
+
+        ExportActivity.record(
+            request=request,
+            action=ExportActivityAction.QUEUED,
+            actor=actor,
+            details={
+                "priority": priority,
+                "scheduled_for": str(scheduled_for) if scheduled_for else "",
+            },
+            request_obj=request_obj,
+        )
+        logger.info("Export %s queued for batch processing", request.reference_number)
+        return queue_entry
+
+
+class ProcessExportQueueService(BaseService):
+    """Process pending export queue entries (management command entry point)."""
+
+    def _execute(self, *, limit: int = 50) -> dict:
+        from django.db import models
+
+        from .models import ExportQueue, ExportQueueStatus
+
+        now = timezone.now()
+        pending = (
+            ExportQueue.objects.filter(
+                status__in=[ExportQueueStatus.PENDING, ExportQueueStatus.PROCESSING],
+                attempts__lt=models.F("max_attempts"),
+            )
+            .filter(
+                models.Q(scheduled_for__isnull=True) | models.Q(scheduled_for__lte=now)
+            )
+            .order_by("-priority", "scheduled_for", "created_at")[:limit]
+        )
+
+        processed = 0
+        succeeded = 0
+        failed = 0
+
+        for queue_entry in pending:
+            if queue_entry.status == ExportQueueStatus.PROCESSING:
+                continue
+
+            queue_entry.status = ExportQueueStatus.PROCESSING
+            queue_entry.started_at = timezone.now()
+            queue_entry.attempts += 1
+            fields = ["status", "started_at", "attempts", "updated_at"]
+            queue_entry.save(update_fields=fields)
+
+            try:
+                # Use the original requester's permissions
+                actor = queue_entry.export_request.requested_by
+                GenerateExportService(user=actor).execute(
+                    queue_entry.export_request, request_obj=None
+                )
+                queue_entry.status = ExportQueueStatus.COMPLETED
+                queue_entry.completed_at = timezone.now()
+                queue_entry.save(update_fields=["status", "completed_at", "updated_at"])
+                ExportActivity.record(
+                    request=queue_entry.export_request,
+                    action=ExportActivityAction.BATCH_COMPLETED,
+                    actor=actor,
+                    details={"queue_entry": str(queue_entry.pk)},
+                )
+                ExportNotificationService.notify_batch_completed(
+                    queue_entry.export_request, actor
+                )
+                succeeded += 1
+            except Exception as exc:
+                queue_entry.status = ExportQueueStatus.FAILED
+                queue_entry.failure_summary = str(exc)
+                queue_entry.error_code = exc.__class__.__name__
+                fields = ["status", "failure_summary", "error_code", "updated_at"]
+                queue_entry.save(update_fields=fields)
+                ExportActivity.record(
+                    request=queue_entry.export_request,
+                    action=ExportActivityAction.FAILED,
+                    actor=queue_entry.export_request.requested_by,
+                    details={"error": str(exc), "queue_entry": str(queue_entry.pk)},
+                )
+                ExportNotificationService.notify_export_failed(
+                    queue_entry.export_request, str(exc)
+                )
+                failed += 1
+                logger.error(
+                    "Batch export %s failed: %s",
+                    queue_entry.export_request.reference_number,
+                    exc,
+                )
+
+            processed += 1
+
+        return {"processed": processed, "succeeded": succeeded, "failed": failed}
+
+
+class BulkExportService(BaseService):
+    """Create and queue multiple export requests for bulk processing."""
+
+    def _execute(
+        self,
+        *,
+        source_type: str,
+        format: str,
+        filters_list: list[dict],
+        requested_by=None,
+        request_obj=None,
+    ) -> list[ExportRequest]:
+        actor = requested_by or self.user
+        _require(actor, "exports.export_bulk", "exports.manage")
+
+        config = ExportConfiguration.load()
+        _validate_format_enabled(config, format)
+        if not user_can_export_source(actor, source_type):
+            raise ExportPermissionDenied(
+                _("You do not have permission to export this data source.")
+            )
+        if not user_can_use_format(actor, format):
+            raise ExportPermissionDenied(
+                _("You do not have permission to generate %(format)s exports.")
+                % {"format": format}
+            )
+
+        provider = registry.get(self._provider_key(source_type))
+        if provider is None or not provider.is_available(actor):
+            raise ExportProviderError(
+                _("No export provider is registered for this data source.")
+            )
+
+        requests = []
+        for idx, filters in enumerate(filters_list):
+            reference = ReferenceNumberService(user=actor).execute(
+                module=EXPORT_MODULE,
+                record_type=source_type.lower(),
+                scheme_code=EXPORT_SCHEME_CODE,
+                notes=(
+                    f"Bulk export {idx + 1}/{len(filters_list)} "
+                    f"for {source_type} ({format})."
+                ),
+            )
+
+            request = ExportRequest.objects.create(
+                reference_number=reference.reference_number,
+                requested_by=actor,
+                source_type=source_type,
+                format=format,
+                filters=filters,
+                selected_columns=[],
+                status=ExportStatus.QUEUED,
+                is_bulk=True,
+            )
+            ExportActivity.record(
+                request=request,
+                action=ExportActivityAction.REQUESTED,
+                actor=actor,
+                details={
+                    "source_type": source_type,
+                    "format": format,
+                    "bulk_index": idx,
+                },
+                request_obj=request_obj,
+            )
+            # Queue for batch processing
+            QueueExportService(user=actor).execute(
+                request, priority=-idx, request_obj=request_obj
+            )
+            requests.append(request)
+
+        logger.info(
+            "Bulk export created: %s requests for %s (%s)",
+            len(requests),
+            source_type,
+            format,
+        )
+        return requests
+
+    @staticmethod
+    def _provider_key(source_type: str) -> str:
+        mapping = {
+            "REPORT": "reports.template",
+            "REGISTER": "registers.register",
+            "BENEFICIARY": "beneficiaries.profile",
+            "PROGRAM": "programs.program",
+            "PROJECT": "programs.project",
+            "MEAL": "meal.indicators",
+            "MEETING": "meetings.meeting",
+            "DOCUMENT": "documents.metadata",
+        }
+        return mapping.get(source_type, "")
+
+
+class DigitalSignatureService:
+    """Service for generating and verifying digital signatures on exports."""
+
+    @staticmethod
+    def sign_export(export_request, user, signature_data: dict | None = None) -> dict:
+        """Add a digital signature to an export request."""
+        from django.utils import timezone
+
+        signature = {
+            "signed_by": str(user.pk),
+            "signed_by_name": getattr(user, "full_name", "")
+            or getattr(user, "get_full_name", lambda: "")()
+            or user.email,
+            "signed_at": timezone.now().isoformat(),
+            "reference_number": export_request.reference_number,
+            "file_hash": DigitalSignatureService._compute_file_hash(export_request),
+            "role": getattr(user, "role", ""),
+            "data": signature_data or {},
+        }
+        export_request.digital_signature = signature
+        export_request.save(update_fields=["digital_signature", "updated_at"])
+        return signature
+
+    @staticmethod
+    def verify_signature(export_request) -> dict:
+        """Verify the digital signature on an export request."""
+        signature = export_request.digital_signature or {}
+        if not signature:
+            return {"valid": False, "reason": "No signature present"}
+
+        current_hash = DigitalSignatureService._compute_file_hash(export_request)
+        original_hash = signature.get("file_hash", "")
+
+        return {
+            "valid": current_hash == original_hash,
+            "signed_by": signature.get("signed_by_name"),
+            "signed_at": signature.get("signed_at"),
+            "file_integrity": current_hash == original_hash,
+            "reference_match": (
+                signature.get("reference_number") == export_request.reference_number
+            ),
+        }
+
+    @staticmethod
+    def _compute_file_hash(export_request) -> str:
+        """Compute SHA-256 hash of the export file."""
+        import hashlib
+
+        from .services import ExportFileService
+
+        path = ExportFileService.absolute_path(export_request)
+        if not path or not os.path.isfile(path):
+            return ""
+        hasher = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+
+
+class QRCodeService:
+    """Service for generating QR codes for export verification."""
+
+    @staticmethod
+    def generate_verification_qr(export_request, base_url: str | None = None) -> str:
+        """Generate a QR code linking to the export verification page."""
+        try:
+            import qrcode
+
+            if base_url is None:
+                from django.conf import settings
+
+                base_url = getattr(
+                    settings, "EXPORT_VERIFICATION_BASE_URL", "https://sitadc.org"
+                )
+
+            verify_url = f"{base_url}/exports/verify/{export_request.reference_number}/"
+
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(verify_url)
+            qr.make(fit=True)
+
+            img = qr.make_image(fill_color="black", back_color="white")
+
+            import io
+
+            buffer = io.BytesIO()
+            img.save(buffer, format="PNG")
+            buffer.seek(0)
+
+            import base64
+
+            qr_b64 = base64.b64encode(buffer.getvalue()).decode("ascii")
+            export_request.qr_code = qr_b64
+            export_request.save(update_fields=["qr_code", "updated_at"])
+            return qr_b64
+        except ImportError:
+            logger.warning("qrcode library not available; QR code generation skipped")
+            return ""
+
+    @staticmethod
+    def embed_qr_in_pdf(dataset, qr_data: str) -> bytes:
+        """Embed a QR code image into the PDF dataset."""
+        # This would be handled by the PDF renderer
+        return qr_data
+
+
+class BarcodeService:
+    """Service for generating barcodes for export tracking."""
+
+    @staticmethod
+    def generate_barcode(export_request, barcode_type: str = "CODE128") -> str:
+        """Generate a barcode for the export request."""
+        try:
+            import barcode
+            from barcode.writer import ImageWriter
+
+            code = export_request.reference_number
+            barcode_class = barcode.get_barcode_class(barcode_type)
+            bc = barcode_class(code, writer=ImageWriter())
+
+            import io
+
+            buffer = io.BytesIO()
+            bc.write(buffer)
+            buffer.seek(0)
+
+            import base64
+
+            barcode_b64 = base64.b64encode(buffer.getvalue()).decode("ascii")
+            export_request.barcode = barcode_b64
+            export_request.save(update_fields=["barcode", "updated_at"])
+            return barcode_b64
+        except ImportError:
+            logger.warning(
+                "python-barcode library not available; " "barcode generation skipped"
+            )
+            return ""
+
+
+class ExportNotificationService:
+    """Service for sending export-related notifications."""
+
+    @staticmethod
+    def _send_notification(
+        user, title: str, message: str, notification_type: str = "INFO", **kwargs
+    ):
+        """Send a notification via the notifications module."""
+        try:
+            from apps.notifications.constants import DeliveryChannel
+            from apps.notifications.services import NotificationService
+
+            # Create in-app notification
+            NotificationService(user=user).execute(
+                recipient=user,
+                title=title,
+                message=message,
+                notification_type=notification_type,
+                channels=[DeliveryChannel.IN_APP],
+                **kwargs,
+            )
+        except Exception as exc:
+            logger.warning("Failed to send export notification: %s", exc)
+
+    @classmethod
+    def notify_export_completed(cls, export_request, actor=None):
+        """Notify when an export is completed successfully."""
+        if actor is None:
+            actor = export_request.requested_by
+
+        fmt = export_request.get_format_display()
+        cls._send_notification(
+            user=actor,
+            title="Export Completed",
+            message=(
+                f'Your export "{export_request.reference_number}" ({fmt}) '
+                "is ready for download."
+            ),
+            notification_type="SUCCESS",
+            export_request=export_request,
+            priority="normal",
+        )
+
+    @classmethod
+    def notify_export_failed(cls, export_request, error: str, actor=None):
+        """Notify when an export fails."""
+        if actor is None:
+            actor = export_request.requested_by
+
+        cls._send_notification(
+            user=actor,
+            title="Export Failed",
+            message=f'Your export "{export_request.reference_number}" failed: {error}',
+            notification_type="ERROR",
+            export_request=export_request,
+            priority="high",
+        )
+
+    @classmethod
+    def notify_export_ready(cls, export_request, actor=None):
+        """Notify when an export is ready for download (alias for completed)."""
+        cls.notify_export_completed(export_request, actor)
+
+    @classmethod
+    def notify_batch_completed(cls, export_request, actor=None):
+        """Notify when a batch export is completed."""
+        if actor is None:
+            actor = export_request.requested_by
+
+        cls._send_notification(
+            user=actor,
+            title="Batch Export Completed",
+            message=f'Batch export "{export_request.reference_number}" '
+            "has been processed.",
+            notification_type="SUCCESS",
+            export_request=export_request,
+            priority="normal",
+        )
+
+    @classmethod
+    def notify_scheduled_run(cls, scheduled_export, export_request=None):
+        """Notify when a scheduled export runs."""
+        user = scheduled_export.created_by
+
+        cls._send_notification(
+            user=user,
+            title="Scheduled Export Executed",
+            message=f'Scheduled export "{scheduled_export.name}" has been queued.',
+            notification_type="INFO",
+            scheduled_export=scheduled_export,
+            export_request=export_request,
+            priority="normal",
+        )
+
+    @classmethod
+    def notify_export_expired(cls, export_request, actor=None):
+        """Notify when an export has expired."""
+        if actor is None:
+            actor = export_request.requested_by
+
+        cls._send_notification(
+            user=actor,
+            title="Export Expired",
+            message=(
+                f'Your export "{export_request.reference_number}" '
+                "has expired and is no longer available for download."
+            ),
+            notification_type="WARNING",
+            export_request=export_request,
+            priority="normal",
+        )

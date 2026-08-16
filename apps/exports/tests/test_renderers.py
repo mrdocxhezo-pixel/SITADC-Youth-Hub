@@ -62,6 +62,8 @@ class RendererRegistryTests(ExportsTestCase):
         self.assertIn("XLSX", formats)
         self.assertIn("CSV", formats)
         self.assertIn("PRINT_HTML", formats)
+        self.assertIn("PNG", formats)
+        self.assertIn("JPEG", formats)
 
     def test_get_renderer_returns_instance(self):
         renderer = get_renderer("PDF")
@@ -111,6 +113,22 @@ class RendererOutputTests(ExportsTestCase):
         renderer = get_renderer("PRINT_HTML")
         result = renderer.render(self.dataset, self.config)
         self.assertIn(b"Test Export", result.content)
+
+    def test_png_render_produces_bytes(self):
+        renderer = get_renderer("PNG")
+        result = renderer.render(self.dataset, self.config)
+        self.assertIsInstance(result, RenderResult)
+        self.assertGreater(len(result.content), 0)
+        self.assertEqual(result.mime_type, "image/png")
+        self.assertEqual(result.filename, "png")
+
+    def test_jpeg_render_produces_bytes(self):
+        renderer = get_renderer("JPEG")
+        result = renderer.render(self.dataset, self.config)
+        self.assertIsInstance(result, RenderResult)
+        self.assertGreater(len(result.content), 0)
+        self.assertEqual(result.mime_type, "image/jpeg")
+        self.assertEqual(result.filename, "jpg")
 
 
 class ProviderDatasetTests(ExportsTestCase):

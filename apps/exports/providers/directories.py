@@ -12,10 +12,7 @@ from apps.leadership.permissions import LEADERSHIP_VIEW
 from apps.memberships.models import MemberProfile
 from apps.memberships.permissions import MEMBERSHIP_VIEW
 from apps.stakeholders.models import Stakeholder
-from apps.stakeholders.permissions import (
-    PARTNERS_VIEW,
-    PARTNERS_VIEW_DIRECTORY,
-)
+from apps.stakeholders.permissions import PARTNERS_VIEW, PARTNERS_VIEW_DIRECTORY
 from apps.stakeholders.selectors import visible_stakeholders
 from apps.volunteers.models import VolunteerProfile
 from apps.volunteers.permissions import VOLUNTEERS_VIEW

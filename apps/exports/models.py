@@ -310,6 +310,13 @@ class ExportRequest(UUIDModel, TimeStampedModel):
         _("Sensitive export confirmed"), default=False
     )
 
+    # Digital verification
+    digital_signature = models.JSONField(
+        _("Digital signature"), default=dict, blank=True
+    )
+    qr_code = models.TextField(_("QR code data"), blank=True)
+    barcode = models.CharField(_("Barcode"), max_length=100, blank=True)
+
     requested_at = models.DateTimeField(_("Requested at"), default=timezone.now)
     started_at = models.DateTimeField(_("Started at"), null=True, blank=True)
     completed_at = models.DateTimeField(_("Completed at"), null=True, blank=True)
@@ -478,3 +485,127 @@ class ExportActivity(UUIDModel, TimeStampedModel):
             },
             default=str,
         )
+
+
+class ExportQueue(UUIDModel, TimeStampedModel):
+    """Queue entry for batch/async export processing."""
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", _("Pending")
+        PROCESSING = "PROCESSING", _("Processing")
+        COMPLETED = "COMPLETED", _("Completed")
+        FAILED = "FAILED", _("Failed")
+        CANCELLED = "CANCELLED", _("Cancelled")
+
+    export_request = models.OneToOneField(
+        ExportRequest,
+        on_delete=models.CASCADE,
+        related_name="queue_entry",
+        verbose_name=_("Export request"),
+    )
+    status = models.CharField(
+        _("Status"),
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+    priority = models.IntegerField(_("Priority"), default=0)
+    attempts = models.PositiveIntegerField(_("Attempts"), default=0)
+    max_attempts = models.PositiveIntegerField(_("Max attempts"), default=3)
+    scheduled_for = models.DateTimeField(_("Scheduled for"), null=True, blank=True)
+    started_at = models.DateTimeField(_("Started at"), null=True, blank=True)
+    completed_at = models.DateTimeField(_("Completed at"), null=True, blank=True)
+    failure_summary = models.TextField(_("Failure summary"), blank=True)
+    error_code = models.CharField(_("Error code"), max_length=50, blank=True)
+
+    class Meta:
+        verbose_name = _("Export Queue")
+        verbose_name_plural = _("Export Queue")
+        ordering = ("-priority", "scheduled_for", "created_at")
+        indexes: ClassVar[list] = [
+            models.Index(fields=["status", "priority"]),
+            models.Index(fields=["scheduled_for"]),
+        ]
+
+    def __str__(self) -> str:
+        ref = self.export_request.reference_number
+        return f"Queue {ref} — {self.get_status_display()}"
+
+
+class ScheduledExport(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
+    """Recurring scheduled export configuration."""
+
+    class Frequency(models.TextChoices):
+        DAILY = "DAILY", _("Daily")
+        WEEKLY = "WEEKLY", _("Weekly")
+        MONTHLY = "MONTHLY", _("Monthly")
+        QUARTERLY = "QUARTERLY", _("Quarterly")
+        ANNUALLY = "ANNUALLY", _("Annually")
+        CUSTOM = "CUSTOM", _("Custom (cron)")
+
+    name = models.CharField(_("Name"), max_length=150)
+    description = models.TextField(_("Description"), blank=True)
+    source_type = models.CharField(
+        _("Source type"),
+        max_length=20,
+        choices=[
+            ("REPORT", "Report"),
+            ("REGISTER", "Organizational Register"),
+            ("DIRECTORY", "People Directory"),
+            ("BENEFICIARY", "Beneficiary"),
+            ("PROGRAM", "Program"),
+            ("PROJECT", "Project"),
+            ("MEAL", "MEAL"),
+            ("MEETING", "Meeting"),
+            ("DOCUMENT", "Document Metadata"),
+            ("SEARCH", "Search Results"),
+        ],
+    )
+    format = models.CharField(
+        _("Format"),
+        max_length=20,
+        choices=[
+            ("PDF", "PDF"),
+            ("DOCX", "Word (DOCX)"),
+            ("XLSX", "Excel (XLSX)"),
+            ("CSV", "CSV"),
+            ("PRINT_HTML", "Print-ready HTML"),
+            ("PNG", "PNG Image"),
+            ("JPEG", "JPEG Image"),
+        ],
+    )
+    filters = models.JSONField(_("Filters"), default=dict, blank=True)
+    selected_columns = models.JSONField(_("Selected columns"), default=list, blank=True)
+    frequency = models.CharField(
+        _("Frequency"),
+        max_length=20,
+        choices=Frequency.choices,
+        default=Frequency.MONTHLY,
+    )
+    cron_expression = models.CharField(
+        _("Cron expression"),
+        max_length=100,
+        blank=True,
+        help_text=_("Used when frequency is CUSTOM"),
+    )
+    run_at_time = models.TimeField(_("Run at time"), default="02:00")
+    day_of_week = models.PositiveSmallIntegerField(
+        _("Day of week (1=Mon)"), null=True, blank=True
+    )
+    day_of_month = models.PositiveSmallIntegerField(
+        _("Day of month"), null=True, blank=True
+    )
+    is_active = models.BooleanField(_("Active"), default=True, db_index=True)
+    last_run_at = models.DateTimeField(_("Last run"), null=True, blank=True)
+    next_run_at = models.DateTimeField(_("Next run"), null=True, blank=True)
+    notify_on_completion = models.BooleanField(_("Notify on completion"), default=True)
+    notify_on_failure = models.BooleanField(_("Notify on failure"), default=True)
+
+    class Meta:
+        verbose_name = _("Scheduled Export")
+        verbose_name_plural = _("Scheduled Exports")
+        ordering = ("name",)
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.get_frequency_display()})"

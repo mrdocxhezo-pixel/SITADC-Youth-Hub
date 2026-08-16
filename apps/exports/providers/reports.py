@@ -5,12 +5,8 @@ from __future__ import annotations
 from django.db.models import Q
 
 from apps.report_instances.models import Report
-from apps.report_instances.permissions import (
-    VIEW as REPORT_VIEW,
-)
-from apps.report_instances.permissions import (
-    VIEW_ALL as REPORT_VIEW_ALL,
-)
+from apps.report_instances.permissions import VIEW as REPORT_VIEW
+from apps.report_instances.permissions import VIEW_ALL as REPORT_VIEW_ALL
 from apps.reports.models import ReportTemplate
 from apps.reports.permissions import REPORT_TEMPLATE_MANAGE, REPORT_TEMPLATE_VIEW
 from apps.reports.selectors import template_queryset

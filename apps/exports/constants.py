@@ -20,6 +20,8 @@ class ExportFormat(models.TextChoices):
     XLSX = "XLSX", _("Excel (XLSX)")
     CSV = "CSV", _("CSV")
     PRINT_HTML = "PRINT_HTML", _("Print-ready HTML")
+    PNG = "PNG", _("PNG Image")
+    JPEG = "JPEG", _("JPEG Image")
 
 
 class ExportStatus(models.TextChoices):
@@ -77,6 +79,31 @@ class ExportActivityAction(models.TextChoices):
     FAILED = "FAILED", _("Export failed")
     REGENERATED = "REGENERATED", _("Export regenerated")
     PREVIEWED = "PREVIEWED", _("Export previewed")
+    QUEUED = "QUEUED", _("Export queued")
+    BATCH_STARTED = "BATCH_STARTED", _("Batch export started")
+    BATCH_COMPLETED = "BATCH_COMPLETED", _("Batch export completed")
+    SCHEDULED_RUN = "SCHEDULED_RUN", _("Scheduled export run")
+
+
+class ExportQueueStatus(models.TextChoices):
+    """Status of an export queue entry."""
+
+    PENDING = "PENDING", _("Pending")
+    PROCESSING = "PROCESSING", _("Processing")
+    COMPLETED = "COMPLETED", _("Completed")
+    FAILED = "FAILED", _("Failed")
+    CANCELLED = "CANCELLED", _("Cancelled")
+
+
+class ScheduledExportFrequency(models.TextChoices):
+    """Frequency options for scheduled exports."""
+
+    DAILY = "DAILY", _("Daily")
+    WEEKLY = "WEEKLY", _("Weekly")
+    MONTHLY = "MONTHLY", _("Monthly")
+    QUARTERLY = "QUARTERLY", _("Quarterly")
+    ANNUALLY = "ANNUALLY", _("Annually")
+    CUSTOM = "CUSTOM", _("Custom (cron)")
 
 
 class PageSize(models.TextChoices):
@@ -156,6 +183,8 @@ DEFAULT_ENABLED_FORMATS = (
     ExportFormat.XLSX,
     ExportFormat.CSV,
     ExportFormat.PRINT_HTML,
+    ExportFormat.PNG,
+    ExportFormat.JPEG,
 )
 
 # ---------------------------------------------------------------------------
@@ -195,6 +224,8 @@ FORMAT_MIME_TYPES = {
     ),
     ExportFormat.CSV: "text/csv; charset=utf-8",
     ExportFormat.PRINT_HTML: "text/html; charset=utf-8",
+    ExportFormat.PNG: "image/png",
+    ExportFormat.JPEG: "image/jpeg",
 }
 
 FORMAT_EXTENSIONS = {
@@ -203,6 +234,8 @@ FORMAT_EXTENSIONS = {
     ExportFormat.XLSX: "xlsx",
     ExportFormat.CSV: "csv",
     ExportFormat.PRINT_HTML: "html",
+    ExportFormat.PNG: "png",
+    ExportFormat.JPEG: "jpg",
 }
 
 # Formats that are tabular (render columns/rows) vs document (narrative).
