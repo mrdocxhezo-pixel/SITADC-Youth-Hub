@@ -16,7 +16,7 @@
     </div>
 </div>
 
-{% if cashes %}
+{% if petty_cashes %}
 <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead>
@@ -32,7 +32,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for cash in cashes %}
+            {% for cash in petty_cashes %}
             <tr>
                 <td>{{ cash.name }}</td>
                 <td>{{ cash.custodian }}</td>

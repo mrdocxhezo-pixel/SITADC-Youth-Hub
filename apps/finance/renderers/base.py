@@ -3,18 +3,16 @@
 from __future__ import annotations
 
 import abc
-import io
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.http import HttpResponse
-from django.template.loader import render_to_string
 from django.utils import timezone
 
 
 class BaseFinanceRenderer(abc.ABC):
     """Base class for finance report renderers."""
 
-    def __init__(self, data: Dict[str, Any], options: Optional[Dict[str, Any]] = None):
+    def __init__(self, data: dict[str, Any], options: dict[str, Any] | None = None):
         """
         Initialize the renderer.
 
@@ -34,7 +32,6 @@ class BaseFinanceRenderer(abc.ABC):
         Returns:
             bytes: The rendered data.
         """
-        pass
 
     def get_http_response(self, filename: str) -> HttpResponse:
         """
@@ -47,12 +44,12 @@ class BaseFinanceRenderer(abc.ABC):
             HttpResponse: The HTTP response with the rendered data.
         """
         rendered_data = self.render()
-        
+
         # Determine content type based on file extension
         content_type = self._get_content_type(filename)
-        
+
         response = HttpResponse(rendered_data, content_type=content_type)
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 
     def _get_content_type(self, filename: str) -> str:
@@ -65,22 +62,25 @@ class BaseFinanceRenderer(abc.ABC):
         Returns:
             str: The content type.
         """
-        extension = filename.lower().split('.')[-1] if '.' in filename else ''
-        
-        content_types = {
-            'pdf': 'application/pdf',
-            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'xls': 'application/vnd.ms-excel',
-            'csv': 'text/csv',
-            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'doc': 'application/msword',
-            'html': 'text/html',
-            'txt': 'text/plain',
-        }
-        
-        return content_types.get(extension, 'application/octet-stream')
+        extension = filename.lower().split(".")[-1] if "." in filename else ""
 
-    def _get_template_context(self) -> Dict[str, Any]:
+        content_types = {
+            "pdf": "application/pdf",
+            "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "xls": "application/vnd.ms-excel",
+            "csv": "text/csv",
+            "docx": (
+                "application/vnd.openxmlformats-officedocument."
+                "wordprocessingml.document"
+            ),
+            "doc": "application/msword",
+            "html": "text/html",
+            "txt": "text/plain",
+        }
+
+        return content_types.get(extension, "application/octet-stream")
+
+    def _get_template_context(self) -> dict[str, Any]:
         """
         Get template context for HTML-based renderers.
 
@@ -88,7 +88,7 @@ class BaseFinanceRenderer(abc.ABC):
             Dict: The template context.
         """
         return {
-            'data': self.data,
-            'timestamp': self.timestamp,
-            'options': self.options,
+            "data": self.data,
+            "timestamp": self.timestamp,
+            "options": self.options,
         }

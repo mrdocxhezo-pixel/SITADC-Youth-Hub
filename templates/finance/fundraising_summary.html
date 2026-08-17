@@ -1,0 +1,238 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ fundraising_data.title|default:"Fundraising Summary" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ fundraising_data.title|default:"Fundraising Summary" }}</h2>
+        <p class="text-muted">Overview of fundraising campaigns, performance, and upcoming deadlines.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if fundraising_data.summary %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Campaigns</h6>
+                <h3 class="mb-0">{{ fundraising_data.summary.total_campaigns }}</h3>
+                <p class="text-muted small mb-0">Average target: {{ fundraising_data.summary.average_target|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Pledged</h6>
+                <h3 class="mb-0 text-primary">{{ fundraising_data.summary.total_pledged|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Campaign targets</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Raised</h6>
+                <h3 class="mb-0 text-success">{{ fundraising_data.summary.total_raised|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Overall progress: {{ fundraising_data.summary.overall_progress_percentage|floatformat:1 }}%</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Remaining</h6>
+                <h3 class="mb-0 text-warning">{{ fundraising_data.summary.total_remaining|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Still to raise</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if fundraising_data.by_status %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Campaigns by Status</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Campaign distribution by status</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Status</th>
+                        <th class="text-end" scope="col">Count</th>
+                        <th class="text-end" scope="col">Total Pledged</th>
+                        <th class="text-end" scope="col">Total Raised</th>
+                        <th class="text-end" scope="col">Remaining</th>
+                        <th class="text-end" scope="col">Progress %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in fundraising_data.by_status %}
+                    <tr>
+                        <td><span class="badge bg-info">{{ item.status }}</span></td>
+                        <td class="text-end">{{ item.count }}</td>
+                        <td class="text-end">{{ item.total_pledged|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.total_raised|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.remaining|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.progress_percentage|floatformat:1 }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No campaign status data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if fundraising_data.recent_launches %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Recent Launches</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Recently launched campaigns</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Campaign</th>
+                        <th class="text-end" scope="col">Target</th>
+                        <th class="text-end" scope="col">Raised</th>
+                        <th scope="col">Start Date</th>
+                        <th scope="col">End Date</th>
+                        <th class="text-end" scope="col">Progress %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campaign in fundraising_data.recent_launches %}
+                    <tr>
+                        <td>{{ campaign.name }}</td>
+                        <td class="text-end">{{ campaign.target_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ campaign.amount_raised|floatformat:2 }}</td>
+                        <td>{{ campaign.start_date|date:"M d, Y" }}</td>
+                        <td>{{ campaign.end_date|date:"M d, Y" }}</td>
+                        <td class="text-end">{{ campaign.progress_percentage|floatformat:1 }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No recent launches.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if fundraising_data.nearing_deadline %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Nearing Deadline</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Active campaigns ending within 7 days</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Campaign</th>
+                        <th class="text-end" scope="col">Target</th>
+                        <th class="text-end" scope="col">Raised</th>
+                        <th scope="col">End Date</th>
+                        <th class="text-end" scope="col">Days Remaining</th>
+                        <th class="text-end" scope="col">Progress %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campaign in fundraising_data.nearing_deadline %}
+                    <tr>
+                        <td>{{ campaign.name }}</td>
+                        <td class="text-end">{{ campaign.target_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ campaign.amount_raised|floatformat:2 }}</td>
+                        <td>{{ campaign.end_date|date:"M d, Y" }}</td>
+                        <td class="text-end">
+                            {% if campaign.days_remaining <= 3 %}
+                            <span class="badge bg-danger">{{ campaign.days_remaining }} days</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">{{ campaign.days_remaining }} days</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">{{ campaign.progress_percentage|floatformat:1 }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No campaigns nearing deadline.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if fundraising_data.top_performing %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Top Performing Campaigns</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Top campaigns by percentage of goal reached</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Campaign</th>
+                        <th class="text-end" scope="col">Target</th>
+                        <th class="text-end" scope="col">Raised</th>
+                        <th class="text-end" scope="col">Progress %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campaign in fundraising_data.top_performing %}
+                    <tr>
+                        <td>{{ campaign.name }}</td>
+                        <td class="text-end">{{ campaign.target_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ campaign.amount_raised|floatformat:2 }}</td>
+                        <td class="text-end">
+                            <span class="badge {% if campaign.progress_percentage >= 100 %}bg-success{% else %}bg-info{% endif %}">{{ campaign.progress_percentage|floatformat:1 }}%</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4">No top performing campaigns.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

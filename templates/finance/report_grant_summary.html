@@ -1,0 +1,208 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ report_data.title|default:"Grant Summary Report" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ report_data.title|default:"Grant Summary Report" }}</h2>
+        <p class="text-muted">Overview of grants and funding across the organization.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf{% if grant_id %}&grant_id={{ grant_id }}{% endif %}" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx{% if grant_id %}&grant_id={{ grant_id }}{% endif %}" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv{% if grant_id %}&grant_id={{ grant_id }}{% endif %}" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if report_data.grant %}
+{# Single grant detail report #}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">{{ report_data.grant.name }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <dl>
+                    <dt>Reference Number</dt>
+                    <dd>{{ report_data.grant.reference_number|default:"-" }}</dd>
+                    <dt>Donor</dt>
+                    <dd>{{ report_data.grant.donor|default:"-" }}</dd>
+                    <dt>Currency</dt>
+                    <dd>{{ report_data.grant.currency|default:"-" }}</dd>
+                </dl>
+            </div>
+            <div class="col-md-4">
+                <dl>
+                    <dt>Start Date</dt>
+                    <dd>{{ report_data.grant.start_date|default:"-" }}</dd>
+                    <dt>End Date</dt>
+                    <dd>{{ report_data.grant.end_date|default:"-" }}</dd>
+                    <dt>Status</dt>
+                    <dd>
+                        <span class="badge bg-info">{{ report_data.grant.status|default:"-" }}</span>
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-md-4">
+                <dl>
+                    <dt>Amount Awarded</dt>
+                    <dd>{{ report_data.grant.amount|floatformat:2 }}</dd>
+                    <dt>Disbursed Amount</dt>
+                    <dd>{{ report_data.grant.disbursed_amount|floatformat:2 }}</dd>
+                    <dt>Remaining Amount</dt>
+                    <dd>{{ report_data.grant.remaining_amount|floatformat:2 }}</dd>
+                </dl>
+            </div>
+        </div>
+        {% if report_data.grant.description %}
+        <div class="row mt-2">
+            <div class="col-12">
+                <h6>Description</h6>
+                <p class="text-muted mb-0">{{ report_data.grant.description }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+{# Summary report of all grants #}
+{% if report_data.summary %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Grants</h6>
+                <h3 class="mb-0">{{ report_data.summary.total_grants }}</h3>
+                <p class="text-muted small mb-0">Active grants</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Awarded</h6>
+                <h3 class="mb-0">{{ report_data.summary.total_awarded|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Total grant value</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Disbursed</h6>
+                <h3 class="mb-0">{{ report_data.summary.total_disbursed|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Funds released</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Remaining</h6>
+                <h3 class="mb-0">{{ report_data.summary.total_remaining|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Funds available</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if report_data.by_status %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Grants by Status</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Grant distribution by status</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Status</th>
+                        <th class="text-end" scope="col">Count</th>
+                        <th class="text-end" scope="col">Total Amount</th>
+                        <th class="text-end" scope="col">Disbursed</th>
+                        <th class="text-end" scope="col">Remaining</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data.by_status %}
+                    <tr>
+                        <td><span class="badge bg-info">{{ item.status }}</span></td>
+                        <td class="text-end">{{ item.count }}</td>
+                        <td class="text-end">{{ item.total_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.total_disbursed|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.remaining|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No grant status data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if report_data.grants %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Grants</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>List of grants</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Grant</th>
+                        <th scope="col">Reference</th>
+                        <th scope="col">Donor</th>
+                        <th scope="col">Currency</th>
+                        <th class="text-end" scope="col">Awarded</th>
+                        <th class="text-end" scope="col">Disbursed</th>
+                        <th class="text-end" scope="col">Remaining</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for g in report_data.grants %}
+                    <tr>
+                        <td>{{ g.name }}</td>
+                        <td>{{ g.reference_number|default:"-" }}</td>
+                        <td>{{ g.donor|default:"-" }}</td>
+                        <td>{{ g.currency|default:"-" }}</td>
+                        <td class="text-end">{{ g.amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ g.disbursed_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ g.remaining_amount|floatformat:2 }}</td>
+                        <td><span class="badge bg-info">{{ g.status|default:"-" }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">No grants found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+{% endif %}
+{% endblock %}

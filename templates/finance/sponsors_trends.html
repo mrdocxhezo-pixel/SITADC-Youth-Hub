@@ -1,0 +1,104 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ sponsors_data.title|default:"Sponsorship Trends" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-7">
+        <h2>{{ sponsors_data.title|default:"Sponsorship Trends" }}</h2>
+        <p class="text-muted">
+            Period: {{ sponsors_data.start_date|date:"M d, Y" }} &mdash; {{ sponsors_data.end_date|date:"M d, Y" }}
+            <span class="badge bg-primary ms-1">{{ sponsors_data.period_type|default:"-" }}</span>
+        </p>
+    </div>
+    <div class="col-md-5 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf&years={{ years }}" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx&years={{ years }}" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv&years={{ years }}" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-4 align-items-end">
+    <div class="col-md-2">
+        <label for="years" class="form-label">Years</label>
+        <input type="number" name="years" id="years" min="1" max="20" value="{{ years }}" class="form-control">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+    </div>
+</form>
+
+{% if sponsors_data.summary %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total New Sponsors</h6>
+                <h3 class="mb-0">{{ sponsors_data.summary.total_new_sponsors }}</h3>
+                <p class="text-muted small mb-0">New sponsors in period</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Sponsored Amount</h6>
+                <h3 class="mb-0 text-success">{{ sponsors_data.summary.sponsored_amount|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Total sponsorship value</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if sponsors_data.data %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Sponsorship by Year</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Sponsorship trends by year</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Year</th>
+                        <th class="text-end" scope="col">Sponsors</th>
+                        <th class="text-end" scope="col">New Sponsors</th>
+                        <th class="text-end" scope="col">Sponsored Amount</th>
+                        <th class="text-end" scope="col">Average Contribution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in sponsors_data.data %}
+                    <tr>
+                        <td>{{ item.year }}</td>
+                        <td class="text-end">{{ item.sponsor_count }}</td>
+                        <td class="text-end">{{ item.new_sponsors }}</td>
+                        <td class="text-end">{{ item.sponsored_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.average_contribution|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No sponsorship trends data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

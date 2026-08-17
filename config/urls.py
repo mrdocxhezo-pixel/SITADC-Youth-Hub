@@ -36,6 +36,7 @@ urlpatterns = [
     path("rbac/", include("apps.rbac.urls", namespace="rbac")),
     path("search/", include("apps.search.urls", namespace="search")),
     path("exports/", include("apps.exports.urls", namespace="exports")),
+    path("finance/", include("apps.finance.urls", namespace="finance")),
 ]
 
 if settings.DEBUG:

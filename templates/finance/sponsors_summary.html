@@ -1,0 +1,174 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ sponsors_data.title|default:"Sponsors Summary" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ sponsors_data.title|default:"Sponsors Summary" }}</h2>
+        <p class="text-muted">Overview of sponsorship contributions, types, and partner activity.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if sponsors_data.summary %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Sponsors</h6>
+                <h3 class="mb-0">{{ sponsors_data.summary.total_sponsors }}</h3>
+                <p class="text-muted small mb-0">Registered sponsors</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Sponsored Amount</h6>
+                <h3 class="mb-0 text-success">{{ sponsors_data.summary.sponsored_amount|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Total sponsorship value</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Average Contribution</h6>
+                <h3 class="mb-0 text-primary">{{ sponsors_data.summary.average_contribution|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Average per sponsor</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if sponsors_data.by_type %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Sponsors by Type</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Sponsor distribution by type</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th class="text-end" scope="col">Count</th>
+                        <th class="text-end" scope="col">Sponsored Amount</th>
+                        <th class="text-end" scope="col">Average Contribution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in sponsors_data.by_type %}
+                    <tr>
+                        <td>{{ item.type }}</td>
+                        <td class="text-end">{{ item.count }}</td>
+                        <td class="text-end">{{ item.sponsored_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.average_contribution|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4">No sponsor type data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if sponsors_data.top_sponsors %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Top Sponsors</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Top sponsors by sponsored amount</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Sponsor</th>
+                        <th scope="col">Type</th>
+                        <th class="text-end" scope="col">Sponsored Amount</th>
+                        <th scope="col">Contact Person</th>
+                        <th scope="col">Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sponsor in sponsors_data.top_sponsors %}
+                    <tr>
+                        <td>{{ sponsor.name }}</td>
+                        <td>{{ sponsor.type|default:"-" }}</td>
+                        <td class="text-end">{{ sponsor.sponsored_amount|floatformat:2 }}</td>
+                        <td>{{ sponsor.contact_person|default:"-" }}</td>
+                        <td>{{ sponsor.email|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No top sponsors data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if sponsors_data.recently_active %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Recently Active Sponsors</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Sponsors active in the last 90 days</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Sponsor</th>
+                        <th scope="col">Type</th>
+                        <th class="text-end" scope="col">Sponsored Amount</th>
+                        <th scope="col">Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sponsor in sponsors_data.recently_active %}
+                    <tr>
+                        <td>{{ sponsor.name }}</td>
+                        <td>{{ sponsor.type|default:"-" }}</td>
+                        <td class="text-end">{{ sponsor.sponsored_amount|floatformat:2 }}</td>
+                        <td>{{ sponsor.last_updated|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4">No recently active sponsors.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

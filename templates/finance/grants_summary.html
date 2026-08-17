@@ -1,0 +1,238 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ grants_data.title|default:"Grants Summary" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ grants_data.title|default:"Grants Summary" }}</h2>
+        <p class="text-muted">Overview of grant funding, status distribution, and upcoming expirations.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if grants_data.summary %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Grants</h6>
+                <h3 class="mb-0">{{ grants_data.summary.total_grants }}</h3>
+                <p class="text-muted small mb-0">Average size: {{ grants_data.summary.average_grant_size|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Awarded</h6>
+                <h3 class="mb-0 text-primary">{{ grants_data.summary.total_awarded|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Total grant value</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Disbursed</h6>
+                <h3 class="mb-0 text-success">{{ grants_data.summary.total_disbursed|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Disbursement rate: {{ grants_data.summary.disbursement_rate|floatformat:1 }}%</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Remaining</h6>
+                <h3 class="mb-0 text-warning">{{ grants_data.summary.total_remaining|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Funds still available</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if grants_data.by_status %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Grants by Status</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Grant distribution by status</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Status</th>
+                        <th class="text-end" scope="col">Count</th>
+                        <th class="text-end" scope="col">Total Amount</th>
+                        <th class="text-end" scope="col">Disbursed</th>
+                        <th class="text-end" scope="col">Remaining</th>
+                        <th class="text-end" scope="col">Disbursement %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in grants_data.by_status %}
+                    <tr>
+                        <td><span class="badge bg-info">{{ item.status }}</span></td>
+                        <td class="text-end">{{ item.count }}</td>
+                        <td class="text-end">{{ item.total_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.total_disbursed|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.remaining|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.disbursement_rate|floatformat:1 }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No grant status data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if grants_data.by_donor %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Grants by Donor</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Grants grouped by donor</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Donor</th>
+                        <th class="text-end" scope="col">Grants</th>
+                        <th class="text-end" scope="col">Total Amount</th>
+                        <th class="text-end" scope="col">Disbursed</th>
+                        <th class="text-end" scope="col">Remaining</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in grants_data.by_donor %}
+                    <tr>
+                        <td>{{ item.donor_name }}</td>
+                        <td class="text-end">{{ item.grant_count }}</td>
+                        <td class="text-end">{{ item.total_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.total_disbursed|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.remaining|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No donor grant data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if grants_data.recent_awards %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Recent Awards</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Recently awarded grants</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Grant</th>
+                        <th scope="col">Number</th>
+                        <th scope="col">Donor</th>
+                        <th class="text-end" scope="col">Amount</th>
+                        <th scope="col">Award Date</th>
+                        <th scope="col">End Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grant in grants_data.recent_awards %}
+                    <tr>
+                        <td>{{ grant.name }}</td>
+                        <td>{{ grant.grant_number|default:"-" }}</td>
+                        <td>{{ grant.donor|default:"-" }}</td>
+                        <td class="text-end">{{ grant.amount|floatformat:2 }}</td>
+                        <td>{{ grant.award_date|date:"M d, Y" }}</td>
+                        <td>{{ grant.end_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No recent awards.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if grants_data.ending_soon %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Grants Ending Soon</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Grants ending within the next 90 days</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Grant</th>
+                        <th scope="col">Number</th>
+                        <th scope="col">Donor</th>
+                        <th class="text-end" scope="col">Amount</th>
+                        <th scope="col">End Date</th>
+                        <th class="text-end" scope="col">Days Remaining</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grant in grants_data.ending_soon %}
+                    <tr>
+                        <td>{{ grant.name }}</td>
+                        <td>{{ grant.grant_number|default:"-" }}</td>
+                        <td>{{ grant.donor|default:"-" }}</td>
+                        <td class="text-end">{{ grant.amount|floatformat:2 }}</td>
+                        <td>{{ grant.end_date|date:"M d, Y" }}</td>
+                        <td class="text-end">
+                            {% if grant.days_remaining <= 30 %}
+                            <span class="badge bg-danger">{{ grant.days_remaining }} days</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">{{ grant.days_remaining }} days</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No grants ending soon.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ report_data.title|default:"Balance Sheet" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-7">
+        <h2>{{ report_data.title|default:"Balance Sheet" }}</h2>
+        <p class="text-muted">
+            As of: {{ report_data.as_of_date|date:"M d, Y" }}
+            {% if report_data.balanced is not None %}
+            <span class="badge {% if report_data.balanced %}bg-success{% else %}bg-danger{% endif %} ms-2">
+                <i class="bi {% if report_data.balanced %}bi-check-circle{% else %}bi-x-circle{% endif %} me-1"></i>
+                {% if report_data.balanced %}Balanced{% else %}Unbalanced{% endif %}
+            </span>
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-5 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf&date={{ as_of_date|date:'Y-m-d' }}" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx&date={{ as_of_date|date:'Y-m-d' }}" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv&date={{ as_of_date|date:'Y-m-d' }}" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-4 align-items-end">
+    <div class="col-md-3">
+        <label for="as_of_date" class="form-label">As Of Date</label>
+        <input type="date" name="date" id="as_of_date" value="{{ as_of_date|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+    </div>
+</form>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Assets</h5>
+                <span class="badge bg-primary">{{ report_data.assets.total|floatformat:2 }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption>Asset accounts as of {{ report_data.as_of_date|date:"M d, Y" }}</caption>
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Code</th>
+                                <th scope="col">Account</th>
+                                <th class="text-end" scope="col">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in report_data.assets.accounts %}
+                            <tr>
+                                <td>{{ account.code|default:"-" }}</td>
+                                <td>{{ account.name }}</td>
+                                <td class="text-end">{{ account.balance|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4">No asset accounts.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="2" scope="row">Total Assets</th>
+                                <th class="text-end">{{ report_data.assets.total|floatformat:2 }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Liabilities</h5>
+                <span class="badge bg-danger">{{ report_data.liabilities.total|floatformat:2 }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption>Liability accounts as of {{ report_data.as_of_date|date:"M d, Y" }}</caption>
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Code</th>
+                                <th scope="col">Account</th>
+                                <th class="text-end" scope="col">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in report_data.liabilities.accounts %}
+                            <tr>
+                                <td>{{ account.code|default:"-" }}</td>
+                                <td>{{ account.name }}</td>
+                                <td class="text-end">{{ account.balance|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4">No liability accounts.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="2" scope="row">Total Liabilities</th>
+                                <th class="text-end">{{ report_data.liabilities.total|floatformat:2 }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Equity</h5>
+                <span class="badge bg-success">{{ report_data.equity.total|floatformat:2 }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption>Equity accounts as of {{ report_data.as_of_date|date:"M d, Y" }}</caption>
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Code</th>
+                                <th scope="col">Account</th>
+                                <th class="text-end" scope="col">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in report_data.equity.accounts %}
+                            <tr>
+                                <td>{{ account.code|default:"-" }}</td>
+                                <td>{{ account.name }}</td>
+                                <td class="text-end">{{ account.balance|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4">No equity accounts.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="2" scope="row">Total Equity</th>
+                                <th class="text-end">{{ report_data.equity.total|floatformat:2 }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

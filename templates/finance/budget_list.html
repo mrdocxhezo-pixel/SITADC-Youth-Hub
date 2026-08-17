@@ -1,80 +1,118 @@
-{% extends "finance/base.html" %}
+{% extends "layouts/dashboard.html" %}
+{% load static %}
 
-{% block title %}Budgets{% endblock %}
+{% block title %}Budgets - SITADC Youth Hub{% endblock %}
 
-{% block content %}
-<h1 class="mb-4">Budgets</h1>
-<div class="mb-3">
-    <a href="{% url 'finance:budget_create' %}" class="btn btn-primary">Add New Budget</a>
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Budgets</h2>
+        <p class="text-muted">Manage your organization's budgets.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:budget_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Budget
+        </a>
+    </div>
 </div>
+
 <form method="get" class="mb-3">
     <div class="input-group">
         <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search budgets...">
-        <button class="btn btn-outline-secondary" type="submit">Search</button>
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
     </div>
 </form>
+
 {% if budgets %}
-    <table class="table table-striped table-hover">
-        <thead>
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Budgets</caption>
+        <thead class="table-light">
             <tr>
-                <th>Title</th>
-                <th>Reference Number</th>
-                <th>Financial Year</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th scope="col">Name</th>
+                <th scope="col">Code</th>
+                <th scope="col">Financial Year</th>
+                <th scope="col">Budget Type</th>
+                <th class="text-end" scope="col">Total Amount</th>
+                <th class="text-end" scope="col">Allocated</th>
+                <th class="text-end" scope="col">Spent</th>
+                <th class="text-end" scope="col">Remaining</th>
+                <th scope="col">Status</th>
+                <th class="text-end" scope="col">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for budget in budgets %}
             <tr>
-                <td>{{ budget.title }}</td>
-                <td>{{ budget.reference_number }}</td>
-                <td>{{ budget.financial_year }}</td>
-                <td>{{ budget.amount }}</td>
-                <td>{{ budget.get_status_display }}</td>
                 <td>
-                    <div class="btn-group">
-                        <a href="{% url 'finance:budget_detail' budget.pk %}" class="btn btn-sm btn-outline-primary">View</a>
-                        <a href="{% url 'finance:budget_update' budget.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                        <form action="{% url 'finance:budget_delete' budget.pk %}" method="post" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
+                    <a href="{% url 'finance:budget_detail' budget.pk %}" class="text-decoration-none">{{ budget.name }}</a>
+                </td>
+                <td>{{ budget.code }}</td>
+                <td>{{ budget.financial_year.name }}</td>
+                <td>{{ budget.get_budget_type_display }}</td>
+                <td class="text-end">{{ budget.total_amount|floatformat:2 }}</td>
+                <td class="text-end">{{ budget.allocated_amount|floatformat:2 }}</td>
+                <td class="text-end">{{ budget.spent_amount|floatformat:2 }}</td>
+                <td class="text-end">{{ budget.remaining|floatformat:2 }}</td>
+                <td>
+                    {% if budget.is_active %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'finance:budget_update' budget.pk %}" class="btn btn-outline-secondary" aria-label="Edit budget">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'finance:budget_delete' budget.pk %}" class="btn btn-outline-danger" aria-label="Delete budget">
+                            <i class="bi bi-trash"></i>
+                        </a>
                     </div>
                 </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" class="text-center py-4">No budgets found.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    {% if budgets.has_other_pages %}
-    <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center">
-            {% if budgets.has_previous %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ budgets.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-            {% endif %}
-            {% for i in budgets.paginator.page_range %}
-            {% if budgets.number == i %}
-            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
-            {% else %}
-            <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
-            {% endif %}
-            {% endfor %}
-            {% if budgets.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ budgets.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
-    {% endif %}
+</div>
+
+{% if budgets.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if budgets.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ budgets.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in budgets.paginator.page_range %}
+        {% if budgets.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > budgets.number|add:'-3' and i < budgets.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if budgets.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ budgets.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
 {% else %}
-    <div class="alert alert-info">No budgets found.</div>
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No budgets found. <a href="{% url 'finance:budget_create' %}" class="alert-link">Add your first budget</a>.
+</div>
 {% endif %}
 {% endblock %}

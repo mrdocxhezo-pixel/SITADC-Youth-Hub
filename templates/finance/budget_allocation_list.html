@@ -1,0 +1,108 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Budget Allocations - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Budget Allocations</h2>
+        <p class="text-muted">Manage allocations across programs and projects.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:budget_allocation_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Allocation
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search budget allocations...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if budget_allocations %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Budget Allocations</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Budget</th>
+                <th scope="col">Program</th>
+                <th scope="col">Project</th>
+                <th scope="col">Line Item</th>
+                <th class="text-end" scope="col">Allocated</th>
+                <th class="text-end" scope="col">Spent</th>
+                <th class="text-end" scope="col">Percentage</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for allocation in budget_allocations %}
+            <tr>
+                <td>
+                    <a href="{% url 'finance:budget_allocation_detail' allocation.pk %}" class="text-decoration-none">{{ allocation.budget.name }}</a>
+                </td>
+                <td>{{ allocation.program|default:"—" }}</td>
+                <td>{{ allocation.project|default:"—" }}</td>
+                <td>{{ allocation.line_item|default:"—" }}</td>
+                <td class="text-end">{{ allocation.allocated_amount|floatformat:2 }}</td>
+                <td class="text-end">{{ allocation.spent_amount|floatformat:2 }}</td>
+                <td class="text-end">{{ allocation.percentage }}%</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'finance:budget_allocation_update' allocation.pk %}" class="btn btn-outline-secondary" aria-label="Edit budget allocation">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'finance:budget_allocation_delete' allocation.pk %}" class="btn btn-outline-danger" aria-label="Delete budget allocation">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center py-4">No budget allocations found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if budget_allocations.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if budget_allocations.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ budget_allocations.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in budget_allocations.paginator.page_range %}
+        {% if budget_allocations.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > budget_allocations.number|add:'-3' and i < budget_allocations.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if budget_allocations.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ budget_allocations.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No budget allocations found. <a href="{% url 'finance:budget_allocation_create' %}" class="alert-link">Add your first allocation</a>.
+</div>
+{% endif %}
+{% endblock %}

@@ -45,6 +45,18 @@ Each release should document:
 
 # [Unreleased]
 
+## Phase 28 Finance and Resource Mobilization – Implementation (2026-08-17)
+
+- Implemented the Finance and Resource Mobilization module (`apps/finance`), per `roadmaps/28-Finance-and-Resource-Mobilization.md`, providing chart of accounts, budgets with budget-line allocations, transactions with reference numbering and approval workflow (DRAFT/SUBMITTED/APPROVED/REJECTED/POSTED), bank accounts, petty cash, grants, donors, sponsors, fundraising campaigns, procurement and asset financial tracking, financial years, forecasts, financial statements, analytics, and reports.
+- Added 15 models (`FinancialAccount`, `FinancialYear`, `Budget`, `BudgetAllocation`, `Transaction`, `BankAccount`, `PettyCash`, `Grant`, `Donor`, `Sponsor`, `FundraisingCampaign`, `ProcurementFinancialTracking`, `AssetFinancialTracking`, `FinancialForecast`, `BudgetAllocation`) with computed remaining/variance/percentage properties; migrations `finance.0003` and `finance.0004` (applied).
+- Added 16 transactional services (`apps/finance/services.py`) covering accounts, budgets, transactions, grants, donors, sponsors, fundraising, petty cash, and forecasting, with domain exceptions, reference generation, and status transition validation.
+- Added fail-closed selectors and permissions (`finance.view`/`finance.manage`), seeded for existing databases by `rbac.0021` (atomic=False); sidebar Finance navigation item gated on those permissions.
+- Added 38 named views/routes (list/detail/analytics/report/export), 9 forms, and 55 root-level Bootstrap 5 templates (`templates/finance/`) replacing the deleted app-local template directory.
+- Added analytics providers (dashboard, transactions, budgeting, analytics, grants, donors, sponsors, fundraising) and an export/renderer layer (`apps/finance/renderers`) producing PDF/DOCX/XLSX/CSV/HTML output.
+- Added 46 tests in `apps/finance/tests/` (models, selectors, services, permissions, views), green in the 2026-08-17 verification run; 38 finance URLs render HTTP 200 in the smoke test.
+- Quality gates green for `apps/finance`: ruff check, ruff format, isort, `manage.py check`, and `makemigrations --check`.
+- Added `docs/development/PHASE28_FINANCE_REPORT.md` and updated `README.md`, `DEVELOPMENT_STATUS.md`, and `CHANGELOG.md`.
+
 ## Phase 26 Global Search — Implementation (2026-08-11)
 
 - Implemented the Global Search module (`apps/search`), per `roadmaps/26-Global-Search.md`, providing a unified, permission-scaled search surface across all authorized modules: grouped results, entity-type refinements, per-user recent history, named saved searches (create/list/run/delete), a permission-gated CSV export, and an immutable append-only audit trail.

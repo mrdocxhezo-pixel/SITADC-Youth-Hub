@@ -1,0 +1,128 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ analytics_data.title|default:"Income Trends Analysis" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-7">
+        <h2>{{ analytics_data.title|default:"Income Trends Analysis" }}</h2>
+        <p class="text-muted">
+            Period: {{ analytics_data.start_date|date:"M d, Y" }} &mdash; {{ analytics_data.end_date|date:"M d, Y" }}
+            <span class="badge bg-primary ms-1">{{ analytics_data.period_type|default:"-" }}</span>
+        </p>
+    </div>
+    <div class="col-md-5 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf&months={{ months }}&group_by={{ group_by }}" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx&months={{ months }}&group_by={{ group_by }}" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv&months={{ months }}&group_by={{ group_by }}" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-4 align-items-end">
+    <div class="col-md-2">
+        <label for="months" class="form-label">Months</label>
+        <input type="number" name="months" id="months" min="1" max="60" value="{{ months }}" class="form-control">
+    </div>
+    <div class="col-md-3">
+        <label for="group_by" class="form-label">Group By</label>
+        <select name="group_by" id="group_by" class="form-select">
+            <option value="month" {% if group_by == 'month' %}selected{% endif %}>Monthly</option>
+            <option value="quarter" {% if group_by == 'quarter' %}selected{% endif %}>Quarterly</option>
+            <option value="year" {% if group_by == 'year' %}selected{% endif %}>Yearly</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Income</h6>
+                <h3 class="mb-0 text-success">{{ analytics_data.total_income|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Income over the period</p>
+            </div>
+        </div>
+    </div>
+    {% if analytics_data.average_monthly_income is not None %}
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Average Monthly Income</h6>
+                <h3 class="mb-0">{{ analytics_data.average_monthly_income|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Average per month</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if analytics_data.average_quarterly_income is not None %}
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Average Quarterly Income</h6>
+                <h3 class="mb-0">{{ analytics_data.average_quarterly_income|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Average per quarter</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if analytics_data.average_yearly_income is not None %}
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Average Yearly Income</h6>
+                <h3 class="mb-0">{{ analytics_data.average_yearly_income|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Average per year</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Income by Period</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Income trends by period</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Period</th>
+                        <th class="text-end" scope="col">Income</th>
+                        <th class="text-end" scope="col">Transactions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in analytics_data.data %}
+                    <tr>
+                        <td>{{ item.period }}</td>
+                        <td class="text-end">{{ item.income|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.transaction_count }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4">No income trends data available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

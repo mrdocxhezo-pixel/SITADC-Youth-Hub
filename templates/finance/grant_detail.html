@@ -1,0 +1,104 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ grant.name }} - Grant - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ grant.name }}</h2>
+        <p class="text-muted">{{ grant.grant_number }} - {{ grant.funding_agency }}</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:grant_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-award me-2"></i>Grant Details</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Name</dt>
+                    <dd class="col-sm-8">{{ grant.name }}</dd>
+                    <dt class="col-sm-4">Grant Number</dt>
+                    <dd class="col-sm-8">{{ grant.grant_number }}</dd>
+                    <dt class="col-sm-4">Funding Agency</dt>
+                    <dd class="col-sm-8">{{ grant.funding_agency }}</dd>
+                    <dt class="col-sm-4">Grant Type</dt>
+                    <dd class="col-sm-8">{{ grant.get_grant_type_display }}</dd>
+                    <dt class="col-sm-4">Amount Awarded</dt>
+                    <dd class="col-sm-8">{{ grant.amount_awarded|floatformat:2 }} {{ grant.currency }}</dd>
+                    <dt class="col-sm-4">Disbursed Amount</dt>
+                    <dd class="col-sm-8">{{ grant.disbursed_amount|floatformat:2 }} {{ grant.currency }}</dd>
+                    <dt class="col-sm-4">Remaining Amount</dt>
+                    <dd class="col-sm-8">{{ grant.remaining_amount|floatformat:2 }} {{ grant.currency }}</dd>
+                    <dt class="col-sm-4">Currency</dt>
+                    <dd class="col-sm-8">{{ grant.currency }}</dd>
+                    <dt class="col-sm-4">Award Date</dt>
+                    <dd class="col-sm-8">{{ grant.award_date|date:"M d, Y" }}</dd>
+                    <dt class="col-sm-4">Start Date</dt>
+                    <dd class="col-sm-8">{{ grant.start_date|date:"M d, Y" }}</dd>
+                    <dt class="col-sm-4">End Date</dt>
+                    <dd class="col-sm-8">{{ grant.end_date|date:"M d, Y" }}</dd>
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        {% if grant.status == 'ACTIVE' or grant.status == 'APPROVED' %}
+                        <span class="badge bg-success">{{ grant.get_status_display }}</span>
+                        {% elif grant.status == 'TERMINATED' or grant.status == 'REJECTED' %}
+                        <span class="badge bg-danger">{{ grant.get_status_display }}</span>
+                        {% elif grant.status == 'COMPLETED' %}
+                        <span class="badge bg-secondary">{{ grant.get_status_display }}</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">{{ grant.get_status_display }}</span>
+                        {% endif %}
+                    </dd>
+                    <dt class="col-sm-4">Donor</dt>
+                    <dd class="col-sm-8">{{ grant.donor.name|default:"—" }}</dd>
+                    <dt class="col-sm-4">Programme</dt>
+                    <dd class="col-sm-8">{{ grant.programme|default:"—" }}</dd>
+                    <dt class="col-sm-4">Project</dt>
+                    <dd class="col-sm-8">{{ grant.project|default:"—" }}</dd>
+                    <dt class="col-sm-4">Reporting Frequency</dt>
+                    <dd class="col-sm-8">{{ grant.reporting_frequency }}</dd>
+                    {% if grant.next_report_due %}
+                    <dt class="col-sm-4">Next Report Due</dt>
+                    <dd class="col-sm-8">{{ grant.next_report_due|date:"M d, Y" }}</dd>
+                    {% endif %}
+                    {% if grant.special_conditions %}
+                    <dt class="col-sm-4">Special Conditions</dt>
+                    <dd class="col-sm-8">{{ grant.special_conditions|linebreaks }}</dd>
+                    {% endif %}
+                    {% if grant.description %}
+                    <dt class="col-sm-4">Description</dt>
+                    <dd class="col-sm-8">{{ grant.description|linebreaks }}</dd>
+                    {% endif %}
+                    <dt class="col-sm-4">Active</dt>
+                    <dd class="col-sm-8">
+                        {% if grant.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="d-grid gap-2">
+            <a href="{% url 'finance:grant_update' grant.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil me-1"></i> Edit Grant
+            </a>
+            <a href="{% url 'finance:grant_delete' grant.pk %}" class="btn btn-outline-danger">
+                <i class="bi bi-trash me-1"></i> Delete Grant
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

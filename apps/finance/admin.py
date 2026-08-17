@@ -3,20 +3,20 @@
 from django.contrib import admin
 
 from .models import (
-    FinancialYear,
-    FinancialAccount,
-    BankAccount,
-    PettyCash,
-    Grant,
-    Donor,
-    Sponsor,
-    FundraisingCampaign,
-    ProcurementFinancialTracking,
     AssetFinancialTracking,
-    FinancialForecast,
+    BankAccount,
     Budget,
-    Transaction,
     BudgetAllocation,
+    Donor,
+    FinancialAccount,
+    FinancialForecast,
+    FinancialYear,
+    FundraisingCampaign,
+    Grant,
+    PettyCash,
+    ProcurementFinancialTracking,
+    Sponsor,
+    Transaction,
 )
 
 
@@ -51,7 +51,13 @@ class BankAccountAdmin(admin.ModelAdmin):
 
 @admin.register(PettyCash)
 class PettyCashAdmin(admin.ModelAdmin):
-    list_display = ("name", "custodian", "opening_balance", "current_balance", "is_active")
+    list_display = (
+        "name",
+        "custodian",
+        "opening_balance",
+        "current_balance",
+        "is_active",
+    )
     list_filter = ("is_active",)
     search_fields = ("name", "custodian")
 
@@ -73,7 +79,14 @@ class GrantAdmin(admin.ModelAdmin):
 
 @admin.register(Donor)
 class DonorAdmin(admin.ModelAdmin):
-    list_display = ("name", "donor_number", "donor_type", "total_donated", "status", "is_active")
+    list_display = (
+        "name",
+        "donor_number",
+        "donor_type",
+        "total_donated",
+        "status",
+        "is_active",
+    )
     list_filter = ("donor_type", "status", "is_active")
     search_fields = ("name", "donor_number", "contact_person")
 

@@ -1,147 +1,126 @@
-"""Finance Engine selectors."""
+"""Finance Engine selectors.
+
+All selectors are fail-closed: a user without the relevant ``finance.*``
+permission receives an empty queryset rather than data.
+"""
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from decimal import Decimal
-from typing import Any, Iterable, Optional, Tuple
+from typing import Any
 
-from django.apps import apps as django_apps
 from django.contrib.auth import get_user_model
 from django.db.models import Q, QuerySet, Sum
 from django.utils import timezone
 
-from guardian.shortcuts import get_objects_for_user
+from apps.finance.constants import TransactionStatus, TransactionType
+from apps.finance.models import (
+    BankAccount,
+    Budget,
+    Donor,
+    FinancialAccount,
+    FinancialYear,
+    FundraisingCampaign,
+    Grant,
+    PettyCash,
+    Sponsor,
+    Transaction,
+)
 
 User = get_user_model()
 
-
-def get_accessible_financial_accounts(user: User) -> Iterable[Any]:
-    """
-    Get financial accounts accessible to the user.
-
-    Args:
-        user: The user to check permissions for.
-
-    Returns:
-        Iterable: Financial accounts the user can access.
-    """
-    FinancialAccount = django_apps.get_model("finance", "FinancialAccount")
-    return get_objects_for_user(user, "finance.view_financialaccount", FinancialAccount)
+_POSTED_STATUSES = (
+    TransactionStatus.POSTED,
+    TransactionStatus.PAID,
+    TransactionStatus.RECONCILED,
+)
 
 
-def get_accessible_bank_accounts(user: User) -> Iterable[Any]:
-    """
-    Get bank accounts accessible to the user.
+def get_accessible_financial_accounts(user: User) -> QuerySet[FinancialAccount]:
+    """Financial accounts the user may view (empty queryset when denied)."""
+    from apps.finance.permissions import user_can_view_finance_data
 
-    Args:
-        user: The user to check permissions for.
-
-    Returns:
-        Iterable: Bank accounts the user can access.
-    """
-    BankAccount = django_apps.get_model("finance", "BankAccount")
-    return get_objects_for_user(user, "finance.view_bankaccount", BankAccount)
+    if not user_can_view_finance_data(user):
+        return FinancialAccount.objects.none()
+    return FinancialAccount.objects.all()
 
 
-def get_accessible_petty_cash_accounts(user: User) -> Iterable[Any]:
-    """
-    Get petty cash accounts accessible to the user.
+def get_accessible_bank_accounts(user: User) -> QuerySet[BankAccount]:
+    """Bank accounts the user may view (empty queryset when denied)."""
+    from apps.finance.permissions import user_can_view_finance_data
 
-    Args:
-        user: The user to check permissions for.
-
-    Returns:
-        Iterable: Petty cash accounts the user can access.
-    """
-    PettyCash = django_apps.get_model("finance", "PettyCash")
-    return get_objects_for_user(user, "finance.view_pettycash", PettyCash)
+    if not user_can_view_finance_data(user):
+        return BankAccount.objects.none()
+    return BankAccount.objects.all()
 
 
-def get_accessible_budgets(user: User) -> Iterable[Any]:
-    """
-    Get budgets accessible to the user.
+def get_accessible_petty_cash_accounts(user: User) -> QuerySet[PettyCash]:
+    """Petty cash accounts the user may view (empty queryset when denied)."""
+    from apps.finance.permissions import user_can_view_finance_data
 
-    Args:
-        user: The user to check permissions for.
-
-    Returns:
-        Iterable: Budgets the user can access.
-    """
-    Budget = django_apps.get_model("finance", "Budget")
-    return get_objects_for_user(user, "finance.view_budget", Budget)
+    if not user_can_view_finance_data(user):
+        return PettyCash.objects.none()
+    return PettyCash.objects.all()
 
 
-def get_accessible_transactions(user: User) -> Iterable[Any]:
-    """
-    Get transactions accessible to the user.
+def get_accessible_budgets(user: User) -> QuerySet[Budget]:
+    """Budgets the user may view (empty queryset when denied)."""
+    from apps.finance.permissions import user_can_view_budgets
 
-    Args:
-        user: The user to check permissions for.
-
-    Returns:
-        Iterable: Transactions the user can access.
-    """
-    Transaction = django_apps.get_model("finance", "Transaction")
-    return get_objects_for_user(user, "finance.view_transaction", Transaction)
+    if not user_can_view_budgets(user):
+        return Budget.objects.none()
+    return Budget.objects.all()
 
 
-def get_accessible_grants(user: User) -> Iterable[Any]:
-    """
-    Get grants accessible to the user.
+def get_accessible_transactions(user: User) -> QuerySet[Transaction]:
+    """Transactions the user may view (empty queryset when denied)."""
+    from apps.finance.permissions import user_can_view_transactions
 
-    Args:
-        user: The user to check permissions for.
-
-    Returns:
-        Iterable: Grants the user can access.
-    """
-    Grant = django_apps.get_model("finance", "Grant")
-    return get_objects_for_user(user, "finance.view_grant", Grant)
+    if not user_can_view_transactions(user):
+        return Transaction.objects.none()
+    return Transaction.objects.all()
 
 
-def get_accessible_donors(user: User) -> Iterable[Any]:
-    """
-    Get donors accessible to the user.
+def get_accessible_grants(user: User) -> QuerySet[Grant]:
+    """Grants the user may view (empty queryset when denied)."""
+    from apps.finance.permissions import user_can_view_grants
 
-    Args:
-        user: The user to check permissions for.
-
-    Returns:
-        Iterable: Donors the user can access.
-    """
-    Donor = django_apps.get_model("finance", "Donor")
-    return get_objects_for_user(user, "finance.view_donor", Donor)
+    if not user_can_view_grants(user):
+        return Grant.objects.none()
+    return Grant.objects.all()
 
 
-def get_accessible_sponsors(user: User) -> Iterable[Any]:
-    """
-    Get sponsors accessible to the user.
+def get_accessible_donors(user: User) -> QuerySet[Donor]:
+    """Donors the user may view (empty queryset when denied)."""
+    from apps.finance.permissions import user_can_view_donors
 
-    Args:
-        user: The user to check permissions for.
-
-    Returns:
-        Iterable: Sponsors the user can access.
-    """
-    Sponsor = django_apps.get_model("finance", "Sponsor")
-    return get_objects_for_user(user, "finance.view_sponsor", Sponsor)
+    if not user_can_view_donors(user):
+        return Donor.objects.none()
+    return Donor.objects.all()
 
 
-def get_accessible_fundraising_campaigns(user: User) -> Iterable[Any]:
-    """
-    Get fundraising campaigns accessible to the user.
+def get_accessible_sponsors(user: User) -> QuerySet[Sponsor]:
+    """Sponsors the user may view (empty queryset when denied)."""
+    from apps.finance.permissions import user_can_view_sponsors
 
-    Args:
-        user: The user to check permissions for.
-
-    Returns:
-        Iterable: Fundraising campaigns the user can access.
-    """
-    FundraisingCampaign = django_apps.get_model("finance", "FundraisingCampaign")
-    return get_objects_for_user(user, "finance.view_fundraisingcampaign", FundraisingCampaign)
+    if not user_can_view_sponsors(user):
+        return Sponsor.objects.none()
+    return Sponsor.objects.all()
 
 
-def get_financial_account_balance(account_id: int, as_of_date: Optional[timezone.datetime] = None) -> Decimal:
+def get_accessible_fundraising_campaigns(user: User) -> QuerySet[FundraisingCampaign]:
+    """Fundraising campaigns the user may view (empty queryset when denied)."""
+    from apps.finance.permissions import user_can_view_fundraising
+
+    if not user_can_view_fundraising(user):
+        return FundraisingCampaign.objects.none()
+    return FundraisingCampaign.objects.all()
+
+
+def get_financial_account_balance(
+    account_id: int, as_of_date: timezone.datetime | None = None
+) -> Decimal:
     """
     Get the balance of a financial account as of a specific date.
 
@@ -154,91 +133,55 @@ def get_financial_account_balance(account_id: int, as_of_date: Optional[timezone
     """
     if as_of_date is None:
         as_of_date = timezone.now()
-        
-    FinancialAccount = django_apps.get_model("finance", "FinancialAccount")
-    Transaction = django_apps.get_model("finance", "Transaction")
-    
+
     try:
         account = FinancialAccount.objects.get(id=account_id)
     except FinancialAccount.DoesNotExist:
-        return Decimal('0')
-        
-    # Get all transactions for this account up to the specified date
-    transactions = Transaction.objects.filter(
+        return Decimal("0")
+
+    posted = Transaction.objects.filter(
         financial_account=account,
         transaction_date__lte=as_of_date,
-        status="POSTED"
+        status__in=_POSTED_STATUSES,
     )
-    
-    # Calculate balance based on transaction types
-    debit_sum = transactions.filter(transaction_type="DEBIT").aggregate(
-        total=Sum('amount')
-    )['total'] or Decimal('0')
-    
-    credit_sum = transactions.filter(transaction_type="CREDIT").aggregate(
-        total=Sum('amount')
-    )['total'] or Decimal('0')
-    
-    # For asset and expense accounts: debit increases balance, credit decreases
-    # For liability, equity, and income accounts: credit increases balance, debit decreases
-    if account.account_type in ['asset', 'expense']:
-        balance = account.opening_balance + debit_sum - credit_sum
-    else:  # liability, equity, income
-        balance = account.opening_balance + credit_sum - debit_sum
-        
-    return balance
+    income = posted.filter(transaction_type=TransactionType.INCOME).aggregate(
+        total=Sum("amount")
+    )["total"] or Decimal("0")
+    expense = posted.filter(transaction_type=TransactionType.EXPENSE).aggregate(
+        total=Sum("amount")
+    )["total"] or Decimal("0")
+    return account.opening_balance + income - expense
 
 
-def get_budget_variance(budget_id: int, as_of_date: Optional[timezone.datetime] = None) -> dict:
+def get_budget_variance(
+    budget_id: int, as_of_date: timezone.datetime | None = None
+) -> dict:
     """
     Get budget variance analysis.
 
     Args:
         budget_id: ID of the budget.
-        as_of_date: Date to calculate variance as of (default: now).
+        as_of_date: Unused; kept for API compatibility.
 
     Returns:
-        Dict containing budget, actual, variance, and percentage.
+        Dict containing budgeted, actual, variance, and percentage.
     """
-    if as_of_date is None:
-        as_of_date = timezone.now()
-        
-    Budget = django_apps.get_model("finance", "Budget")
-    Transaction = django_apps.get_model("finance", "Transaction")
-    
     try:
         budget = Budget.objects.get(id=budget_id)
     except Budget.DoesNotExist:
         return {
-            'budgeted': Decimal('0'),
-            'actual': Decimal('0'),
-            'variance': Decimal('0'),
-            'variance_percentage': Decimal('0'),
-            'remaining': Decimal('0')
+            "budgeted": Decimal("0"),
+            "actual": Decimal("0"),
+            "variance": Decimal("0"),
+            "variance_percentage": Decimal("0"),
+            "remaining": Decimal("0"),
         }
-        
-    # Get actual spending from transactions
-    actual_spending = Transaction.objects.filter(
-        budget=budget,
-        transaction_date__lte=as_of_date,
-        status="POSTED"
-    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
-    
-    variance = budget.total_amount - actual_spending
-    variance_percentage = (variance / budget.total_amount * 100) if budget.total_amount > 0 else Decimal('0')
-    
-    return {
-        'budgeted': budget.total_amount,
-        'actual': actual_spending,
-        'variance': variance,
-        'variance_percentage': variance_percentage,
-        'remaining': budget.remaining
-    }
+    return budget.get_variance()
 
 
 def get_grant_remaining_amount(grant_id: int) -> Decimal:
     """
-    Get the remaining amount of a grant.
+    Get the remaining undisbursed amount of a grant.
 
     Args:
         grant_id: ID of the grant.
@@ -246,13 +189,10 @@ def get_grant_remaining_amount(grant_id: int) -> Decimal:
     Returns:
         Decimal: The remaining grant amount.
     """
-    Grant = django_apps.get_model("finance", "Grant")
-    
     try:
         grant = Grant.objects.get(id=grant_id)
     except Grant.DoesNotExist:
-        return Decimal('0')
-        
+        return Decimal("0")
     return grant.remaining_amount
 
 
@@ -266,36 +206,33 @@ def get_donor_total_contributions(donor_id: int) -> Decimal:
     Returns:
         Decimal: The total contributions from the donor.
     """
-    Donor = django_apps.get_model("finance", "Donor")
-    
     try:
         donor = Donor.objects.get(id=donor_id)
     except Donor.DoesNotExist:
-        return Decimal('0')
-        
-    return donor.total_contributions
+        return Decimal("0")
+    return donor.total_donated
 
 
-def get_financial_year_for_date(date: timezone.datetime) -> Optional[Any]:
+def get_financial_year_for_date(date: timezone.datetime) -> FinancialYear | None:
     """
-    Get the financial year for a given date.
+    Get the financial year containing the given date.
 
     Args:
         date: The date to check.
 
     Returns:
-        FinancialYear: The financial year containing the date, or None if not found.
+        FinancialYear: The financial year containing the date, or None.
     """
-    FinancialYear = django_apps.get_model("finance", "FinancialYear")
-    
     try:
         return FinancialYear.objects.get(
-            start_date__lte=date,
-            end_date__gte=date,
-            is_active=True
+            start_date__lte=date.date(),
+            end_date__gte=date.date(),
+            is_active=True,
         )
-    except FinancialYear.DoesNotExist:
-        return None
+    except (FinancialYear.DoesNotExist, FinancialYear.MultipleObjectsReturned):
+        return (
+            FinancialYear.objects.filter(is_active=True).order_by("-start_date").first()
+        )
 
 
 def get_recent_transactions(user: User, limit: int = 10) -> Iterable[Any]:
@@ -309,9 +246,7 @@ def get_recent_transactions(user: User, limit: int = 10) -> Iterable[Any]:
     Returns:
         Iterable: Recent transactions the user can access.
     """
-    Transaction = django_apps.get_model("finance", "Transaction")
-    accessible_transactions = get_accessible_transactions(user)
-    return accessible_transactions.order_by('-transaction_date')[:limit]
+    return get_accessible_transactions(user).order_by("-transaction_date")[:limit]
 
 
 def get_budgets_by_financial_year(financial_year_id: int, user: User) -> Iterable[Any]:
@@ -323,23 +258,20 @@ def get_budgets_by_financial_year(financial_year_id: int, user: User) -> Iterabl
         user: The user to check permissions for.
 
     Returns:
-        Iterable: Budgets for the financial year that the user can access.
+        Iterable: Budgets for the financial year the user can access.
     """
-    Budget = django_apps.get_model("finance", "Budget")
-    FinancialYear = django_apps.get_model("finance", "FinancialYear")
-    
     try:
         financial_year = FinancialYear.objects.get(id=financial_year_id)
     except FinancialYear.DoesNotExist:
         return Budget.objects.none()
-        
-    accessible_budgets = get_accessible_budgets(user)
-    return accessible_budgets.filter(financial_year=financial_year)
+    return get_accessible_budgets(user).filter(financial_year=financial_year)
 
 
-def get_transactions_by_account(account_id: int, user: User, limit: int = 50) -> Iterable[Any]:
+def get_transactions_by_account(
+    account_id: int, user: User, limit: int = 50
+) -> Iterable[Any]:
     """
-    Get transactions for a specific financial account that are accessible to the user.
+    Get transactions for a financial account that are accessible to the user.
 
     Args:
         account_id: ID of the financial account.
@@ -347,30 +279,22 @@ def get_transactions_by_account(account_id: int, user: User, limit: int = 50) ->
         limit: Maximum number of transactions to return.
 
     Returns:
-        Iterable: Transactions for the account that the user can access.
+        Iterable: Transactions for the account the user can access.
     """
-    Transaction = django_apps.get_model("finance", "Transaction")
-    FinancialAccount = django_apps.get_model("finance", "FinancialAccount")
-    
-    # Check if user can access the account
-    accessible_accounts = get_accessible_financial_accounts(user)
-    if not accessible_accounts.filter(id=account_id).exists():
+    if not get_accessible_financial_accounts(user).filter(id=account_id).exists():
         return Transaction.objects.none()
-        
-    try:
-        account = FinancialAccount.objects.get(id=account_id)
-    except FinancialAccount.DoesNotExist:
-        return Transaction.objects.none()
-        
-    accessible_transactions = get_accessible_transactions(user)
-    return accessible_transactions.filter(financial_account=account).order_by('-transaction_date')[:limit]
+    return (
+        get_accessible_transactions(user)
+        .filter(financial_account_id=account_id)
+        .order_by("-transaction_date")[:limit]
+    )
 
 
 def get_expense_transactions_by_category(
-    user: User, 
-    start_date: Optional[timezone.datetime] = None,
-    end_date: Optional[timezone.datetime] = None,
-    limit: int = 100
+    user: User,
+    start_date: timezone.datetime | None = None,
+    end_date: timezone.datetime | None = None,
+    limit: int = 100,
 ) -> Iterable[Any]:
     """
     Get expense transactions grouped by category/source.
@@ -384,24 +308,21 @@ def get_expense_transactions_by_category(
     Returns:
         Iterable: Expense transactions accessible to the user.
     """
-    Transaction = django_apps.get_model("finance", "Transaction")
-    accessible_transactions = get_accessible_transactions(user)
-    
-    queryset = accessible_transactions.filter(transaction_type="EXPENSE")
-    
+    queryset = get_accessible_transactions(user).filter(
+        transaction_type=TransactionType.EXPENSE
+    )
     if start_date:
         queryset = queryset.filter(transaction_date__gte=start_date)
     if end_date:
         queryset = queryset.filter(transaction_date__lte=end_date)
-        
-    return queryset.order_by('-transaction_date')[:limit]
+    return queryset.order_by("-transaction_date")[:limit]
 
 
 def get_income_transactions_by_source(
-    user: User, 
-    start_date: Optional[timezone.datetime] = None,
-    end_date: Optional[timezone.datetime] = None,
-    limit: int = 100
+    user: User,
+    start_date: timezone.datetime | None = None,
+    end_date: timezone.datetime | None = None,
+    limit: int = 100,
 ) -> Iterable[Any]:
     """
     Get income transactions grouped by source.
@@ -415,14 +336,51 @@ def get_income_transactions_by_source(
     Returns:
         Iterable: Income transactions accessible to the user.
     """
-    Transaction = django_apps.get_model("finance", "Transaction")
-    accessible_transactions = get_accessible_transactions(user)
-    
-    queryset = accessible_transactions.filter(transaction_type="INCOME")
-    
+    queryset = get_accessible_transactions(user).filter(
+        transaction_type=TransactionType.INCOME
+    )
     if start_date:
         queryset = queryset.filter(transaction_date__gte=start_date)
     if end_date:
         queryset = queryset.filter(transaction_date__lte=end_date)
-        
-    return queryset.order_by('-transaction_date')[:limit]
+    return queryset.order_by("-transaction_date")[:limit]
+
+
+def search_transactions(user: User, query: str) -> QuerySet[Transaction]:
+    """
+    Search transactions by reference, description, beneficiary or source.
+
+    Args:
+        user: The user to check permissions for.
+        query: The search text.
+
+    Returns:
+        QuerySet: Matching transactions the user can access.
+    """
+    qs = get_accessible_transactions(user)
+    if not query:
+        return qs
+    q = Q(reference_number__icontains=query)
+    q |= Q(description__icontains=query)
+    q |= Q(beneficiary__icontains=query)
+    return qs.filter(q)
+
+
+def get_financial_year_summary(user: User) -> dict:
+    """
+    Summarize the active financial years and their budgets.
+
+    Args:
+        user: The user to check permissions for.
+
+    Returns:
+        Dict: Active financial years with budget totals.
+    """
+    years = FinancialYear.objects.filter(is_active=True).order_by("name")
+    return {
+        "financial_years": years,
+        "budgets_by_year": {
+            year.id: get_accessible_budgets(user).filter(financial_year=year).count()
+            for year in years
+        },
+    }

@@ -8,4 +8,3 @@ class FinanceTestCase(TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        pass

@@ -1,0 +1,197 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ transactions_data.title|default:"Transactions Summary" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-7">
+        <h2>{{ transactions_data.title|default:"Transactions Summary" }}</h2>
+        <p class="text-muted">
+            {% if transactions_data.period.start_date and transactions_data.period.end_date %}
+            Period: {{ transactions_data.period.start_date|date:"M d, Y" }} &mdash; {{ transactions_data.period.end_date|date:"M d, Y" }}
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-5 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-4 align-items-end">
+    <div class="col-md-3">
+        <label for="start_date" class="form-label">Start Date</label>
+        <input type="date" name="start_date" id="start_date" value="{{ start_date|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-md-3">
+        <label for="end_date" class="form-label">End Date</label>
+        <input type="date" name="end_date" id="end_date" value="{{ end_date|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+    </div>
+</form>
+
+{% if transactions_data.summary %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Income</h6>
+                <h3 class="mb-0 text-success">{{ transactions_data.summary.total_income|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">{{ transactions_data.summary.income_count }} income transactions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Expenses</h6>
+                <h3 class="mb-0 text-danger">{{ transactions_data.summary.total_expenses|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">{{ transactions_data.summary.expense_count }} expense transactions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Net Income</h6>
+                <h3 class="mb-0 {% if transactions_data.summary.net_income < 0 %}text-danger{% else %}text-primary{% endif %}">{{ transactions_data.summary.net_income|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Income minus expenses</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Transactions</h6>
+                <h3 class="mb-0">{{ transactions_data.summary.transaction_count }}</h3>
+                <p class="text-muted small mb-0">Posted transactions</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if transactions_data.by_type %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Transactions by Type</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Transactions grouped by type</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th class="text-end" scope="col">Count</th>
+                        <th class="text-end" scope="col">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in transactions_data.by_type %}
+                    <tr>
+                        <td>{{ item.type }}</td>
+                        <td class="text-end">{{ item.count }}</td>
+                        <td class="text-end">{{ item.total|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4">No transaction type data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if transactions_data.by_source %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Transactions by Source</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Transactions grouped by source</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Source</th>
+                        <th class="text-end" scope="col">Count</th>
+                        <th class="text-end" scope="col">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in transactions_data.by_source %}
+                    <tr>
+                        <td>{{ item.source }}</td>
+                        <td class="text-end">{{ item.count }}</td>
+                        <td class="text-end">{{ item.total|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4">No transaction source data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if transactions_data.monthly_trend %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Monthly Trend</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Monthly income and expense trend</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Month</th>
+                        <th class="text-end" scope="col">Income</th>
+                        <th class="text-end" scope="col">Expenses</th>
+                        <th class="text-end" scope="col">Net</th>
+                        <th class="text-end" scope="col">Transactions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month in transactions_data.monthly_trend %}
+                    <tr>
+                        <td>{{ month.month }}</td>
+                        <td class="text-end text-success">{{ month.income|floatformat:2 }}</td>
+                        <td class="text-end text-danger">{{ month.expenses|floatformat:2 }}</td>
+                        <td class="text-end {% if month.net < 0 %}text-danger{% else %}text-success{% endif %}">{{ month.net|floatformat:2 }}</td>
+                        <td class="text-end">{{ month.transaction_count }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No monthly trend data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

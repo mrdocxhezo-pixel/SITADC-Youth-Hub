@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import CreatedByModel, TimeStampedModel, UpdatedByModel, UUIDModel
 from apps.finance.constants import (
-    FinancialYear,
-    ResourceSource,
-    TransactionType,
-    TransactionStatus,
-    PaymentMethod,
     AccountType,
     BudgetType,
+    FinancialYear,
+    PaymentMethod,
+    ResourceSource,
+    TransactionStatus,
+    TransactionType,
 )
 
 
@@ -24,7 +27,14 @@ class FinancialAccount(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByMod
     name = models.CharField(_("Account name"), max_length=200)
     code = models.CharField(_("Account code"), max_length=50, unique=True)
     account_type = models.CharField(
-        _("Account type"), max_length=20, choices=AccountType.choices, default=AccountType.ASSET
+        _("Account type"),
+        max_length=20,
+        choices=AccountType.choices,
+        default=AccountType.ASSET,
+    )
+    currency = models.CharField(_("Currency"), max_length=10, default="USD")
+    opening_balance = models.DecimalField(
+        _("Opening balance"), max_digits=15, decimal_places=2, default=0
     )
     description = models.TextField(_("Description"), blank=True)
     is_active = models.BooleanField(_("Active"), default=True, db_index=True)
@@ -36,6 +46,37 @@ class FinancialAccount(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByMod
 
     def __str__(self) -> str:
         return f"{self.name} ({self.code})"
+
+    def get_balance_as_of_date(self, as_of_date=None) -> Decimal:
+        """Return the account balance as of the given date."""
+        from decimal import Decimal as D
+
+        from django.db.models import Sum
+        from django.utils import timezone
+
+        if as_of_date is None:
+            as_of_date = timezone.now()
+
+        posted = Transaction.objects.filter(
+            financial_account=self,
+            transaction_date__lte=as_of_date,
+            status__in=[
+                TransactionStatus.POSTED,
+                TransactionStatus.PAID,
+                TransactionStatus.RECONCILED,
+            ],
+        )
+        income = posted.filter(transaction_type=TransactionType.INCOME).aggregate(
+            total=Sum("amount")
+        )["total"] or D("0")
+        expense = posted.filter(transaction_type=TransactionType.EXPENSE).aggregate(
+            total=Sum("amount")
+        )["total"] or D("0")
+        return D(self.opening_balance) + income - expense
+
+    def get_current_balance(self) -> Decimal:
+        """Return the current account balance."""
+        return self.get_balance_as_of_date()
 
 
 class BankAccount(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
@@ -53,7 +94,10 @@ class BankAccount(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
     bank_name = models.CharField(_("Bank name"), max_length=200)
     bank_branch = models.CharField(_("Bank branch"), max_length=200, blank=True)
     account_type = models.CharField(
-        _("Account type"), max_length=20, choices=ACCOUNT_TYPE_CHOICES, default="CURRENT"
+        _("Account type"),
+        max_length=20,
+        choices=ACCOUNT_TYPE_CHOICES,
+        default="CURRENT",
     )
     currency = models.CharField(_("Currency"), max_length=10, default="USD")
     opening_balance = models.DecimalField(
@@ -83,7 +127,9 @@ class PettyCash(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
 
     name = models.CharField(_("Petty cash name"), max_length=200)
     custodian = models.CharField(_("Custodian"), max_length=200)
-    custodian_position = models.CharField(_("Custodian position"), max_length=100, blank=True)
+    custodian_position = models.CharField(
+        _("Custodian position"), max_length=100, blank=True
+    )
     opening_balance = models.DecimalField(
         _("Opening balance"), max_digits=15, decimal_places=2, default=0
     )
@@ -91,7 +137,10 @@ class PettyCash(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
         _("Current balance"), max_digits=15, decimal_places=2, default=0
     )
     max_limit = models.DecimalField(
-        _("Maximum limit"), max_digits=15, decimal_places=2, help_text=_("Maximum amount allowed in petty cash")
+        _("Maximum limit"),
+        max_digits=15,
+        decimal_places=2,
+        help_text=_("Maximum amount allowed in petty cash"),
     )
     currency = models.CharField(_("Currency"), max_length=10, default="USD")
     is_active = models.BooleanField(_("Active"), default=True, db_index=True)
@@ -105,7 +154,7 @@ class PettyCash(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
         verbose_name_plural = _("Petty Cash")
         ordering = ("name",)
 
-    def __str__(    ) -> str:
+    def __str__(self) -> str:
         return f"{self.name} - Custodian: {self.custodian}"
 
 
@@ -126,7 +175,12 @@ class Grant(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
     grant_number = models.CharField(_("Grant number"), max_length=50, unique=True)
     funding_agency = models.CharField(_("Funding agency"), max_length=200)
     grant_type = models.CharField(_("Grant type"), max_length=100)
-    amount_awarded = models.DecimalField(_("Amount awarded"), max_digits=15, decimal_places=2)
+    amount_awarded = models.DecimalField(
+        _("Amount awarded"), max_digits=15, decimal_places=2
+    )
+    disbursed_amount = models.DecimalField(
+        _("Amount disbursed"), max_digits=15, decimal_places=2, default=0
+    )
     currency = models.CharField(_("Currency"), max_length=10, default="USD")
     award_date = models.DateField(_("Award date"))
     start_date = models.DateField(_("Start date"))
@@ -134,12 +188,23 @@ class Grant(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
     status = models.CharField(
         _("Status"), max_length=20, choices=GRANT_STATUS_CHOICES, default="PROSPECTIVE"
     )
+    donor = models.ForeignKey(
+        "Donor",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="grants",
+        verbose_name=_("Donor"),
+    )
+    description = models.TextField(_("Description"), blank=True)
     # Link to budget/programme/project
     programme = models.CharField(_("Programme"), max_length=200, blank=True)
     project = models.CharField(_("Project"), max_length=200, blank=True)
     # Reporting requirements
     reporting_frequency = models.CharField(
-        _("Reporting frequency"), max_length=50, help_text=_("e.g., Monthly, Quarterly, Annual")
+        _("Reporting frequency"),
+        max_length=50,
+        help_text=_("e.g., Monthly, Quarterly, Annual"),
     )
     next_report_due = models.DateField(_("Next report due"), null=True, blank=True)
     # Special conditions
@@ -153,6 +218,11 @@ class Grant(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
 
     def __str__(self) -> str:
         return f"{self.name} - {self.funding_agency} ({self.grant_number})"
+
+    @property
+    def remaining_amount(self) -> Decimal:
+        """Remaining undisbursed grant funds."""
+        return self.amount_awarded - self.disbursed_amount
 
 
 class Donor(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
@@ -193,17 +263,21 @@ class Donor(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
     year_to_date_donated = models.DecimalField(
         ("Year to date donated"), max_digits=15, decimal_places=2, default=0
     )
-    last_donation_date = models.DateField(_("Last donation date"), null=True, blank=True)
+    last_donation_date = models.DateField(
+        _("Last donation date"), null=True, blank=True
+    )
     # Preferences
     preferred_contact_method = models.CharField(
         ("Preferred contact method"), max_length=50, blank=True
     )
-    communication_preferences = models.TextField(_("Communication preferences"), blank=True)
+    communication_preferences = models.TextField(
+        _("Communication preferences"), blank=True
+    )
     is_active = models.BooleanField(_("Active"), default=True, db_index=True)
 
     class Meta:
         verbose_name = _("Donor")
-        verbose_name_plural = ("Donors")
+        verbose_name_plural = "Donors"
         ordering = ("-total_donated", "name")
 
     def __str__(self) -> str:
@@ -242,10 +316,16 @@ class Sponsor(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
     name = models.CharField(_("Sponsor name"), max_length=200)
     sponsor_number = models.CharField(_("Sponsor number"), max_length=50, unique=True)
     sponsor_type = models.CharField(
-        ("Sponsor type"), max_length=20, choices=SPONSOR_TYPE_CHOICES, default="CORPORATE"
+        ("Sponsor type"),
+        max_length=20,
+        choices=SPONSOR_TYPE_CHOICES,
+        default="CORPORATE",
     )
     sponsorship_type = models.CharField(
-        ("Sponsorship type"), max_length=20, choices=SPONSORSHIP_TYPE_CHOICES, default="FINANCIAL"
+        ("Sponsorship type"),
+        max_length=20,
+        choices=SPONSORSHIP_TYPE_CHOICES,
+        default="FINANCIAL",
     )
     contact_person = models.CharField(_("Contact person"), max_length=200, blank=True)
     email = models.EmailField(_("Email"), blank=True)
@@ -261,7 +341,10 @@ class Sponsor(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
     end_date = models.DateField(_("End date"), blank=True, null=True)
     # Status
     status = models.CharField(
-        ("Status"), max_length=20, choices=SPONSORSHIP_STATUS_CHOICES, default="PROSPECTIVE"
+        ("Status"),
+        max_length=20,
+        choices=SPONSORSHIP_STATUS_CHOICES,
+        default="PROSPECTIVE",
     )
     # Linked to programmes/projects/events
     programme = models.CharField(_("Programme"), max_length=200, blank=True)
@@ -271,14 +354,16 @@ class Sponsor(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
     benefits_received = models.TextField(_("Benefits received"), blank=True)
     # Reporting requirements
     reporting_frequency = models.CharField(
-        ("Reporting frequency"), max_length=50, help_text=_("e.g., Monthly, Quarterly, Annual")
+        ("Reporting frequency"),
+        max_length=50,
+        help_text=_("e.g., Monthly, Quarterly, Annual"),
     )
     next_report_due = models.DateField(_("Next report due"), null=True, blank=True)
     is_active = models.BooleanField(_("Active"), default=True, db_index=True)
 
     class Meta:
         verbose_name = _("Sponsor")
-        verbose_name_plural = ("Sponsors")
+        verbose_name_plural = "Sponsors"
         ordering = ("-sponsored_amount", "name")
 
     def __str__(self) -> str:
@@ -310,12 +395,17 @@ class FundraisingCampaign(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedBy
     name = models.CharField(_("Campaign name"), max_length=200)
     campaign_number = models.CharField(_("Campaign number"), max_length=50, unique=True)
     campaign_type = models.CharField(
-        ("Campaign type"), max_length=20, choices=CAMPAIGN_TYPE_CHOICES, default="ONLINE"
+        ("Campaign type"),
+        max_length=20,
+        choices=CAMPAIGN_TYPE_CHOICES,
+        default="ONLINE",
     )
     description = models.TextField(_("Description"))
     start_date = models.DateField(_("Start date"))
     end_date = models.DateField(_("End date"))
-    target_amount = models.DecimalField(_("Target amount"), max_digits=15, decimal_places=2)
+    target_amount = models.DecimalField(
+        _("Target amount"), max_digits=15, decimal_places=2
+    )
     currency = models.CharField(_("Currency"), max_length=10, default="USD")
     amount_raised = models.DecimalField(
         ("Amount raised"), max_digits=15, decimal_places=2, default=0
@@ -327,14 +417,16 @@ class FundraisingCampaign(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedBy
     donor = models.ForeignKey(
         Donor,
         on_delete=models.SET_NULL,
-        null=True, blank=True,
+        null=True,
+        blank=True,
         related_name="fundraising_campaigns",
         verbose_name=_("Donor"),
     )
     sponsor = models.ForeignKey(
         Sponsor,
         on_delete=models.SET_NULL,
-        null=True, blank=True,
+        null=True,
+        blank=True,
         related_name="fundraising_campaigns",
         verbose_name=_("Sponsor"),
     )
@@ -343,8 +435,8 @@ class FundraisingCampaign(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedBy
     is_active = models.BooleanField(_("Active"), default=True, db_index=True)
 
     class Meta:
-        verbose_name = ("Fundraising Campaign")
-        verbose_name_plural = ("Fundraising Campaigns")
+        verbose_name = "Fundraising Campaign"
+        verbose_name_plural = "Fundraising Campaigns"
         ordering = ("-start_date", "name")
 
     def __str__(self) -> str:
@@ -357,7 +449,9 @@ class FundraisingCampaign(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedBy
         return float(self.amount_raised / self.target_amount * 100)
 
 
-class ProcurementFinancialTracking(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
+class ProcurementFinancialTracking(
+    UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel
+):
     """Procurement financial tracking."""
 
     PROCUREMENT_STATUS_CHOICES = [
@@ -371,7 +465,9 @@ class ProcurementFinancialTracking(UUIDModel, TimeStampedModel, CreatedByModel, 
     ]
 
     name = models.CharField(_("Procurement name"), max_length=200)
-    procurement_number = models.CharField(_("Procurement number"), max_length=50, unique=True)
+    procurement_number = models.CharField(
+        _("Procurement number"), max_length=50, unique=True
+    )
     description = models.TextField(_("Description"))
     # Financial information
     estimated_cost = models.DecimalField(
@@ -384,7 +480,9 @@ class ProcurementFinancialTracking(UUIDModel, TimeStampedModel, CreatedByModel, 
     # Dates
     required_date = models.DateField(_("Required date"))
     promised_date = models.DateField(_("Promised date"), blank=True, null=True)
-    actual_delivery_date = models.DateField(_("Actual delivery date"), blank=True, null=True)
+    actual_delivery_date = models.DateField(
+        _("Actual delivery date"), blank=True, null=True
+    )
     # Status
     status = models.CharField(
         ("Status"), max_length=20, choices=PROCUREMENT_STATUS_CHOICES, default="PLANNED"
@@ -395,7 +493,9 @@ class ProcurementFinancialTracking(UUIDModel, TimeStampedModel, CreatedByModel, 
     project = models.CharField(_("Project"), max_length=200, blank=True)
     # Supplier information
     supplier_name = models.CharField(_("Supplier name"), max_length=200, blank=True)
-    supplier_contact = models.CharField(_("Supplier contact"), max_length=200, blank=True)
+    supplier_contact = models.CharField(
+        _("Supplier contact"), max_length=200, blank=True
+    )
     # Payment terms
     payment_terms = models.CharField(
         ("Payment terms"), max_length=100, help_text=_("e.g., Net 30, Net 60")
@@ -414,10 +514,14 @@ class ProcurementFinancialTracking(UUIDModel, TimeStampedModel, CreatedByModel, 
     def cost_variance(self) -> float:
         if self.estimated_cost == 0:
             return 0.0
-        return float((self.actual_cost - self.estimated_cost) / self.estimated_cost * 100)
+        return float(
+            (self.actual_cost - self.estimated_cost) / self.estimated_cost * 100
+        )
 
 
-class AssetFinancialTracking(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
+class AssetFinancialTracking(
+    UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel
+):
     """Asset financial tracking."""
 
     ASSET_TYPE_CHOICES = [
@@ -453,7 +557,9 @@ class AssetFinancialTracking(UUIDModel, TimeStampedModel, CreatedByModel, Update
     acquisition_date = models.DateField(_("Acquisition date"))
     # Depreciation
     depreciation_method = models.CharField(
-        ("Depreciation method"), max_length=50, help_text=_("e.g., Straight-line, Declining balance")
+        ("Depreciation method"),
+        max_length=50,
+        help_text=_("e.g., Straight-line, Declining balance"),
     )
     useful_life_years = models.PositiveIntegerField(_("Useful life (years)"), default=5)
     annual_depreciation = models.DecimalField(
@@ -469,13 +575,17 @@ class AssetFinancialTracking(UUIDModel, TimeStampedModel, CreatedByModel, Update
     # Location
     location = models.CharField(_("Location"), max_length=200, blank=True)
     # Maintenance
-    last_maintenance_date = models.DateField(_("Last maintenance date"), blank=True, null=True)
-    next_maintenance_date = models.DateField(_("Next maintenance date"), blank=True, null=True)
+    last_maintenance_date = models.DateField(
+        _("Last maintenance date"), blank=True, null=True
+    )
+    next_maintenance_date = models.DateField(
+        _("Next maintenance date"), blank=True, null=True
+    )
     is_active = models.BooleanField(_("Active"), default=True, db_index=True)
 
     class Meta:
-        verbose_name = ("Asset Financial Tracking")
-        verbose_name_plural = ("Asset Financial Tracking")
+        verbose_name = "Asset Financial Tracking"
+        verbose_name_plural = "Asset Financial Tracking"
         ordering = ("-acquisition_date", "name")
 
     def __str__(self) -> str:
@@ -506,7 +616,10 @@ class FinancialForecast(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByMo
     name = models.CharField(_("Forecast name"), max_length=200)
     forecast_number = models.CharField(_("Forecast number"), max_length=50, unique=True)
     forecast_type = models.CharField(
-        _("Forecast type"), max_length=20, choices=FORECAST_TYPE_CHOICES, default="REVENUE"
+        _("Forecast type"),
+        max_length=20,
+        choices=FORECAST_TYPE_CHOICES,
+        default="REVENUE",
     )
     financial_year = models.ForeignKey(
         FinancialYear,
@@ -536,8 +649,8 @@ class FinancialForecast(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByMo
     is_active = models.BooleanField(_("Active"), default=True, db_index=True)
 
     class Meta:
-        verbose_name = ("Financial Forecast")
-        verbose_name_plural = ("Financial Forecasts")
+        verbose_name = "Financial Forecast"
+        verbose_name_plural = "Financial Forecasts"
         ordering = ("-forecast_period_start", "name")
 
     def __str__(self) -> str:
@@ -550,7 +663,10 @@ class Budget(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
     name = models.CharField(_("Budget name"), max_length=200)
     code = models.CharField(_("Budget code"), max_length=50, unique=True)
     budget_type = models.CharField(
-        ("Budget type"), max_length=20, choices=BudgetType.choices, default=BudgetType.ANNUAL
+        ("Budget type"),
+        max_length=20,
+        choices=BudgetType.choices,
+        default=BudgetType.ANNUAL,
     )
     financial_year = models.ForeignKey(
         FinancialYear,
@@ -585,7 +701,7 @@ class Budget(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
 
     class Meta:
         verbose_name = _("Budget")
-        verbose_name_plural = ("Budgets")
+        verbose_name_plural = "Budgets"
         ordering = ("-financial_year", "-start_date", "name")
 
     def __str__(self) -> str:
@@ -593,17 +709,43 @@ class Budget(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
 
     @property
     def remaining(self) -> float:
-        budget_amount = self.revised_amount if self.is_revised and self.revised_amount else self.total_amount
+        budget_amount = (
+            self.revised_amount
+            if self.is_revised and self.revised_amount
+            else self.total_amount
+        )
         return float(budget_amount - self.spent_amount)
 
     @property
     def variance_percentage(self) -> float:
         if self.allocated_amount == 0:
             return 0.0
-        return float((self.spent_amount - self.allocated_amount) / self.allocated_amount * 100)
+        return float(
+            (self.spent_amount - self.allocated_amount) / self.allocated_amount * 100
+        )
+
+    def get_variance(self) -> dict:
+        """Return budget variance analysis as a dictionary."""
+        from decimal import Decimal as D
+
+        actual = D(self.spent_amount)
+        budgeted = (
+            self.revised_amount
+            if self.is_revised and self.revised_amount
+            else self.total_amount
+        )
+        variance = D(budgeted) - actual
+        percentage = float((variance / D(budgeted)) * 100) if budgeted else 0.0
+        return {
+            "budgeted": D(budgeted),
+            "actual": actual,
+            "variance": variance,
+            "variance_percentage": percentage,
+            "remaining": D(self.remaining),
+        }
 
 
-class Transaction(UUIDModel, TimeStampedModel):
+class Transaction(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
     """Financial transaction record."""
 
     STATUS_CHOICES = TransactionStatus.choices
@@ -629,6 +771,25 @@ class Transaction(UUIDModel, TimeStampedModel):
     beneficiary = models.CharField(_("Beneficiary"), max_length=200, blank=True)
     program = models.CharField(_("Program"), max_length=200, blank=True)
     project = models.CharField(_("Project"), max_length=200, blank=True)
+    transaction_date = models.DateTimeField(
+        _("Transaction date"), default=timezone.now, db_index=True
+    )
+    financial_account = models.ForeignKey(
+        FinancialAccount,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions",
+        verbose_name=_("Financial account"),
+    )
+    budget = models.ForeignKey(
+        Budget,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions",
+        verbose_name=_("Budget"),
+    )
     approval_status = models.CharField(_("Approval status"), max_length=20, blank=True)
     approved_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -642,17 +803,34 @@ class Transaction(UUIDModel, TimeStampedModel):
     )
     receipt_date = models.DateField(_("Receipt date"), null=True, blank=True)
     due_date = models.DateField(_("Due date"), null=True, blank=True)
-    is_sensitive = models.BooleanField(
-        ("Sensitive data"), default=False, db_index=True
+    is_sensitive = models.BooleanField(("Sensitive data"), default=False, db_index=True)
+    posted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="posted_transactions",
+        verbose_name=_("Posted by"),
     )
+    posted_at = models.DateTimeField(_("Posted at"), null=True, blank=True)
+    voided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="voided_transactions",
+        verbose_name=_("Voided by"),
+    )
+    voided_at = models.DateTimeField(_("Voided at"), null=True, blank=True)
 
     class Meta:
         verbose_name = _("Transaction")
-        verbose_name_plural = ("Transactions")
+        verbose_name_plural = "Transactions"
         ordering = ("-created_at",)
         indexes = [
             models.Index(fields=["transaction_type", "status"]),
             models.Index(fields=["source", "status"]),
+            models.Index(fields=["-transaction_date"]),
             models.Index(fields=["-created_at"]),
         ]
 
@@ -676,6 +854,7 @@ class BudgetAllocation(UUIDModel, TimeStampedModel):
     )
     program = models.CharField(_("Program"), max_length=200, blank=True)
     project = models.CharField(_("Project"), max_length=200, blank=True)
+    line_item = models.CharField(_("Line item"), max_length=200, blank=True)
     allocated_amount = models.DecimalField(
         ("Allocated amount"), max_digits=15, decimal_places=2
     )
@@ -687,8 +866,9 @@ class BudgetAllocation(UUIDModel, TimeStampedModel):
 
     class Meta:
         verbose_name = _("Budget Allocation")
-        verbose_name_plural = ("Budget Allocations")
+        verbose_name_plural = _("Budget Allocations")
         unique_together = ("budget", "program", "project")
+        ordering = ("budget", "line_item")
 
     def __str__(self) -> str:
         return f"{self.budget} - {self.program or self.project}"

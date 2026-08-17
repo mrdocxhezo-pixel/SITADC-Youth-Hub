@@ -1,0 +1,123 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Transactions - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Transactions</h2>
+        <p class="text-muted">Manage your organization's financial transactions.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:transaction_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Transaction
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search transactions...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if transactions %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Transactions</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Reference</th>
+                <th scope="col">Date</th>
+                <th scope="col">Type</th>
+                <th scope="col">Source</th>
+                <th class="text-end" scope="col">Amount</th>
+                <th scope="col">Status</th>
+                <th scope="col">Account</th>
+                <th scope="col">Budget</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in transactions %}
+            <tr>
+                <td>
+                    <a href="{% url 'finance:transaction_detail' transaction.pk %}" class="text-decoration-none">{{ transaction.reference_number }}</a>
+                </td>
+                <td>{{ transaction.transaction_date|date:"M d, Y" }}</td>
+                <td>{{ transaction.get_transaction_type_display }}</td>
+                <td>{{ transaction.get_source_display }}</td>
+                <td class="text-end">{{ transaction.amount|floatformat:2 }} {{ transaction.currency }}</td>
+                <td>
+                    {% if transaction.status == 'POSTED' or transaction.status == 'PAID' or transaction.status == 'RECONCILED' %}
+                    <span class="badge bg-success">{{ transaction.get_status_display }}</span>
+                    {% elif transaction.status == 'DRAFT' %}
+                    <span class="badge bg-secondary">{{ transaction.get_status_display }}</span>
+                    {% elif transaction.status == 'VOIDED' %}
+                    <span class="badge bg-danger">{{ transaction.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">{{ transaction.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ transaction.financial_account.name|default:"—" }}</td>
+                <td>{{ transaction.budget.name|default:"—" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'finance:transaction_detail' transaction.pk %}" class="btn btn-outline-primary" aria-label="View transaction details">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'finance:transaction_update' transaction.pk %}" class="btn btn-outline-secondary" aria-label="Edit transaction">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'finance:transaction_delete' transaction.pk %}" class="btn btn-outline-danger" aria-label="Delete transaction">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="text-center py-4">No transactions found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if transactions.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if transactions.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ transactions.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in transactions.paginator.page_range %}
+        {% if transactions.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > transactions.number|add:'-3' and i < transactions.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if transactions.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ transactions.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No transactions found. <a href="{% url 'finance:transaction_create' %}" class="alert-link">Add your first transaction</a>.
+</div>
+{% endif %}
+{% endblock %}

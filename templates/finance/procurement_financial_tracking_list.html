@@ -16,7 +16,7 @@
     </div>
 </div>
 
-{% if trackings %}
+{% if procurement_financial_trackings %}
 <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead>
@@ -31,7 +31,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for tracking in trackings %}
+            {% for tracking in procurement_financial_trackings %}
             <tr>
                 <td>{{ tracking.name }}</td>
                 <td>{{ tracking.procurement_number }}</td>

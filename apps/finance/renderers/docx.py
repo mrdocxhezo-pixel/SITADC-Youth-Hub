@@ -5,17 +5,13 @@ from __future__ import annotations
 import io
 from typing import Any
 
-from django.http import HttpResponse
-from django.template.loader import render_to_string
-from django.utils import timezone
-
 # Try to import python-docx for DOCX generation
 try:
     from docx import Document
-    from docx.shared import Inches, Pt, RGBColor
-    from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.enum.table import WD_TABLE_ALIGNMENT
-    from docx.oxp.shared import OxmlElement, qn
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.shared import Inches
+
     DOCX_AVAILABLE = True
 except ImportError:
     DOCX_AVAILABLE = False
@@ -48,7 +44,7 @@ class FinanceDocxRenderer(BaseFinanceRenderer):
         """
         # Create document
         doc = Document()
-        
+
         # Set margins
         sections = doc.sections
         for section in sections:
@@ -56,49 +52,51 @@ class FinanceDocxRenderer(BaseFinanceRenderer):
             section.bottom_margin = Inches(1)
             section.left_margin = Inches(1)
             section.right_margin = Inches(1)
-        
+
         # Add title
-        title = doc.add_heading(self.data.get('title', 'Financial Report'), level=0)
+        title = doc.add_heading(self.data.get("title", "Financial Report"), level=0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        
+
         # Add timestamp
-        timestamp_para = doc.add_paragraph(f"Generated on: {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
+        timestamp_para = doc.add_paragraph(
+            f"Generated on: {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+        )
         timestamp_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        
+
         # Add a blank line
         doc.add_paragraph()
-        
+
         # Add data sections
         for section_name, section_data in self.data.items():
-            if section_name in ['title']:  # Skip metadata
+            if section_name in ["title"]:  # Skip metadata
                 continue
-                
+
             # Section heading
-            heading = doc.add_heading(section_name.replace('_', ' ').title(), level=1)
-            
+            doc.add_heading(section_name.replace("_", " ").title(), level=1)
+
             # Add section data
             if isinstance(section_data, dict):
                 # Create a table for key-value pairs
                 table = doc.add_table(rows=1, cols=2)
                 table.alignment = WD_TABLE_ALIGNMENT.CENTER
-                
+
                 # Set table header
                 header_cells = table.rows[0].cells
-                header_cells[0].text = 'Key'
-                header_cells[1].text = 'Value'
-                
+                header_cells[0].text = "Key"
+                header_cells[1].text = "Value"
+
                 # Make header bold
                 for cell in header_cells:
                     for paragraph in cell.paragraphs:
                         for run in paragraph.runs:
                             run.font.bold = True
-                
+
                 # Add data rows
                 for key, value in section_data.items():
                     row_cells = table.add_row().cells
                     row_cells[0].text = str(key)
                     row_cells[1].text = str(value)
-                    
+
             elif isinstance(section_data, list):
                 if section_data and isinstance(section_data[0], dict):
                     # List of dictionaries - create a table
@@ -107,42 +105,42 @@ class FinanceDocxRenderer(BaseFinanceRenderer):
                         headers = list(section_data[0].keys())
                         table = doc.add_table(rows=1, cols=len(headers))
                         table.alignment = WD_TABLE_ALIGNMENT.CENTER
-                        
+
                         # Set table header
                         header_cells = table.rows[0].cells
                         for i, header in enumerate(headers):
-                            header_cells[i].text = header.replace('_', ' ').title()
+                            header_cells[i].text = header.replace("_", " ").title()
                             # Make header bold
                             for paragraph in header_cells[i].paragraphs:
                                 for run in paragraph.runs:
                                     run.font.bold = True
-                        
+
                         # Add data rows
                         for item in section_data:
                             row_cells = table.add_row().cells
                             for i, key in enumerate(headers):
-                                row_cells[i].text = str(item.get(key, ''))
+                                row_cells[i].text = str(item.get(key, ""))
                 else:
                     # Simple list
                     for item in section_data:
                         p = doc.add_paragraph(str(item))
-                        p.style = 'List Bullet'
+                        p.style = "List Bullet"
             else:
                 # Simple value
                 p = doc.add_paragraph(str(section_data))
-        
+
         # Add footer
         doc.add_paragraph()
         footer_para = doc.add_paragraph(
             "This report was generated by the SITADC Youth Hub Finance Engine."
         )
         footer_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        
+
         # Save to bytes
         docx_file = io.BytesIO()
         doc.save(docx_file)
         docx_file.seek(0)
-        
+
         return docx_file.getvalue()
 
     def _render_fallback_text(self) -> bytes:
@@ -162,11 +160,11 @@ Generated: {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
 Data:
 {self._format_data_for_text(self.data)}
 
---- 
+---
 This report was generated by the SITADC Youth Hub Finance Engine.
         """.strip()
-        
-        return text_content.encode('utf-8')
+
+        return text_content.encode("utf-8")
 
     def _format_data_for_text(self, data: Any, indent: int = 0) -> str:
         """
@@ -179,24 +177,24 @@ This report was generated by the SITADC Youth Hub Finance Engine.
         Returns:
             str: The formatted text.
         """
-        spaces = ' ' * indent
+        spaces = " " * indent
         result = []
-        
+
         if isinstance(data, dict):
             for key, value in data.items():
-                if isinstance(value, (dict, list)) and value:
+                if isinstance(value, dict | list) and value:
                     result.append(f"{spaces}{key}:")
                     result.append(self._format_data_for_text(value, indent + 2))
                 else:
                     result.append(f"{spaces}{key}: {value}")
         elif isinstance(data, list):
             for i, item in enumerate(data):
-                if isinstance(item, (dict, list)) and item:
+                if isinstance(item, dict | list) and item:
                     result.append(f"{spaces}[{i}]:")
                     result.append(self._format_data_for_text(item, indent + 2))
                 else:
                     result.append(f"{spaces}[{i}]: {item}")
         else:
             result.append(f"{spaces}{data}")
-            
-        return '\n'.join(result)
+
+        return "\n".join(result)

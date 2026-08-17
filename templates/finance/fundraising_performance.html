@@ -1,0 +1,232 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ fundraising_data.title|default:"Fundraising Performance Analysis" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ fundraising_data.title|default:"Fundraising Performance Analysis" }}</h2>
+        <p class="text-muted">Detailed analysis of campaign performance and fundraising efficiency.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf{% if campaign_id %}&campaign_id={{ campaign_id }}{% endif %}" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx{% if campaign_id %}&campaign_id={{ campaign_id }}{% endif %}" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv{% if campaign_id %}&campaign_id={{ campaign_id }}{% endif %}" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if fundraising_data.campaign %}
+{# Single campaign performance analysis #}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ fundraising_data.campaign.name }}</h5>
+        <span class="badge {% if fundraising_data.performance.on_track %}bg-success{% elif fundraising_data.performance.on_track is False %}bg-danger{% else %}bg-secondary{% endif %}">
+            <i class="bi {% if fundraising_data.performance.on_track %}bi-check-circle{% elif fundraising_data.performance.on_track is False %}bi-x-circle{% else %}bi-dash-circle{% endif %} me-1"></i>
+            {% if fundraising_data.performance.on_track %}On Track{% elif fundraising_data.performance.on_track is False %}Behind Schedule{% else %}N/A{% endif %}
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <h6 class="text-muted">Target Amount</h6>
+                <h4 class="mb-0">{{ fundraising_data.campaign.target_amount|floatformat:2 }}</h4>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-muted">Amount Raised</h6>
+                <h4 class="mb-0 text-success">{{ fundraising_data.campaign.amount_raised|floatformat:2 }}</h4>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-muted">Progress</h6>
+                <h4 class="mb-0">{{ fundraising_data.campaign.progress_percentage|floatformat:1 }}%</h4>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-muted">Period</h6>
+                <h4 class="mb-0 small">{{ fundraising_data.campaign.start_date|date:"M d, Y" }} &mdash; {{ fundraising_data.campaign.end_date|date:"M d, Y" }}</h4>
+            </div>
+        </div>
+        <div class="progress mb-1" role="progressbar" aria-valuenow="{{ fundraising_data.campaign.progress_percentage|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar {% if fundraising_data.campaign.progress_percentage >= 100 %}bg-success{% else %}bg-info{% endif %}" style="width: {{ fundraising_data.campaign.progress_percentage|floatformat:0 }}%"></div>
+        </div>
+    </div>
+</div>
+
+{% if fundraising_data.performance %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Performance Metrics</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Campaign performance metrics</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Metric</th>
+                        <th class="text-end" scope="col">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Days Elapsed</td>
+                        <td class="text-end">{{ fundraising_data.performance.days_elapsed }}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Campaign Days</td>
+                        <td class="text-end">{{ fundraising_data.performance.days_total }}</td>
+                    </tr>
+                    <tr>
+                        <td>Days Remaining</td>
+                        <td class="text-end">{{ fundraising_data.performance.days_remaining|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Daily Fundraising Rate</td>
+                        <td class="text-end">{{ fundraising_data.performance.daily_rate|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Required Daily Rate</td>
+                        <td class="text-end">{{ fundraising_data.performance.required_daily_rate|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Status</td>
+                        <td class="text-end">
+                            {% if fundraising_data.performance.on_track %}
+                            <span class="badge bg-success">On Track</span>
+                            {% elif fundraising_data.performance.on_track is False %}
+                            <span class="badge bg-danger">Behind Schedule</span>
+                            {% else %}
+                            <span class="badge bg-secondary">N/A</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% else %}
+{# Summary performance analysis of all campaigns #}
+{% if fundraising_data.summary %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Campaigns</h6>
+                <h3 class="mb-0">{{ fundraising_data.summary.total_campaigns }}</h3>
+                <p class="text-muted small mb-0">Campaigns analyzed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Pledged</h6>
+                <h3 class="mb-0 text-primary">{{ fundraising_data.summary.total_pledged|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Campaign targets</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Raised</h6>
+                <h3 class="mb-0 text-success">{{ fundraising_data.summary.total_raised|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Overall progress: {{ fundraising_data.summary.overall_progress_percentage|floatformat:1 }}%</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Remaining</h6>
+                <h3 class="mb-0 text-warning">{{ fundraising_data.summary.total_remaining|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Still to raise</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if fundraising_data.performance_ranges %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Performance Distribution</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Campaign distribution by progress range</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Progress Range</th>
+                        <th class="text-end" scope="col">Campaigns</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in fundraising_data.performance_ranges %}
+                    <tr>
+                        <td>{{ item.range }}</td>
+                        <td class="text-end">{{ item.count }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" class="text-center py-4">No performance range data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if fundraising_data.averages %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Campaign Averages</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Average campaign performance metrics</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Metric</th>
+                        <th class="text-end" scope="col">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Average Duration (days)</td>
+                        <td class="text-end">{{ fundraising_data.averages.duration_days|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Average Daily Fundraising Rate</td>
+                        <td class="text-end">
+                            {% if fundraising_data.averages.daily_fundraising_rate is not None %}
+                            {{ fundraising_data.averages.daily_fundraising_rate|floatformat:2 }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

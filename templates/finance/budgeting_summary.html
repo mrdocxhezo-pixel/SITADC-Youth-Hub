@@ -1,0 +1,154 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ budgeting_data.title|default:"Budgeting Summary" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ budgeting_data.title|default:"Budgeting Summary" }}</h2>
+        <p class="text-muted">Overview of budget allocation and utilization across financial years.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if budgeting_data.summary %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Budgeted</h6>
+                <h3 class="mb-0 text-primary">{{ budgeting_data.summary.total_budgeted|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">{{ budgeting_data.summary.budget_count }} budgets</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Allocated</h6>
+                <h3 class="mb-0">{{ budgeting_data.summary.total_allocated|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Allocated to programs</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Available</h6>
+                <h3 class="mb-0 text-success">{{ budgeting_data.summary.total_available|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Unallocated budget</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Utilization</h6>
+                <h3 class="mb-0 {% if budgeting_data.summary.utilization_percentage > 90 %}text-warning{% else %}text-success{% endif %}">{{ budgeting_data.summary.utilization_percentage|floatformat:1 }}%</h3>
+                <p class="text-muted small mb-0">Allocated vs budgeted</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if budgeting_data.by_financial_year %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Budget by Financial Year</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Budget allocation and utilization by financial year</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Financial Year</th>
+                        <th class="text-end" scope="col">Budgets</th>
+                        <th class="text-end" scope="col">Total Budgeted</th>
+                        <th class="text-end" scope="col">Allocated</th>
+                        <th class="text-end" scope="col">Available</th>
+                        <th class="text-end" scope="col">Utilization %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fy in budgeting_data.by_financial_year %}
+                    <tr>
+                        <td>{{ fy.financial_year|default:"-" }}</td>
+                        <td class="text-end">{{ fy.budget_count }}</td>
+                        <td class="text-end">{{ fy.total_budgeted|floatformat:2 }}</td>
+                        <td class="text-end">{{ fy.total_allocated|floatformat:2 }}</td>
+                        <td class="text-end">{{ fy.available|floatformat:2 }}</td>
+                        <td class="text-end">{{ fy.utilization_percentage|floatformat:1 }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No financial year budget data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if budgeting_data.recent_budgets %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Recent Budgets</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Recently updated budgets</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Budget</th>
+                        <th scope="col">Code</th>
+                        <th scope="col">Financial Year</th>
+                        <th class="text-end" scope="col">Total Amount</th>
+                        <th class="text-end" scope="col">Allocated</th>
+                        <th class="text-end" scope="col">Remaining</th>
+                        <th scope="col">Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for budget in budgeting_data.recent_budgets %}
+                    <tr>
+                        <td>{{ budget.name }}</td>
+                        <td>{{ budget.code|default:"-" }}</td>
+                        <td>{{ budget.financial_year|default:"-" }}</td>
+                        <td class="text-end">{{ budget.total_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ budget.allocated_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ budget.remaining|floatformat:2 }}</td>
+                        <td>{{ budget.updated_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">No recent budgets.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ budgeting_data.title|default:"Budget Variance Report" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ budgeting_data.title|default:"Budget Variance Report" }}</h2>
+        <p class="text-muted">Variance analysis between budgeted and actual expenditure.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf{% if budget_id %}&budget_id={{ budget_id }}{% endif %}" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx{% if budget_id %}&budget_id={{ budget_id }}{% endif %}" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv{% if budget_id %}&budget_id={{ budget_id }}{% endif %}" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if budgeting_data.budget %}
+{# Single budget variance report #}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">{{ budgeting_data.budget.name }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <dl>
+                    <dt>Code</dt>
+                    <dd>{{ budgeting_data.budget.code|default:"-" }}</dd>
+                    <dt>Financial Year</dt>
+                    <dd>{{ budgeting_data.budget.financial_year|default:"-" }}</dd>
+                </dl>
+            </div>
+            <div class="col-md-4">
+                <dl>
+                    <dt>Total Amount</dt>
+                    <dd>{{ budgeting_data.budget.total_amount|floatformat:2 }}</dd>
+                    <dt>Allocated Amount</dt>
+                    <dd>{{ budgeting_data.budget.allocated_amount|floatformat:2 }}</dd>
+                </dl>
+            </div>
+            <div class="col-md-4">
+                <dl>
+                    <dt>Remaining Amount</dt>
+                    <dd>{{ budgeting_data.budget.remaining_amount|floatformat:2 }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if budgeting_data.variance %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Variance Details</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Variance analysis for {{ budgeting_data.budget.name }}</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Metric</th>
+                        <th class="text-end" scope="col">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Budgeted</td>
+                        <td class="text-end">{{ budgeting_data.variance.budgeted|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Actual</td>
+                        <td class="text-end">{{ budgeting_data.variance.actual|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Variance</td>
+                        <td class="text-end {% if budgeting_data.variance.variance < 0 %}text-danger{% else %}text-success{% endif %}">{{ budgeting_data.variance.variance|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Variance %</td>
+                        <td class="text-end {% if budgeting_data.variance.variance_percentage < 0 %}text-danger{% else %}text-success{% endif %}">{{ budgeting_data.variance.variance_percentage|floatformat:1 }}%</td>
+                    </tr>
+                    {% if budgeting_data.variance.remaining is not None %}
+                    <tr>
+                        <td>Remaining</td>
+                        <td class="text-end">{{ budgeting_data.variance.remaining|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% else %}
+{# Summary variance report of all budgets #}
+{% if budgeting_data.summary %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Budgeted</h6>
+                <h3 class="mb-0 text-primary">{{ budgeting_data.summary.total_budgeted|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">{{ budgeting_data.summary.budget_count }} budgets</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Actual</h6>
+                <h3 class="mb-0">{{ budgeting_data.summary.total_actual|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Actual spending</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Variance</h6>
+                <h3 class="mb-0 {% if budgeting_data.summary.total_variance < 0 %}text-danger{% else %}text-success{% endif %}">{{ budgeting_data.summary.total_variance|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Budgeted minus actual</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Overall Variance %</h6>
+                <h3 class="mb-0 {% if budgeting_data.summary.overall_variance_percentage < 0 %}text-danger{% else %}text-success{% endif %}">{{ budgeting_data.summary.overall_variance_percentage|floatformat:1 }}%</h3>
+                <p class="text-muted small mb-0">Across all budgets</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if budgeting_data.performance_distribution %}
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Performance Distribution</h5>
+            </div>
+            <div class="card-body">
+                <span class="badge bg-success me-2"><i class="bi bi-check-circle me-1"></i> On Track: {{ budgeting_data.performance_distribution.on_track }}</span>
+                <span class="badge bg-warning text-dark me-2"><i class="bi bi-exclamation-triangle me-1"></i> Caution: {{ budgeting_data.performance_distribution.caution }}</span>
+                <span class="badge bg-danger me-2"><i class="bi bi-x-circle me-1"></i> Overrun: {{ budgeting_data.performance_distribution.overrun }}</span>
+                <span class="badge bg-secondary"><i class="bi bi-arrow-down-circle me-1"></i> Underutilized: {{ budgeting_data.performance_distribution.underutilized }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if budgeting_data.budgets %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Budget Variance Details</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption>Budget variance by budget</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Budget</th>
+                        <th scope="col">Code</th>
+                        <th scope="col">Financial Year</th>
+                        <th class="text-end" scope="col">Budgeted</th>
+                        <th class="text-end" scope="col">Actual</th>
+                        <th class="text-end" scope="col">Variance</th>
+                        <th class="text-end" scope="col">Variance %</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for budget in budgeting_data.budgets %}
+                    <tr>
+                        <td>{{ budget.name }}</td>
+                        <td>{{ budget.code|default:"-" }}</td>
+                        <td>{{ budget.financial_year|default:"-" }}</td>
+                        <td class="text-end">{{ budget.budgeted|floatformat:2 }}</td>
+                        <td class="text-end">{{ budget.actual|floatformat:2 }}</td>
+                        <td class="text-end {% if budget.variance < 0 %}text-danger{% else %}text-success{% endif %}">{{ budget.variance|floatformat:2 }}</td>
+                        <td class="text-end {% if budget.variance_percentage < 0 %}text-danger{% else %}text-success{% endif %}">{{ budget.variance_percentage|floatformat:1 }}%</td>
+                        <td>
+                            <span class="badge {% if budget.status == 'on_track' %}bg-success{% elif budget.status == 'caution' %}bg-warning text-dark{% elif budget.status == 'overrun' %}bg-danger{% else %}bg-secondary{% endif %}">{{ budget.status|default:"-" }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">No budget variance data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

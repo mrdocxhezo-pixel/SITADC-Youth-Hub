@@ -1,0 +1,112 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ transaction.reference_number }} - Transaction - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ transaction.reference_number }}</h2>
+        <p class="text-muted">{{ transaction.get_transaction_type_display }} - {{ transaction.get_source_display }}</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:transaction_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Transaction Details</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Reference Number</dt>
+                    <dd class="col-sm-8">{{ transaction.reference_number }}</dd>
+                    <dt class="col-sm-4">Transaction Type</dt>
+                    <dd class="col-sm-8">{{ transaction.get_transaction_type_display }}</dd>
+                    <dt class="col-sm-4">Source</dt>
+                    <dd class="col-sm-8">{{ transaction.get_source_display }}</dd>
+                    <dt class="col-sm-4">Amount</dt>
+                    <dd class="col-sm-8">{{ transaction.amount|floatformat:2 }} {{ transaction.currency }}</dd>
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        {% if transaction.status == 'POSTED' or transaction.status == 'PAID' or transaction.status == 'RECONCILED' %}
+                        <span class="badge bg-success">{{ transaction.get_status_display }}</span>
+                        {% elif transaction.status == 'DRAFT' %}
+                        <span class="badge bg-secondary">{{ transaction.get_status_display }}</span>
+                        {% elif transaction.status == 'VOIDED' %}
+                        <span class="badge bg-danger">{{ transaction.get_status_display }}</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">{{ transaction.get_status_display }}</span>
+                        {% endif %}
+                    </dd>
+                    <dt class="col-sm-4">Transaction Date</dt>
+                    <dd class="col-sm-8">{{ transaction.transaction_date|date:"M d, Y H:i" }}</dd>
+                    <dt class="col-sm-4">Financial Account</dt>
+                    <dd class="col-sm-8">{{ transaction.financial_account.name|default:"—" }}</dd>
+                    <dt class="col-sm-4">Budget</dt>
+                    <dd class="col-sm-8">{{ transaction.budget.name|default:"—" }}</dd>
+                    {% if transaction.payment_method %}
+                    <dt class="col-sm-4">Payment Method</dt>
+                    <dd class="col-sm-8">{{ transaction.get_payment_method_display }}</dd>
+                    {% endif %}
+                    {% if transaction.beneficiary %}
+                    <dt class="col-sm-4">Beneficiary</dt>
+                    <dd class="col-sm-8">{{ transaction.beneficiary }}</dd>
+                    {% endif %}
+                    {% if transaction.program %}
+                    <dt class="col-sm-4">Program</dt>
+                    <dd class="col-sm-8">{{ transaction.program }}</dd>
+                    {% endif %}
+                    {% if transaction.project %}
+                    <dt class="col-sm-4">Project</dt>
+                    <dd class="col-sm-8">{{ transaction.project }}</dd>
+                    {% endif %}
+                    {% if transaction.receipt_date %}
+                    <dt class="col-sm-4">Receipt Date</dt>
+                    <dd class="col-sm-8">{{ transaction.receipt_date|date:"M d, Y" }}</dd>
+                    {% endif %}
+                    {% if transaction.due_date %}
+                    <dt class="col-sm-4">Due Date</dt>
+                    <dd class="col-sm-8">{{ transaction.due_date|date:"M d, Y" }}</dd>
+                    {% endif %}
+                    {% if transaction.description %}
+                    <dt class="col-sm-4">Description</dt>
+                    <dd class="col-sm-8">{{ transaction.description|linebreaks }}</dd>
+                    {% endif %}
+                    {% if transaction.posted_by %}
+                    <dt class="col-sm-4">Posted By</dt>
+                    <dd class="col-sm-8">{{ transaction.posted_by }}</dd>
+                    {% endif %}
+                    {% if transaction.posted_at %}
+                    <dt class="col-sm-4">Posted At</dt>
+                    <dd class="col-sm-8">{{ transaction.posted_at|date:"M d, Y H:i" }}</dd>
+                    {% endif %}
+                    <dt class="col-sm-4">Sensitive Data</dt>
+                    <dd class="col-sm-8">
+                        {% if transaction.is_sensitive %}
+                        <span class="badge bg-danger">Yes</span>
+                        {% else %}
+                        <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="d-grid gap-2">
+            <a href="{% url 'finance:transaction_update' transaction.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil me-1"></i> Edit Transaction
+            </a>
+            <a href="{% url 'finance:transaction_delete' transaction.pk %}" class="btn btn-outline-danger">
+                <i class="bi bi-trash me-1"></i> Delete Transaction
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

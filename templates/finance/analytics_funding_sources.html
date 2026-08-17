@@ -1,0 +1,113 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ analytics_data.title|default:"Funding Sources Analysis" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ analytics_data.title|default:"Funding Sources Analysis" }}</h2>
+        <p class="text-muted">Breakdown of funding by source type including grants, donors, sponsors, and fundraising.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Grants Awarded</h6>
+                <h3 class="mb-0 text-primary">{{ analytics_data.grants.total_awarded|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">{{ analytics_data.grants.count }} grants, avg {{ analytics_data.grants.average_grant_size|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Donor Contributions</h6>
+                <h3 class="mb-0 text-success">{{ analytics_data.donors.total_contributions|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">{{ analytics_data.donors.count }} donors, avg {{ analytics_data.donors.average_donation|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Sponsor Contributions</h6>
+                <h3 class="mb-0 text-info">{{ analytics_data.sponsors.total_contributions|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">{{ analytics_data.sponsors.count }} sponsors, avg {{ analytics_data.sponsors.average_sponsorship|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Fundraising Raised</h6>
+                <h3 class="mb-0 text-warning">{{ analytics_data.fundraising.total_raised|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">{{ analytics_data.fundraising.count }} campaigns</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Funding Diversification</h5>
+            </div>
+            <div class="card-body">
+                {% if analytics_data.diversification %}
+                {% for item in analytics_data.diversification %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-capitalize">{{ item.type }}</span>
+                        <span class="text-muted">{{ item.amount|floatformat:2 }} ({{ item.percentage|floatformat:1 }}%)</span>
+                    </div>
+                    <div class="progress" role="progressbar" aria-valuenow="{{ item.percentage|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar" style="width: {{ item.percentage|floatformat:0 }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted mb-0">No funding source data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Total Funding &amp; Concentration</h5>
+            </div>
+            <div class="card-body">
+                <h2 class="mb-3">{{ analytics_data.total_funding|floatformat:2 }}</h2>
+                <p class="text-muted">Total funding across all sources.</p>
+                <hr>
+                <h6 class="text-muted">Concentration (HHI)</h6>
+                <p class="mb-1">HHI Index: <strong>{{ analytics_data.concentration.hhi|floatformat:1 }}</strong></p>
+                <span class="badge {% if analytics_data.concentration.level == 'highly_concentrated' %}bg-danger{% elif analytics_data.concentration.level == 'moderately_concentrated' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                    <i class="bi bi-{% if analytics_data.concentration.level == 'highly_concentrated' %}exclamation-octagon{% elif analytics_data.concentration.level == 'moderately_concentrated' %}exclamation-triangle{% else %}shield-check{% endif %} me-1"></i>
+                    {{ analytics_data.concentration.level|default:"-" }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

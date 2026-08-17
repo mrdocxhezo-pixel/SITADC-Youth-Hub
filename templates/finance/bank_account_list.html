@@ -16,7 +16,7 @@
     </div>
 </div>
 
-{% if accounts %}
+{% if bank_accounts %}
 <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead>
@@ -31,7 +31,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for account in accounts %}
+            {% for account in bank_accounts %}
             <tr>
                 <td>{{ account.name }}</td>
                 <td>{{ account.account_number }}</td>

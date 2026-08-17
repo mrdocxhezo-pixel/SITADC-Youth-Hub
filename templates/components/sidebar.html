@@ -104,6 +104,16 @@
                     </a>
                 </li>
             {% endif %}
+            {% if request.user|has_perm:"finance.view" or request.user|has_perm:"finance.manage" %}
+                <li class="nav-item" role="none">
+                    <a href="{% url 'finance:dashboard' %}"
+                       class="nav-link {% if request.resolver_match.namespace == 'finance' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                       {% if request.resolver_match.namespace == 'finance' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-cash-coin me-3 fs-5" aria-hidden="true"></i> Finance
+                    </a>
+                </li>
+            {% endif %}
             <li class="nav-item" role="none">
                 <a href="{% url 'report_instances:dashboard' %}"
                    class="nav-link {% if request.resolver_match.namespace == 'report_instances' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"

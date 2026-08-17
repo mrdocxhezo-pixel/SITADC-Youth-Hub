@@ -5,20 +5,20 @@ from __future__ import annotations
 from django import forms
 
 from .models import (
-    FinancialYear,
-    FinancialAccount,
-    BankAccount,
-    PettyCash,
-    Grant,
-    Donor,
-    Sponsor,
-    FundraisingCampaign,
-    ProcurementFinancialTracking,
     AssetFinancialTracking,
-    FinancialForecast,
+    BankAccount,
     Budget,
-    Transaction,
     BudgetAllocation,
+    Donor,
+    FinancialAccount,
+    FinancialForecast,
+    FinancialYear,
+    FundraisingCampaign,
+    Grant,
+    PettyCash,
+    ProcurementFinancialTracking,
+    Sponsor,
+    Transaction,
 )
 
 
@@ -148,7 +148,9 @@ class DonorForm(forms.ModelForm):
         ]
         widgets = {
             "total_donated": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
-            "year_to_date_donated": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
+            "year_to_date_donated": forms.NumberInput(
+                attrs={"step": "0.01", "min": "0"}
+            ),
             "last_donation_date": forms.DateInput(attrs={"type": "date"}),
             "email": forms.EmailInput(),
             "website": forms.URLInput(),
@@ -281,8 +283,12 @@ class AssetFinancialTrackingForm(forms.ModelForm):
             "acquisition_cost": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
             "current_value": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
             "acquisition_date": forms.DateInput(attrs={"type": "date"}),
-            "annual_depreciation": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
-            "accumulated_depreciation": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
+            "annual_depreciation": forms.NumberInput(
+                attrs={"step": "0.01", "min": "0"}
+            ),
+            "accumulated_depreciation": forms.NumberInput(
+                attrs={"step": "0.01", "min": "0"}
+            ),
             "last_maintenance_date": forms.DateInput(attrs={"type": "date"}),
             "next_maintenance_date": forms.DateInput(attrs={"type": "date"}),
             "useful_life_years": forms.NumberInput(attrs={"min": "1"}),
@@ -312,7 +318,9 @@ class FinancialForecastForm(forms.ModelForm):
             "forecast_period_start": forms.DateInput(attrs={"type": "date"}),
             "forecast_period_end": forms.DateInput(attrs={"type": "date"}),
             "projected_income": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
-            "projected_expenditure": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
+            "projected_expenditure": forms.NumberInput(
+                attrs={"step": "0.01", "min": "0"}
+            ),
             "projected_surplus_deficit": forms.NumberInput(attrs={"step": "0.01"}),
         }
 

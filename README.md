@@ -641,6 +641,25 @@ Records:
 
 ---
 
+## Finance and Resource Mobilization
+
+Provides:
+
+* Chart of Accounts (hierarchical financial accounts)
+* Budgets with budget-line allocations and variance analysis
+* Transactions with reference numbering and approval workflow (DRAFT/SUBMITTED/APPROVED/REJECTED/POSTED)
+* Bank accounts and petty cash
+* Grants, donors, sponsors, and fundraising campaigns
+* Procurement and asset financial tracking
+* Financial years and forecasts
+* Financial statements (income statement, balance sheet, cash flow)
+* Financial analytics and dashboards
+* Financial reporting with PDF/DOCX/XLSX/CSV/HTML export
+
+Finance access is enforced through fail-closed RBAC (`finance.view` / `finance.manage`) with scope-based selectors.
+
+---
+
 # User Roles
 
 The system may include the following roles:

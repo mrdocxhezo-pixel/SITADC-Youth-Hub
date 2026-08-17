@@ -13,11 +13,14 @@ class FinancialYear(models.Model):
     start_month = models.PositiveSmallIntegerField(
         _("Start month"), help_text=_("1=January, 12=December")
     )
+    start_date = models.DateField(_("Start date"), null=True, blank=True)
+    end_date = models.DateField(_("End date"), null=True, blank=True)
     is_active = models.BooleanField(_("Active"), default=True, db_index=True)
 
     class Meta:
         verbose_name = _("Financial Year")
         verbose_name_plural = _("Financial Years")
+        ordering = ("name",)
 
     def __str__(self) -> str:
         return self.name
@@ -38,8 +41,10 @@ class TransactionStatus(models.TextChoices):
     DRAFT = "DRAFT", _("Draft")
     SUBMITTED = "SUBMITTED", _("Submitted")
     APPROVED = "APPROVED", _("Approved")
+    POSTED = "POSTED", _("Posted")
     PAID = "PAID", _("Paid")
     RECONCILED = "RECONCILED", _("Reconciled")
+    VOIDED = "VOIDED", _("Voided")
     ARCHIVED = "ARCHIVED", _("Archived")
 
 

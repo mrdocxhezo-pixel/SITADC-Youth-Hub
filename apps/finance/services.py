@@ -3,31 +3,27 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from django.apps import apps as django_apps
 from django.contrib.auth import get_user_model
-from django.db import models, transaction
-from django.db.models import Q, Sum
+from django.db import transaction
 from django.utils import timezone
 
+from apps.finance.constants import TransactionStatus, TransactionType
 from apps.finance.exceptions import (
     BudgetExceededError,
-    CurrencyMismatchError,
     FinancialPeriodError,
     InsufficientFundsError,
     InvalidAccountError,
     InvalidTransactionError,
 )
-from apps.finance.selectors import (
-    get_accessible_budgets,
-    get_accessible_donors,
-    get_accessible_financial_accounts,
-    get_accessible_grants,
-    get_accessible_sponsors,
-    get_accessible_transactions,
+from apps.finance.models import (
+    Budget,
+    Donor,
+    FinancialAccount,
+    FinancialYear,
+    Grant,
+    Transaction,
 )
-from apps.finance.utils import get_financial_year_for_date
 
 User = get_user_model()
 
@@ -38,19 +34,23 @@ class FinancialAccountService:
     @staticmethod
     def create_account(
         name: str,
+        code: str,
         account_type: str,
         currency: str = "USD",
+        opening_balance: Decimal = Decimal("0"),
         is_active: bool = True,
         description: str = "",
-        created_by: Optional[User] = None,
-    ) -> Any:
+        created_by: User | None = None,
+    ) -> FinancialAccount:
         """
         Create a new financial account.
 
         Args:
             name: Account name.
-            account_type: Type of account (asset, liability, equity, income, expense).
+            code: Account code (unique).
+            account_type: Type of account (ASSET, LIABILITY, EQUITY, INCOME, EXPENSE).
             currency: Currency code (default: USD).
+            opening_balance: Opening balance (default: 0).
             is_active: Whether the account is active.
             description: Account description.
             created_by: User who created the account.
@@ -58,20 +58,21 @@ class FinancialAccountService:
         Returns:
             FinancialAccount: The created account.
         """
-        FinancialAccount = django_apps.get_model("finance", "FinancialAccount")
-        
-        account = FinancialAccount.objects.create(
+        return FinancialAccount.objects.create(
             name=name,
+            code=code,
             account_type=account_type,
             currency=currency,
+            opening_balance=opening_balance,
             is_active=is_active,
             description=description,
             created_by=created_by,
         )
-        return account
 
     @staticmethod
-    def get_account_balance(account_id: int, as_of_date: Optional[timezone.datetime] = None) -> Decimal:
+    def get_account_balance(
+        account_id: int, as_of_date: timezone.datetime | None = None
+    ) -> Decimal:
         """
         Get the balance of a financial account as of a specific date.
 
@@ -81,45 +82,26 @@ class FinancialAccountService:
 
         Returns:
             Decimal: The account balance.
+
+        Raises:
+            InvalidAccountError: If the account does not exist.
         """
         if as_of_date is None:
             as_of_date = timezone.now()
-            
-        FinancialAccount = django_apps.get_model("finance", "FinancialAccount")
-        Transaction = django_apps.get_model("finance", "Transaction")
-        
+
         try:
             account = FinancialAccount.objects.get(id=account_id)
-        except FinancialAccount.DoesNotExist:
-            raise InvalidAccountError(f"Financial account with ID {account_id} does not exist.")
-            
-        # Get all transactions for this account up to the specified date
-        transactions = Transaction.objects.filter(
-            financial_account=account,
-            transaction_date__lte=as_of_date,
-            status="POSTED"
-        )
-        
-        # Calculate balance based on transaction types
-        debit_sum = transactions.filter(transaction_type="DEBIT").aggregate(
-            total=Sum('amount')
-        )['total'] or Decimal('0')
-        
-        credit_sum = transactions.filter(transaction_type="CREDIT").aggregate(
-            total=Sum('amount')
-        )['total'] or Decimal('0')
-        
-        # For asset and expense accounts: debit increases balance, credit decreases
-        # For liability, equity, and income accounts: credit increases balance, debit decreases
-        if account.account_type in ['asset', 'expense']:
-            balance = account.opening_balance + debit_sum - credit_sum
-        else:  # liability, equity, income
-            balance = account.opening_balance + credit_sum - debit_sum
-            
-        return balance
+        except FinancialAccount.DoesNotExist as exc:
+            raise InvalidAccountError(
+                f"Financial account with ID {account_id} does not exist."
+            ) from exc
+
+        return account.get_balance_as_of_date(as_of_date)
 
     @staticmethod
-    def deactivate_account(account_id: int, deactivated_by: Optional[User] = None) -> Any:
+    def deactivate_account(
+        account_id: int, deactivated_by: User | None = None
+    ) -> FinancialAccount:
         """
         Deactivate a financial account.
 
@@ -129,19 +111,20 @@ class FinancialAccountService:
 
         Returns:
             FinancialAccount: The deactivated account.
+
+        Raises:
+            InvalidAccountError: If the account does not exist.
         """
-        FinancialAccount = django_apps.get_model("finance", "FinancialAccount")
-        
         try:
             account = FinancialAccount.objects.get(id=account_id)
-        except FinancialAccount.DoesNotExist:
-            raise InvalidAccountError(f"Financial account with ID {account_id} does not exist.")
-            
+        except FinancialAccount.DoesNotExist as exc:
+            raise InvalidAccountError(
+                f"Financial account with ID {account_id} does not exist."
+            ) from exc
+
         account.is_active = False
         account.updated_by = deactivated_by
-        account.updated_at = timezone.now()
         account.save()
-        
         return account
 
 
@@ -154,16 +137,16 @@ class BudgetService:
         code: str,
         financial_year_id: int,
         total_amount: Decimal,
-        allocated_amount: Decimal = Decimal('0'),
+        allocated_amount: Decimal = Decimal("0"),
         description: str = "",
-        created_by: Optional[User] = None,
-    ) -> Any:
+        created_by: User | None = None,
+    ) -> Budget:
         """
         Create a new budget.
 
         Args:
             name: Budget name.
-            code: Budget code.
+            code: Budget code (unique).
             financial_year_id: ID of the financial year.
             total_amount: Total budget amount.
             allocated_amount: Already allocated amount (default: 0).
@@ -172,16 +155,18 @@ class BudgetService:
 
         Returns:
             Budget: The created budget.
+
+        Raises:
+            ValueError: If the financial year does not exist.
         """
-        Budget = django_apps.get_model("finance", "Budget")
-        FinancialYear = django_apps.get_model("finance", "FinancialYear")
-        
         try:
             financial_year = FinancialYear.objects.get(id=financial_year_id)
-        except FinancialYear.DoesNotExist:
-            raise ValueError(f"Financial year with ID {financial_year_id} does not exist.")
-            
-        budget = Budget.objects.create(
+        except FinancialYear.DoesNotExist as exc:
+            raise ValueError(
+                f"Financial year with ID {financial_year_id} does not exist."
+            ) from exc
+
+        return Budget.objects.create(
             name=name,
             code=code,
             financial_year=financial_year,
@@ -190,10 +175,11 @@ class BudgetService:
             description=description,
             created_by=created_by,
         )
-        return budget
 
     @staticmethod
-    def allocate_to_budget_line(budget_id: int, amount: Decimal, allocated_by: Optional[User] = None) -> bool:
+    def allocate_to_budget_line(
+        budget_id: int, amount: Decimal, allocated_by: User | None = None
+    ) -> bool:
         """
         Allocate amount to a budget.
 
@@ -203,71 +189,51 @@ class BudgetService:
             allocated_by: User performing the allocation.
 
         Returns:
-            bool: True if allocation successful, False otherwise.
+            bool: True if allocation successful.
+
+        Raises:
+            ValueError: If the budget does not exist.
+            BudgetExceededError: If the allocation would exceed the budget total.
         """
-        Budget = django_apps.get_model("finance", "Budget")
-        
         try:
             budget = Budget.objects.get(id=budget_id)
-        except Budget.DoesNotExist:
-            raise ValueError(f"Budget with ID {budget_id} does not exist.")
-            
-        # Check if allocation would exceed total budget
+        except Budget.DoesNotExist as exc:
+            raise ValueError(f"Budget with ID {budget_id} does not exist.") from exc
         if budget.allocated_amount + amount > budget.total_amount:
             raise BudgetExceededError(
-                f"Allocation of {amount} would exceed budget total of {budget.total_amount}. "
-                f"Already allocated: {budget.allocated_amount}, Remaining: {budget.remaining}"
+                f"Allocation of {amount} would exceed budget total of "
+                f"{budget.total_amount}. "
+                f"Already allocated: {budget.allocated_amount}, "
+                f"Remaining: {budget.remaining}"
             )
-            
+
         budget.allocated_amount += amount
         budget.updated_by = allocated_by
-        budget.updated_at = timezone.now()
         budget.save()
-        
         return True
 
     @staticmethod
-    def get_budget_variance(budget_id: int, as_of_date: Optional[timezone.datetime] = None) -> Dict[str, Decimal]:
+    def get_budget_variance(
+        budget_id: int, as_of_date: timezone.datetime | None = None
+    ) -> dict[str, Decimal]:
         """
         Get budget variance analysis.
 
         Args:
             budget_id: ID of the budget.
-            as_of_date: Date to calculate variance as of (default: now).
+            as_of_date: Unused; kept for API compatibility.
 
         Returns:
-            Dict containing budget, actual, variance, and percentage.
+            Dict containing budgeted, actual, variance, and percentage.
+
+        Raises:
+            ValueError: If the budget does not exist.
         """
-        if as_of_date is None:
-            as_of_date = timezone.now()
-            
-        Budget = django_apps.get_model("finance", "Budget")
-        Transaction = django_apps.get_model("finance", "Transaction")
-        BudgetAllocation = django_apps.get_model("finance", "BudgetAllocation")
-        
         try:
             budget = Budget.objects.get(id=budget_id)
-        except Budget.DoesNotExist:
-            raise ValueError(f"Budget with ID {budget_id} does not exist.")
-            
-        # Get actual spending from transactions and budget allocations
-        # This is a simplified version - in practice, you'd want to link transactions to budget lines
-        actual_spending = Transaction.objects.filter(
-            budget=budget,
-            transaction_date__lte=as_of_date,
-            status="POSTED"
-        ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
-        
-        variance = budget.total_amount - actual_spending
-        variance_percentage = (variance / budget.total_amount * 100) if budget.total_amount > 0 else Decimal('0')
-        
-        return {
-            'budgeted': budget.total_amount,
-            'actual': actual_spending,
-            'variance': variance,
-            'variance_percentage': variance_percentage,
-            'remaining': budget.remaining
-        }
+        except Budget.DoesNotExist as exc:
+            raise ValueError(f"Budget with ID {budget_id} does not exist.") from exc
+        return budget.get_variance()
 
 
 class TransactionService:
@@ -282,17 +248,18 @@ class TransactionService:
         amount: Decimal,
         currency: str = "USD",
         description: str = "",
-        financial_account_id: Optional[int] = None,
-        budget_id: Optional[int] = None,
-        created_by: Optional[User] = None,
-    ) -> Any:
+        financial_account_id: int | None = None,
+        budget_id: int | None = None,
+        created_by: User | None = None,
+    ) -> Transaction:
         """
         Create a new financial transaction.
 
         Args:
             reference_number: Unique reference number for the transaction.
             transaction_type: Type of transaction (INCOME, EXPENSE, TRANSFER, etc.).
-            status: Status of the transaction (DRAFT, SUBMITTED, APPROVED, POSTED, etc.).
+            status: Status of the transaction (DRAFT, SUBMITTED, APPROVED, POSTED,
+                etc.).
             source: Source of the transaction (GRANT, DONATION, SPONSORSHIP, etc.).
             amount: Transaction amount.
             currency: Currency code (default: USD).
@@ -303,33 +270,36 @@ class TransactionService:
 
         Returns:
             Transaction: The created transaction.
+
+        Raises:
+            InvalidAccountError: If the financial account does not exist.
+            ValueError: If the budget does not exist.
+            InvalidTransactionError: If the reference number is duplicated.
         """
-        Transaction = django_apps.get_model("finance", "Transaction")
-        FinancialAccount = django_apps.get_model("finance", "FinancialAccount")
-        Budget = django_apps.get_model("finance", "Budget")
-        
-        # Validate financial account if provided
         financial_account = None
         if financial_account_id:
             try:
-                financial_account = FinancialAccount.objects.get(id=financial_account_id)
-            except FinancialAccount.DoesNotExist:
-                raise InvalidAccountError(f"Financial account with ID {financial_account_id} does not exist.")
-                
-        # Validate budget if provided
+                financial_account = FinancialAccount.objects.get(
+                    id=financial_account_id
+                )
+            except FinancialAccount.DoesNotExist as exc:
+                raise InvalidAccountError(
+                    f"Financial account with ID {financial_account_id} does not exist."
+                ) from exc
+
         budget = None
         if budget_id:
             try:
                 budget = Budget.objects.get(id=budget_id)
-            except Budget.DoesNotExist:
-                raise ValueError(f"Budget with ID {budget_id} does not exist.")
-                
-        # Check for duplicate reference number
+            except Budget.DoesNotExist as exc:
+                raise ValueError(f"Budget with ID {budget_id} does not exist.") from exc
         if Transaction.objects.filter(reference_number=reference_number).exists():
-            raise InvalidTransactionError(f"A transaction with reference number '{reference_number}' already exists.")
-            
-        # Create the transaction
-        transaction_obj = Transaction.objects.create(
+            raise InvalidTransactionError(
+                "A transaction with reference number "
+                f"'{reference_number}' already exists."
+            )
+
+        return Transaction.objects.create(
             reference_number=reference_number,
             transaction_type=transaction_type,
             status=status,
@@ -341,10 +311,11 @@ class TransactionService:
             budget=budget,
             created_by=created_by,
         )
-        return transaction_obj
 
     @staticmethod
-    def post_transaction(transaction_id: int, posted_by: Optional[User] = None) -> Any:
+    def post_transaction(
+        transaction_id: int, posted_by: User | None = None
+    ) -> Transaction:
         """
         Post a transaction (change status from DRAFT/SUBMITTED/APPROVED to POSTED).
 
@@ -354,49 +325,42 @@ class TransactionService:
 
         Returns:
             Transaction: The posted transaction.
+
+        Raises:
+            ValueError: If the transaction does not exist.
+            InvalidTransactionError: If the transaction cannot be posted.
+            FinancialPeriodError: If no active financial year exists.
         """
-        Transaction = django_apps.get_model("finance", "Transaction")
-        FinancialYear = django_apps.get_model("finance", "FinancialYear")
-        
         try:
             transaction_obj = Transaction.objects.get(id=transaction_id)
-        except Transaction.DoesNotExist:
-            raise ValueError(f"Transaction with ID {transaction_id} does not exist.")
-            
-        # Check if transaction can be posted
-        if transaction_obj.status not in ["DRAFT", "SUBMITTED", "APPROVED"]:
+        except Transaction.DoesNotExist as exc:
+            raise ValueError(
+                f"Transaction with ID {transaction_id} does not exist."
+            ) from exc
+        if transaction_obj.status not in [
+            TransactionStatus.DRAFT,
+            TransactionStatus.SUBMITTED,
+            TransactionStatus.APPROVED,
+        ]:
             raise InvalidTransactionError(
                 f"Transaction cannot be posted from status '{transaction_obj.status}'. "
                 f"Only DRAFT, SUBMITTED, or APPROVED transactions can be posted."
             )
-            
-        # Check if financial period is open
-        financial_year = FinancialYear.objects.filter(is_active=True).first()
-        if not financial_year:
+
+        if not FinancialYear.objects.filter(is_active=True).exists():
             raise FinancialPeriodError("No active financial year found.")
-            
-        # In a real implementation, you would check if the transaction date falls within an open period
-        
-        # Post the transaction
-        transaction_obj.status = "POSTED"
+
+        transaction_obj.status = TransactionStatus.POSTED
         transaction_obj.posted_by = posted_by
         transaction_obj.posted_at = timezone.now()
         transaction_obj.updated_by = posted_by
-        transaction_obj.updated_at = timezone.now()
         transaction_obj.save()
-        
-        # Update budget allocations if applicable
-        if transaction_obj.budget:
-            BudgetService.allocate_to_budget_line(
-                transaction_obj.budget.id,
-                transaction_obj.amount,
-                posted_by
-            )
-            
         return transaction_obj
 
     @staticmethod
-    def void_transaction(transaction_id: int, voided_by: Optional[User] = None, reason: str = "") -> Any:
+    def void_transaction(
+        transaction_id: int, voided_by: User | None = None, reason: str = ""
+    ) -> Transaction:
         """
         Void a posted transaction.
 
@@ -407,36 +371,32 @@ class TransactionService:
 
         Returns:
             Transaction: The voided transaction.
+
+        Raises:
+            ValueError: If the transaction does not exist.
+            InvalidTransactionError: If the transaction is not posted.
         """
-        Transaction = django_apps.get_model("finance", "Transaction")
-        
         try:
             transaction_obj = Transaction.objects.get(id=transaction_id)
-        except Transaction.DoesNotExist:
-            raise ValueError(f"Transaction with ID {transaction_id} does not exist.")
-            
-        # Check if transaction can be voided
-        if transaction_obj.status != "POSTED":
+        except Transaction.DoesNotExist as exc:
+            raise ValueError(
+                f"Transaction with ID {transaction_id} does not exist."
+            ) from exc
+        if transaction_obj.status != TransactionStatus.POSTED:
             raise InvalidTransactionError(
-                f"Only posted transactions can be voided. Current status: '{transaction_obj.status}'"
+                f"Only posted transactions can be voided. Current status: "
+                f"'{transaction_obj.status}'"
             )
-            
-        # Void the transaction by creating a reversing transaction
-        # In a more sophisticated system, you might have a voided status instead
-        transaction_obj.status = "VOIDED"
-        transaction_obj.description = f"{transaction_obj.description} | VOIDED: {reason}"
+
+        transaction_obj.status = TransactionStatus.VOIDED
+        if reason:
+            transaction_obj.description = (
+                f"{transaction_obj.description} | VOIDED: {reason}"
+            )
         transaction_obj.voided_by = voided_by
         transaction_obj.voided_at = timezone.now()
         transaction_obj.updated_by = voided_by
-        transaction_obj.updated_at = timezone.now()
         transaction_obj.save()
-        
-        # If this transaction affected a budget, we need to reverse the budget allocation
-        if transaction_obj.budget:
-            # In a real system, you'd create a negative allocation or adjust the budget
-            # For simplicity, we're just noting that this would need to be handled
-            pass
-            
         return transaction_obj
 
 
@@ -446,64 +406,77 @@ class GrantService:
     @staticmethod
     def create_grant(
         name: str,
-        reference_number: str,
-        donor_id: int,
-        amount: Decimal,
+        grant_number: str,
+        funding_agency: str,
+        grant_type: str,
+        amount_awarded: Decimal,
         currency: str = "USD",
-        start_date: Optional[timezone.datetime] = None,
-        end_date: Optional[timezone.datetime] = None,
+        award_date: timezone.datetime | None = None,
+        start_date: timezone.datetime | None = None,
+        end_date: timezone.datetime | None = None,
+        donor_id: int | None = None,
         description: str = "",
-        created_by: Optional[User] = None,
-    ) -> Any:
+        created_by: User | None = None,
+    ) -> Grant:
         """
         Create a new grant.
 
         Args:
             name: Grant name.
-            reference_number: Grant reference number.
-            donor_id: ID of the donor providing the grant.
-            amount: Grant amount.
+            grant_number: Grant reference number (unique).
+            funding_agency: Funding agency name.
+            grant_type: Type of grant.
+            amount_awarded: Total grant amount.
             currency: Currency code (default: USD).
+            award_date: Award date.
             start_date: Grant start date.
             end_date: Grant end date.
+            donor_id: ID of the donor providing the grant (optional).
             description: Grant description.
             created_by: User who created the grant.
 
         Returns:
             Grant: The created grant.
+
+        Raises:
+            InvalidTransactionError: If the grant number is duplicated.
+            ValueError: If the donor does not exist.
         """
-        Grant = django_apps.get_model("finance", "Grant")
-        Donor = django_apps.get_model("finance", "Donor")
-        
-        try:
-            donor = Donor.objects.get(id=donor_id)
-        except Donor.DoesNotExist:
-            raise ValueError(f"Donor with ID {donor_id} does not exist.")
-            
-        # Check for duplicate reference number
-        if Grant.objects.filter(reference_number=reference_number).exists():
-            raise InvalidTransactionError(f"A grant with reference number '{reference_number}' already exists.")
-            
-        grant = Grant.objects.create(
+        from apps.finance.models import Donor as DonorModel
+
+        donor = None
+        if donor_id:
+            try:
+                donor = DonorModel.objects.get(id=donor_id)
+            except DonorModel.DoesNotExist as exc:
+                raise ValueError(f"Donor with ID {donor_id} does not exist.") from exc
+        if Grant.objects.filter(grant_number=grant_number).exists():
+            raise InvalidTransactionError(
+                f"A grant with number '{grant_number}' already exists."
+            )
+
+        return Grant.objects.create(
             name=name,
-            reference_number=reference_number,
-            donor=donor,
-            amount=amount,
+            grant_number=grant_number,
+            funding_agency=funding_agency,
+            grant_type=grant_type,
+            amount_awarded=amount_awarded,
             currency=currency,
+            award_date=award_date,
             start_date=start_date,
             end_date=end_date,
+            donor=donor,
             description=description,
             created_by=created_by,
         )
-        return grant
 
     @staticmethod
     def disburse_grant(
         grant_id: int,
         amount: Decimal,
         transaction_reference: str,
-        disbursed_by: Optional[User] = None,
-    ) -> Tuple[Any, Any]:
+        disbursed_by: User | None = None,
+    ) -> tuple[Grant, Transaction]:
         """
         Disburse funds from a grant.
 
@@ -514,41 +487,39 @@ class GrantService:
             disbursed_by: User who disbursed the funds.
 
         Returns:
-            Tuple of (Grant, Transaction): The updated grant and the disbursement transaction.
+            Tuple of (Grant, Transaction): The updated grant and disbursement
+                transaction.
+
+        Raises:
+            ValueError: If the grant does not exist.
+            InsufficientFundsError: If the grant has insufficient undisbursed funds.
         """
-        Grant = django_apps.get_model("finance", "Grant")
-        TransactionService = TransactionService  # Avoid circular import
-        
         try:
             grant = Grant.objects.get(id=grant_id)
-        except Grant.DoesNotExist:
-            raise ValueError(f"Grant with ID {grant_id} does not exist.")
-            
-        # Check if sufficient funds are available
+        except Grant.DoesNotExist as exc:
+            raise ValueError(f"Grant with ID {grant_id} does not exist.") from exc
         if grant.remaining_amount < amount:
             raise InsufficientFundsError(
-                f"Insufficient funds in grant. Available: {grant.remaining_amount}, Requested: {amount}"
+                f"Insufficient funds in grant. Available: {grant.remaining_amount}, "
+                f"Requested: {amount}"
             )
-            
-        # Create the disbursement transaction
-        transaction = TransactionService.create_transaction(
-            reference_number=transaction_reference,
-            transaction_type="EXPENSE",
-            status="DRAFT",
-            source="GRANT",
-            amount=amount,
-            currency=grant.currency,
-            description=f"Disbursement from grant: {grant.name}",
-            created_by=disbursed_by,
-        )
-        
-        # Update grant disbursed amount
-        grant.disbursed_amount += amount
-        grant.updated_by = disbursed_by
-        grant.updated_at = timezone.now()
-        grant.save()
-        
-        return grant, transaction
+
+        with transaction.atomic():
+            transaction_obj = TransactionService.create_transaction(
+                reference_number=transaction_reference,
+                transaction_type=TransactionType.EXPENSE,
+                status=TransactionStatus.DRAFT,
+                source="GRANT",
+                amount=amount,
+                currency=grant.currency,
+                description=f"Disbursement from grant: {grant.name}",
+                created_by=disbursed_by,
+            )
+            grant.disbursed_amount += amount
+            grant.updated_by = disbursed_by
+            grant.save()
+
+        return grant, transaction_obj
 
 
 class DonorService:
@@ -557,52 +528,49 @@ class DonorService:
     @staticmethod
     def create_donor(
         name: str,
-        donor_type: str,
+        donor_number: str,
+        donor_type: str = "INDIVIDUAL",
         contact_person: str = "",
         email: str = "",
         phone: str = "",
         address: str = "",
-        description: str = "",
-        created_by: Optional[User] = None,
-    ) -> Any:
+        created_by: User | None = None,
+    ) -> Donor:
         """
         Create a new donor.
 
         Args:
             name: Donor name.
-            donor_type: Type of donor (individual, corporation, foundation, government, etc.).
+            donor_number: Donor number (unique).
+            donor_type: Type of donor.
             contact_person: Primary contact person.
             email: Contact email.
             phone: Contact phone number.
             address: Contact address.
-            description: Donor description.
             created_by: User who created the donor.
 
         Returns:
             Donor: The created donor.
         """
-        Donor = django_apps.get_model("finance", "Donor")
-        
-        donor = Donor.objects.create(
+        return Donor.objects.create(
             name=name,
+            donor_number=donor_number,
             donor_type=donor_type,
             contact_person=contact_person,
             email=email,
             phone=phone,
             address=address,
-            description=description,
             created_by=created_by,
         )
-        return donor
 
     @staticmethod
     def record_donation(
         donor_id: int,
         amount: Decimal,
-        currency: str = "USD",
         transaction_reference: str,
-        received_by: Optional[User] = None,
-    ) -> Tuple[Any, Any]:
+        currency: str = "USD",
+        received_by: User | None = None,
+    ) -> tuple[Donor, Transaction]:
         """
         Record a donation from a donor.
 
@@ -614,32 +582,30 @@ class DonorService:
             received_by: User who recorded the donation.
 
         Returns:
-            Tuple of (Donor, Transaction): The updated donor and the donation transaction.
+            Tuple of (Donor, Transaction): The updated donor and donation transaction.
+
+        Raises:
+            ValueError: If the donor does not exist.
         """
-        Donor = django_apps.get_model("finance", "Donor")
-        TransactionService = TransactionService  # Avoid circular import
-        
         try:
             donor = Donor.objects.get(id=donor_id)
-        except Donor.DoesNotExist:
-            raise ValueError(f"Donor with ID {donor_id} does not exist.")
-            
-        # Create the donation transaction
-        transaction = TransactionService.create_transaction(
-            reference_number=transaction_reference,
-            transaction_type="INCOME",
-            status="DRAFT",
-            source="DONATION",
-            amount=amount,
-            currency=currency,
-            description=f"Donation from: {donor.name}",
-            created_by=received_by,
-        )
-        
-        # Update donor contribution total
-        donor.total_contributions += amount
-        donor.updated_by = received_by
-        donor.updated_at = timezone.now()
-        donor.save()
-        
-        return donor, transaction
+        except Donor.DoesNotExist as exc:
+            raise ValueError(f"Donor with ID {donor_id} does not exist.") from exc
+        with transaction.atomic():
+            transaction_obj = TransactionService.create_transaction(
+                reference_number=transaction_reference,
+                transaction_type=TransactionType.INCOME,
+                status=TransactionStatus.DRAFT,
+                source="DONATION",
+                amount=amount,
+                currency=currency,
+                description=f"Donation from: {donor.name}",
+                created_by=received_by,
+            )
+            donor.total_donated += amount
+            donor.year_to_date_donated += amount
+            donor.last_donation_date = timezone.now().date()
+            donor.updated_by = received_by
+            donor.save()
+
+        return donor, transaction_obj

@@ -1,0 +1,156 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ report_data.title|default:"Income Statement" }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-7">
+        <h2>{{ report_data.title|default:"Income Statement" }}</h2>
+        <p class="text-muted">
+            {% if report_data.period.start_date and report_data.period.end_date %}
+            Period: {{ report_data.period.start_date|date:"M d, Y" }} &mdash; {{ report_data.period.end_date|date:"M d, Y" }}
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-5 text-md-end">
+        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <div class="btn-group">
+            <a href="?export=pdf&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-outline-danger" aria-label="Export to PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </a>
+            <a href="?export=xlsx&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-outline-success" aria-label="Export to Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+            </a>
+            <a href="?export=csv&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="btn btn-outline-secondary" aria-label="Export to CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-4 align-items-end">
+    <div class="col-md-3">
+        <label for="start_date" class="form-label">Start Date</label>
+        <input type="date" name="start_date" id="start_date" value="{{ start_date|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-md-3">
+        <label for="end_date" class="form-label">End Date</label>
+        <input type="date" name="end_date" id="end_date" value="{{ end_date|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Income</h6>
+                <h3 class="mb-0 text-success">{{ report_data.income.total|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Income for the period</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total Expenses</h6>
+                <h3 class="mb-0 text-danger">{{ report_data.expenses.total|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Expenses for the period</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="card bg-light h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Net Income</h6>
+                <h3 class="mb-0 {% if report_data.net_income < 0 %}text-danger{% else %}text-primary{% endif %}">{{ report_data.net_income|floatformat:2 }}</h3>
+                <p class="text-muted small mb-0">Income minus expenses</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Income by Source</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption>Income by source for the selected period</caption>
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Source</th>
+                                <th class="text-end" scope="col">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in report_data.income.by_source %}
+                            <tr>
+                                <td>{{ item.source }}</td>
+                                <td class="text-end">{{ item.amount|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center py-4">No income recorded for this period.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th scope="row">Total Income</th>
+                                <th class="text-end">{{ report_data.income.total|floatformat:2 }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Expenses by Category</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption>Expenses by category for the selected period</caption>
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Category</th>
+                                <th class="text-end" scope="col">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in report_data.expenses.by_category %}
+                            <tr>
+                                <td>{{ item.category }}</td>
+                                <td class="text-end">{{ item.amount|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center py-4">No expenses recorded for this period.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th scope="row">Total Expenses</th>
+                                <th class="text-end">{{ report_data.expenses.total|floatformat:2 }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
