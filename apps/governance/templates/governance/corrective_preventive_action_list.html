@@ -1,0 +1,118 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Corrective & Preventive Actions - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Corrective & Preventive Actions</h2>
+        <p class="text-muted">Manage your organization's corrective and preventive actions.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:corrective_preventive_action_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New CAPA
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search corrective & preventive actions...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if corrective_preventive_actions %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Corrective & Preventive Actions</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Action Type</th>
+                <th scope="col">Due Date</th>
+                <th scope="col">Status</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for capa in corrective_preventive_actions %}
+            <tr>
+                <td>
+                    <a href="{% url 'governance:corrective_preventive_action_detail' capa.pk %}" class="text-decoration-none">{{ capa.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ capa.reference_number }}</span></td>
+                <td>{{ capa.get_action_type_display }}</td>
+                <td>{{ capa.due_date|date:"M d, Y"|default:"—" }}</td>
+                <td>
+                    {% if capa.status == "ACTIVE" or capa.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ capa.get_status_display }}</span>
+                    {% elif capa.status == "PENDING_REVIEW" or capa.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ capa.get_status_display }}</span>
+                    {% elif capa.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ capa.get_status_display }}</span>
+                    {% elif capa.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ capa.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ capa.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'governance:corrective_preventive_action_detail' capa.pk %}" class="btn btn-outline-secondary" aria-label="View corrective & preventive action">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'governance:corrective_preventive_action_update' capa.pk %}" class="btn btn-outline-secondary" aria-label="Edit corrective & preventive action">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'governance:corrective_preventive_action_delete' capa.pk %}" class="btn btn-outline-danger" aria-label="Delete corrective & preventive action">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No corrective & preventive actions found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if corrective_preventive_actions.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if corrective_preventive_actions.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ corrective_preventive_actions.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in corrective_preventive_actions.paginator.page_range %}
+        {% if corrective_preventive_actions.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > corrective_preventive_actions.number|add:'-3' and i < corrective_preventive_actions.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if corrective_preventive_actions.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ corrective_preventive_actions.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No corrective & preventive actions found. <a href="{% url 'governance:corrective_preventive_action_create' %}" class="alert-link">Add your first corrective & preventive action</a>.
+</div>
+{% endif %}
+{% endblock %}

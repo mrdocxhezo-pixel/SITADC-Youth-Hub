@@ -1,0 +1,88 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ incident_report.title }} - Incident Report - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ incident_report.title }}</h2>
+        <p class="text-muted">
+            <span class="badge bg-light text-dark">{{ incident_report.reference_number }}</span>
+            {% if incident_report.status == 'ACTIVE' or incident_report.status == 'APPROVED' %}
+            <span class="badge bg-success">{{ incident_report.get_status_display }}</span>
+            {% elif incident_report.status == 'PENDING_REVIEW' or incident_report.status == 'RETURNED' %}
+            <span class="badge bg-warning text-dark">{{ incident_report.get_status_display }}</span>
+            {% elif incident_report.status == 'REJECTED' %}
+            <span class="badge bg-danger">{{ incident_report.get_status_display }}</span>
+            {% elif incident_report.status == 'ARCHIVED' %}
+            <span class="badge bg-secondary">{{ incident_report.get_status_display }}</span>
+            {% else %}
+            <span class="badge bg-info text-dark">{{ incident_report.get_status_display }}</span>
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:incident_report_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+        <a href="{% url 'governance:incident_report_update' incident_report.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Incident Report Details</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Incident Category</dt>
+            <dd class="col-sm-8">{{ incident_report.get_incident_category_display }}</dd>
+            <dt class="col-sm-4">Description</dt>
+            <dd class="col-sm-8">{{ incident_report.description|linebreaks }}</dd>
+            <dt class="col-sm-4">Date and Time Occurred</dt>
+            <dd class="col-sm-8">{{ incident_report.date_occurred|date:"M d, Y, H:i" }}</dd>
+            <dt class="col-sm-4">Date and Time Reported</dt>
+            <dd class="col-sm-8">{{ incident_report.date_reported|date:"M d, Y, H:i" }}</dd>
+            <dt class="col-sm-4">Reported By</dt>
+            <dd class="col-sm-8">{{ incident_report.reported_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Location</dt>
+            <dd class="col-sm-8">{{ incident_report.location|default:"—" }}</dd>
+            <dt class="col-sm-4">Severity</dt>
+            <dd class="col-sm-8">{{ incident_report.get_severity_display }}</dd>
+            <dt class="col-sm-4">Immediate Actions Taken</dt>
+            <dd class="col-sm-8">{{ incident_report.immediate_actions_taken|linebreaks }}</dd>
+            <dt class="col-sm-4">Investigation Required</dt>
+            <dd class="col-sm-8">
+                {% if incident_report.investigation_required %}
+                <span class="badge bg-success">Yes</span>
+                {% else %}
+                <span class="badge bg-secondary">No</span>
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Investigation Start Date</dt>
+            <dd class="col-sm-8">{{ incident_report.investigation_start_date|default:"—" }}</dd>
+            <dt class="col-sm-4">Investigation End Date</dt>
+            <dd class="col-sm-8">{{ incident_report.investigation_end_date|default:"—" }}</dd>
+            <dt class="col-sm-4">Root Cause Analysis</dt>
+            <dd class="col-sm-8">{{ incident_report.root_cause_analysis|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">Corrective Actions</dt>
+            <dd class="col-sm-8">{{ incident_report.corrective_actions|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">Preventive Actions</dt>
+            <dd class="col-sm-8">{{ incident_report.preventive_actions|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">Related Safeguarding Case</dt>
+            <dd class="col-sm-8">{{ incident_report.safeguarding_case|default:"—" }}</dd>
+            <dt class="col-sm-4">Created By</dt>
+            <dd class="col-sm-8">{{ incident_report.created_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Updated By</dt>
+            <dd class="col-sm-8">{{ incident_report.updated_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Created At</dt>
+            <dd class="col-sm-8">{{ incident_report.created_at|date:"M d, Y, H:i" }}</dd>
+            <dt class="col-sm-4">Updated At</dt>
+            <dd class="col-sm-8">{{ incident_report.updated_at|date:"M d, Y, H:i" }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

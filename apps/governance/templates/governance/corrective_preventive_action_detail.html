@@ -1,0 +1,90 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ corrective_preventive_action.title }} - CAPA - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ corrective_preventive_action.title }}</h2>
+        <p class="text-muted">
+            <span class="badge bg-light text-dark">{{ corrective_preventive_action.reference_number }}</span>
+            {% if corrective_preventive_action.status == 'ACTIVE' or corrective_preventive_action.status == 'APPROVED' %}
+            <span class="badge bg-success">{{ corrective_preventive_action.get_status_display }}</span>
+            {% elif corrective_preventive_action.status == 'PENDING_REVIEW' or corrective_preventive_action.status == 'RETURNED' %}
+            <span class="badge bg-warning text-dark">{{ corrective_preventive_action.get_status_display }}</span>
+            {% elif corrective_preventive_action.status == 'REJECTED' %}
+            <span class="badge bg-danger">{{ corrective_preventive_action.get_status_display }}</span>
+            {% elif corrective_preventive_action.status == 'ARCHIVED' %}
+            <span class="badge bg-secondary">{{ corrective_preventive_action.get_status_display }}</span>
+            {% else %}
+            <span class="badge bg-info text-dark">{{ corrective_preventive_action.get_status_display }}</span>
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:corrective_preventive_action_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+        <a href="{% url 'governance:corrective_preventive_action_update' corrective_preventive_action.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-wrench-adjustable me-2"></i>Corrective &amp; Preventive Action Details</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Action Type</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.get_action_type_display }}</dd>
+            <dt class="col-sm-4">Description</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.description|linebreaks }}</dd>
+            <dt class="col-sm-4">Source Incident</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.source_incident|default:"—" }}</dd>
+            <dt class="col-sm-4">Source Complaint</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.source_complaint|default:"—" }}</dd>
+            <dt class="col-sm-4">Source Audit Finding</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.source_audit_finding|default:"—" }}</dd>
+            <dt class="col-sm-4">Source Risk Assessment</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.source_risk_assessment|default:"—" }}</dd>
+            <dt class="col-sm-4">Source Whistleblower Report</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.source_whistleblower_report|default:"—" }}</dd>
+            <dt class="col-sm-4">Source Safeguarding Case</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.source_safeguarding_case|default:"—" }}</dd>
+            <dt class="col-sm-4">Source Ethics Case</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.source_ethics_case|default:"—" }}</dd>
+            <dt class="col-sm-4">Root Cause Analysis</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.root_cause|linebreaks }}</dd>
+            <dt class="col-sm-4">Corrective Action Description</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.corrective_action_description|linebreaks }}</dd>
+            <dt class="col-sm-4">Preventive Action Description</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.preventive_action_description|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">Responsible Officer</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.responsible_officer|default:"—" }}</dd>
+            <dt class="col-sm-4">Due Date</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.due_date }}</dd>
+            <dt class="col-sm-4">Completion Date</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.completion_date|default:"—" }}</dd>
+            <dt class="col-sm-4">Verification Date</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.verification_date|default:"—" }}</dd>
+            <dt class="col-sm-4">Verified By</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.verified_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Effectiveness Rating</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.effectiveness_rating|default:"—" }}</dd>
+            <dt class="col-sm-4">Lessons Learned</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.lessons_learned|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">Created By</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.created_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Updated By</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.updated_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Created At</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.created_at|date:"M d, Y, H:i" }}</dd>
+            <dt class="col-sm-4">Updated At</dt>
+            <dd class="col-sm-8">{{ corrective_preventive_action.updated_at|date:"M d, Y, H:i" }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

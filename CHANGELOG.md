@@ -45,6 +45,19 @@ Each release should document:
 
 # [Unreleased]
 
+## Phase 29 Governance, Risk, Compliance and Safeguarding – Implementation (2026-08-18)
+
+- Implemented the Governance, Risk, Compliance and Safeguarding (GRCS) module (`apps/governance`), per `roadmaps/29-Governance-Risk-Compliance-and-Safeguarding.md`, providing a centralized, secure, transparent, and enterprise-grade governance and assurance platform covering policy management, enterprise risk management, compliance monitoring, internal controls, ethics management, safeguarding case management, incident reporting, complaint management, whistleblower management, corrective and preventive actions (CAPA), governance meetings, notifications, and timeline tracking.
+- Added 25 concrete models (`Policy`, `PolicyVersion`, `PolicyAcknowledgement`, `RiskRegister`, `RiskAssessment`, `RiskTreatmentPlan`, `ComplianceRequirement`, `ComplianceAssessment`, `InternalControl`, `EthicsCase`, `ConflictOfInterestDeclaration`, `SafeguardingCase`, `IncidentReport`, `Complaint`, `WhistleblowerReport`, `CorrectivePreventiveAction`, `Document`, `GovernanceMeeting`, `MeetingAttendance`, `GovernanceNotification`, `GovernanceTimeline`) with UUID primary keys, audit metadata, confidentiality classifications, and reference numbering; migration `governance.0001` applied.
+- Added 10 transactional service classes (`apps/governance/services.py`) covering policies, risks, compliance, safeguarding, incidents, complaints, whistleblower, CAPA, governance meetings, and dashboard analytics, with domain exceptions, reference generation, timeline event recording, and notification creation.
+- Added fail-closed selectors and permissions (`governance.view`/`governance.manage`/`governance.view_confidential` + 18 specific permissions), seeded for existing databases by `rbac.0023` (atomic=False); sidebar Governance navigation item gated on those permissions.
+- Added 76 permission-checked class-based views / 81 named routes (list/detail/create/update/delete for all domains), 22 forms, and 29 root-level Bootstrap 5 templates (`templates/governance/`) with responsive dashboards, data tables, and accessible forms.
+- Added 10 reference numbering schemes (POL/RSK/CMP/ETH/SFG/INC/CPL/WHB/CAPA/MTG) via `references.0014` with annual reset and organization prefix.
+- Added comprehensive test suite (`apps/governance/tests/`) covering models, services, selectors, permissions, views, and forms with fail-closed permission validation.
+- Added admin registration for all 21 models with custom display, filtering, and confidentiality-aware queryset restrictions.
+- Quality gates green for `apps/governance`: ruff check, ruff format, isort, `manage.py check`, and `makemigrations --check`.
+- Updated `DEVELOPMENT_STATUS.md` and `CHANGELOG.md`.
+
 ## Phase 28 Finance and Resource Mobilization – Implementation (2026-08-17)
 
 - Implemented the Finance and Resource Mobilization module (`apps/finance`), per `roadmaps/28-Finance-and-Resource-Mobilization.md`, providing chart of accounts, budgets with budget-line allocations, transactions with reference numbering and approval workflow (DRAFT/SUBMITTED/APPROVED/REJECTED/POSTED), bank accounts, petty cash, grants, donors, sponsors, fundraising campaigns, procurement and asset financial tracking, financial years, forecasts, financial statements, analytics, and reports.

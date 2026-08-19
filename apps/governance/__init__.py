@@ -1,1 +1,1 @@
-default_app_config = 'apps.governance.apps.GovernanceConfig'
+default_app_config = "apps.governance.apps.GovernanceConfig"

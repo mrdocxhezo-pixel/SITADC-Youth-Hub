@@ -1,0 +1,130 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Risk Register - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Risk Register</h2>
+        <p class="text-muted">Manage your organization's risk register entries.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:risk_register_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Risk
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search risks...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if risk_registers %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Risk Register Entries</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Category</th>
+                <th scope="col">Rating</th>
+                <th scope="col">Status</th>
+                <th scope="col">Review Date</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for risk in risk_registers %}
+            <tr>
+                <td>
+                    <a href="{% url 'governance:risk_register_detail' risk.pk %}" class="text-decoration-none">{{ risk.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ risk.reference_number }}</span></td>
+                <td>{{ risk.get_risk_category_display }}</td>
+                <td>
+                    {% if risk.risk_rating == "CRITICAL" %}
+                    <span class="badge bg-danger">{{ risk.risk_rating|title }}</span>
+                    {% elif risk.risk_rating == "HIGH" %}
+                    <span class="badge bg-warning text-dark">{{ risk.risk_rating|title }}</span>
+                    {% elif risk.risk_rating == "MEDIUM" %}
+                    <span class="badge bg-info text-dark">{{ risk.risk_rating|title }}</span>
+                    {% else %}
+                    <span class="badge bg-success">{{ risk.risk_rating|title }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if risk.status == "ACTIVE" or risk.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ risk.get_status_display }}</span>
+                    {% elif risk.status == "PENDING_REVIEW" or risk.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ risk.get_status_display }}</span>
+                    {% elif risk.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ risk.get_status_display }}</span>
+                    {% elif risk.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ risk.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ risk.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ risk.review_date|date:"M d, Y"|default:"—" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'governance:risk_register_detail' risk.pk %}" class="btn btn-outline-secondary" aria-label="View risk">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'governance:risk_register_update' risk.pk %}" class="btn btn-outline-secondary" aria-label="Edit risk">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'governance:risk_register_delete' risk.pk %}" class="btn btn-outline-danger" aria-label="Delete risk">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No risk register entries found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if risk_registers.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if risk_registers.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ risk_registers.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in risk_registers.paginator.page_range %}
+        {% if risk_registers.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > risk_registers.number|add:'-3' and i < risk_registers.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if risk_registers.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ risk_registers.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No risk register entries found. <a href="{% url 'governance:risk_register_create' %}" class="alert-link">Add your first risk</a>.
+</div>
+{% endif %}
+{% endblock %}

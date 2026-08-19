@@ -1,0 +1,130 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Safeguarding Cases - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Safeguarding Cases</h2>
+        <p class="text-muted">Manage your organization's safeguarding cases.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:safeguarding_case_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Safeguarding Case
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search safeguarding cases...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if safeguarding_cases %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Safeguarding Cases</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Category</th>
+                <th scope="col">Risk Level</th>
+                <th scope="col">Status</th>
+                <th scope="col">Date Reported</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for case in safeguarding_cases %}
+            <tr>
+                <td>
+                    <a href="{% url 'governance:safeguarding_case_detail' case.pk %}" class="text-decoration-none">{{ case.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ case.reference_number }}</span></td>
+                <td>{{ case.get_case_category_display }}</td>
+                <td>
+                    {% if case.risk_level == "CRITICAL" %}
+                    <span class="badge bg-danger">{{ case.get_risk_level_display }}</span>
+                    {% elif case.risk_level == "HIGH" %}
+                    <span class="badge bg-warning text-dark">{{ case.get_risk_level_display }}</span>
+                    {% elif case.risk_level == "MEDIUM" %}
+                    <span class="badge bg-info text-dark">{{ case.get_risk_level_display }}</span>
+                    {% else %}
+                    <span class="badge bg-success">{{ case.get_risk_level_display }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if case.status == "ACTIVE" or case.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ case.get_status_display }}</span>
+                    {% elif case.status == "PENDING_REVIEW" or case.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ case.get_status_display }}</span>
+                    {% elif case.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ case.get_status_display }}</span>
+                    {% elif case.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ case.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ case.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ case.date_reported|date:"M d, Y"|default:"—" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'governance:safeguarding_case_detail' case.pk %}" class="btn btn-outline-secondary" aria-label="View safeguarding case">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'governance:safeguarding_case_update' case.pk %}" class="btn btn-outline-secondary" aria-label="Edit safeguarding case">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'governance:safeguarding_case_delete' case.pk %}" class="btn btn-outline-danger" aria-label="Delete safeguarding case">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No safeguarding cases found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if safeguarding_cases.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if safeguarding_cases.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ safeguarding_cases.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in safeguarding_cases.paginator.page_range %}
+        {% if safeguarding_cases.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > safeguarding_cases.number|add:'-3' and i < safeguarding_cases.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if safeguarding_cases.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ safeguarding_cases.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No safeguarding cases found. <a href="{% url 'governance:safeguarding_case_create' %}" class="alert-link">Add your first safeguarding case</a>.
+</div>
+{% endif %}
+{% endblock %}

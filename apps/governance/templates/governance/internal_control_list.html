@@ -1,0 +1,112 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Internal Controls - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Internal Controls</h2>
+        <p class="text-muted">Manage your organization's internal controls.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:internal_control_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Internal Control
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search internal controls...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if internal_controls %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Internal Controls</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Control Type</th>
+                <th scope="col">Effectiveness</th>
+                <th scope="col">Next Test Date</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for control in internal_controls %}
+            <tr>
+                <td>
+                    <a href="{% url 'governance:internal_control_detail' control.pk %}" class="text-decoration-none">{{ control.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ control.reference_number }}</span></td>
+                <td>{{ control.get_control_type_display }}</td>
+                <td>
+                    {% if control.is_effective %}
+                    <span class="badge bg-success">Effective</span>
+                    {% else %}
+                    <span class="badge bg-danger">Ineffective</span>
+                    {% endif %}
+                </td>
+                <td>{{ control.next_test_date|date:"M d, Y"|default:"—" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'governance:internal_control_detail' control.pk %}" class="btn btn-outline-secondary" aria-label="View internal control">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'governance:internal_control_update' control.pk %}" class="btn btn-outline-secondary" aria-label="Edit internal control">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'governance:internal_control_delete' control.pk %}" class="btn btn-outline-danger" aria-label="Delete internal control">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No internal controls found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if internal_controls.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if internal_controls.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ internal_controls.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in internal_controls.paginator.page_range %}
+        {% if internal_controls.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > internal_controls.number|add:'-3' and i < internal_controls.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if internal_controls.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ internal_controls.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No internal controls found. <a href="{% url 'governance:internal_control_create' %}" class="alert-link">Add your first internal control</a>.
+</div>
+{% endif %}
+{% endblock %}

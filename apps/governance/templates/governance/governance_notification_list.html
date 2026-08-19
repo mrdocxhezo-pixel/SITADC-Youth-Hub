@@ -1,0 +1,102 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Governance Notifications - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Governance Notifications</h2>
+        <p class="text-muted">Notifications are generated automatically from governance activity. They cannot be created manually.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        {% if unread_count %}
+        <span class="badge bg-danger fs-6">
+            <i class="bi bi-bell me-1"></i> {{ unread_count }} unread
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+{% if governance_notifications %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Governance Notifications</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Notification Type</th>
+                <th scope="col">Recipient</th>
+                <th scope="col">Read</th>
+                <th scope="col">Created At</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for notification in governance_notifications %}
+            <tr>
+                <td>{{ notification.title }}</td>
+                <td>{{ notification.get_notification_type_display }}</td>
+                <td>{{ notification.recipient.get_full_name|default:notification.recipient }}</td>
+                <td>
+                    {% if notification.is_read %}
+                    <span class="badge bg-success">Read</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Unread</span>
+                    {% endif %}
+                </td>
+                <td>{{ notification.created_at|date:"M d, Y H:i"|default:"—" }}</td>
+                <td class="text-end">
+                    {% if not notification.is_read %}
+                    <form method="post" action="{% url 'governance:governance_notification_mark_as_read' notification.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-success btn-sm" aria-label="Mark as read">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No notifications found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if governance_notifications.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if governance_notifications.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ governance_notifications.previous_page_number }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in governance_notifications.paginator.page_range %}
+        {% if governance_notifications.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > governance_notifications.number|add:'-3' and i < governance_notifications.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if governance_notifications.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ governance_notifications.next_page_number }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No notifications found.
+</div>
+{% endif %}
+{% endblock %}

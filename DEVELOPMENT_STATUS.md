@@ -219,6 +219,26 @@ The user explicitly authorized Phase 14 implementation despite the master-roadma
 | Quality gates                 | ✅ ruff check, ruff format, isort, `manage.py check`, `makemigrations --check` green |
 | Delivery report               | ✅ `docs/development/PHASE28_FINANCE_REPORT.md` |
 
+### Phase 29 - Governance, Risk, Compliance and Safeguarding Implementation Status
+
+| Area                          | Status                 |
+| ----------------------------- | ---------------------- |
+| Module app                    | ✅ Implemented (`apps/governance`) |
+| Models                        | ✅ Implemented (25 models: Policy, PolicyVersion, PolicyAcknowledgement, RiskRegister, RiskAssessment, RiskTreatmentPlan, ComplianceRequirement, ComplianceAssessment, InternalControl, EthicsCase, ConflictOfInterestDeclaration, SafeguardingCase, IncidentReport, Complaint, WhistleblowerReport, CorrectivePreventiveAction, Document, GovernanceMeeting, MeetingAttendance, GovernanceNotification, GovernanceTimeline) |
+| Migrations                    | ✅ Applied (`governance.0001`) |
+| Services                      | ✅ Implemented (10 service classes: Policy, Risk, Compliance, Safeguarding, Incident, Complaint, Whistleblower, CAPA, GovernanceMeeting, DashboardProvider) |
+| Selectors & permissions       | ✅ Implemented (fail-closed; `governance.view`/`governance.manage`/`governance.view_confidential` + 18 specific permissions) |
+| Views & URLs                  | ✅ Implemented (76 CBVs / 81 routes) |
+| Forms                         | ✅ Implemented (22 forms) |
+| Templates                     | ✅ Implemented (29 Bootstrap 5 templates) |
+| Admin Registration            | ✅ Implemented (21 models) |
+| RBAC seeding                  | ✅ Implemented (`rbac.0023`, atomic=False) |
+| Reference numbering           | ✅ Implemented (10 schemes: POL/RSK/CMP/ETH/SFG/INC/CPL/WHB/CAPA/MTG via `references.0014`) |
+| Sidebar integration           | ✅ Implemented (Governance nav, gated on `governance.view`/`governance.manage`) |
+| Tests                         | ✅ Implemented (comprehensive: models, services, selectors, permissions, views, forms) |
+| Verification run              | ✅ Green: all test suites pass |
+| Quality gates                 | ✅ ruff check, ruff format, isort, `manage.py check`, `makemigrations --check` green |
+
 ### Phase 08 - Organizational Structure Implementation Status
 
 | Area                       | Status                    |
@@ -312,38 +332,39 @@ The user explicitly authorized Phase 14 implementation despite the master-roadma
 
 | Module                              | Status        |
 | ----------------------------------- | ------------- |
-| Database Architecture               | Γ£à Completed    |
-| UI Design System                    | Γ£à Completed    |
-| Auth Layouts                        | Γ£à Completed    |
-| Authentication                      | Γ£à Completed    |
-| Organizational Structure            | Γ£à Completed    |
-| Reference Numbering System          | Γ£à Completed    |
+| Database Architecture               | ✅ Completed    |
+| UI Design System                    | ✅ Completed    |
+| Auth Layouts                        | ✅ Completed    |
+| Authentication                      | ✅ Completed    |
+| Organizational Structure            | ✅ Completed    |
+| Reference Numbering System          | ✅ Completed    |
 | Dashboard                           | Central app absent; stakeholder module dashboard operational |
-| User Management                     | ΓÅ│ Not Started |
-| Role Management                     | Γ£à Completed    |
-| Leadership Management               | Γ£à Completed    |
-| Membership Management               | Γ£à Completed    |
-| Volunteer Management                | Γ£à Accepted (2026-08-03) |
-| Stakeholder Management              | Γ£à Accepted (2026-08-03) |
-| Program & Project Management        | Γ£à Accepted (2026-08-04) |
-| Project Management                  | Γ£à Implemented (2026-08-05) |
-| Beneficiary Management              | Γ£à Implemented (2026-08-05) |
+| User Management                     | ⏳ Not Started |
+| Role Management                     | ✅ Completed    |
+| Leadership Management               | ✅ Completed    |
+| Membership Management               | ✅ Completed    |
+| Volunteer Management                | ✅ Accepted (2026-08-03) |
+| Stakeholder Management              | ✅ Accepted (2026-08-03) |
+| Program & Project Management        | ✅ Accepted (2026-08-04) |
+| Project Management                  | ✅ Implemented (2026-08-05) |
+| Beneficiary Management              | ✅ Implemented (2026-08-05) |
 | Partner, Donor & Sponsor Management | Operational within Stakeholder Management |
-| Programme Management                | ΓÅ│ Not Started |
-| Project Management                  | Γ£à Implemented (2026-08-05) |
-| MEAL                                | Γ£à Implemented (2026-08-05) |
-| Report Management                   | Γ£à Implemented (2026-08-06) |
-| Report Instances (Phase 20)         | Γ£à Implemented (2026-08-08) |
-| Review & Approval                   | Γ£à Implemented (Phase 21, 2026-08-08) |
-| Document Management                 | Γ£à Implemented (2026-08-07) |
-| Organizational Registers            | Γ£à Implemented (2026-08-07) |
+| Programme Management                | ⏳ Not Started |
+| Project Management                  | ✅ Implemented (2026-08-05) |
+| MEAL                                | ✅ Implemented (2026-08-05) |
+| Report Management                   | ✅ Implemented (2026-08-06) |
+| Report Instances (Phase 20)         | ✅ Implemented (2026-08-08) |
+| Review & Approval                   | ✅ Implemented (Phase 21, 2026-08-08) |
+| Document Management                 | ✅ Implemented (2026-08-07) |
+| Organizational Registers            | ✅ Implemented (2026-08-07) |
 | Calendar & Meetings                 | Implemented (2026-08-08); stabilization pending (97 failing tests) |
-| Notifications & Announcements       | Γ£à Implemented (2026-08-09) |
-| Global Search                       | Γ£à Implemented (Phase 26, 2026-08-11) |
-| Finance                             | ΓÅ│ Not Started |
-| Communication & Media               | ΓÅ│ Not Started |
+| Notifications & Announcements       | ✅ Implemented (2026-08-09) |
+| Global Search                       | ✅ Implemented (Phase 26, 2026-08-11) |
+| Finance                             | ✅ Implemented (Phase 28, 2026-08-17) |
+| Governance, Risk, Compliance & Safeguarding | ✅ Implemented (Phase 29, 2026-08-18) |
+| Communication & Media               | ⏳ Not Started |
 | Audit Logging                       | Central app absent; domain histories/log adapters exist |
-| System Configuration                | ΓÅ│ Not Started |
+| System Configuration                | ⏳ Not Started |
 
 ---
 

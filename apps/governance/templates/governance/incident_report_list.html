@@ -1,0 +1,130 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}Incident Reports - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Incident Reports</h2>
+        <p class="text-muted">Report and track organizational incidents.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:incident_report_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Report New Incident
+        </a>
+    </div>
+</div>
+
+{% if incident_reports %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th class="text-end">Severity</th>
+                <th class="text-end">Date Reported</th>
+                <th class="text-end">Status</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incident in incident_reports %}
+            <tr>
+                <td>{{ incident.title }}</td>
+                <td>{{ incident.get_incident_category_display }}</td>
+                <td class="text-end">
+                    {% if incident.severity == 'LOW' %}
+                    <span class="badge bg-success">{{ incident.get_severity_display }}</span>
+                    {% elif incident.severity == 'MEDIUM' %}
+                    <span class="badge bg-warning text-dark">{{ incident.get_severity_display }}</span>
+                    {% elif incident.severity == 'HIGH' %}
+                    <span class="badge bg-danger">{{ incident.get_severity_display }}</span>
+                    {% elif incident.severity == 'CRITICAL' %}
+                    <span class="badge bg-dark">{{ incident.get_severity_display }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">{{ incident.date_reported|date:"M d, Y H:i" }}</td>
+                <td class="text-end">
+                    {% if incident.status == 'APPROVED' %}
+                    <span class="badge bg-success">{{ incident.get_status_display }}</span>
+                    {% elif incident.status == 'ACTIVE' %}
+                    <span class="badge bg-info text-dark">{{ incident.get_status_display }}</span>
+                    {% elif incident.status == 'PENDING_REVIEW' %}
+                    <span class="badge bg-warning text-dark">{{ incident.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-secondary">{{ incident.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <a href="{% url 'governance:incident_report_detail' incident.pk %}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{% url 'governance:incident_report_update' incident.pk %}" class="btn btn-sm btn-outline-secondary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'governance:incident_report_delete' incident.pk %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No incident reports found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No incident reports found.
+</div>
+{% endif %}
+
+{% if incident_reports.has_other_pages %}
+<div class="mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if incident_reports.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ incident_reports.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" aria-hidden="true">&laquo;</span>
+            </li>
+            {% endif %}
+            
+            {% for num in incident_reports.paginator.page_range %}
+            {% if incident_reports.number == num %}
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if incident_reports.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ incident_reports.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" aria-hidden="true">&raquo;</span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Compliance Requirements - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Compliance Requirements</h2>
+        <p class="text-muted">Manage your organization's compliance requirements.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:compliance_requirement_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Compliance Requirement
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search compliance requirements...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if compliance_requirements %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Compliance Requirements</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Type</th>
+                <th scope="col">Effective Date</th>
+                <th scope="col">Active</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for requirement in compliance_requirements %}
+            <tr>
+                <td>
+                    <a href="{% url 'governance:compliance_requirement_detail' requirement.pk %}" class="text-decoration-none">{{ requirement.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ requirement.reference_number }}</span></td>
+                <td>{{ requirement.get_compliance_type_display }}</td>
+                <td>{{ requirement.effective_date|date:"M d, Y"|default:"—" }}</td>
+                <td>
+                    {% if requirement.is_active %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'governance:compliance_requirement_detail' requirement.pk %}" class="btn btn-outline-secondary" aria-label="View compliance requirement">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'governance:compliance_requirement_update' requirement.pk %}" class="btn btn-outline-secondary" aria-label="Edit compliance requirement">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'governance:compliance_requirement_delete' requirement.pk %}" class="btn btn-outline-danger" aria-label="Delete compliance requirement">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No compliance requirements found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if compliance_requirements.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if compliance_requirements.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ compliance_requirements.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in compliance_requirements.paginator.page_range %}
+        {% if compliance_requirements.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > compliance_requirements.number|add:'-3' and i < compliance_requirements.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if compliance_requirements.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ compliance_requirements.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No compliance requirements found. <a href="{% url 'governance:compliance_requirement_create' %}" class="alert-link">Add your first compliance requirement</a>.
+</div>
+{% endif %}
+{% endblock %}

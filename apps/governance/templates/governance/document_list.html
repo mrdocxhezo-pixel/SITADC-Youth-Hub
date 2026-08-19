@@ -1,0 +1,114 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Documents - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Documents</h2>
+        <p class="text-muted">Manage your organization's governance documents.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:document_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Document
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search documents...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if documents %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Documents</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Document Type</th>
+                <th scope="col">Version</th>
+                <th scope="col">Current</th>
+                <th scope="col">Created At</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for document in documents %}
+            <tr>
+                <td>
+                    <a href="{% url 'governance:document_detail' document.pk %}" class="text-decoration-none">{{ document.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ document.reference_number }}</span></td>
+                <td>{{ document.get_document_type_display }}</td>
+                <td>{{ document.version }}</td>
+                <td>
+                    {% if document.is_current_version %}
+                    <span class="badge bg-success">Current</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Superseded</span>
+                    {% endif %}
+                </td>
+                <td>{{ document.created_at|date:"M d, Y"|default:"—" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'governance:document_detail' document.pk %}" class="btn btn-outline-secondary" aria-label="View document">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'governance:document_update' document.pk %}" class="btn btn-outline-secondary" aria-label="Edit document">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'governance:document_delete' document.pk %}" class="btn btn-outline-danger" aria-label="Delete document">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No documents found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if documents.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if documents.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ documents.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in documents.paginator.page_range %}
+        {% if documents.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > documents.number|add:'-3' and i < documents.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if documents.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ documents.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No documents found. <a href="{% url 'governance:document_create' %}" class="alert-link">Add your first document</a>.
+</div>
+{% endif %}
+{% endblock %}

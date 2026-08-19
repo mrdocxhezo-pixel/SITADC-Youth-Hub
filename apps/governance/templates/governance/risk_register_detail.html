@@ -1,0 +1,158 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ risk_register.title }} - Risk Register - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ risk_register.title }}</h2>
+        <p class="text-muted">
+            <span class="badge bg-light text-dark">{{ risk_register.reference_number }}</span>
+            {% if risk_register.status == 'ACTIVE' or risk_register.status == 'APPROVED' %}
+            <span class="badge bg-success">{{ risk_register.get_status_display }}</span>
+            {% elif risk_register.status == 'PENDING_REVIEW' or risk_register.status == 'RETURNED' %}
+            <span class="badge bg-warning text-dark">{{ risk_register.get_status_display }}</span>
+            {% elif risk_register.status == 'REJECTED' %}
+            <span class="badge bg-danger">{{ risk_register.get_status_display }}</span>
+            {% elif risk_register.status == 'ARCHIVED' %}
+            <span class="badge bg-secondary">{{ risk_register.get_status_display }}</span>
+            {% else %}
+            <span class="badge bg-info text-dark">{{ risk_register.get_status_display }}</span>
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:risk_register_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+        <a href="{% url 'governance:risk_register_update' risk_register.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-shield-exclamation me-2"></i>Risk Details</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Risk Category</dt>
+            <dd class="col-sm-8">{{ risk_register.get_risk_category_display }}</dd>
+            <dt class="col-sm-4">Description</dt>
+            <dd class="col-sm-8">{{ risk_register.description|linebreaks }}</dd>
+            <dt class="col-sm-4">Root Cause</dt>
+            <dd class="col-sm-8">{{ risk_register.root_cause|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">Likelihood</dt>
+            <dd class="col-sm-8">{{ risk_register.likelihood }}</dd>
+            <dt class="col-sm-4">Impact</dt>
+            <dd class="col-sm-8">{{ risk_register.impact }}</dd>
+            <dt class="col-sm-4">Risk Score</dt>
+            <dd class="col-sm-8">{{ risk_register.risk_score }}</dd>
+            <dt class="col-sm-4">Risk Rating</dt>
+            <dd class="col-sm-8">{{ risk_register.risk_rating }}</dd>
+            <dt class="col-sm-4">Risk Owner</dt>
+            <dd class="col-sm-8">{{ risk_register.risk_owner|default:"—" }}</dd>
+            <dt class="col-sm-4">Mitigation Strategy</dt>
+            <dd class="col-sm-8">{{ risk_register.mitigation_strategy|linebreaks }}</dd>
+            <dt class="col-sm-4">Residual Likelihood</dt>
+            <dd class="col-sm-8">{{ risk_register.residual_likelihood|default:"—" }}</dd>
+            <dt class="col-sm-4">Residual Impact</dt>
+            <dd class="col-sm-8">{{ risk_register.residual_impact|default:"—" }}</dd>
+            <dt class="col-sm-4">Next Review Date</dt>
+            <dd class="col-sm-8">{{ risk_register.review_date }}</dd>
+            <dt class="col-sm-4">Created By</dt>
+            <dd class="col-sm-8">{{ risk_register.created_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Updated By</dt>
+            <dd class="col-sm-8">{{ risk_register.updated_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Created At</dt>
+            <dd class="col-sm-8">{{ risk_register.created_at|date:"M d, Y, H:i" }}</dd>
+            <dt class="col-sm-4">Updated At</dt>
+            <dd class="col-sm-8">{{ risk_register.updated_at|date:"M d, Y, H:i" }}</dd>
+        </dl>
+    </div>
+</div>
+
+{% if risk_register.assessments.all %}
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Risk Assessments</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Type</th>
+                    <th>Assessed By</th>
+                    <th>Date</th>
+                    <th>Likelihood</th>
+                    <th>Impact</th>
+                    <th>Score</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assessment in risk_register.assessments.all %}
+                <tr>
+                    <td>{{ assessment.get_assessment_type_display }}</td>
+                    <td>{{ assessment.assessed_by|default:"—" }}</td>
+                    <td>{{ assessment.assessment_date }}</td>
+                    <td>{{ assessment.likelihood }}</td>
+                    <td>{{ assessment.impact }}</td>
+                    <td>{{ assessment.risk_score }}</td>
+                    <td>{{ assessment.assessor_notes|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+<div class="mt-3">
+    <a href="{% url 'governance:risk_assessment_create' risk_register.pk %}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-plus-circle me-1"></i> Add Assessment
+    </a>
+</div>
+
+{% if risk_register.treatment_plans.all %}
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Treatment Plans</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Responsible Officer</th>
+                    <th>Target Completion</th>
+                    <th>Actual Completion</th>
+                    <th>Progress</th>
+                    <th>Effectiveness</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in risk_register.treatment_plans.all %}
+                <tr>
+                    <td>{{ plan.get_treatment_type_display }}</td>
+                    <td>{{ plan.description }}</td>
+                    <td>{{ plan.responsible_officer|default:"—" }}</td>
+                    <td>{{ plan.target_completion_date }}</td>
+                    <td>{{ plan.actual_completion_date|default:"—" }}</td>
+                    <td>{{ plan.progress_percentage }}%</td>
+                    <td>{{ plan.effectiveness_rating|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+<div class="mt-3">
+    <a href="{% url 'governance:risk_treatment_plan_create' risk_register.pk %}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-plus-circle me-1"></i> Add Treatment Plan
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ compliance_requirement.title }} - Compliance Requirement - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ compliance_requirement.title }}</h2>
+        <p class="text-muted">
+            <span class="badge bg-light text-dark">{{ compliance_requirement.reference_number }}</span>
+            {% if compliance_requirement.is_active %}
+            <span class="badge bg-success">Active</span>
+            {% else %}
+            <span class="badge bg-secondary">Inactive</span>
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:compliance_requirement_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+        <a href="{% url 'governance:compliance_requirement_update' compliance_requirement.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-check2-square me-2"></i>Compliance Requirement Details</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Compliance Type</dt>
+            <dd class="col-sm-8">{{ compliance_requirement.get_compliance_type_display }}</dd>
+            <dt class="col-sm-4">Description</dt>
+            <dd class="col-sm-8">{{ compliance_requirement.description|linebreaks }}</dd>
+            <dt class="col-sm-4">Source Organization</dt>
+            <dd class="col-sm-8">{{ compliance_requirement.source_organization|default:"—" }}</dd>
+            <dt class="col-sm-4">Reference Document</dt>
+            <dd class="col-sm-8">{{ compliance_requirement.reference_document|default:"—" }}</dd>
+            <dt class="col-sm-4">Effective Date</dt>
+            <dd class="col-sm-8">{{ compliance_requirement.effective_date|default:"—" }}</dd>
+            <dt class="col-sm-4">Expiry Date</dt>
+            <dd class="col-sm-8">{{ compliance_requirement.expiry_date|default:"—" }}</dd>
+            <dt class="col-sm-4">Is Active</dt>
+            <dd class="col-sm-8">
+                {% if compliance_requirement.is_active %}
+                <span class="badge bg-success">Yes</span>
+                {% else %}
+                <span class="badge bg-secondary">No</span>
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Created By</dt>
+            <dd class="col-sm-8">{{ compliance_requirement.created_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Updated By</dt>
+            <dd class="col-sm-8">{{ compliance_requirement.updated_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Created At</dt>
+            <dd class="col-sm-8">{{ compliance_requirement.created_at|date:"M d, Y, H:i" }}</dd>
+            <dt class="col-sm-4">Updated At</dt>
+            <dd class="col-sm-8">{{ compliance_requirement.updated_at|date:"M d, Y, H:i" }}</dd>
+        </dl>
+    </div>
+</div>
+
+{% if compliance_requirement.assessments.all %}
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>Compliance Assessments</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Assessed By</th>
+                    <th>Date</th>
+                    <th>Period</th>
+                    <th>Result</th>
+                    <th>Score</th>
+                    <th>Findings</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assessment in compliance_requirement.assessments.all %}
+                <tr>
+                    <td>{{ assessment.assessed_by|default:"—" }}</td>
+                    <td>{{ assessment.assessment_date }}</td>
+                    <td>{{ assessment.assessment_period_start }} to {{ assessment.assessment_period_end }}</td>
+                    <td>{{ assessment.get_result_display }}</td>
+                    <td>{{ assessment.score_percentage|default:"—" }}</td>
+                    <td>{{ assessment.findings }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+<div class="mt-3">
+    <a href="{% url 'governance:compliance_assessment_create' compliance_requirement.pk %}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-plus-circle me-1"></i> Add Assessment
+    </a>
+</div>
+{% endblock %}

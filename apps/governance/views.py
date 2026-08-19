@@ -1,1203 +1,1193 @@
-﻿"""Views for Governance, Risk, Compliance and Safeguarding (Phase 29)."""
+﻿"""Views for Governance, Risk, Compliance and Safeguarding (Phase 29).
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+All views enforce server-side authorization via the ``governance.*``
+permission catalogue and remain fail-closed: list/detail data flows through
+the selectors in :mod:`apps.governance.selectors`, and mutating operations
+set audit metadata and allocate reference numbers through the services.
+"""
+
+from __future__ import annotations
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from apps.core.constants import StatusConstants
-from .models import (
-    GovernanceRecord,
-    Policy,
-    PolicyVersion,
-    PolicyAcknowledgement,
-    RiskRegister,
-    RiskAssessment,
-    RiskTreatmentPlan,
-    ComplianceRequirement,
-    ComplianceAssessment,
-    InternalControl,
-    EthicsCase,
-    ConflictOfInterestDeclaration,
-    SafeguardingCase,
-    IncidentReport,
-    Complaint,
-    WhistleblowerReport,
-    CorrectivePreventiveAction,
-    Document,
-    GovernanceMeeting,
-    MeetingAttendance,
-    GovernanceNotification,
-    GovernanceTimeline,
-)
+
+from apps.rbac.decorators import any_permission_required
+
+from . import selectors, services
+from .constants import GovernanceType
 from .forms import (
-    GovernanceRecordForm,
-    PolicyForm,
-    PolicyVersionForm,
-    PolicyAcknowledgementForm,
-    RiskRegisterForm,
-    RiskAssessmentForm,
-    RiskTreatmentPlanForm,
-    ComplianceRequirementForm,
-    ComplianceAssessmentForm,
-    InternalControlForm,
-    EthicsCaseForm,
-    ConflictOfInterestDeclarationForm,
-    SafeguardingCaseForm,
-    IncidentReportForm,
     ComplaintForm,
-    WhistleblowerReportForm,
+    ComplianceAssessmentForm,
+    ComplianceRequirementForm,
+    ConflictOfInterestDeclarationForm,
     CorrectivePreventiveActionForm,
     DocumentForm,
+    EthicsCaseForm,
     GovernanceMeetingForm,
+    IncidentReportForm,
+    InternalControlForm,
     MeetingAttendanceForm,
-    GovernanceNotificationForm,
-    GovernanceTimelineForm,
+    PolicyAcknowledgementForm,
+    PolicyForm,
+    PolicyVersionForm,
+    RiskAssessmentForm,
+    RiskRegisterForm,
+    RiskTreatmentPlanForm,
+    SafeguardingCaseForm,
+    WhistleblowerReportForm,
+)
+from .models import (
+    Complaint,
+    ComplianceRequirement,
+    ConflictOfInterestDeclaration,
+    CorrectivePreventiveAction,
+    Document,
+    EthicsCase,
+    GovernanceMeeting,
+    GovernanceNotification,
+    IncidentReport,
+    InternalControl,
+    Policy,
+    RiskRegister,
+    SafeguardingCase,
+    WhistleblowerReport,
+)
+from .permissions import (
+    GOVERNANCE_CREATE,
+    GOVERNANCE_DELETE,
+    GOVERNANCE_MANAGE,
+    GOVERNANCE_UPDATE,
+    GOVERNANCE_VIEW,
+    GOVERNANCE_VIEW_CONFIDENTIAL,
 )
 
-# Generic view functions for CRUD operations
-def object_list(request, model, template_name='governance/object_list.html', context_name='object_list', paginate_by=25):
-    """Generic list view for a model."""
-    queryset = model.objects.all()
-    search_query = request.GET.get('search', '')
+# Authorization decorators (AND of codes is not used; ANY is applied).
+_any_view = any_permission_required(GOVERNANCE_VIEW, GOVERNANCE_MANAGE)
+_any_confidential_view = any_permission_required(
+    GOVERNANCE_VIEW, GOVERNANCE_VIEW_CONFIDENTIAL, GOVERNANCE_MANAGE
+)
+_any_manage = any_permission_required(
+    GOVERNANCE_CREATE, GOVERNANCE_UPDATE, GOVERNANCE_MANAGE
+)
+_any_delete = any_permission_required(GOVERNANCE_DELETE, GOVERNANCE_MANAGE)
+
+# Models that carry a generated reference number must allocate one on create.
+_MODEL_GOVERNANCE_TYPE: dict[type, str] = {
+    Policy: GovernanceType.POLICY,
+    RiskRegister: GovernanceType.RISK,
+    ComplianceRequirement: GovernanceType.COMPLIANCE,
+    InternalControl: GovernanceType.COMPLIANCE,
+    EthicsCase: GovernanceType.ETHICS,
+    SafeguardingCase: GovernanceType.SAFEGUARDING,
+    IncidentReport: GovernanceType.INCIDENT,
+    Complaint: GovernanceType.COMPLAINT,
+    WhistleblowerReport: GovernanceType.WHISTLEBLOWER,
+    CorrectivePreventiveAction: GovernanceType.CAPA,
+    Document: GovernanceType.COMPLIANCE,
+    GovernanceMeeting: GovernanceType.GOVERNANCE_MEETING,
+}
+
+
+def _allocate_reference_if_needed(request, obj) -> None:
+    """Reserve a reference number for records that require one."""
+    if not hasattr(obj, "reference_number") or obj.reference_number:
+        return
+    governance_type = _MODEL_GOVERNANCE_TYPE.get(type(obj), GovernanceType.COMPLIANCE)
+    services.allocate_reference(request.user, obj, governance_type)
+
+
+# ---------------------------------------------------------------------------
+# Generic CRUD helpers (fail-closed querysets from the selectors layer).
+# ---------------------------------------------------------------------------
+
+
+def object_list(
+    request,
+    template_name,
+    context_name,
+    queryset,
+    search_fields=(),
+    paginate_by=25,
+):
+    """Generic list view fed by an already-authorized queryset."""
+    queryset = queryset
+    search_query = request.GET.get("search", "")
     if search_query:
-        queryset = queryset.filter(
-            Q(title__icontains=search_query) |
-            Q(description__icontains=search_query)
-        )
+        q_objects = Q()
+        for field in search_fields:
+            q_objects |= Q(**{f"{field}__icontains": search_query})
+        if q_objects:
+            queryset = queryset.filter(q_objects)
     paginator = Paginator(queryset, paginate_by)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator.get_page(request.GET.get("page"))
     context = {
         context_name: page_obj,
-        'search_query': search_query,
-        'is_paginated': page_obj.has_other_pages(),
+        "search_query": search_query,
+        "is_paginated": page_obj.has_other_pages(),
     }
     return render(request, template_name, context)
 
-def object_create(request, model_form, template_name, success_url, success_message):
-    """Generic create view for a model."""
-    if request.method == 'POST':
-        form = model_form(request.POST, request.FILES)
+
+def object_create(
+    request,
+    form_class,
+    success_url,
+    success_message,
+    template_name="governance/object_form.html",
+):
+    """Generic create view for a governance record."""
+    if request.method == "POST":
+        form = form_class(request.POST, request.FILES)
         if form.is_valid():
             obj = form.save(commit=False)
-            obj.created_by = request.user
-            obj.updated_by = request.user
+            if hasattr(obj, "created_by"):
+                obj.created_by = request.user
+            if hasattr(obj, "updated_by"):
+                obj.updated_by = request.user
+            _allocate_reference_if_needed(request, obj)
             obj.save()
+            form.save_m2m()
             messages.success(request, success_message)
             return redirect(success_url)
     else:
-        form = model_form()
+        form = form_class()
     context = {
-        'form': form,
-        'list_url': success_url,
+        "form": form,
+        "list_url": success_url,
+        "model_name": form_class.Meta.model._meta.verbose_name,
     }
     return render(request, template_name, context)
 
-def object_update(request, model, model_form, pk, template_name, success_url, success_message):
-    """Generic update view for a model."""
+
+def object_update(
+    request,
+    model,
+    form_class,
+    pk,
+    success_url,
+    success_message,
+    template_name="governance/object_form.html",
+):
+    """Generic update view for a governance record."""
     obj = get_object_or_404(model, pk=pk)
-    if request.method == 'POST':
-        form = model_form(request.POST, request.FILES, instance=obj)
+    if request.method == "POST":
+        form = form_class(request.POST, request.FILES, instance=obj)
         if form.is_valid():
             obj = form.save(commit=False)
-            obj.updated_by = request.user
+            if hasattr(obj, "updated_by"):
+                obj.updated_by = request.user
             obj.save()
+            form.save_m2m()
             messages.success(request, success_message)
             return redirect(success_url)
     else:
-        form = model_form(instance=obj)
+        form = form_class(instance=obj)
     context = {
-        'form': form,
-        'object': obj,
-        'list_url': success_url,
+        "form": form,
+        "object": obj,
+        "list_url": success_url,
+        "model_name": model._meta.verbose_name,
     }
     return render(request, template_name, context)
 
-def object_delete(request, model, pk, success_url, success_message, template_name='governance/object_confirm_delete.html'):
-    """Generic delete view for a model."""
+
+def object_delete(
+    request,
+    model,
+    pk,
+    success_url,
+    success_message,
+    template_name="governance/object_confirm_delete.html",
+):
+    """Generic delete view for a governance record."""
     obj = get_object_or_404(model, pk=pk)
-    if request.method == 'POST':
+    if request.method == "POST":
         obj.delete()
         messages.success(request, success_message)
         return redirect(success_url)
     context = {
-        'object': obj,
-        'list_url': success_url,
-        'model_name': model._meta.verbose_name,
+        "object": obj,
+        "list_url": success_url,
+        "model_name": model._meta.verbose_name,
     }
     return render(request, template_name, context)
 
 
+def object_detail(request, queryset, pk, template_name, context_name):
+    """Generic detail view fed by an already-authorized queryset."""
+    obj = get_object_or_404(queryset, pk=pk)
+    context = {context_name: obj}
+    return render(request, template_name, context)
+
+
+# ---------------------------------------------------------------------------
 # Governance Dashboard
-@login_required
+# ---------------------------------------------------------------------------
+
+
+@_any_view
 def governance_dashboard(request):
     """Overview of governance, risk, compliance and safeguarding activities."""
-    active_risks = RiskRegister.objects.filter(status=StatusConstants.ACTIVE)
-    high_risks = [r for r in active_risks if r.likelihood * r.impact >= 11]
-    critical_risks = [r for r in active_risks if r.likelihood * r.impact >= 16]
-
-    pending_statuses = [StatusConstants.DRAFT, StatusConstants.PENDING_REVIEW]
-    now = timezone.now()
-
+    provider = services.GovernanceDashboardProvider(request.user)
+    summary = provider.get_summary()
     context = {
-        'total_policies': Policy.objects.filter(status=StatusConstants.ACTIVE).count(),
-        'pending_policies': Policy.objects.filter(status__in=pending_statuses).count(),
-        'total_risks': active_risks.count(),
-        'high_risks': len(high_risks),
-        'critical_risks': len(critical_risks),
-        'total_safeguarding_cases': SafeguardingCase.objects.exclude(
-            status=StatusConstants.ARCHIVED
-        ).count(),
-        'total_compliance_reqs': ComplianceRequirement.objects.filter(is_active=True).count(),
-        'total_controls': InternalControl.objects.filter(is_effective=True).count(),
-        'total_ethics_cases': EthicsCase.objects.exclude(status=StatusConstants.ARCHIVED).count(),
-        'total_incidents': IncidentReport.objects.exclude(
-            status=StatusConstants.ARCHIVED
-        ).count(),
-        'total_complaints': Complaint.objects.exclude(status=StatusConstants.ARCHIVED).count(),
-        'total_whistleblower_reports': WhistleblowerReport.objects.exclude(
-            status=StatusConstants.ARCHIVED
-        ).count(),
-        'total_capas': CorrectivePreventiveAction.objects.exclude(
-            status=StatusConstants.ARCHIVED
-        ).count(),
-        'total_documents': Document.objects.count(),
-        'total_meetings': GovernanceMeeting.objects.exclude(
-            status=StatusConstants.ARCHIVED
-        ).count(),
-        'upcoming_meetings': GovernanceMeeting.objects.filter(
-            scheduled_date__gte=now
-        ).order_by('scheduled_date')[:5],
-        'unread_notifications': GovernanceNotification.objects.filter(
-            recipient=request.user,
-            is_read=False,
-        ).count(),
-        'recent_policies': Policy.objects.order_by('-created_at')[:5],
-        'recent_risks': RiskRegister.objects.order_by('-created_at')[:5],
-        'recent_incidents': IncidentReport.objects.order_by('-created_at')[:5],
-        'recent_complaints': Complaint.objects.order_by('-created_at')[:5],
+        **summary,
+        "compliance_status": provider.get_compliance_status(),
+        "high_risk_items": provider.get_high_risk_items(),
+        "upcoming_deadlines": provider.get_upcoming_deadlines(),
+        "recent_activities": provider.get_recent_activities(),
+        "upcoming_meetings": provider.get_upcoming_meetings(),
+        "recent_policies": provider.get_recent_policies(),
+        "recent_risks": provider.get_recent_risks(),
+        "recent_incidents": provider.get_recent_incidents(),
+        "recent_complaints": provider.get_recent_complaints(),
+        "unread_notifications": provider.get_unread_notification_count(),
     }
-    return render(request, 'governance/dashboard.html', context)
+    return render(request, "governance/dashboard.html", context)
 
 
-# Governance Record Views
-@login_required
-def governance_record_list(request):
-    return object_list(request, GovernanceRecord, 'governance/governance_record_list.html', 'governance_records')
+# ---------------------------------------------------------------------------
+# Policies
+# ---------------------------------------------------------------------------
 
-@login_required
-def governance_record_create(request):
-    return object_create(
-        request,
-        GovernanceRecordForm,
-        'governance/governance_record_form.html',
-        'governance:governance_record_list',
-        'Governance record created successfully.'
-    )
 
-@login_required
-def governance_record_update(request, pk):
-    return object_update(
-        request,
-        GovernanceRecord,
-        GovernanceRecordForm,
-        pk,
-        'governance/governance_record_form.html',
-        'governance:governance_record_list',
-        'Governance record updated successfully.'
-    )
-
-@login_required
-def governance_record_delete(request, pk):
-    return object_delete(
-        request,
-        GovernanceRecord,
-        pk,
-        'governance:governance_record_list',
-        'Governance record deleted successfully.'
-    )
-
-@login_required
-def governance_record_detail(request, pk):
-    return object_detail(
-        request,
-        GovernanceRecord,
-        pk,
-        'governance/governance_record_detail.html',
-        'governance_record'
-    )
-
-# Policy Views
-@login_required
+@_any_view
 def policy_list(request):
-    return object_list(request, Policy, 'governance/policy_list.html', 'policies')
+    return object_list(
+        request,
+        "governance/policy_list.html",
+        "policies",
+        selectors.get_accessible_policies(request.user),
+        search_fields=("title", "reference_number", "policy_category"),
+    )
 
-@login_required
+
+@_any_manage
 def policy_create(request):
     return object_create(
         request,
         PolicyForm,
-        'governance/policy_form.html',
-        'governance:policy_list',
-        'Policy created successfully.'
+        "governance:policy_list",
+        "Policy created successfully.",
     )
 
-@login_required
+
+@_any_manage
 def policy_update(request, pk):
     return object_update(
         request,
         Policy,
         PolicyForm,
         pk,
-        'governance/policy_form.html',
-        'governance:policy_list',
-        'Policy updated successfully.'
+        "governance:policy_list",
+        "Policy updated successfully.",
     )
 
-@login_required
+
+@_any_delete
 def policy_delete(request, pk):
     return object_delete(
         request,
         Policy,
         pk,
-        'governance:policy_list',
-        'Policy deleted successfully.'
+        "governance:policy_list",
+        "Policy deleted successfully.",
     )
 
-@login_required
+
+@_any_view
 def policy_detail(request, pk):
     return object_detail(
         request,
-        Policy,
+        selectors.get_accessible_policies(request.user),
         pk,
-        'governance/policy_detail.html',
-        'policy'
+        "governance/policy_detail.html",
+        "policy",
     )
 
-# Policy Version Views
-@login_required
-def policy_version_list(request):
-    return object_list(request, PolicyVersion, 'governance/policy_version_list.html', 'policy_versions')
 
-@login_required
-def policy_version_create(request):
-    return object_create(
-        request,
-        PolicyVersionForm,
-        'governance/policy_version_form.html',
-        'governance:policy_version_list',
-        'Policy version created successfully.'
+@_any_manage
+def policy_version_create(request, policy_pk):
+    """Create a new version of a policy."""
+    policy = get_object_or_404(
+        selectors.get_accessible_policies(request.user), pk=policy_pk
     )
+    if request.method == "POST":
+        form = PolicyVersionForm(request.POST, request.FILES)
+        if form.is_valid():
+            version = form.save(commit=False)
+            version.policy = policy
+            version.save()
+            form.save_m2m()
+            messages.success(request, "Policy version created successfully.")
+            return redirect("governance:policy_detail", pk=policy_pk)
+    else:
+        form = PolicyVersionForm()
+    context = {"form": form, "policy": policy}
+    return render(request, "governance/policy_version_form.html", context)
 
-@login_required
-def policy_version_update(request, pk):
-    return object_update(
-        request,
-        PolicyVersion,
-        PolicyVersionForm,
-        pk,
-        'governance/policy_version_form.html',
-        'governance:policy_version_list',
-        'Policy version updated successfully.'
+
+@_any_manage
+def policy_acknowledgement_create(request, policy_pk):
+    """Record an acknowledgement of a policy."""
+    policy = get_object_or_404(
+        selectors.get_accessible_policies(request.user), pk=policy_pk
     )
+    if request.method == "POST":
+        form = PolicyAcknowledgementForm(request.POST)
+        if form.is_valid():
+            acknowledgement = form.save(commit=False)
+            acknowledgement.policy = policy
+            acknowledgement.save()
+            messages.success(request, "Policy acknowledgement recorded.")
+            return redirect("governance:policy_detail", pk=policy_pk)
+    else:
+        form = PolicyAcknowledgementForm()
+    context = {"form": form, "policy": policy}
+    return render(request, "governance/policy_acknowledgement_form.html", context)
 
-@login_required
-def policy_version_delete(request, pk):
-    return object_delete(
-        request,
-        PolicyVersion,
-        pk,
-        'governance:policy_version_list',
-        'Policy version deleted successfully.'
-    )
 
-@login_required
-def policy_version_detail(request, pk):
-    return object_detail(
-        request,
-        PolicyVersion,
-        pk,
-        'governance/policy_version_detail.html',
-        'policy_version'
-    )
+# ---------------------------------------------------------------------------
+# Risks
+# ---------------------------------------------------------------------------
 
-# Policy Acknowledgement Views
-@login_required
-def policy_acknowledgement_list(request):
-    return object_list(request, PolicyAcknowledgement, 'governance/policy_acknowledgement_list.html', 'policy_acknowledgements')
 
-@login_required
-def policy_acknowledgement_create(request):
-    return object_create(
-        request,
-        PolicyAcknowledgementForm,
-        'governance/policy_acknowledgement_form.html',
-        'governance:policy_acknowledgement_list',
-        'Policy acknowledgement created successfully.'
-    )
-
-@login_required
-def policy_acknowledgement_update(request, pk):
-    return object_update(
-        request,
-        PolicyAcknowledgement,
-        PolicyAcknowledgementForm,
-        pk,
-        'governance/policy_acknowledgement_form.html',
-        'governance:policy_acknowledgement_list',
-        'Policy acknowledgement updated successfully.'
-    )
-
-@login_required
-def policy_acknowledgement_delete(request, pk):
-    return object_delete(
-        request,
-        PolicyAcknowledgement,
-        pk,
-        'governance:policy_acknowledgement_list',
-        'Policy acknowledgement deleted successfully.'
-    )
-
-@login_required
-def policy_acknowledgement_detail(request, pk):
-    return object_detail(
-        request,
-        PolicyAcknowledgement,
-        pk,
-        'governance/policy_acknowledgement_detail.html',
-        'policy_acknowledgement'
-    )
-
-# Risk Register Views
-@login_required
+@_any_view
 def risk_register_list(request):
-    return object_list(request, RiskRegister, 'governance/risk_register_list.html', 'risk_registers')
+    return object_list(
+        request,
+        "governance/risk_register_list.html",
+        "risk_registers",
+        selectors.get_accessible_risks(request.user),
+        search_fields=("title", "reference_number", "risk_category"),
+    )
 
-@login_required
+
+@_any_manage
 def risk_register_create(request):
     return object_create(
         request,
         RiskRegisterForm,
-        'governance/risk_register_form.html',
-        'governance:risk_register_list',
-        'Risk register created successfully.'
+        "governance:risk_register_list",
+        "Risk register entry created successfully.",
     )
 
-@login_required
+
+@_any_manage
 def risk_register_update(request, pk):
     return object_update(
         request,
         RiskRegister,
         RiskRegisterForm,
         pk,
-        'governance/risk_register_form.html',
-        'governance:risk_register_list',
-        'Risk register updated successfully.'
+        "governance:risk_register_list",
+        "Risk register entry updated successfully.",
     )
 
-@login_required
+
+@_any_delete
 def risk_register_delete(request, pk):
     return object_delete(
         request,
         RiskRegister,
         pk,
-        'governance:risk_register_list',
-        'Risk register deleted successfully.'
+        "governance:risk_register_list",
+        "Risk register entry deleted successfully.",
     )
 
-@login_required
+
+@_any_view
 def risk_register_detail(request, pk):
     return object_detail(
         request,
-        RiskRegister,
+        selectors.get_accessible_risks(request.user),
         pk,
-        'governance/risk_register_detail.html',
-        'risk_register'
+        "governance/risk_register_detail.html",
+        "risk_register",
     )
 
-# Risk Assessment Views
-@login_required
-def risk_assessment_list(request):
-    return object_list(request, RiskAssessment, 'governance/risk_assessment_list.html', 'risk_assessments')
 
-@login_required
-def risk_assessment_create(request):
-    return object_create(
-        request,
-        RiskAssessmentForm,
-        'governance/risk_assessment_form.html',
-        'governance:risk_assessment_list',
-        'Risk assessment created successfully.'
-    )
+@_any_manage
+def risk_assessment_create(request, risk_pk):
+    """Add an assessment for a risk register entry."""
+    risk = get_object_or_404(selectors.get_accessible_risks(request.user), pk=risk_pk)
+    if request.method == "POST":
+        form = RiskAssessmentForm(request.POST)
+        if form.is_valid():
+            assessment = form.save(commit=False)
+            assessment.risk_register = risk
+            assessment.save()
+            messages.success(request, "Risk assessment recorded successfully.")
+            return redirect("governance:risk_register_detail", pk=risk_pk)
+    else:
+        form = RiskAssessmentForm()
+    context = {"form": form, "risk": risk}
+    return render(request, "governance/risk_assessment_form.html", context)
 
-@login_required
-def risk_assessment_update(request, pk):
-    return object_update(
-        request,
-        RiskAssessment,
-        RiskAssessmentForm,
-        pk,
-        'governance/risk_assessment_form.html',
-        'governance:risk_assessment_list',
-        'Risk assessment updated successfully.'
-    )
 
-@login_required
-def risk_assessment_delete(request, pk):
-    return object_delete(
-        request,
-        RiskAssessment,
-        pk,
-        'governance:risk_assessment_list',
-        'Risk assessment deleted successfully.'
-    )
+@_any_manage
+def risk_treatment_plan_create(request, risk_pk):
+    """Add a treatment plan for a risk register entry."""
+    risk = get_object_or_404(selectors.get_accessible_risks(request.user), pk=risk_pk)
+    if request.method == "POST":
+        form = RiskTreatmentPlanForm(request.POST)
+        if form.is_valid():
+            plan = form.save(commit=False)
+            plan.risk_register = risk
+            plan.save()
+            messages.success(request, "Risk treatment plan created successfully.")
+            return redirect("governance:risk_register_detail", pk=risk_pk)
+    else:
+        form = RiskTreatmentPlanForm()
+    context = {"form": form, "risk": risk}
+    return render(request, "governance/risk_treatment_plan_form.html", context)
 
-@login_required
-def risk_assessment_detail(request, pk):
-    return object_detail(
-        request,
-        RiskAssessment,
-        pk,
-        'governance/risk_assessment_detail.html',
-        'risk_assessment'
-    )
 
-# Risk Treatment Plan Views
-@login_required
-def risk_treatment_plan_list(request):
-    return object_list(request, RiskTreatmentPlan, 'governance/risk_treatment_plan_list.html', 'risk_treatment_plans')
+# ---------------------------------------------------------------------------
+# Compliance
+# ---------------------------------------------------------------------------
 
-@login_required
-def risk_treatment_plan_create(request):
-    return object_create(
-        request,
-        RiskTreatmentPlanForm,
-        'governance/risk_treatment_plan_form.html',
-        'governance:risk_treatment_plan_list',
-        'Risk treatment plan created successfully.'
-    )
 
-@login_required
-def risk_treatment_plan_update(request, pk):
-    return object_update(
-        request,
-        RiskTreatmentPlan,
-        RiskTreatmentPlanForm,
-        pk,
-        'governance/risk_treatment_plan_form.html',
-        'governance:risk_treatment_plan_list',
-        'Risk treatment plan updated successfully.'
-    )
-
-@login_required
-def risk_treatment_plan_delete(request, pk):
-    return object_delete(
-        request,
-        RiskTreatmentPlan,
-        pk,
-        'governance:risk_treatment_plan_list',
-        'Risk treatment plan deleted successfully.'
-    )
-
-@login_required
-def risk_treatment_plan_detail(request, pk):
-    return object_detail(
-        request,
-        RiskTreatmentPlan,
-        pk,
-        'governance/risk_treatment_plan_detail.html',
-        'risk_treatment_plan'
-    )
-
-# Compliance Requirement Views
-@login_required
+@_any_view
 def compliance_requirement_list(request):
-    return object_list(request, ComplianceRequirement, 'governance/compliance_requirement_list.html', 'compliance_requirements')
+    return object_list(
+        request,
+        "governance/compliance_requirement_list.html",
+        "compliance_requirements",
+        selectors.get_accessible_compliance_requirements(request.user),
+        search_fields=("title", "reference_number", "compliance_type"),
+    )
 
-@login_required
+
+@_any_manage
 def compliance_requirement_create(request):
     return object_create(
         request,
         ComplianceRequirementForm,
-        'governance/compliance_requirement_form.html',
-        'governance:compliance_requirement_list',
-        'Compliance requirement created successfully.'
+        "governance:compliance_requirement_list",
+        "Compliance requirement created successfully.",
     )
 
-@login_required
+
+@_any_manage
 def compliance_requirement_update(request, pk):
     return object_update(
         request,
         ComplianceRequirement,
         ComplianceRequirementForm,
         pk,
-        'governance/compliance_requirement_form.html',
-        'governance:compliance_requirement_list',
-        'Compliance requirement updated successfully.'
+        "governance:compliance_requirement_list",
+        "Compliance requirement updated successfully.",
     )
 
-@login_required
+
+@_any_delete
 def compliance_requirement_delete(request, pk):
     return object_delete(
         request,
         ComplianceRequirement,
         pk,
-        'governance:compliance_requirement_list',
-        'Compliance requirement deleted successfully.'
+        "governance:compliance_requirement_list",
+        "Compliance requirement deleted successfully.",
     )
 
-@login_required
+
+@_any_view
 def compliance_requirement_detail(request, pk):
     return object_detail(
         request,
-        ComplianceRequirement,
+        selectors.get_accessible_compliance_requirements(request.user),
         pk,
-        'governance/compliance_requirement_detail.html',
-        'compliance_requirement'
+        "governance/compliance_requirement_detail.html",
+        "compliance_requirement",
     )
 
-# Compliance Assessment Views
-@login_required
-def compliance_assessment_list(request):
-    return object_list(request, ComplianceAssessment, 'governance/compliance_assessment_list.html', 'compliance_assessments')
 
-@login_required
-def compliance_assessment_create(request):
-    return object_create(
-        request,
-        ComplianceAssessmentForm,
-        'governance/compliance_assessment_form.html',
-        'governance:compliance_assessment_list',
-        'Compliance assessment created successfully.'
+@_any_manage
+def compliance_assessment_create(request, requirement_pk):
+    """Record an assessment for a compliance requirement."""
+    requirement = get_object_or_404(
+        selectors.get_accessible_compliance_requirements(request.user),
+        pk=requirement_pk,
     )
+    if request.method == "POST":
+        form = ComplianceAssessmentForm(request.POST)
+        if form.is_valid():
+            assessment = form.save(commit=False)
+            assessment.compliance_requirement = requirement
+            assessment.save()
+            form.save_m2m()
+            messages.success(request, "Compliance assessment recorded successfully.")
+            return redirect(
+                "governance:compliance_requirement_detail", pk=requirement_pk
+            )
+    else:
+        form = ComplianceAssessmentForm()
+    context = {"form": form, "compliance_requirement": requirement}
+    return render(request, "governance/compliance_assessment_form.html", context)
 
-@login_required
-def compliance_assessment_update(request, pk):
-    return object_update(
-        request,
-        ComplianceAssessment,
-        ComplianceAssessmentForm,
-        pk,
-        'governance/compliance_assessment_form.html',
-        'governance:compliance_assessment_list',
-        'Compliance assessment updated successfully.'
-    )
 
-@login_required
-def compliance_assessment_delete(request, pk):
-    return object_delete(
-        request,
-        ComplianceAssessment,
-        pk,
-        'governance:compliance_assessment_list',
-        'Compliance assessment deleted successfully.'
-    )
+# ---------------------------------------------------------------------------
+# Internal Controls
+# ---------------------------------------------------------------------------
 
-@login_required
-def compliance_assessment_detail(request, pk):
-    return object_detail(
-        request,
-        ComplianceAssessment,
-        pk,
-        'governance/compliance_assessment_detail.html',
-        'compliance_assessment'
-    )
 
-# Internal Control Views
-@login_required
+@_any_view
 def internal_control_list(request):
-    return object_list(request, InternalControl, 'governance/internal_control_list.html', 'internal_controls')
+    return object_list(
+        request,
+        "governance/internal_control_list.html",
+        "internal_controls",
+        selectors.get_accessible_internal_controls(request.user),
+        search_fields=("title", "reference_number", "control_type"),
+    )
 
-@login_required
+
+@_any_manage
 def internal_control_create(request):
     return object_create(
         request,
         InternalControlForm,
-        'governance/internal_control_form.html',
-        'governance:internal_control_list',
-        'Internal control created successfully.'
+        "governance:internal_control_list",
+        "Internal control created successfully.",
     )
 
-@login_required
+
+@_any_manage
 def internal_control_update(request, pk):
     return object_update(
         request,
         InternalControl,
         InternalControlForm,
         pk,
-        'governance/internal_control_form.html',
-        'governance:internal_control_list',
-        'Internal control updated successfully.'
+        "governance:internal_control_list",
+        "Internal control updated successfully.",
     )
 
-@login_required
+
+@_any_delete
 def internal_control_delete(request, pk):
     return object_delete(
         request,
         InternalControl,
         pk,
-        'governance:internal_control_list',
-        'Internal control deleted successfully.'
+        "governance:internal_control_list",
+        "Internal control deleted successfully.",
     )
 
-@login_required
+
+@_any_view
 def internal_control_detail(request, pk):
     return object_detail(
         request,
-        InternalControl,
+        selectors.get_accessible_internal_controls(request.user),
         pk,
-        'governance/internal_control_detail.html',
-        'internal_control'
+        "governance/internal_control_detail.html",
+        "internal_control",
     )
 
-# Ethics Case Views
-@login_required
-def ethics_case_list(request):
-    return object_list(request, EthicsCase, 'governance/ethics_case_list.html', 'ethics_cases')
 
-@login_required
+# ---------------------------------------------------------------------------
+# Ethics & Conflict of Interest
+# ---------------------------------------------------------------------------
+
+
+@_any_view
+def ethics_case_list(request):
+    return object_list(
+        request,
+        "governance/ethics_case_list.html",
+        "ethics_cases",
+        selectors.get_accessible_ethics_cases(request.user),
+        search_fields=("title", "reference_number", "case_type"),
+    )
+
+
+@_any_manage
 def ethics_case_create(request):
     return object_create(
         request,
         EthicsCaseForm,
-        'governance/ethics_case_form.html',
-        'governance:ethics_case_list',
-        'Ethics case created successfully.'
+        "governance:ethics_case_list",
+        "Ethics case created successfully.",
     )
 
-@login_required
+
+@_any_manage
 def ethics_case_update(request, pk):
     return object_update(
         request,
         EthicsCase,
         EthicsCaseForm,
         pk,
-        'governance/ethics_case_form.html',
-        'governance:ethics_case_list',
-        'Ethics case updated successfully.'
+        "governance:ethics_case_list",
+        "Ethics case updated successfully.",
     )
 
-@login_required
+
+@_any_delete
 def ethics_case_delete(request, pk):
     return object_delete(
         request,
         EthicsCase,
         pk,
-        'governance:ethics_case_list',
-        'Ethics case deleted successfully.'
+        "governance:ethics_case_list",
+        "Ethics case deleted successfully.",
     )
 
-@login_required
+
+@_any_view
 def ethics_case_detail(request, pk):
     return object_detail(
         request,
-        EthicsCase,
+        selectors.get_accessible_ethics_cases(request.user),
         pk,
-        'governance/ethics_case_detail.html',
-        'ethics_case'
+        "governance/ethics_case_detail.html",
+        "ethics_case",
     )
 
-# Safeguarding Case Views
-@login_required
-def safeguarding_case_list(request):
-    return object_list(request, SafeguardingCase, 'governance/safeguarding_case_list.html', 'safeguarding_cases')
 
-@login_required
-def safeguarding_case_create(request):
-    return object_create(
-        request,
-        SafeguardingCaseForm,
-        'governance/safeguarding_case_form.html',
-        'governance:safeguarding_case_list',
-        'Safeguarding case created successfully.'
-    )
-
-@login_required
-def safeguarding_case_update(request, pk):
-    return object_update(
-        request,
-        SafeguardingCase,
-        SafeguardingCaseForm,
-        pk,
-        'governance/safeguarding_case_form.html',
-        'governance:safeguarding_case_list',
-        'Safeguarding case updated successfully.'
-    )
-
-@login_required
-def safeguarding_case_delete(request, pk):
-    return object_delete(
-        request,
-        SafeguardingCase,
-        pk,
-        'governance:safeguarding_case_list',
-        'Safeguarding case deleted successfully.'
-    )
-
-@login_required
-def safeguarding_case_detail(request, pk):
-    return object_detail(
-        request,
-        SafeguardingCase,
-        pk,
-        'governance/safeguarding_case_detail.html',
-        'safeguarding_case'
-    )
-
-# Incident Report Views
-@login_required
-def incident_report_list(request):
-    return object_list(request, IncidentReport, 'governance/incident_report_list.html', 'incident_reports')
-
-@login_required
-def incident_report_create(request):
-    return object_create(
-        request,
-        IncidentReportForm,
-        'governance/incident_report_form.html',
-        'governance:incident_report_list',
-        'Incident report created successfully.'
-    )
-
-@login_required
-def incident_report_update(request, pk):
-    return object_update(
-        request,
-        IncidentReport,
-        IncidentReportForm,
-        pk,
-        'governance/incident_report_form.html',
-        'governance:incident_report_list',
-        'Incident report updated successfully.'
-    )
-
-@login_required
-def incident_report_delete(request, pk):
-    return object_delete(
-        request,
-        IncidentReport,
-        pk,
-        'governance:incident_report_list',
-        'Incident report deleted successfully.'
-    )
-
-@login_required
-def incident_report_detail(request, pk):
-    return object_detail(
-        request,
-        IncidentReport,
-        pk,
-        'governance/incident_report_detail.html',
-        'incident_report'
-    )
-
-# Whistleblower Report Views
-@login_required
-def whistleblower_report_list(request):
-    return object_list(request, WhistleblowerReport, 'governance/whistleblower_report_list.html', 'whistleblower_reports')
-
-@login_required
-def whistleblower_report_create(request):
-    return object_create(
-        request,
-        WhistleblowerReportForm,
-        'governance/whistleblower_report_form.html',
-        'governance:whistleblower_report_list',
-        'Whistleblower report created successfully.'
-    )
-
-@login_required
-def whistleblower_report_update(request, pk):
-    return object_update(
-        request,
-        WhistleblowerReport,
-        WhistleblowerReportForm,
-        pk,
-        'governance/whistleblower_report_form.html',
-        'governance:whistleblower_report_list',
-        'Whistleblower report updated successfully.'
-    )
-
-@login_required
-def whistleblower_report_delete(request, pk):
-    return object_delete(
-        request,
-        WhistleblowerReport,
-        pk,
-        'governance:whistleblower_report_list',
-        'Whistleblower report deleted successfully.'
-    )
-
-@login_required
-def whistleblower_report_detail(request, pk):
-    return object_detail(
-        request,
-        WhistleblowerReport,
-        pk,
-        'governance/whistleblower_report_detail.html',
-        'whistleblower_report'
-    )
-
-# Conflict of Interest Declaration Views
-@login_required
+@_any_manage
 def conflict_of_interest_declaration_list(request):
     return object_list(
         request,
-        ConflictOfInterestDeclaration,
-        'governance/conflict_of_interest_declaration_list.html',
-        'conflict_of_interest_declarations'
+        "governance/conflict_of_interest_declaration_list.html",
+        "conflict_of_interest_declarations",
+        selectors.get_accessible_conflict_declarations(request.user),
+        search_fields=("nature_of_conflict", "related_organization"),
     )
 
-@login_required
+
+@_any_manage
 def conflict_of_interest_declaration_create(request):
     return object_create(
         request,
         ConflictOfInterestDeclarationForm,
-        'governance/conflict_of_interest_declaration_list',
-        'Conflict of interest declaration created successfully.'
+        "governance:conflict_of_interest_declaration_list",
+        "Conflict of interest declaration recorded successfully.",
     )
 
-@login_required
+
+@_any_manage
 def conflict_of_interest_declaration_update(request, pk):
     return object_update(
         request,
         ConflictOfInterestDeclaration,
         ConflictOfInterestDeclarationForm,
         pk,
-        'governance/conflict_of_interest_declaration_list',
-        'Conflict of interest declaration updated successfully.'
+        "governance:conflict_of_interest_declaration_list",
+        "Conflict of interest declaration updated successfully.",
     )
 
-@login_required
+
+@_any_delete
 def conflict_of_interest_declaration_delete(request, pk):
     return object_delete(
         request,
         ConflictOfInterestDeclaration,
         pk,
-        'governance/conflict_of_interest_declaration_list',
-        'Conflict of interest declaration deleted successfully.'
+        "governance:conflict_of_interest_declaration_list",
+        "Conflict of interest declaration deleted successfully.",
     )
 
-@login_required
+
+@_any_view
 def conflict_of_interest_declaration_detail(request, pk):
     return object_detail(
         request,
-        ConflictOfInterestDeclaration,
+        selectors.get_accessible_conflict_declarations(request.user),
         pk,
-        'governance/conflict_of_interest_declaration_detail.html',
-        'conflict_of_interest_declaration'
+        "governance/conflict_of_interest_declaration_detail.html",
+        "conflict_of_interest_declaration",
     )
 
-# Complaint Views
-@login_required
-def complaint_list(request):
-    return object_list(request, Complaint, 'governance/complaint_list.html', 'complaints')
 
-@login_required
+# ---------------------------------------------------------------------------
+# Safeguarding (confidential)
+# ---------------------------------------------------------------------------
+
+
+@_any_confidential_view
+def safeguarding_case_list(request):
+    return object_list(
+        request,
+        "governance/safeguarding_case_list.html",
+        "safeguarding_cases",
+        selectors.get_accessible_safeguarding_cases(request.user),
+        search_fields=("title", "reference_number", "case_category"),
+    )
+
+
+@_any_confidential_view
+def safeguarding_case_create(request):
+    return object_create(
+        request,
+        SafeguardingCaseForm,
+        "governance:safeguarding_case_list",
+        "Safeguarding case created successfully.",
+    )
+
+
+@_any_confidential_view
+def safeguarding_case_update(request, pk):
+    return object_update(
+        request,
+        SafeguardingCase,
+        SafeguardingCaseForm,
+        pk,
+        "governance:safeguarding_case_list",
+        "Safeguarding case updated successfully.",
+    )
+
+
+@_any_delete
+def safeguarding_case_delete(request, pk):
+    return object_delete(
+        request,
+        SafeguardingCase,
+        pk,
+        "governance:safeguarding_case_list",
+        "Safeguarding case deleted successfully.",
+    )
+
+
+@_any_confidential_view
+def safeguarding_case_detail(request, pk):
+    return object_detail(
+        request,
+        selectors.get_accessible_safeguarding_cases(request.user),
+        pk,
+        "governance/safeguarding_case_detail.html",
+        "safeguarding_case",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Incidents
+# ---------------------------------------------------------------------------
+
+
+@_any_view
+def incident_report_list(request):
+    return object_list(
+        request,
+        "governance/incident_report_list.html",
+        "incident_reports",
+        selectors.get_accessible_incidents(request.user),
+        search_fields=("title", "reference_number", "incident_category"),
+    )
+
+
+@_any_manage
+def incident_report_create(request):
+    return object_create(
+        request,
+        IncidentReportForm,
+        "governance:incident_report_list",
+        "Incident report created successfully.",
+    )
+
+
+@_any_manage
+def incident_report_update(request, pk):
+    return object_update(
+        request,
+        IncidentReport,
+        IncidentReportForm,
+        pk,
+        "governance:incident_report_list",
+        "Incident report updated successfully.",
+    )
+
+
+@_any_delete
+def incident_report_delete(request, pk):
+    return object_delete(
+        request,
+        IncidentReport,
+        pk,
+        "governance:incident_report_list",
+        "Incident report deleted successfully.",
+    )
+
+
+@_any_view
+def incident_report_detail(request, pk):
+    return object_detail(
+        request,
+        selectors.get_accessible_incidents(request.user),
+        pk,
+        "governance/incident_report_detail.html",
+        "incident_report",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Complaints
+# ---------------------------------------------------------------------------
+
+
+@_any_view
+def complaint_list(request):
+    return object_list(
+        request,
+        "governance/complaint_list.html",
+        "complaints",
+        selectors.get_accessible_complaints(request.user),
+        search_fields=("title", "reference_number", "complaint_type"),
+    )
+
+
+@_any_manage
 def complaint_create(request):
     return object_create(
         request,
         ComplaintForm,
-        'governance/complaint_list',
-        'Complaint created successfully.'
+        "governance:complaint_list",
+        "Complaint created successfully.",
     )
 
-@login_required
+
+@_any_manage
 def complaint_update(request, pk):
     return object_update(
         request,
         Complaint,
         ComplaintForm,
         pk,
-        'governance/complaint_list',
-        'Complaint updated successfully.'
+        "governance:complaint_list",
+        "Complaint updated successfully.",
     )
 
-@login_required
+
+@_any_delete
 def complaint_delete(request, pk):
     return object_delete(
         request,
         Complaint,
         pk,
-        'governance:complaint_list',
-        'Complaint deleted successfully.'
+        "governance:complaint_list",
+        "Complaint deleted successfully.",
     )
 
-@login_required
+
+@_any_view
 def complaint_detail(request, pk):
     return object_detail(
         request,
-        Complaint,
+        selectors.get_accessible_complaints(request.user),
         pk,
-        'governance/complaint_detail.html',
-        'complaint'
+        "governance/complaint_detail.html",
+        "complaint",
     )
 
-# Risk Assessment Score AJAX endpoint
-@login_required
-def update_risk_assessment_scores(request):
-    """AJAX endpoint to update likelihood/impact and compute risk scores."""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
-    try:
-        risk_pk = request.POST.get('risk_id')
-        likelihood = request.POST.get('likelihood')
-        impact = request.POST.get('impact')
-        risk = RiskRegister.objects.get(pk=risk_pk)
-        if likelihood:
-            risk.likelihood = int(likelihood)
-        if impact:
-            risk.impact = int(impact)
-        risk.save(update_fields=['likelihood', 'impact'])
-        return JsonResponse({
-            'success': True,
-            'risk_rating': risk.risk_rating,
-        })
-    except (RiskRegister.DoesNotExist, ValueError, TypeError) as exc:
-        return JsonResponse({'success': False, 'error': str(exc)}, status=400)
 
-# Legacy placeholder views for integration with existing modules
-_PLACEHOLDER_MESSAGE = (
-    "This module is scheduled for integration with the Finance and Resource "
-    "Mobilization phase. Please use the dedicated finance views once available."
-)
+# ---------------------------------------------------------------------------
+# Whistleblower (confidential)
+# ---------------------------------------------------------------------------
 
-def _render_placeholder(request, title):
-    """Render a simple placeholder page for modules pending integration."""
-    return render(request, 'governance/placeholder.html', {
-        'placeholder_title': title,
-        'placeholder_message': _PLACEHOLDER_MESSAGE,
-    })
 
-@login_required
-def financial_year_list(request):
-    return _render_placeholder(request, "Financial Years")
+@_any_confidential_view
+def whistleblower_report_list(request):
+    return object_list(
+        request,
+        "governance/whistleblower_report_list.html",
+        "whistleblower_reports",
+        selectors.get_accessible_whistleblower_reports(request.user),
+        search_fields=("title", "reference_number", "report_type"),
+    )
 
-@login_required
-def financial_year_create(request):
-    return _render_placeholder(request, "Create Financial Year")
 
-@login_required
-def budget_list(request):
-    return _render_placeholder(request, "Budgets")
+@_any_confidential_view
+def whistleblower_report_create(request):
+    return object_create(
+        request,
+        WhistleblowerReportForm,
+        "governance:whistleblower_report_list",
+        "Whistleblower report submitted successfully.",
+    )
 
-@login_required
-def budget_create(request):
-    return _render_placeholder(request, "Create Budget")
 
-@login_required
-def transaction_list(request):
-    return _render_placeholder(request, "Transactions")
+@_any_confidential_view
+def whistleblower_report_update(request, pk):
+    return object_update(
+        request,
+        WhistleblowerReport,
+        WhistleblowerReportForm,
+        pk,
+        "governance:whistleblower_report_list",
+        "Whistleblower report updated successfully.",
+    )
 
-@login_required
-def transaction_create(request):
-    return _render_placeholder(request, "Create Transaction")
 
-@login_required
-def budget_allocation_list(request):
-    return _render_placeholder(request, "Budget Allocations")
+@_any_delete
+def whistleblower_report_delete(request, pk):
+    return object_delete(
+        request,
+        WhistleblowerReport,
+        pk,
+        "governance:whistleblower_report_list",
+        "Whistleblower report deleted successfully.",
+    )
 
-@login_required
-def budget_allocation_create(request):
-    return _render_placeholder(request, "Create Budget Allocation")
 
-# Corrective Preventive Action Views
-@login_required
+@_any_confidential_view
+def whistleblower_report_detail(request, pk):
+    return object_detail(
+        request,
+        selectors.get_accessible_whistleblower_reports(request.user),
+        pk,
+        "governance/whistleblower_report_detail.html",
+        "whistleblower_report",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Corrective & Preventive Actions
+# ---------------------------------------------------------------------------
+
+
+@_any_view
 def corrective_preventive_action_list(request):
-    return object_list(request, CorrectivePreventiveAction, 'governance/corrective_preventive_action_list.html', 'corrective_preventive_actions')
+    return object_list(
+        request,
+        "governance/corrective_preventive_action_list.html",
+        "corrective_preventive_actions",
+        selectors.get_accessible_capas(request.user),
+        search_fields=("title", "reference_number", "action_type"),
+    )
 
-@login_required
+
+@_any_manage
 def corrective_preventive_action_create(request):
     return object_create(
         request,
         CorrectivePreventiveActionForm,
-        'governance/corrective_preventive_action_form.html',
-        'governance:corrective_preventive_action_list',
-        'Corrective preventive action created successfully.'
+        "governance:corrective_preventive_action_list",
+        "Corrective & preventive action created successfully.",
     )
 
-@login_required
+
+@_any_manage
 def corrective_preventive_action_update(request, pk):
     return object_update(
         request,
         CorrectivePreventiveAction,
         CorrectivePreventiveActionForm,
         pk,
-        'governance/corrective_preventive_action_form.html',
-        'governance:corrective_preventive_action_list',
-        'Corrective preventive action updated successfully.'
+        "governance:corrective_preventive_action_list",
+        "Corrective & preventive action updated successfully.",
     )
 
-@login_required
+
+@_any_delete
 def corrective_preventive_action_delete(request, pk):
     return object_delete(
         request,
         CorrectivePreventiveAction,
         pk,
-        'governance:corrective_preventive_action_list',
-        'Corrective preventive action deleted successfully.'
+        "governance:corrective_preventive_action_list",
+        "Corrective & preventive action deleted successfully.",
     )
 
-@login_required
+
+@_any_view
 def corrective_preventive_action_detail(request, pk):
     return object_detail(
         request,
-        CorrectivePreventiveAction,
+        selectors.get_accessible_capas(request.user),
         pk,
-        'governance/corrective_preventive_action_detail.html',
-        'corrective_preventive_action'
+        "governance/corrective_preventive_action_detail.html",
+        "corrective_preventive_action",
     )
 
-# Document Views
-@login_required
-def document_list(request):
-    return object_list(request, Document, 'governance/document_list.html', 'documents')
 
-@login_required
+# ---------------------------------------------------------------------------
+# Documents
+# ---------------------------------------------------------------------------
+
+
+@_any_view
+def document_list(request):
+    return object_list(
+        request,
+        "governance/document_list.html",
+        "documents",
+        selectors.get_accessible_documents(request.user),
+        search_fields=("title", "reference_number", "document_type"),
+    )
+
+
+@_any_manage
 def document_create(request):
     return object_create(
         request,
         DocumentForm,
-        'governance/document_form.html',
-        'governance:document_list',
-        'Document created successfully.'
+        "governance:document_list",
+        "Document uploaded successfully.",
     )
 
-@login_required
+
+@_any_manage
 def document_update(request, pk):
     return object_update(
         request,
         Document,
         DocumentForm,
         pk,
-        'governance/document_form.html',
-        'governance:document_list',
-        'Document updated successfully.'
+        "governance:document_list",
+        "Document updated successfully.",
     )
 
-@login_required
+
+@_any_delete
 def document_delete(request, pk):
     return object_delete(
         request,
         Document,
         pk,
-        'governance:document_list',
-        'Document deleted successfully.'
+        "governance:document_list",
+        "Document deleted successfully.",
     )
 
-@login_required
+
+@_any_view
 def document_detail(request, pk):
     return object_detail(
         request,
-        Document,
+        selectors.get_accessible_documents(request.user),
         pk,
-        'governance/document_detail.html',
-        'document'
+        "governance/document_detail.html",
+        "document",
     )
 
-# Governance Meeting Views
-@login_required
-def governance_meeting_list(request):
-    return object_list(request, GovernanceMeeting, 'governance/governance_meeting_list.html', 'governance_meetings')
 
-@login_required
+# ---------------------------------------------------------------------------
+# Governance Meetings
+# ---------------------------------------------------------------------------
+
+
+@_any_view
+def governance_meeting_list(request):
+    return object_list(
+        request,
+        "governance/governance_meeting_list.html",
+        "governance_meetings",
+        selectors.get_accessible_meetings(request.user),
+        search_fields=("title", "reference_number", "meeting_type"),
+    )
+
+
+@_any_manage
 def governance_meeting_create(request):
     return object_create(
         request,
         GovernanceMeetingForm,
-        'governance/governance_meeting_form.html',
-        'governance:governance_meeting_list',
-        'Governance meeting created successfully.'
+        "governance:governance_meeting_list",
+        "Governance meeting created successfully.",
     )
 
-@login_required
+
+@_any_manage
 def governance_meeting_update(request, pk):
     return object_update(
         request,
         GovernanceMeeting,
         GovernanceMeetingForm,
         pk,
-        'governance/governance_meeting_form.html',
-        'governance:governance_meeting_list',
-        'Governance meeting updated successfully.'
+        "governance:governance_meeting_list",
+        "Governance meeting updated successfully.",
     )
 
-@login_required
+
+@_any_delete
 def governance_meeting_delete(request, pk):
     return object_delete(
         request,
         GovernanceMeeting,
         pk,
-        'governance:governance_meeting_list',
-        'Governance meeting deleted successfully.'
+        "governance:governance_meeting_list",
+        "Governance meeting deleted successfully.",
     )
 
-@login_required
+
+@_any_view
 def governance_meeting_detail(request, pk):
     return object_detail(
         request,
-        GovernanceMeeting,
+        selectors.get_accessible_meetings(request.user),
         pk,
-        'governance/governance_meeting_detail.html',
-        'governance_meeting'
+        "governance/governance_meeting_detail.html",
+        "governance_meeting",
     )
 
-@login_required
+
+@_any_manage
 def meeting_attendance_create(request, meeting_pk):
-    meeting = get_object_or_404(GovernanceMeeting, pk=meeting_pk)
-    if request.method == 'POST':
+    """Record attendance for a governance meeting."""
+    meeting = get_object_or_404(
+        selectors.get_accessible_meetings(request.user), pk=meeting_pk
+    )
+    if request.method == "POST":
         form = MeetingAttendanceForm(request.POST)
         if form.is_valid():
             attendance = form.save(commit=False)
             attendance.meeting = meeting
-            attendance.created_by = request.user
-            attendance.updated_by = request.user
             attendance.save()
-            messages.success(request, 'Meeting attendance recorded successfully.')
-            return redirect('governance:governance_meeting_detail', pk=meeting_pk)
+            messages.success(request, "Meeting attendance recorded successfully.")
+            return redirect("governance:governance_meeting_detail", pk=meeting_pk)
     else:
         form = MeetingAttendanceForm()
-    context = {
-        'form': form,
-        'meeting': meeting,
-    }
-    return render(request, 'governance/meeting_attendance_form.html', context)
+    context = {"form": form, "meeting": meeting}
+    return render(request, "governance/meeting_attendance_form.html", context)
 
-# Governance Notification Views
-@login_required
+
+# ---------------------------------------------------------------------------
+# Notifications & Timeline
+# ---------------------------------------------------------------------------
+
+
+@_any_view
 def governance_notification_list(request):
-    return object_list(request, GovernanceNotification, 'governance/governance_notification_list.html', 'governance_notifications')
+    """List governance notifications addressed to the requesting user."""
+    notifications = GovernanceNotification.objects.filter(recipient=request.user)
+    page_obj = Paginator(notifications, 25).get_page(request.GET.get("page"))
+    context = {
+        "governance_notifications": page_obj,
+        "is_paginated": page_obj.has_other_pages(),
+        "unread_count": selectors.get_unread_notification_count(request.user),
+    }
+    return render(request, "governance/governance_notification_list.html", context)
 
-@login_required
+
+@_any_view
 def governance_notification_mark_as_read(request, pk):
-    notification = get_object_or_404(GovernanceNotification, pk=pk)
-    if request.method == 'POST':
+    """Mark a single governance notification as read."""
+    notification = get_object_or_404(
+        GovernanceNotification, pk=pk, recipient=request.user
+    )
+    if request.method == "POST":
         notification.is_read = True
         notification.read_at = timezone.now()
-        notification.save()
-        messages.success(request, 'Notification marked as read.')
-        return redirect('governance:governance_notification_list')
-    context = {
-        'notification': notification,
-    }
-    return render(request, 'governance/governance_notification_confirm_mark_as_read.html', context)
+        notification.save(update_fields=["is_read", "read_at"])
+        messages.success(request, "Notification marked as read.")
+        return redirect("governance:governance_notification_list")
+    context = {"notification": notification}
+    return render(
+        request, "governance/governance_notification_confirm_mark_as_read.html", context
+    )
 
-# Governance Timeline Views
-@login_required
+
+@_any_view
 def governance_timeline_list(request):
-    return object_list(request, GovernanceTimeline, 'governance/governance_timeline_list.html', 'governance_timelines')
-
-def object_detail(request, model, pk, template_name, context_name):
-    """Generic detail view for a model."""
-    obj = get_object_or_404(model, pk=pk)
-    context = {
-        context_name: obj,
-    }
-    return render(request, template_name, context)
-
-
-# Note: We need to import timezone for the governance_notification_mark_as_read view.
-# We'll add the import at the top of the file.
+    """List governance timeline events."""
+    return object_list(
+        request,
+        "governance/governance_timeline_list.html",
+        "governance_timelines",
+        selectors.get_accessible_timeline(request.user),
+        search_fields=("description", "reference_number", "module"),
+    )

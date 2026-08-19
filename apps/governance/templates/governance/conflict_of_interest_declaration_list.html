@@ -1,0 +1,118 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Conflict of Interest Declarations - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Conflict of Interest Declarations</h2>
+        <p class="text-muted">Manage your organization's conflict of interest declarations.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'governance:conflict_of_interest_declaration_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Declaration
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search declarations...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if conflict_of_interest_declarations %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Conflict of Interest Declarations</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Declarant</th>
+                <th scope="col">Declaration Type</th>
+                <th scope="col">Nature of Conflict</th>
+                <th scope="col">Approval Status</th>
+                <th scope="col">Date Declared</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for declaration in conflict_of_interest_declarations %}
+            <tr>
+                <td>
+                    <a href="{% url 'governance:conflict_of_interest_declaration_detail' declaration.pk %}" class="text-decoration-none">{{ declaration.declarant.get_full_name|default:declaration.declarant }}</a>
+                </td>
+                <td>{{ declaration.get_declaration_type_display }}</td>
+                <td>{{ declaration.nature_of_conflict|truncatechars:60 }}</td>
+                <td>
+                    {% if declaration.approval_status == "ACTIVE" or declaration.approval_status == "APPROVED" %}
+                    <span class="badge bg-success">{{ declaration.get_approval_status_display }}</span>
+                    {% elif declaration.approval_status == "PENDING_REVIEW" or declaration.approval_status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ declaration.get_approval_status_display }}</span>
+                    {% elif declaration.approval_status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ declaration.get_approval_status_display }}</span>
+                    {% elif declaration.approval_status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ declaration.get_approval_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ declaration.get_approval_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ declaration.date_declared|date:"M d, Y"|default:"—" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'governance:conflict_of_interest_declaration_detail' declaration.pk %}" class="btn btn-outline-secondary" aria-label="View declaration">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'governance:conflict_of_interest_declaration_update' declaration.pk %}" class="btn btn-outline-secondary" aria-label="Edit declaration">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'governance:conflict_of_interest_declaration_delete' declaration.pk %}" class="btn btn-outline-danger" aria-label="Delete declaration">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No conflict of interest declarations found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if conflict_of_interest_declarations.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if conflict_of_interest_declarations.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ conflict_of_interest_declarations.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in conflict_of_interest_declarations.paginator.page_range %}
+        {% if conflict_of_interest_declarations.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > conflict_of_interest_declarations.number|add:'-3' and i < conflict_of_interest_declarations.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if conflict_of_interest_declarations.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ conflict_of_interest_declarations.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No conflict of interest declarations found. <a href="{% url 'governance:conflict_of_interest_declaration_create' %}" class="alert-link">Add your first declaration</a>.
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Governance Timeline - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Governance Timeline</h2>
+        <p class="text-muted">Review the chronological history of governance activity.</p>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search timeline events...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if governance_timelines %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Governance Timeline Events</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Event Type</th>
+                <th scope="col">Description</th>
+                <th scope="col">Event Date</th>
+                <th scope="col">Performed By</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in governance_timelines %}
+            <tr>
+                <td><span class="badge bg-light text-dark border">{{ event.get_event_type_display }}</span></td>
+                <td>{{ event.description|truncatechars:80 }}</td>
+                <td>{{ event.event_date|date:"M d, Y H:i"|default:"—" }}</td>
+                <td>{{ event.performed_by.get_full_name|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center py-4">No timeline events found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if governance_timelines.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if governance_timelines.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ governance_timelines.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        {% for i in governance_timelines.paginator.page_range %}
+        {% if governance_timelines.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% elif i > governance_timelines.number|add:'-3' and i < governance_timelines.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if governance_timelines.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ governance_timelines.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No timeline events found.
+</div>
+{% endif %}
+{% endblock %}

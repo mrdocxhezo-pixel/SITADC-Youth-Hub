@@ -553,6 +553,7 @@ PERMISSION_CATEGORIES: dict[str, tuple[str, frozenset[str]]] = {
         "Governance",
         _actions(
             "view",
+            "view_confidential",
             "create",
             "update",
             "delete",
