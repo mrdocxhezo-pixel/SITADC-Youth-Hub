@@ -66,6 +66,7 @@ class ReferenceModules(models.TextChoices):
     ANNOUNCEMENTS = "announcements", _("Announcements")
     EXPORTS = "exports", _("Exports")
     GOVERNANCE = "governance", _("Governance")
+    COMMUNICATIONS = "communications", _("Communications")
 
 
 class ReferenceAuditAction(models.TextChoices):

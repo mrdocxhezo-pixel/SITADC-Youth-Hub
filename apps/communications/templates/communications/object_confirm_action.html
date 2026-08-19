@@ -1,0 +1,39 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}{{ action_label }} {{ model_name }} - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ action_label }} {{ model_name }}</h2>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url list_url %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Are you sure you want to <strong>{{ action_label|lower }}</strong> "<strong>{{ object }}</strong>"?
+                    {% include "communications/_status_badge.html" with object=object %}
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url list_url %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i> {{ action_label }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}{{ publication.title }} - Publication - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ publication.title }}</h2>
+        <p class="text-muted">
+            <span class="badge bg-light text-dark">{{ publication.reference_number }}</span>
+            {% include "communications/_status_badge.html" with object=publication %}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:publication_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+        <a href="{% url 'communications:publication_update' publication.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+        {% if publication.status == "APPROVED" %}
+        <a href="{% url 'communications:publication_publish' publication.pk %}" class="btn btn-success">
+            <i class="bi bi-send me-1"></i> Publish
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-file-earmark-pdf me-2"></i>Publication Details</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Reference Number</dt>
+            <dd class="col-sm-8">{{ publication.reference_number }}</dd>
+            <dt class="col-sm-4">Type</dt>
+            <dd class="col-sm-8">{{ publication.get_publication_type_display }}</dd>
+            <dt class="col-sm-4">Version</dt>
+            <dd class="col-sm-8">{{ publication.version }}</dd>
+            <dt class="col-sm-4">ISBN</dt>
+            <dd class="col-sm-8">{{ publication.isbn|default:"—" }}</dd>
+            <dt class="col-sm-4">Page Count</dt>
+            <dd class="col-sm-8">{{ publication.page_count|default:"—" }}</dd>
+            <dt class="col-sm-4">Publication Date</dt>
+            <dd class="col-sm-8">{{ publication.publication_date|default:"—" }}</dd>
+            <dt class="col-sm-4">Downloads</dt>
+            <dd class="col-sm-8">{{ publication.download_count }}</dd>
+            <dt class="col-sm-4">Summary</dt>
+            <dd class="col-sm-8">{{ publication.summary|default:"—" }}</dd>
+            <dt class="col-sm-4">File</dt>
+            <dd class="col-sm-8">
+                {% if publication.file %}
+                <a href="{{ publication.file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i> Download</a>
+                {% else %}—{% endif %}
+            </dd>
+            <dt class="col-sm-4">Created By</dt>
+            <dd class="col-sm-8">{{ publication.created_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Created At</dt>
+            <dd class="col-sm-8">{{ publication.created_at|date:"M d, Y, H:i" }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

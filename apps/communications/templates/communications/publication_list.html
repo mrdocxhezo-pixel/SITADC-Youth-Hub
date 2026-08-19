@@ -1,0 +1,94 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Publications - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Publications</h2>
+        <p class="text-muted">Manage organizational publications.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:publication_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Publication
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search publications...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if publications %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Publications</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Type</th>
+                <th scope="col">Status</th>
+                <th scope="col">Version</th>
+                <th scope="col">Downloads</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for publication in publications %}
+            <tr>
+                <td>
+                    <a href="{% url 'communications:publication_detail' publication.pk %}" class="text-decoration-none">{{ publication.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ publication.reference_number }}</span></td>
+                <td>{{ publication.get_publication_type_display }}</td>
+                <td>
+                    {% if publication.status == "ACTIVE" or publication.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ publication.get_status_display }}</span>
+                    {% elif publication.status == "PENDING_REVIEW" or publication.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ publication.get_status_display }}</span>
+                    {% elif publication.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ publication.get_status_display }}</span>
+                    {% elif publication.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ publication.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ publication.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ publication.version }}</td>
+                <td>{{ publication.download_count }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:publication_update' publication.pk %}" class="btn btn-outline-secondary" aria-label="Edit publication">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if publication.status == "APPROVED" %}
+                        <a href="{% url 'communications:publication_publish' publication.pk %}" class="btn btn-outline-success" aria-label="Publish publication">
+                            <i class="bi bi-send"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'communications:publication_delete' publication.pk %}" class="btn btn-outline-danger" aria-label="Delete publication">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No publications found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=publications %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No publications found. <a href="{% url 'communications:publication_create' %}" class="alert-link">Add your first publication</a>.
+</div>
+{% endif %}
+{% endblock %}

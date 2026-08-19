@@ -29,6 +29,10 @@ urlpatterns = [
         "notifications/", include("apps.notifications.urls", namespace="notifications")
     ),
     path("governance/", include("apps.governance.urls", namespace="governance")),
+    path(
+        "communications/",
+        include("apps.communications.urls", namespace="communications"),
+    ),
     path("system-settings/", include("apps.system_settings.urls", namespace="system_settings")),
     path("settings/", include("apps.settings.urls", namespace="settings")),
     path("organizations/", include("apps.organizations.urls", namespace="organizations")),

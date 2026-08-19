@@ -1,0 +1,94 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Event Communications - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Event Communications</h2>
+        <p class="text-muted">Manage communications associated with organizational events.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:event_communication_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Event Communication
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search event communications...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if event_communications %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Event Communications</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Event</th>
+                <th scope="col">Type</th>
+                <th scope="col">Date</th>
+                <th scope="col">Status</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event_communication in event_communications %}
+            <tr>
+                <td>
+                    <a href="{% url 'communications:event_communication_detail' event_communication.pk %}" class="text-decoration-none">{{ event_communication.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ event_communication.reference_number }}</span></td>
+                <td>{{ event_communication.event_name }}</td>
+                <td>{{ event_communication.get_event_communication_type_display }}</td>
+                <td>{{ event_communication.event_date|date:"M d, Y, H:i" }}</td>
+                <td>
+                    {% if event_communication.status == "ACTIVE" or event_communication.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ event_communication.get_status_display }}</span>
+                    {% elif event_communication.status == "PENDING_REVIEW" or event_communication.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ event_communication.get_status_display }}</span>
+                    {% elif event_communication.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ event_communication.get_status_display }}</span>
+                    {% elif event_communication.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ event_communication.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ event_communication.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:event_communication_update' event_communication.pk %}" class="btn btn-outline-secondary" aria-label="Edit event communication">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if event_communication.status == "APPROVED" %}
+                        <a href="{% url 'communications:event_communication_publish' event_communication.pk %}" class="btn btn-outline-success" aria-label="Publish event communication">
+                            <i class="bi bi-send"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'communications:event_communication_delete' event_communication.pk %}" class="btn btn-outline-danger" aria-label="Delete event communication">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No event communications found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=event_communications %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No event communications found. <a href="{% url 'communications:event_communication_create' %}" class="alert-link">Add your first event communication</a>.
+</div>
+{% endif %}
+{% endblock %}

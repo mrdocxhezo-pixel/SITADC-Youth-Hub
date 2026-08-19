@@ -1,0 +1,70 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}{{ media_asset.title }} - Media Asset - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ media_asset.title }}</h2>
+        <p class="text-muted">
+            {% include "communications/_status_badge.html" with object=media_asset %}
+            <span class="badge bg-primary-brand">{{ media_asset.get_asset_type_display }}</span>
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:media_asset_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+        <a href="{% url 'communications:media_asset_update' media_asset.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+        {% if media_asset.status == "DRAFT" %}
+        <a href="{% url 'communications:media_asset_publish' media_asset.pk %}" class="btn btn-success">
+            <i class="bi bi-send me-1"></i> Publish
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-images me-2"></i>Media Asset Details</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Type</dt>
+            <dd class="col-sm-8">{{ media_asset.get_asset_type_display }}</dd>
+            <dt class="col-sm-4">Category</dt>
+            <dd class="col-sm-8">{{ media_asset.get_media_category_display }}</dd>
+            <dt class="col-sm-4">Album</dt>
+            <dd class="col-sm-8">{{ media_asset.album|default:"—" }}</dd>
+            <dt class="col-sm-4">Version</dt>
+            <dd class="col-sm-8">{{ media_asset.version }}</dd>
+            <dt class="col-sm-4">File Size</dt>
+            <dd class="col-sm-8">{{ media_asset.file_size|default:"—" }}</dd>
+            <dt class="col-sm-4">MIME Type</dt>
+            <dd class="col-sm-8">{{ media_asset.mime_type|default:"—" }}</dd>
+            <dt class="col-sm-4">Tags</dt>
+            <dd class="col-sm-8">{{ media_asset.tags|default:"—" }}</dd>
+            <dt class="col-sm-4">Confidentiality</dt>
+            <dd class="col-sm-8">{{ media_asset.get_confidentiality_level_display }}</dd>
+            <dt class="col-sm-4">Copyright</dt>
+            <dd class="col-sm-8">{{ media_asset.copyright_info|default:"—" }}</dd>
+            <dt class="col-sm-4">Licensing</dt>
+            <dd class="col-sm-8">{{ media_asset.licensing_info|default:"—" }}</dd>
+            <dt class="col-sm-4">Description</dt>
+            <dd class="col-sm-8">{{ media_asset.description|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">File</dt>
+            <dd class="col-sm-8">
+                {% if media_asset.file %}
+                <a href="{{ media_asset.file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i> Download</a>
+                {% else %}—{% endif %}
+            </dd>
+            <dt class="col-sm-4">Uploaded By</dt>
+            <dd class="col-sm-8">{{ media_asset.created_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Uploaded At</dt>
+            <dd class="col-sm-8">{{ media_asset.created_at|date:"M d, Y, H:i" }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

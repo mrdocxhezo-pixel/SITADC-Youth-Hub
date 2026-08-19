@@ -1,0 +1,80 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Social Media Accounts - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Social Media Accounts</h2>
+        <p class="text-muted">Manage registered organizational social media accounts.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:social_media_account_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Account
+        </a>
+        <a href="{% url 'communications:social_media_post_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-share me-1"></i> Posts
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search accounts...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if accounts %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Social Media Accounts</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Platform</th>
+                <th scope="col">Account</th>
+                <th scope="col">Handle</th>
+                <th scope="col">Active</th>
+                <th scope="col">Default</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td><span class="badge bg-primary-brand">{{ account.get_platform_display }}</span></td>
+                <td class="fw-semibold">{{ account.account_name }}</td>
+                <td>{{ account.handle|default:"—" }}</td>
+                <td>
+                    {% if account.is_active %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}
+                </td>
+                <td>
+                    {% if account.is_default %}<span class="badge bg-primary">Default</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:social_media_account_update' account.pk %}" class="btn btn-outline-secondary" aria-label="Edit account">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'communications:social_media_account_delete' account.pk %}" class="btn btn-outline-danger" aria-label="Delete account">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No accounts found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=accounts %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No social media accounts found. <a href="{% url 'communications:social_media_account_create' %}" class="alert-link">Add your first account</a>.
+</div>
+{% endif %}
+{% endblock %}

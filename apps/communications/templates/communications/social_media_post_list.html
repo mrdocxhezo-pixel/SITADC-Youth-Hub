@@ -1,0 +1,93 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Social Media Posts - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Social Media Posts</h2>
+        <p class="text-muted">Plan, schedule, and publish social media content.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:social_media_post_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Post
+        </a>
+        <a href="{% url 'communications:social_media_account_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-people me-1"></i> Accounts
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search posts...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if posts %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Social Media Posts</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Content</th>
+                <th scope="col">Platform</th>
+                <th scope="col">Scheduled</th>
+                <th scope="col">Status</th>
+                <th scope="col">Reach</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td class="fw-semibold text-truncate" style="max-width: 250px;">{{ post.content }}</td>
+                <td><span class="badge bg-primary-brand">{{ post.get_platform_display }}</span></td>
+                <td>{{ post.scheduled_time|date:"M d, Y, H:i"|default:"—" }}</td>
+                <td>
+                    {% if post.status == "ACTIVE" or post.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ post.get_status_display }}</span>
+                    {% elif post.status == "PENDING_REVIEW" or post.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ post.get_status_display }}</span>
+                    {% elif post.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ post.get_status_display }}</span>
+                    {% elif post.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ post.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ post.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ post.engagement_reach }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:social_media_post_update' post.pk %}" class="btn btn-outline-secondary" aria-label="Edit post">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if post.status == "APPROVED" %}
+                        <a href="{% url 'communications:social_media_post_publish' post.pk %}" class="btn btn-outline-success" aria-label="Publish post">
+                            <i class="bi bi-send"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'communications:social_media_post_delete' post.pk %}" class="btn btn-outline-danger" aria-label="Delete post">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No social media posts found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=posts %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No social media posts found. <a href="{% url 'communications:social_media_post_create' %}" class="alert-link">Add your first post</a>.
+</div>
+{% endif %}
+{% endblock %}

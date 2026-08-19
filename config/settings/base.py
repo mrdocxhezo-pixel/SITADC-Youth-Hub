@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "apps.search.apps.SearchConfig",
     "apps.exports.apps.ExportsConfig",
     "apps.governance.apps.GovernanceConfig",
+    "apps.communications.apps.CommunicationsConfig",
     "apps.rbac.apps.RbacConfig",
     "apps.references.apps.ReferencesConfig",
     "apps.system_settings.apps.SystemSettingsConfig",

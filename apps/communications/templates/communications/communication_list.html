@@ -1,0 +1,94 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Communications - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Communications</h2>
+        <p class="text-muted">Manage internal and external communications.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:communication_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Communication
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search communications...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if communications %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Communications</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Type</th>
+                <th scope="col">Channel</th>
+                <th scope="col">Status</th>
+                <th scope="col">Publication Date</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for communication in communications %}
+            <tr>
+                <td>
+                    <a href="{% url 'communications:communication_detail' communication.pk %}" class="text-decoration-none">{{ communication.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ communication.reference_number }}</span></td>
+                <td>{{ communication.get_communication_type_display }}</td>
+                <td>{{ communication.get_distribution_channel_display }}</td>
+                <td>
+                    {% if communication.status == "ACTIVE" or communication.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ communication.get_status_display }}</span>
+                    {% elif communication.status == "PENDING_REVIEW" or communication.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ communication.get_status_display }}</span>
+                    {% elif communication.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ communication.get_status_display }}</span>
+                    {% elif communication.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ communication.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ communication.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ communication.publication_date|date:"M d, Y"|default:"—" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:communication_update' communication.pk %}" class="btn btn-outline-secondary" aria-label="Edit communication">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if communication.status == "APPROVED" %}
+                        <a href="{% url 'communications:communication_publish' communication.pk %}" class="btn btn-outline-success" aria-label="Publish communication">
+                            <i class="bi bi-send"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'communications:communication_delete' communication.pk %}" class="btn btn-outline-danger" aria-label="Delete communication">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No communications found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=communications %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No communications found. <a href="{% url 'communications:communication_create' %}" class="alert-link">Add your first communication</a>.
+</div>
+{% endif %}
+{% endblock %}

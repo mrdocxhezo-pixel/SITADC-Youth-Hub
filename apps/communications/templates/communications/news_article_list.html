@@ -1,0 +1,96 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}News Articles - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>News Articles</h2>
+        <p class="text-muted">Manage news and featured stories.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:news_article_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add News Article
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search news articles...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if news_articles %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of News Articles</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Category</th>
+                <th scope="col">Featured</th>
+                <th scope="col">Status</th>
+                <th scope="col">Publication Date</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for news_article in news_articles %}
+            <tr>
+                <td>
+                    <a href="{% url 'communications:news_article_detail' news_article.pk %}" class="text-decoration-none">{{ news_article.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ news_article.reference_number }}</span></td>
+                <td>{{ news_article.get_news_category_display }}</td>
+                <td>
+                    {% if news_article.is_featured %}<span class="badge bg-primary">Featured</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}
+                </td>
+                <td>
+                    {% if news_article.status == "ACTIVE" or news_article.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ news_article.get_status_display }}</span>
+                    {% elif news_article.status == "PENDING_REVIEW" or news_article.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ news_article.get_status_display }}</span>
+                    {% elif news_article.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ news_article.get_status_display }}</span>
+                    {% elif news_article.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ news_article.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ news_article.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ news_article.publication_date|date:"M d, Y"|default:"—" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:news_article_update' news_article.pk %}" class="btn btn-outline-secondary" aria-label="Edit news article">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if news_article.status == "APPROVED" %}
+                        <a href="{% url 'communications:news_article_publish' news_article.pk %}" class="btn btn-outline-success" aria-label="Publish news article">
+                            <i class="bi bi-send"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'communications:news_article_delete' news_article.pk %}" class="btn btn-outline-danger" aria-label="Delete news article">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No news articles found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=news_articles %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No news articles found. <a href="{% url 'communications:news_article_create' %}" class="alert-link">Add your first news article</a>.
+</div>
+{% endif %}
+{% endblock %}

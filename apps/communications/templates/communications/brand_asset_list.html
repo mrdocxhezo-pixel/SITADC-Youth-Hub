@@ -1,0 +1,90 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Brand Assets - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Brand Assets</h2>
+        <p class="text-muted">Centralized brand asset management.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:brand_asset_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Brand Asset
+        </a>
+        <a href="{% url 'communications:brand_guideline_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-palette me-1"></i> Guidelines
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search brand assets...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if brand_assets %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Brand Assets</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Type</th>
+                <th scope="col">Version</th>
+                <th scope="col">Approved</th>
+                <th scope="col">Status</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for brand_asset in brand_assets %}
+            <tr>
+                <td class="fw-semibold">{{ brand_asset.title }}</td>
+                <td>{{ brand_asset.get_asset_type_display }}</td>
+                <td>{{ brand_asset.version }}</td>
+                <td>
+                    {% if brand_asset.is_approved %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                </td>
+                <td>
+                    {% if brand_asset.status == "ACTIVE" or brand_asset.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ brand_asset.get_status_display }}</span>
+                    {% elif brand_asset.status == "PENDING_REVIEW" or brand_asset.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ brand_asset.get_status_display }}</span>
+                    {% elif brand_asset.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ brand_asset.get_status_display }}</span>
+                    {% elif brand_asset.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ brand_asset.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ brand_asset.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:brand_asset_update' brand_asset.pk %}" class="btn btn-outline-secondary" aria-label="Edit brand asset">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'communications:brand_asset_delete' brand_asset.pk %}" class="btn btn-outline-danger" aria-label="Delete brand asset">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No brand assets found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=brand_assets %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No brand assets found. <a href="{% url 'communications:brand_asset_create' %}" class="alert-link">Add your first brand asset</a>.
+</div>
+{% endif %}
+{% endblock %}

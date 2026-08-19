@@ -1,0 +1,78 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Newsletter Subscribers - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Newsletter Subscribers</h2>
+        <p class="text-muted">Manage newsletter subscriber records.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:newsletter_subscriber_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Subscriber
+        </a>
+        <a href="{% url 'communications:newsletter_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-envelope me-1"></i> Newsletters
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search subscribers...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if subscribers %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Newsletter Subscribers</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Email</th>
+                <th scope="col">Name</th>
+                <th scope="col">Segment</th>
+                <th scope="col">Active</th>
+                <th scope="col">Subscribed</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subscriber in subscribers %}
+            <tr>
+                <td>{{ subscriber.email }}</td>
+                <td>{{ subscriber.first_name }} {{ subscriber.last_name }}</td>
+                <td>{{ subscriber.get_audience_segment_display|default:"—" }}</td>
+                <td>
+                    {% if subscriber.is_active %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}
+                </td>
+                <td>{{ subscriber.subscribed_at|date:"M d, Y" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:newsletter_subscriber_update' subscriber.pk %}" class="btn btn-outline-secondary" aria-label="Edit subscriber">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'communications:newsletter_subscriber_delete' subscriber.pk %}" class="btn btn-outline-danger" aria-label="Delete subscriber">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No subscribers found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=subscribers %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No subscribers found. <a href="{% url 'communications:newsletter_subscriber_create' %}" class="alert-link">Add your first subscriber</a>.
+</div>
+{% endif %}
+{% endblock %}

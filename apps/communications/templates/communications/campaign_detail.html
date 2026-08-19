@@ -1,0 +1,103 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}{{ campaign.title }} - Campaign - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ campaign.title }}</h2>
+        <p class="text-muted">
+            <span class="badge bg-light text-dark">{{ campaign.reference_number }}</span>
+            {% include "communications/_status_badge.html" with object=campaign %}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:campaign_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+        <a href="{% url 'communications:campaign_update' campaign.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+        {% if campaign.status == "APPROVED" %}
+        <a href="{% url 'communications:campaign_launch' campaign.pk %}" class="btn btn-success">
+            <i class="bi bi-rocket me-1"></i> Launch
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-bullseye me-2"></i>Campaign Details</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Reference Number</dt>
+            <dd class="col-sm-8">{{ campaign.reference_number }}</dd>
+            <dt class="col-sm-4">Type</dt>
+            <dd class="col-sm-8">{{ campaign.get_campaign_type_display }}</dd>
+            <dt class="col-sm-4">Start Date</dt>
+            <dd class="col-sm-8">{{ campaign.start_date|default:"—" }}</dd>
+            <dt class="col-sm-4">End Date</dt>
+            <dd class="col-sm-8">{{ campaign.end_date|default:"—" }}</dd>
+            <dt class="col-sm-4">Budget Reference</dt>
+            <dd class="col-sm-8">{{ campaign.budget_reference|default:"—" }}</dd>
+            <dt class="col-sm-4">Budget Amount</dt>
+            <dd class="col-sm-8">{{ campaign.budget_amount|default:"—" }}</dd>
+            <dt class="col-sm-4">Target Audience</dt>
+            <dd class="col-sm-8">{{ campaign.target_audience|default:"—" }}</dd>
+            <dt class="col-sm-4">Channels</dt>
+            <dd class="col-sm-8">{{ campaign.channels|default:"—" }}</dd>
+            <dt class="col-sm-4">Objectives</dt>
+            <dd class="col-sm-8">{{ campaign.objectives|linebreaks }}</dd>
+            <dt class="col-sm-4">KPIs</dt>
+            <dd class="col-sm-8">{{ campaign.key_performance_indicators|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">Results</dt>
+            <dd class="col-sm-8">{{ campaign.results|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">Lessons Learned</dt>
+            <dd class="col-sm-8">{{ campaign.lessons_learned|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">Created By</dt>
+            <dd class="col-sm-8">{{ campaign.created_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Created At</dt>
+            <dd class="col-sm-8">{{ campaign.created_at|date:"M d, Y, H:i" }}</dd>
+        </dl>
+    </div>
+</div>
+
+{% if campaign.activities.all %}
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Activities</h5>
+        <a href="{% url 'communications:campaign_activity_create' %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-plus-circle me-1"></i> Add Activity
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Activity</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Channel</th>
+                    <th>Completed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for activity in campaign.activities.all %}
+                <tr>
+                    <td>{{ activity.title }}</td>
+                    <td>{{ activity.activity_type }}</td>
+                    <td>{{ activity.activity_date|date:"M d, Y" }}</td>
+                    <td>{{ activity.get_channel_display|default:"—" }}</td>
+                    <td>
+                        {% if activity.is_completed %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

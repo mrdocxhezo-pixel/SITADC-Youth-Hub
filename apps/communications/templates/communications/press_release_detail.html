@@ -1,0 +1,64 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}{{ press_release.title }} - Press Release - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ press_release.title }}</h2>
+        <p class="text-muted">
+            <span class="badge bg-light text-dark">{{ press_release.reference_number }}</span>
+            {% include "communications/_status_badge.html" with object=press_release %}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:press_release_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+        <a href="{% url 'communications:press_release_update' press_release.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+        {% if press_release.status == "APPROVED" %}
+        <a href="{% url 'communications:press_release_publish' press_release.pk %}" class="btn btn-success">
+            <i class="bi bi-send me-1"></i> Publish
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-megaphone me-2"></i>Press Release Details</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Reference Number</dt>
+            <dd class="col-sm-8">{{ press_release.reference_number }}</dd>
+            <dt class="col-sm-4">Type</dt>
+            <dd class="col-sm-8">{{ press_release.get_press_release_type_display }}</dd>
+            <dt class="col-sm-4">Release Date</dt>
+            <dd class="col-sm-8">{{ press_release.release_date|default:"—" }}</dd>
+            <dt class="col-sm-4">Embargo Date</dt>
+            <dd class="col-sm-8">{{ press_release.embargo_date|default:"—" }}</dd>
+            <dt class="col-sm-4">Priority</dt>
+            <dd class="col-sm-8">{{ press_release.get_priority_display }}</dd>
+            <dt class="col-sm-4">Summary</dt>
+            <dd class="col-sm-8">{{ press_release.summary|default:"—" }}</dd>
+            <dt class="col-sm-4">Body</dt>
+            <dd class="col-sm-8">{{ press_release.body|linebreaks }}</dd>
+            <dt class="col-sm-4">Media Contacts</dt>
+            <dd class="col-sm-8">{{ press_release.media_contacts|default:"—"|linebreaks }}</dd>
+            <dt class="col-sm-4">Attachment</dt>
+            <dd class="col-sm-8">
+                {% if press_release.attachment %}
+                <a href="{{ press_release.attachment.url }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i> Download</a>
+                {% else %}—{% endif %}
+            </dd>
+            <dt class="col-sm-4">Created By</dt>
+            <dd class="col-sm-8">{{ press_release.created_by|default:"—" }}</dd>
+            <dt class="col-sm-4">Created At</dt>
+            <dd class="col-sm-8">{{ press_release.created_at|date:"M d, Y, H:i" }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

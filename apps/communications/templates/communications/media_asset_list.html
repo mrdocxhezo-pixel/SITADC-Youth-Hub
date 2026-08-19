@@ -1,0 +1,97 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Media Assets - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Media Assets</h2>
+        <p class="text-muted">Centralized media asset library.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:media_asset_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Upload Media
+        </a>
+        <a href="{% url 'communications:media_album_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-folder me-1"></i> Albums
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search media assets...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if media_assets %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Media Assets</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Type</th>
+                <th scope="col">Category</th>
+                <th scope="col">Version</th>
+                <th scope="col">Status</th>
+                <th scope="col">Uploaded</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for media_asset in media_assets %}
+            <tr>
+                <td>
+                    <a href="{% url 'communications:media_asset_detail' media_asset.pk %}" class="text-decoration-none">{{ media_asset.title }}</a>
+                </td>
+                <td>{{ media_asset.get_asset_type_display }}</td>
+                <td>{{ media_asset.get_media_category_display }}</td>
+                <td>{{ media_asset.version }}</td>
+                <td>
+                    {% if media_asset.status == "ACTIVE" or media_asset.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ media_asset.get_status_display }}</span>
+                    {% elif media_asset.status == "PENDING_REVIEW" or media_asset.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ media_asset.get_status_display }}</span>
+                    {% elif media_asset.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ media_asset.get_status_display }}</span>
+                    {% elif media_asset.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ media_asset.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ media_asset.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ media_asset.created_at|date:"M d, Y" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:media_asset_update' media_asset.pk %}" class="btn btn-outline-secondary" aria-label="Edit media asset">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if media_asset.status == "DRAFT" %}
+                        <a href="{% url 'communications:media_asset_publish' media_asset.pk %}" class="btn btn-outline-success" aria-label="Publish media asset">
+                            <i class="bi bi-send"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'communications:media_asset_delete' media_asset.pk %}" class="btn btn-outline-danger" aria-label="Delete media asset">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No media assets found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=media_assets %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No media assets found. <a href="{% url 'communications:media_asset_create' %}" class="alert-link">Upload your first media asset</a>.
+</div>
+{% endif %}
+{% endblock %}

@@ -112,6 +112,16 @@
                        role="menuitem">
                         <i class="bi bi-cash-coin me-3 fs-5" aria-hidden="true"></i> Finance
                     </a>
+            </li>
+            {% endif %}
+            {% if request.user|has_perm:"communications.view" or request.user|has_perm:"communications.manage" %}
+                <li class="nav-item" role="none">
+                    <a href="{% url 'communications:communications_dashboard' %}"
+                       class="nav-link {% if request.resolver_match.namespace == 'communications' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                       {% if request.resolver_match.namespace == 'communications' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-megaphone me-3 fs-5" aria-hidden="true"></i> Communications
+                    </a>
                 </li>
             {% endif %}
             <li class="nav-item" role="none">

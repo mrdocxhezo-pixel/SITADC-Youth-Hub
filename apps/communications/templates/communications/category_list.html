@@ -1,0 +1,77 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Communication Categories - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Communication Categories</h2>
+        <p class="text-muted">Manage communication categories used across the platform.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:communication_category_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Category
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search categories...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if categories %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Communication Categories</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Code</th>
+                <th scope="col">Description</th>
+                <th scope="col">Active</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td class="fw-semibold">{{ category.name }}</td>
+                <td><span class="badge bg-light text-dark border">{{ category.code }}</span></td>
+                <td>{{ category.description|truncatechars:60|default:"—" }}</td>
+                <td>
+                    {% if category.is_active %}
+                    <span class="badge bg-success">Yes</span>
+                    {% else %}
+                    <span class="badge bg-secondary">No</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:communication_category_update' category.pk %}" class="btn btn-outline-secondary" aria-label="Edit category">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'communications:communication_category_delete' category.pk %}" class="btn btn-outline-danger" aria-label="Delete category">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center py-4">No categories found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=categories %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No categories found. <a href="{% url 'communications:communication_category_create' %}" class="alert-link">Add your first category</a>.
+</div>
+{% endif %}
+{% endblock %}

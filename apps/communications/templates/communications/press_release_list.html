@@ -1,0 +1,94 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Press Releases - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Press Releases</h2>
+        <p class="text-muted">Manage press releases and media statements.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:press_release_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Press Release
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search press releases...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if press_releases %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Press Releases</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Type</th>
+                <th scope="col">Status</th>
+                <th scope="col">Release Date</th>
+                <th scope="col">Embargo</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for press_release in press_releases %}
+            <tr>
+                <td>
+                    <a href="{% url 'communications:press_release_detail' press_release.pk %}" class="text-decoration-none">{{ press_release.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ press_release.reference_number }}</span></td>
+                <td>{{ press_release.get_press_release_type_display }}</td>
+                <td>
+                    {% if press_release.status == "ACTIVE" or press_release.status == "APPROVED" %}
+                    <span class="badge bg-success">{{ press_release.get_status_display }}</span>
+                    {% elif press_release.status == "PENDING_REVIEW" or press_release.status == "RETURNED" %}
+                    <span class="badge bg-warning text-dark">{{ press_release.get_status_display }}</span>
+                    {% elif press_release.status == "REJECTED" %}
+                    <span class="badge bg-danger">{{ press_release.get_status_display }}</span>
+                    {% elif press_release.status == "ARCHIVED" %}
+                    <span class="badge bg-secondary">{{ press_release.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark">{{ press_release.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ press_release.release_date|date:"M d, Y, H:i"|default:"—" }}</td>
+                <td>{{ press_release.embargo_date|date:"M d, Y, H:i"|default:"—" }}</td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:press_release_update' press_release.pk %}" class="btn btn-outline-secondary" aria-label="Edit press release">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if press_release.status == "APPROVED" %}
+                        <a href="{% url 'communications:press_release_publish' press_release.pk %}" class="btn btn-outline-success" aria-label="Publish press release">
+                            <i class="bi bi-send"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'communications:press_release_delete' press_release.pk %}" class="btn btn-outline-danger" aria-label="Delete press release">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No press releases found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=press_releases %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No press releases found. <a href="{% url 'communications:press_release_create' %}" class="alert-link">Add your first press release</a>.
+</div>
+{% endif %}
+{% endblock %}

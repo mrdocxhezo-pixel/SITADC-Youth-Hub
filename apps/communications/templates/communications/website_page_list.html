@@ -1,0 +1,80 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Website Pages - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Website Pages</h2>
+        <p class="text-muted">Manage organizational website pages.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'communications:website_page_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Page
+        </a>
+        <a href="{% url 'communications:website_content_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-layout-text-window me-1"></i> Content
+        </a>
+    </div>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search website pages...">
+        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+{% if pages %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <caption>List of Website Pages</caption>
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Slug</th>
+                <th scope="col">Type</th>
+                <th scope="col">Published</th>
+                <th class="text-end" scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for page in pages %}
+            <tr>
+                <td>
+                    <a href="{% url 'communications:website_page_detail' page.pk %}" class="text-decoration-none">{{ page.title }}</a>
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ page.reference_number }}</span></td>
+                <td><code>{{ page.slug }}</code></td>
+                <td>{{ page.get_page_type_display }}</td>
+                <td>
+                    {% if page.is_published %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'communications:website_page_update' page.pk %}" class="btn btn-outline-secondary" aria-label="Edit page">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'communications:website_page_delete' page.pk %}" class="btn btn-outline-danger" aria-label="Delete page">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4">No website pages found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "communications/_pagination.html" with items=pages %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    No website pages found. <a href="{% url 'communications:website_page_create' %}" class="alert-link">Add your first page</a>.
+</div>
+{% endif %}
+{% endblock %}
