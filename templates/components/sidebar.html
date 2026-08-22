@@ -202,6 +202,16 @@
                     </a>
                 </li>
             {% endif %}
+            {% if request.user|has_perm:"performance.view" or request.user|has_perm:"performance.manage" %}
+                <li class="nav-item" role="none">
+                    <a href="{% url 'performance:dashboard' %}"
+                       class="nav-link {% if request.resolver_match.namespace == 'performance' %}active bg-primary-brand text-white{% else %}link-dark{% endif %} rounded-3 d-flex align-items-center py-2 px-3"
+                       {% if request.resolver_match.namespace == 'performance' %}aria-current="page"{% endif %}
+                       role="menuitem">
+                        <i class="bi bi-speedometer2 me-3 fs-5" aria-hidden="true"></i> Performance
+                    </a>
+                </li>
+            {% endif %}
             {% if request.user|has_perm:"governance.view" or request.user|has_perm:"governance.manage" %}
             <li class="nav-item" role="none">
                 <a href="{% url 'governance:governance_dashboard' %}"

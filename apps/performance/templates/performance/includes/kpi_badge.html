@@ -1,0 +1,7 @@
+<span class="badge bg-{{ status|metric_status_class }} px-3 py-2 fs-6">
+  <i class="bi bi-{% if status == 'healthy' %}check-circle{% elif status == 'warning' %}exclamation-triangle{% elif status == 'critical' %}x-circle{% else %}question-circle{% endif %} me-1"></i>
+  {{ kpi.name }}
+  {% if value is not None %}
+  <span class="ms-2">{{ value|floatformat:2 }} {{ kpi.target_unit }}</span>
+  {% endif %}
+</span>

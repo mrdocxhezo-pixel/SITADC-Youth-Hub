@@ -37,12 +37,16 @@ INSTALLED_APPS = [
     "apps.governance.apps.GovernanceConfig",
     "apps.communications.apps.CommunicationsConfig",
     "apps.rbac.apps.RbacConfig",
+    "apps.security.apps.SecurityConfig",
     "apps.references.apps.ReferencesConfig",
+    "apps.configuration.apps.ConfigurationConfig",
     "apps.system_settings.apps.SystemSettingsConfig",
     "apps.settings.apps.SettingsConfig",
     "apps.finance.apps.FinanceConfig",
     "apps.organizations.apps.OrganizationsConfig",
     "apps.dashboard.apps.DashboardConfig",
+    "apps.accessibility.apps.AccessibilityConfig",
+    "apps.performance.apps.PerformanceConfig",
 ]
 
 MIDDLEWARE = [

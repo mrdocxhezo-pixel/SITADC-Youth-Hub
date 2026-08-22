@@ -1,0 +1,22 @@
+<div class="card h-100 border-{{ status|metric_status_class }}">
+  <div class="card-body">
+    <h6 class="card-title text-muted small text-uppercase">{{ title }}</h6>
+    <div class="d-flex align-items-baseline">
+      <h2 class="mb-0 fw-monospace me-2">{{ value }}</h2>
+      <span class="text-muted">{{ unit }}</span>
+    </div>
+    {% if trend %}
+    <div class="mt-1">
+      <span class="badge bg-{% if trend == 'improving' %}success{% elif trend == 'degrading' %}danger{% else %}secondary{% endif %}">
+        {% if trend == 'improving' %}
+        <i class="bi bi-arrow-down me-1"></i> Improving
+        {% elif trend == 'degrading' %}
+        <i class="bi bi-arrow-up me-1"></i> Degrading
+        {% else %}
+        <i class="bi bi-dash me-1"></i> Stable
+        {% endif %}
+      </span>
+    </div>
+    {% endif %}
+  </div>
+</div>

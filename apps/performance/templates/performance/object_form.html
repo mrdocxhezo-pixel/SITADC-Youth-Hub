@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ model_name|capfirst }} Form - SITADC Youth Hub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'performance:dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{{ list_url }}">{{ model_name|capfirst }}s</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ form.instance.pk|yesno:"Update,Create" }} {{ model_name }}</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+      <i class="bi bi-{{ model_name|lower }}-add me-2" aria-hidden="true"></i>
+      {{ form.instance.pk|yesno:"Update,Create" }} {{ model_name|capfirst }}
+    </h1>
+    <a href="{{ list_url }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Back to List
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="mb-3">
+          <label for="{{ field.id_for_label }}" class="form-label">
+            {{ field.label }}
+            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+          </label>
+          {{ field }}
+          {% if field.help_text %}
+          <div class="form-text">{{ field.help_text }}</div>
+          {% endif %}
+          {% if field.errors %}
+          <div class="text-danger small">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{{ list_url }}" class="btn btn-outline-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check me-1"></i> Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

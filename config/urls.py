@@ -35,12 +35,16 @@ urlpatterns = [
     ),
     path("system-settings/", include("apps.system_settings.urls", namespace="system_settings")),
     path("settings/", include("apps.settings.urls", namespace="settings")),
+    path("configuration/", include("apps.configuration.urls", namespace="configuration")),
     path("organizations/", include("apps.organizations.urls", namespace="organizations")),
     path("references/", include("apps.references.urls", namespace="references")),
     path("rbac/", include("apps.rbac.urls", namespace="rbac")),
     path("search/", include("apps.search.urls", namespace="search")),
     path("exports/", include("apps.exports.urls", namespace="exports")),
     path("finance/", include("apps.finance.urls", namespace="finance")),
+    path("security/", include("apps.security.urls", namespace="security")),
+    path("accessibility/", include("apps.accessibility.urls", namespace="accessibility")),
+    path("performance/", include("apps.performance.urls", namespace="performance")),
 ]
 
 if settings.DEBUG:

@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+{% load performance_tags %}
+
+{% block title %}Performance Dashboard - SITADC Youth Hub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+      <i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>
+      Performance Dashboard
+    </h1>
+    <div class="btn-group">
+      <a href="{% url 'performance:metric_list' %}" class="btn btn-outline-primary">
+        <i class="bi bi-graph-up me-1"></i> Metrics
+      </a>
+      <a href="{% url 'performance:kpi_list' %}" class="btn btn-outline-primary">
+        <i class="bi bi-bullseye me-1"></i> KPIs
+      </a>
+      <a href="{% url 'performance:report_create' %}" class="btn btn-primary">
+        <i class="bi bi-file-earmark-plus me-1"></i> Generate Report
+      </a>
+    </div>
+  </div>
+
+  <!-- Alert Summary -->
+  {% if critical_alerts or unacknowledged_alerts %}
+  <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+    <strong><i class="bi bi-exclamation-triangle me-2"></i> Active Alerts:</strong>
+    {% if critical_alerts %}
+      <span class="badge bg-danger ms-2">{{ critical_alerts|length }} Critical</span>
+    {% endif %}
+    {% if unacknowledged_alerts %}
+      <span class="badge bg-warning text-dark ms-2">{{ unacknowledged_alerts|length }} Unacknowledged</span>
+    {% endif %}
+    <a href="{% url 'performance:alert_list' %}" class="alert-link ms-3">View all alerts</a>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
+
+  <!-- KPI Status Cards -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h5 class="mb-3"><i class="bi bi-bullseye me-2"></i> KPI Status Overview</h5>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="card border-success h-100">
+            <div class="card-body text-center">
+              <h6 class="card-title text-success"><i class="bi bi-check-circle-fill me-1"></i> Healthy</h6>
+              <h2 class="mb-0">{{ kpi_status.healthy|length }}</h2>
+              <small class="text-muted">KPIs meeting targets</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card border-warning h-100">
+            <div class="card-body text-center">
+              <h6 class="card-title text-warning"><i class="bi bi-exclamation-triangle-fill me-1"></i> Warning</h6>
+              <h2 class="mb-0">{{ kpi_status.warning|length }}</h2>
+              <small class="text-muted">KPIs approaching thresholds</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card border-danger h-100">
+            <div class="card-body text-center">
+              <h6 class="card-title text-danger"><i class="bi bi-x-circle-fill me-1"></i> Critical</h6>
+              <h2 class="mb-0">{{ kpi_status.critical|length }}</h2>
+              <small class="text-muted">KPIs exceeding critical thresholds</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card border-secondary h-100">
+            <div class="card-body text-center">
+              <h6 class="card-title text-secondary"><i class="bi bi-question-circle-fill me-1"></i> No Data</h6>
+              <h2 class="mb-0">{{ kpi_status.no_data|length }}</h2>
+              <small class="text-muted">KPIs without recent metrics</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="card-subtitle text-muted">Benchmarks</h6>
+          <h3 class="mb-1">{{ benchmark_summary.total }}</h3>
+          <div class="d-flex gap-2 small">
+            <span class="badge bg-info">{{ benchmark_summary.running }} Running</span>
+            <span class="badge bg-success">{{ benchmark_summary.passed }} Passed</span>
+            <span class="badge bg-danger">{{ benchmark_summary.failed }} Failed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="card-subtitle text-muted">Optimizations</h6>
+          <h3 class="mb-1">{{ optimization_summary.total }}</h3>
+          <div class="d-flex flex-wrap gap-1 small">
+            <span class="badge bg-secondary">{{ optimization_summary.identified }} Identified</span>
+            <span class="badge bg-info">{{ optimization_summary.in_progress }} In Progress</span>
+            <span class="badge bg-primary">{{ optimization_summary.testing }} Testing</span>
+            <span class="badge bg-success">{{ optimization_summary.verified }} Verified</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="card-subtitle text-muted">Cache Configs</h6>
+          <h3 class="mb-1">{{ cache_summary.total }}</h3>
+          <div class="d-flex flex-wrap gap-1 small">
+            {% for backend, count in cache_summary.backends.items %}
+              {% if count > 0 %}
+                <span class="badge bg-light text-dark">{{ backend|lower }}: {{ count }}</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="card-subtitle text-muted">Queue Configs</h6>
+          <h3 class="mb-1">{{ queue_summary.total }}</h3>
+          <div class="d-flex flex-wrap gap-1 small">
+            {% for backend, count in queue_summary.backends.items %}
+              {% if count > 0 %}
+                <span class="badge bg-light text-dark">{{ backend|lower }}: {{ count }}</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Detail Table -->
+  {% if kpi_status.healthy or kpi_status.warning or kpi_status.critical %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-bullseye me-2"></i> KPI Details</h5>
+          <a href="{% url 'performance:kpi_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>KPI</th>
+                  <th>Component</th>
+                  <th>Current Value</th>
+                  <th>Target</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for result in kpi_status.healthy %}
+                <tr>
+                  <td>{{ result.kpi.name }}</td>
+                  <td>{{ result.kpi.get_component_display }}</td>
+                  <td>{{ result.value|floatformat:2 }} {{ result.evaluation.unit }}</td>
+                  <td>{{ result.evaluation.target }} {{ result.evaluation.unit }}</td>
+                  <td><span class="badge bg-success">Healthy</span></td>
+                </tr>
+                {% endfor %}
+                {% for result in kpi_status.warning %}
+                <tr class="table-warning">
+                  <td>{{ result.kpi.name }}</td>
+                  <td>{{ result.kpi.get_component_display }}</td>
+                  <td>{{ result.value|floatformat:2 }} {{ result.evaluation.unit }}</td>
+                  <td>{{ result.evaluation.target }} {{ result.evaluation.unit }}</td>
+                  <td><span class="badge bg-warning text-dark">Warning</span></td>
+                </tr>
+                {% endfor %}
+                {% for result in kpi_status.critical %}
+                <tr class="table-danger">
+                  <td>{{ result.kpi.name }}</td>
+                  <td>{{ result.kpi.get_component_display }}</td>
+                  <td>{{ result.value|floatformat:2 }} {{ result.evaluation.unit }}</td>
+                  <td>{{ result.evaluation.target }} {{ result.evaluation.unit }}</td>
+                  <td><span class="badge bg-danger">Critical</span></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Recent Metrics by Component -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i> Recent Metrics by Component</h5>
+        </div>
+        <div class="card-body">
+          {% if recent_metrics %}
+            <div class="row g-3">
+              {% for component, metrics in recent_metrics.items %}
+                <div class="col-md-6 col-lg-4">
+                  <div class="card h-100">
+                    <div class="card-header bg-light">
+                      <h6 class="mb-0">{{ component }}</h6>
+                    </div>
+                    <div class="card-body p-2">
+                      <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                          <thead>
+                            <tr>
+                              <th>Metric</th>
+                              <th class="text-end">Value</th>
+                              <th>Time</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for metric in metrics|slice:":5" %}
+                            <tr>
+                              <td>{{ metric.metric_name }}</td>
+                              <td class="text-end">{{ metric.value|floatformat:2 }} {{ metric.unit }}</td>
+                              <td><small class="text-muted">{{ metric.created_at|timesince }} ago</small></td>
+                            </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                      <a href="{% url 'performance:metric_list' %}?search={{ component }}" class="btn btn-sm btn-outline-secondary w-100">View All</a>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-center text-muted py-4">No recent metrics available. Metrics are collected automatically.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Critical Alerts -->
+  {% if critical_alerts %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-danger">
+        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-exclamation-octagon me-2"></i> Critical Alerts</h5>
+          <a href="{% url 'performance:alert_list' %}" class="btn btn-sm btn-light">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            {% for alert in critical_alerts|slice:":5" %}
+            <a href="{% url 'performance:alert_detail' alert.pk %}" class="list-group-item list-group-item-action">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 class="mb-1">{{ alert.title }}</h6>
+                  <small class="text-muted">{{ alert.component }} • {{ alert.created_at|timesince }} ago</small>
+                </div>
+                <span class="badge bg-danger">{{ alert.get_severity_display }}</span>
+              </div>
+              <p class="mb-1 small">{{ alert.message|truncatechars:100 }}</p>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Unacknowledged Alerts -->
+  {% if unacknowledged_alerts %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-warning">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-bell me-2"></i> Unacknowledged Alerts</h5>
+          <a href="{% url 'performance:alert_list' %}" class="btn btn-sm btn-outline-dark">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            {% for alert in unacknowledged_alerts|slice:":5" %}
+            <a href="{% url 'performance:alert_detail' alert.pk %}" class="list-group-item list-group-item-action">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 class="mb-1">{{ alert.title }}</h6>
+                  <small class="text-muted">{{ alert.component }} • {{ alert.created_at|timesince }} ago</small>
+                </div>
+                <span class="badge bg-{{ alert.severity|alert_severity_class }}">{{ alert.get_severity_display }}</span>
+              </div>
+              <p class="mb-1 small">{{ alert.message|truncatechars:100 }}</p>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Quick Actions -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-lightning me-2"></i> Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <a href="{% url 'performance:benchmark_create' %}" class="btn btn-outline-primary w-100 p-3">
+                <i class="bi bi-play-circle fs-4 d-block mb-2"></i>
+                Run Benchmark
+              </a>
+            </div>
+            <div class="col-md-3">
+              <a href="{% url 'performance:optimization_create' %}" class="btn btn-outline-success w-100 p-3">
+                <i class="bi bi-tools fs-4 d-block mb-2"></i>
+                New Optimization
+              </a>
+            </div>
+            <div class="col-md-3">
+              <a href="{% url 'performance:report_create' %}" class="btn btn-outline-info w-100 p-3">
+                <i class="bi bi-file-earmark-text fs-4 d-block mb-2"></i>
+                Generate Report
+              </a>
+            </div>
+            <div class="col-md-3">
+              <a href="{% url 'performance:kpi_create' %}" class="btn btn-outline-secondary w-100 p-3">
+                <i class="bi bi-plus-circle fs-4 d-block mb-2"></i>
+                Define KPI
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto-refresh dashboard data every 60 seconds
+  setInterval(function() {
+    fetch('{% url "performance:dashboard_api" %}')
+      .then(response => response.json())
+      .then(data => {
+        // Update KPI badges
+        if (data.kpi_results) {
+          // Could update UI elements here
+          console.log('Dashboard updated:', data.timestamp);
+        }
+      })
+      .catch(err => console.warn('Dashboard refresh failed:', err));
+  }, 60000);
+</script>
+{% endblock %}

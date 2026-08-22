@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Optimizations - SITADC Youth Hub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+      <i class="bi bi-tools me-2" aria-hidden="true"></i>
+      Optimizations
+    </h1>
+    <a href="{% url 'performance:optimization_create' %}" class="btn btn-primary">
+      <i class="bi bi-plus me-1"></i> New Optimization
+    </a>
+  </div>
+
+  <form method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+      <input type="text" name="search" class="form-control" placeholder="Search optimizations..." value="{{ search_query }}">
+    </div>
+    <div class="col-md-3">
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        {% for value, label in OptimizationStatus.choices %}
+        <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select name="type" class="form-select">
+        <option value="">All Types</option>
+        {% for value, label in OptimizationType.choices %}
+        <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+    </div>
+  </form>
+
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Component</th>
+              <th>Status</th>
+              <th>Improvement</th>
+              <th>Risk</th>
+              <th>Identified</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for opt in optimizations %}
+            <tr>
+              <td>
+                <a href="{% url 'performance:optimization_detail' opt.pk %}">{{ opt.title }}</a>
+              </td>
+              <td>{{ opt.get_optimization_type_display }}</td>
+              <td><span class="badge bg-secondary">{{ opt.get_component_display }}</span></td>
+              <td><span class="badge bg-{{ opt.status|lower }}">{{ opt.get_status_display }}</span></td>
+              <td>
+                {% if opt.improvement_percentage is not None %}
+                <span class="badge bg-{% if opt.improvement_percentage > 0 %}success{% else %}danger{% endif %}">
+                  {{ opt.improvement_percentage }}%
+                </span>
+                {% else %}
+                <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td><span class="badge bg-{{ opt.risk_level|lower }}">{{ opt.risk_level }}</span></td>
+              <td>{{ opt.identified_at|date:"Y-m-d" }}</td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'performance:optimization_detail' opt.pk %}" class="btn btn-outline-primary" title="View">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-4">No optimizations found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% if is_paginated %}
+    <div class="card-footer">
+      <nav aria-label="Optimizations pagination">
+        <ul class="pagination justify-content-center mb-0">
+          {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">First</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Previous</a></li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">First</span></li>
+          <li class="page-item disabled"><span class="page-link">Previous</span></li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Next</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Last</a></li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">Next</span></li>
+          <li class="page-item disabled"><span class="page-link">Last</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

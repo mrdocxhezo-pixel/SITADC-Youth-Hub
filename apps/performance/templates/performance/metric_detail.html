@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ metric.metric_name }} - SITADC Youth Hub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'performance:dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'performance:metric_list' %}">Metrics</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ metric.metric_name }}</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+      <i class="bi bi-graph-up me-2" aria-hidden="true"></i>
+      {{ metric.metric_name }}
+    </h1>
+    <div>
+      <a href="{% url 'performance:metric_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to List
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body text-center">
+          <h2 class="fw-monospace text-primary">{{ metric.value }}</h2>
+          <p class="text-muted mb-0">{{ metric.get_unit_display }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Metric Details</h5>
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-3">Component</dt>
+            <dd class="col-sm-9"><span class="badge bg-secondary">{{ metric.get_component_display }}</span></dd>
+
+            <dt class="col-sm-3">Module</dt>
+            <dd class="col-sm-9">{{ metric.module|default:"-" }}</dd>
+
+            <dt class="col-sm-3">Metric Name</dt>
+            <dd class="col-sm-9">{{ metric.metric_name }}</dd>
+
+            <dt class="col-sm-3">Unit</dt>
+            <dd class="col-sm-9">{{ metric.get_unit_display }}</dd>
+
+            <dt class="col-sm-3">Environment</dt>
+            <dd class="col-sm-9"><span class="badge bg-light text-dark">{{ metric.environment }}</span></dd>
+
+            <dt class="col-sm-3">Request Path</dt>
+            <dd class="col-sm-9">{{ metric.request_path|default:"-" }}</dd>
+
+            <dt class="col-sm-3">Recorded At</dt>
+            <dd class="col-sm-9">{{ metric.created_at|date:"Y-m-d H:i:s" }}</dd>
+
+            <dt class="col-sm-3">Recorded By</dt>
+            <dd class="col-sm-9">{{ metric.created_by.get_full_name|default:metric.created_by.username }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if metric.query_params or metric.tags or metric.notes %}
+  <div class="row g-4 mt-4">
+    {% if metric.query_params %}
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Query Parameters</h5></div>
+        <div class="card-body"><pre class="mb-0">{{ metric.query_params|pprint }}</pre></div>
+      </div>
+    </div>
+    {% endif %}
+    {% if metric.tags %}
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Tags</h5></div>
+        <div class="card-body"><pre class="mb-0">{{ metric.tags|pprint }}</pre></div>
+      </div>
+    </div>
+    {% endif %}
+    {% if metric.notes %}
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Notes</h5></div>
+        <div class="card-body">{{ metric.notes }}</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
