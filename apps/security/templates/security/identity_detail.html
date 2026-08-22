@@ -1,0 +1,540 @@
+{% extends "security/base.html" %}
+{% load i18n %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-person me-2"></i>{{ identity.display_name }}</h1>
+    <div class="btn-group">
+        <a href="{% url 'security:identity_update' identity.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>{% trans "Edit" %}
+        </a>
+        <a href="{% url 'security:identity_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>{% trans "Back to List" %}
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row">
+    <!-- Main Info -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Identity Details" %}</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">{% trans "Identifier" %}</dt>
+                    <dd class="col-sm-8"><code>{{ identity.identifier }}</code></dd>
+
+                    <dt class="col-sm-4">{% trans "Type" %}</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-info">{{ identity.get_identity_type_display }}</span>
+                        {% if identity.identity_type == "service" %}
+                        <span class="badge bg-secondary ms-1">{{ identity.get_service_type_display }}</span>
+                        {% elif identity.identity_type == "organization" %}
+                        <span class="badge bg-secondary ms-1">{{ identity.get_org_identity_type_display }}</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">{% trans "Status" %}</dt>
+                    <dd class="col-sm-8">
+                        {% if identity.is_active %}
+                        <span class="badge bg-success">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="badge bg-danger">{% trans "Inactive/Expired" %}</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">{% trans "Confidentiality" %}</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge
+                            {% if identity.confidentiality == 'public' %}bg-success
+                            {% elif identity.confidentiality == 'internal' %}bg-info
+                            {% elif identity.confidentiality == 'restricted' %}bg-warning text-dark
+                            {% elif identity.confidentiality == 'confidential' %}bg-danger
+                            {% else %}bg-dark{% endif %}">
+                            {{ identity.get_confidentiality_display }}
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-4">{% trans "Owner" %}</dt>
+                    <dd class="col-sm-8">{{ identity.owner|default:"-" }}</dd>
+
+                    <dt class="col-sm-4">{% trans "Expires" %}</dt>
+                    <dd class="col-sm-8">
+                        {% if identity.expires_at %}
+                        {% if identity.is_expired %}
+                        <span class="text-danger">{{ identity.expires_at|date:"M d, Y" }} (Expired)</span>
+                        {% else %}
+                        {{ identity.expires_at|date:"M d, Y" }}
+                        {% endif %}
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">{% trans "Risk Score" %}</dt>
+                    <dd class="col-sm-8">
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar
+                                {% if risk_score >= 70 %}bg-danger
+                                {% elif risk_score >= 40 %}bg-warning
+                                {% else %}bg-success{% endif %}"
+                                role="progressbar" style="width: {{ risk_score }}%">
+                                {{ risk_score }}/100
+                            </div>
+                        </div>
+                    </dd>
+
+                    <dt class="col-sm-4">{% trans "Created" %}</dt>
+                    <dd class="col-sm-8">{{ identity.created_at|date:"M d, Y H:i" }}</dd>
+
+                    <dt class="col-sm-4">{% trans "Last Used" %}</dt>
+                    <dd class="col-sm-8">{{ identity.last_used_at|date:"M d, Y H:i"|default:"-" }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        {% if identity.description %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Description" %}</h5>
+            </div>
+            <div class="card-body">
+                {{ identity.description|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if identity.tags %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Tags" %}</h5>
+            </div>
+            <div class="card-body">
+                {% for tag in identity.tags %}
+                <span class="badge bg-secondary me-1">{{ tag }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Roles -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-shield me-1"></i>{% trans "Role Assignments" %}</h5>
+                <a href="{% url 'security:identity_roles' identity.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus me-1"></i>{% trans "Assign Role" %}
+                </a>
+            </div>
+            <div class="card-body">
+                {% if identity_roles %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Role" %}</th>
+                                <th>{% trans "Assigned By" %}</th>
+                                <th>{% trans "Assigned" %}</th>
+                                <th>{% trans "Expires" %}</th>
+                                <th>{% trans "Actions" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ir in identity_roles %}
+                            <tr>
+                                <td>{{ ir.role.name }}</td>
+                                <td>{{ ir.assigned_by|default:"-" }}</td>
+                                <td>{{ ir.assigned_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if ir.expires_at %}
+                                    {% if ir.is_expired %}
+                                    <span class="text-danger">{{ ir.expires_at|date:"M d, Y" }}</span>
+                                    {% else %}
+                                    {{ ir.expires_at|date:"M d, Y" }}
+                                    {% endif %}
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'security:identity_role_revoke' identity.pk ir.role.slug %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-x-circle"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No role assignments." %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Permission Grants -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-key me-1"></i>{% trans "Direct Permission Grants" %}</h5>
+                <a href="{% url 'security:permission_grants' identity.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus me-1"></i>{% trans "Grant Permission" %}
+                </a>
+            </div>
+            <div class="card-body">
+                {% if permission_grants %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Permission" %}</th>
+                                <th>{% trans "Granted By" %}</th>
+                                <th>{% trans "Granted" %}</th>
+                                <th>{% trans "Expires" %}</th>
+                                <th>{% trans "Actions" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grant in permission_grants %}
+                            <tr>
+                                <td>{{ grant.permission.full_name }}</td>
+                                <td>{{ grant.granted_by|default:"-" }}</td>
+                                <td>{{ grant.granted_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if grant.expires_at %}
+                                    {% if grant.is_expired %}
+                                    <span class="text-danger">{{ grant.expires_at|date:"M d, Y" }}</span>
+                                    {% else %}
+                                    {{ grant.expires_at|date:"M d, Y" }}
+                                    {% endif %}
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'security:permission_grant_revoke' identity.pk grant.permission.pk %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-x-circle"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No direct permission grants." %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- MFA Enrollments -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-key me-1"></i>{% trans "MFA Enrollments" %}</h5>
+                <a href="{% url 'security:mfa_enrollment_create' identity.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus me-1"></i>{% trans "Enroll MFA" %}
+                </a>
+            </div>
+            <div class="card-body">
+                {% if mfa_enrollments %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Method" %}</th>
+                                <th>{% trans "Primary" %}</th>
+                                <th>{% trans "Backup" %}</th>
+                                <th>{% trans "Enabled" %}</th>
+                                <th>{% trans "Trusted" %}</th>
+                                <th>{% trans "Last Used" %}</th>
+                                <th>{% trans "Usage" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enrollment in mfa_enrollments %}
+                            <tr>
+                                <td>{{ enrollment.get_method_display }}{% if enrollment.name %} ({{ enrollment.name }}){% endif %}</td>
+                                <td>{% if enrollment.is_primary %}<i class="bi bi-star-fill text-warning"></i>{% endif %}</td>
+                                <td>{% if enrollment.is_backup %}<i class="bi bi-shield-check text-info"></i>{% endif %}</td>
+                                <td>{% if enrollment.is_enabled %}<span class="badge bg-success">{% trans "Yes" %}</span>{% else %}<span class="badge bg-secondary">{% trans "No" %}</span>{% endif %}</td>
+                                <td>{% if enrollment.is_trusted %}<span class="badge bg-success">{% trans "Yes" %}</span>{% else %}<span class="badge bg-secondary">{% trans "No" %}</span>{% endif %}</td>
+                                <td>{{ enrollment.last_used_at|date:"M d, Y H:i"|default:"-" }}</td>
+                                <td>{{ enrollment.usage_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No MFA enrollments." %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-terminal me-1"></i>{% trans "Active Sessions" %}</h5>
+            </div>
+            <div class="card-body">
+                {% if sessions %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Session Key" %}</th>
+                                <th>{% trans "IP Address" %}</th>
+                                <th>{% trans "User Agent" %}</th>
+                                <th>{% trans "Started" %}</th>
+                                <th>{% trans "Last Activity" %}</th>
+                                <th>{% trans "Expires" %}</th>
+                                <th>{% trans "MFA" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                            <tr>
+                                <td><code>{{ session.session_key[:12] }}...</code></td>
+                                <td>{{ session.ip_address }}</td>
+                                <td><small>{{ session.user_agent|truncatechars:40 }}</small></td>
+                                <td>{{ session.started_at|date:"M d, Y H:i" }}</td>
+                                <td>{{ session.last_activity_at|date:"M d, Y H:i" }}</td>
+                                <td>{{ session.expires_at|date:"M d, Y H:i" }}</td>
+                                <td>{% if session.is_mfa_used %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No active sessions." %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Login Attempts -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-box-arrow-in-right me-1"></i>{% trans "Recent Login Attempts (30 days)" %}</h5>
+            </div>
+            <div class="card-body">
+                {% if login_attempts %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Username" %}</th>
+                                <th>{% trans "IP" %}</th>
+                                <th>{% trans "Outcome" %}</th>
+                                <th>{% trans "Risk" %}</th>
+                                <th>{% trans "Time" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in login_attempts %}
+                            <tr {% if attempt.is_suspicious %}class="table-warning"{% endif %}>
+                                <td>{{ attempt.username_attempted }}</td>
+                                <td>{{ attempt.ip_address }}</td>
+                                <td>
+                                    {% if attempt.outcome == 'success' %}
+                                    <span class="badge bg-success">{% trans "Success" %}</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ attempt.get_outcome_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-warning text-dark">{{ attempt.risk_score }}</span></td>
+                                <td>{{ attempt.created_at|timesince }} {% trans "ago" %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No login attempts in the last 30 days." %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent MFA Attempts -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-key me-1"></i>{% trans "Recent MFA Attempts (30 days)" %}</h5>
+            </div>
+            <div class="card-body">
+                {% if mfa_attempts %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Method" %}</th>
+                                <th>{% trans "Outcome" %}</th>
+                                <th>{% trans "Trusted" %}</th>
+                                <th>{% trans "Backup" %}</th>
+                                <th>{% trans "Risk" %}</th>
+                                <th>{% trans "Time" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in mfa_attempts %}
+                            <tr {% if attempt.is_suspicious %}class="table-warning"{% endif %}>
+                                <td>{{ attempt.enrollment.get_method_display }}</td>
+                                <td>
+                                    {% if attempt.outcome == 'success' %}
+                                    <span class="badge bg-success">{% trans "Success" %}</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ attempt.get_outcome_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{% if attempt.trusted_device %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %}</td>
+                                <td>{% if attempt.backup_code_used %}<i class="bi bi-key text-info"></i>{% endif %}</td>
+                                <td><span class="badge bg-warning text-dark">{{ attempt.risk_score }}</span></td>
+                                <td>{{ attempt.attempted_at|timesince }} {% trans "ago" %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No MFA attempts in the last 30 days." %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- API Credentials -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-key me-1"></i>{% trans "API Credentials" %}</h5>
+                <a href="{% url 'security:api_credential_create' identity.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus me-1"></i>{% trans "Create Credential" %}
+                </a>
+            </div>
+            <div class="card-body">
+                {% if api_credentials %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Name" %}</th>
+                                <th>{% trans "Type" %}</th>
+                                <th>{% trans "Service" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Last Used" %}</th>
+                                <th>{% trans "Usage" %}</th>
+                                <th>{% trans "Actions" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cred in api_credentials %}
+                            <tr {% if cred.is_compromised %}class="table-danger"{% endif %}>
+                                <td>{{ cred.name }}</td>
+                                <td>{{ cred.get_credential_type_display }}</td>
+                                <td>{{ cred.service_name }}</td>
+                                <td>
+                                    {% if cred.is_compromised %}
+                                    <span class="badge bg-danger">{% trans "Compromised" %}</span>
+                                    {% elif cred.is_valid %}
+                                    <span class="badge bg-success">{% trans "Valid" %}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{% trans "Invalid/Expired" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ cred.last_used_at|date:"M d, Y H:i"|default:"-" }}</td>
+                                <td>{{ cred.usage_count }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'security:api_credential_rotate' identity.pk cred.pk %}" class="btn btn-outline-primary">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </a>
+                                        <a href="{% url 'security:api_credential_revoke' identity.pk cred.pk %}" class="btn btn-outline-danger">
+                                            <i class="bi bi-x-circle"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No API credentials." %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Secure Files -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-lock me-1"></i>{% trans "Secure Files" %}</h5>
+                <a href="{% url 'security:secure_file_create' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus me-1"></i>{% trans "Add File" %}
+                </a>
+            </div>
+            <div class="card-body">
+                {% if secure_files %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Filename" %}</th>
+                                <th>{% trans "Version" %}</th>
+                                <th>{% trans "Size" %}</th>
+                                <th>{% trans "Confidentiality" %}</th>
+                                <th>{% trans "Encrypted" %}</th>
+                                <th>{% trans "Virus Scan" %}</th>
+                                <th>{% trans "Created" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in secure_files %}
+                            <tr>
+                                <td><a href="{% url 'security:secure_file_detail' file.pk %}">{{ file.filename }}</a></td>
+                                <td>v{{ file.version }}{% if file.is_latest_version %} <i class="bi bi-check-circle text-success"></i>{% endif %}</td>
+                                <td>{{ file.file_size|filesizeformat }}</td>
+                                <td>
+                                    <span class="badge
+                                        {% if file.confidentiality == 'public' %}bg-success
+                                        {% elif file.confidentiality == 'internal' %}bg-info
+                                        {% elif file.confidentiality == 'restricted' %}bg-warning text-dark
+                                        {% elif file.confidentiality == 'confidential' %}bg-danger
+                                        {% else %}bg-dark{% endif %}">
+                                        {{ file.get_confidentiality_display }}
+                                    </span>
+                                </td>
+                                <td>{% if file.is_encrypted %}<i class="bi bi-lock-fill text-success"></i>{% else %}<i class="bi bi-unlock text-danger"></i>{% endif %}</td>
+                                <td>
+                                    <span class="badge
+                                        {% if file.virus_scan_status == 'clean' %}bg-success
+                                        {% elif file.virus_scan_status == 'infected' %}bg-danger
+                                        {% elif file.virus_scan_status == 'quarantined' %}bg-warning text-dark
+                                        {% elif file.virus_scan_status == 'scan_failed' %}bg-secondary
+                                        {% else %}bg-info{% endif %}">
+                                        {{ file.get_virus_scan_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ file.created_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No secure files." %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

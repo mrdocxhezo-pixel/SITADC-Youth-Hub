@@ -1,0 +1,438 @@
+{% extends "security/base.html" %}
+{% load i18n humanize %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-shield-lock me-2"></i>{% trans "Security Dashboard" %}</h1>
+    <div class="btn-group">
+        <a href="{% url 'security:identity_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-people me-1"></i>{% trans "Identities" %}
+        </a>
+        <a href="{% url 'security:access_review_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-clipboard-check me-1"></i>{% trans "Access Reviews" %}
+        </a>
+        <a href="{% url 'security:login_attempt_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-box-arrow-in-right me-1"></i>{% trans "Login Attempts" %}
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            {% trans "Total Identities" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.total_identities|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-people-fill fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            {% trans "Active Identities" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.active_identities|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-person-check-fill fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            {% trans "Service Identities" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.service_identities|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-cpu-fill fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            {% trans "Active Sessions" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.active_sessions|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-terminal-fill fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            {% trans "Failed Logins (7d)" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.failed_logins_7d|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-exclamation-triangle-fill fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-dark shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">
+                            {% trans "Suspicious Logins (7d)" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.suspicious_logins_7d|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-shield-exclamation fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            {% trans "MFA Enrolled" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.mfa_enrolled_identities|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-key-fill fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-secondary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                            {% trans "Pending Reviews" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.pending_access_reviews|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-hourglass-split fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            {% trans "Overdue Reviews" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.overdue_access_reviews|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-calendar-x fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            {% trans "Active API Credentials" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.active_api_credentials|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-key fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            {% trans "Compromised Credentials" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.compromised_credentials|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-bug-fill fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            {% trans "Secure Files" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">{{ stats.secure_files|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-file-earmark-lock-fill fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <!-- Failed Logins -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-danger">
+                    <i class="bi bi-exclamation-octagon me-1"></i>{% trans "Recent Failed Logins (7 days)" %}
+                </h6>
+                <a href="{% url 'security:login_attempt_list' %}?outcome=failed_invalid_credentials" class="btn btn-sm btn-outline-danger">
+                    {% trans "View All" %}
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_failed_logins %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Username" %}</th>
+                                <th>{% trans "IP" %}</th>
+                                <th>{% trans "Outcome" %}</th>
+                                <th>{% trans "Time" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in recent_failed_logins %}
+                            <tr>
+                                <td>{{ attempt.username_attempted }}</td>
+                                <td>{{ attempt.ip_address }}</td>
+                                <td><span class="badge bg-danger">{{ attempt.get_outcome_display }}</span></td>
+                                <td>{{ attempt.created_at|timesince }} {% trans "ago" %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No failed login attempts in the last 7 days." %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Suspicious Activity -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-dark">
+                    <i class="bi bi-shield-exclamation me-1"></i>{% trans "Suspicious Activity (7 days)" %}
+                </h6>
+                <a href="{% url 'security:login_attempt_list' %}?suspicious=true" class="btn btn-sm btn-outline-dark">
+                    {% trans "View All" %}
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_suspicious %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Username" %}</th>
+                                <th>{% trans "IP" %}</th>
+                                <th>{% trans "Risk" %}</th>
+                                <th>{% trans "Time" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in recent_suspicious %}
+                            <tr>
+                                <td>{{ attempt.username_attempted }}</td>
+                                <td>{{ attempt.ip_address }}</td>
+                                <td><span class="badge bg-warning text-dark">{{ attempt.risk_score }}</span></td>
+                                <td>{{ attempt.created_at|timesince }} {% trans "ago" %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No suspicious activity detected." %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Access Reviews -->
+<div class="row">
+    <!-- Pending Reviews -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-hourglass-split me-1"></i>{% trans "Pending Access Reviews" %}
+                </h6>
+                <a href="{% url 'security:access_review_list' %}?status=pending" class="btn btn-sm btn-outline-primary">
+                    {% trans "View All" %}
+                </a>
+            </div>
+            <div class="card-body">
+                {% if pending_reviews %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Review" %}</th>
+                                <th>{% trans "Type" %}</th>
+                                <th>{% trans "Due" %}</th>
+                                <th>{% trans "Progress" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in pending_reviews %}
+                            <tr>
+                                <td><a href="{% url 'security:access_review_detail' review.pk %}">{{ review.name }}</a></td>
+                                <td>{{ review.get_review_type_display }}</td>
+                                <td>
+                                    {% if review.is_overdue %}
+                                    <span class="text-danger fw-bold">{{ review.due_date|date:"M d, Y" }}</span>
+                                    {% else %}
+                                    {{ review.due_date|date:"M d, Y" }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ review.completion_percentage }}%"></div>
+                                    </div>
+                                    <small>{{ review.completion_percentage|floatformat:1 }}%</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No pending access reviews." %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Overdue Reviews -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-danger">
+                    <i class="bi bi-calendar-x me-1"></i>{% trans "Overdue Access Reviews" %}
+                </h6>
+                <a href="{% url 'security:access_review_list' %}" class="btn btn-sm btn-outline-danger">
+                    {% trans "View All" %}
+                </a>
+            </div>
+            <div class="card-body">
+                {% if overdue_reviews %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Review" %}</th>
+                                <th>{% trans "Type" %}</th>
+                                <th>{% trans "Due Date" %}</th>
+                                <th>{% trans "Days Overdue" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in overdue_reviews %}
+                            <tr class="table-danger">
+                                <td><a href="{% url 'security:access_review_detail' review.pk %}">{{ review.name }}</a></td>
+                                <td>{{ review.get_review_type_display }}</td>
+                                <td>{{ review.due_date|date:"M d, Y" }}</td>
+                                <td>{{ review.due_date|timesince }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No overdue access reviews." %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

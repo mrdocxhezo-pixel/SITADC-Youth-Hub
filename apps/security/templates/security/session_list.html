@@ -1,0 +1,129 @@
+{% extends "security/base.html" %}
+{% load i18n %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-terminal me-2"></i>{% trans "Sessions" %}</h1>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="identity" class="form-label">{% trans "Identity" %}</label>
+                <select name="identity" id="identity" class="form-select">
+                    <option value="">{% trans "All Identities" %}</option>
+                    {% for ident in identities %}
+                    <option value="{{ ident.pk }}" {% if current_identity == ident.pk|stringformat:"s" %}selected{% endif %}>{{ ident.display_name }} ({{ ident.identifier }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">{% trans "Status" %}</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">{% trans "All Statuses" %}</option>
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="ip" class="form-label">{% trans "IP Address" %}</label>
+                <input type="text" name="ip" id="ip" class="form-control" value="{{ current_ip|default:'' }}" placeholder="192.168.1.1">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-funnel me-1"></i>{% trans "Filter" %}
+                </button>
+                <a href="{% url 'security:session_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>{% trans "Clear" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sessions Table -->
+<div class="card">
+    <div class="card-body">
+        {% if sessions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{% trans "Identity" %}</th>
+                        <th>{% trans "Session Key" %}</th>
+                        <th>{% trans "IP Address" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Active" %}</th>
+                        <th>{% trans "Started" %}</th>
+                        <th>{% trans "Last Activity" %}</th>
+                        <th>{% trans "Expires" %}</th>
+                        <th>{% trans "MFA" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr {% if not session.is_active %}class="table-secondary"{% endif %}>
+                        <td>
+                            <a href="{% url 'security:identity_detail' session.identity.pk %}">{{ session.identity.display_name }}</a>
+                        </td>
+                        <td><code>{{ session.session_key[:12] }}...</code></td>
+                        <td>{{ session.ip_address }}</td>
+                        <td>
+                            <span class="badge
+                                {% if session.status == 'active' %}bg-success
+                                {% elif session.status == 'expired' %}bg-warning text-dark
+                                {% elif session.status == 'revoked' %}bg-danger
+                                {% elif session.status == 'suspicious' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ session.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{% if session.is_active %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %}</td>
+                        <td>{{ session.started_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ session.last_activity_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ session.expires_at|date:"M d, Y H:i" }}</td>
+                        <td>{% if session.is_mfa_used %}<i class="bi bi-shield-check text-success"></i>{% else %}<i class="bi bi-shield-x text-danger"></i>{% endif %}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'security:session_detail' session.pk %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if session.is_active %}
+                                <a href="{% url 'security:session_terminate' session.pk %}" class="btn btn-outline-danger">
+                                    <i class="bi bi-x-circle"></i>
+                                </a>
+                                <a href="{% url 'security:session_extend' session.pk %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-clock-history"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-terminal fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">{% trans "No sessions found" %}</h5>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

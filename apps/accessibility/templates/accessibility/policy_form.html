@@ -1,0 +1,148 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% if is_update %}{% trans "Edit Policy" %}{% else %}{% trans "Create Policy" %}{% endif %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% if is_update %}{% trans "Edit Policy" %}{% else %}{% trans "Create Accessibility Policy" %}{% endif %}</h1>
+    <a href="{% url 'accessibility:policy_list' %}" class="btn btn-outline-secondary">{% trans "Back to List" %}</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">{{ entity_label }}</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="{{ form.reference_number.id_for_label }}" class="form-label">{% trans "Reference Number" %} <span class="text-danger">*</span></label>
+            {{ form.reference_number }}
+            {% if form.reference_number.errors %}
+            <div class="text-danger small mt-1">{{ form.reference_number.errors }}</div>
+            {% endif %}
+            <div class="form-text">{% trans "Unique reference number (e.g., ACC-POL-001)" %}</div>
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.title.id_for_label }}" class="form-label">{% trans "Title" %} <span class="text-danger">*</span></label>
+            {{ form.title }}
+            {% if form.title.errors %}
+            <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.standard.id_for_label }}" class="form-label">{% trans "Standard" %} <span class="text-danger">*</span></label>
+            {{ form.standard }}
+            {% if form.standard.errors %}
+            <div class="text-danger small mt-1">{{ form.standard.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.category.id_for_label }}" class="form-label">{% trans "Category" %} <span class="text-danger">*</span></label>
+            {{ form.category }}
+            {% if form.category.errors %}
+            <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Description" %} <span class="text-danger">*</span></label>
+            {{ form.description }}
+            {% if form.description.errors %}
+            <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.requirements.id_for_label }}" class="form-label">{% trans "Requirements" %}</label>
+            {{ form.requirements }}
+            {% if form.requirements.errors %}
+            <div class="text-danger small mt-1">{{ form.requirements.errors }}</div>
+            {% endif %}
+            <div class="form-text">{% trans "Enter as JSON array or one requirement per line" %}</div>
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.scope.id_for_label }}" class="form-label">{% trans "Scope" %}</label>
+            {{ form.scope }}
+            {% if form.scope.errors %}
+            <div class="text-danger small mt-1">{{ form.scope.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.exceptions.id_for_label }}" class="form-label">{% trans "Exceptions" %}</label>
+            {{ form.exceptions }}
+            {% if form.exceptions.errors %}
+            <div class="text-danger small mt-1">{{ form.exceptions.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label for="{{ form.version.id_for_label }}" class="form-label">{% trans "Version" %}</label>
+            {{ form.version }}
+            {% if form.version.errors %}
+            <div class="text-danger small mt-1">{{ form.version.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label for="{{ form.approved_by.id_for_label }}" class="form-label">{% trans "Approved By" %}</label>
+            {{ form.approved_by }}
+            {% if form.approved_by.errors %}
+            <div class="text-danger small mt-1">{{ form.approved_by.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label for="{{ form.approved_date.id_for_label }}" class="form-label">{% trans "Approved Date" %}</label>
+            {{ form.approved_date }}
+            {% if form.approved_date.errors %}
+            <div class="text-danger small mt-1">{{ form.approved_date.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.effective_date.id_for_label }}" class="form-label">{% trans "Effective Date" %} <span class="text-danger">*</span></label>
+            {{ form.effective_date }}
+            {% if form.effective_date.errors %}
+            <div class="text-danger small mt-1">{{ form.effective_date.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.review_date.id_for_label }}" class="form-label">{% trans "Review Date" %} <span class="text-danger">*</span></label>
+            {{ form.review_date }}
+            {% if form.review_date.errors %}
+            <div class="text-danger small mt-1">{{ form.review_date.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-check mt-4">
+              {{ form.is_active }}
+              <label class="form-check-label" for="{{ form.is_active.id_for_label }}">{% trans "Active" %}</label>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{% url 'accessibility:policy_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle"></i> {% if is_update %}{% trans "Update" %}{% else %}{% trans "Create" %}{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

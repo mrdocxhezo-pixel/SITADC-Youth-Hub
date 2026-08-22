@@ -1,0 +1,124 @@
+{% extends "security/base.html" %}
+{% load i18n %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-shield-lock me-2"></i>{% trans "Security Policies" %}</h1>
+    <a href="{% url 'security:policy_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>{% trans "Create Policy" %}
+    </a>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="type" class="form-label">{% trans "Policy Type" %}</label>
+                <select name="type" id="type" class="form-select">
+                    <option value="">{% trans "All Types" %}</option>
+                    {% for value, label in policy_types %}
+                    <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="is_active" class="form-label">{% trans "Status" %}</label>
+                <select name="is_active" id="is_active" class="form-select">
+                    <option value="">{% trans "All" %}</option>
+                    <option value="true" {% if current_active == "true" %}selected{% endif %}>{% trans "Active" %}</option>
+                    <option value="false" {% if current_active == "false" %}selected{% endif %}>{% trans "Inactive" %}</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-funnel me-1"></i>{% trans "Filter" %}
+                </button>
+                <a href="{% url 'security:policy_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>{% trans "Clear" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Policies Table -->
+<div class="card">
+    <div class="card-body">
+        {% if policies %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{% trans "Name" %}</th>
+                        <th>{% trans "Type" %}</th>
+                        <th>{% trans "Enforcement" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Effective" %}</th>
+                        <th>{% trans "Expiry" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for policy in policies %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'security:policy_detail' policy.slug %}" class="fw-bold">{{ policy.name }}</a>
+                            <br><small class="text-muted">{{ policy.description|truncatewords:10 }}</small>
+                        </td>
+                        <td><span class="badge bg-info">{{ policy.get_policy_type_display }}</span></td>
+                        <td>
+                            <span class="badge
+                                {% if policy.enforcement_level == 'block' %}bg-danger
+                                {% elif policy.enforcement_level == 'enforce' %}bg-primary
+                                {% elif policy.enforcement_level == 'warning' %}bg-warning text-dark
+                                {% else %}bg-secondary{% endif %}">
+                                {{ policy.get_enforcement_level_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if policy.is_active %}
+                            <span class="badge bg-success">{% trans "Active" %}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ policy.effective_date|date:"M d, Y"|default:"-" }}</td>
+                        <td>{{ policy.expiry_date|date:"M d, Y"|default:"-" }}</td>
+                        <td>
+                            <a href="{% url 'security:policy_detail' policy.slug %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'security:policy_update' policy.slug %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-shield-lock fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">{% trans "No security policies found" %}</h5>
+            <p class="text-muted">{% trans "Create your first security policy to get started." %}</p>
+            <a href="{% url 'security:policy_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>{% trans "Create Policy" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

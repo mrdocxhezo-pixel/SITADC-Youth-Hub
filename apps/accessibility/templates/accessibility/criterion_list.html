@@ -1,0 +1,127 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "WCAG Criteria" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% trans "WCAG Success Criteria" %}</h1>
+    {% if can_configure %}
+    <a href="{% url 'accessibility:criterion_create' %}" class="btn btn-primary">
+      <i class="bi bi-plus-circle"></i> {% trans "Add Criterion" %}
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-5">
+          <input type="text" name="q" class="form-control" placeholder="{% trans 'Search criteria...' %}" value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-2">
+          <select name="principle" class="form-select">
+            <option value="">{% trans "All Principles" %}</option>
+            {% for value, label in principle_choices %}
+            <option value="{{ value }}" {% if request.GET.principle == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="level" class="form-select">
+            <option value="">{% trans "All Levels" %}</option>
+            {% for value, label in level_choices %}
+            <option value="{{ value }}" {% if request.GET.level == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+          <button type="submit" class="btn btn-outline-primary">{% trans "Filter" %}</button>
+          {% if request.GET.q or request.GET.principle or request.GET.level %}
+          <a href="{% url 'accessibility:criterion_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Criteria Table -->
+  <div class="card">
+    <div class="card-body p-0">
+      {% if criteria %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>{% trans "Guideline" %}</th>
+              <th>{% trans "Criterion" %}</th>
+              <th>{% trans "Title" %}</th>
+              <th>{% trans "Principle" %}</th>
+              <th>{% trans "Level" %}</th>
+              <th>{% trans "Category" %}</th>
+              <th>{% trans "Standard" %}</th>
+              <th>{% trans "Status" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for criterion in criteria %}
+            <tr>
+              <td><code>{{ criterion.guideline_number }}</code></td>
+              <td><code>{{ criterion.criterion_number }}</code></td>
+              <td>{{ criterion.title }}</td>
+              <td>
+                <span class="badge bg-{% if criterion.principle == 'PERCEIVABLE' %}primary{% elif criterion.principle == 'OPERABLE' %}success{% elif criterion.principle == 'UNDERSTANDABLE' %}warning{% else %}info{% endif %}">
+                  {{ criterion.get_principle_display }}
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-{% if criterion.level == 'A' %}secondary{% elif criterion.level == 'AA' %}info{% else %}dark{% endif %}">
+                  {{ criterion.get_level_display }}
+                </span>
+              </td>
+              <td>{{ criterion.get_category_display }}</td>
+              <td>{{ criterion.standard.code }}</td>
+              <td>
+                {% if criterion.is_active %}
+                <span class="badge bg-success">{% trans "Active" %}</span>
+                {% else %}
+                <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if is_paginated %}
+      <div class="card-footer">
+        <nav aria-label="{% trans 'Criteria pagination' %}">
+          <ul class="pagination justify-content-center mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1&q={{ request.GET.q }}&principle={{ request.GET.principle }}&level={{ request.GET.level }}">&laquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}&principle={{ request.GET.principle }}&level={{ request.GET.level }}">{{ page_obj.previous_page_number }}</a></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}&principle={{ request.GET.principle }}&level={{ request.GET.level }}">{{ page_obj.next_page_number }}</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&q={{ request.GET.q }}&principle={{ request.GET.principle }}&level={{ request.GET.level }}">&raquo;</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+      {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-list-check fs-1 text-muted"></i>
+        <h5 class="mt-3 text-muted">{% trans "No criteria found" %}</h5>
+        {% if can_configure %}
+        <a href="{% url 'accessibility:criterion_create' %}" class="btn btn-primary mt-2">{% trans "Add First Criterion" %}</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

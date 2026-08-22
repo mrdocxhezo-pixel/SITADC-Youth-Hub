@@ -178,6 +178,7 @@ class Communication(CommunicationRecord):
     class Meta:
         verbose_name = _("Communication")
         verbose_name_plural = _("Communications")
+        ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["communication_type", "status"]),
             models.Index(fields=["publication_date"]),
@@ -196,6 +197,7 @@ class Announcement(CommunicationRecord):
     class Meta:
         verbose_name = _("Announcement")
         verbose_name_plural = _("Announcements")
+        ordering = ["-starts_at"]
         indexes = [
             models.Index(fields=["is_breaking", "status"]),
             models.Index(fields=["starts_at"]),
@@ -231,6 +233,7 @@ class NewsArticle(CommunicationRecord):
     class Meta:
         verbose_name = _("News Article")
         verbose_name_plural = _("News Articles")
+        ordering = ["-published_at"]
         indexes = [
             models.Index(fields=["news_category", "status"]),
             models.Index(fields=["is_featured", "status"]),
@@ -258,6 +261,7 @@ class Newsletter(CommunicationRecord):
     class Meta:
         verbose_name = _("Newsletter")
         verbose_name_plural = _("Newsletters")
+        ordering = ["-scheduled_send"]
         indexes = [
             models.Index(fields=["status", "scheduled_send"]),
         ]
@@ -309,6 +313,7 @@ class PressRelease(CommunicationRecord):
     class Meta:
         verbose_name = _("Press Release")
         verbose_name_plural = _("Press Releases")
+        ordering = ["-release_date"]
         indexes = [
             models.Index(fields=["press_release_type", "status"]),
             models.Index(fields=["embargo_date"]),
@@ -369,6 +374,7 @@ class Campaign(CommunicationRecord):
     class Meta:
         verbose_name = _("Campaign")
         verbose_name_plural = _("Campaigns")
+        ordering = ["-start_date"]
         indexes = [
             models.Index(fields=["campaign_type", "status"]),
             models.Index(fields=["start_date", "end_date"]),
@@ -480,6 +486,7 @@ class MediaAsset(
     class Meta:
         verbose_name = _("Media Asset")
         verbose_name_plural = _("Media Assets")
+        ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["asset_type", "status"]),
             models.Index(fields=["media_category", "status"]),
@@ -518,6 +525,7 @@ class Photograph(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel):
     class Meta:
         verbose_name = _("Photograph")
         verbose_name_plural = _("Photographs")
+        ordering = ["-taken_date"]
         indexes = [
             models.Index(fields=["media_category", "taken_date"]),
         ]
@@ -550,6 +558,7 @@ class Video(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByModel, StatusM
     class Meta:
         verbose_name = _("Video")
         verbose_name_plural = _("Videos")
+        ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["status", "is_published"]),
         ]
@@ -586,6 +595,7 @@ class Publication(CommunicationRecord):
     class Meta:
         verbose_name = _("Publication")
         verbose_name_plural = _("Publications")
+        ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["publication_type", "status"]),
         ]
@@ -617,6 +627,7 @@ class BrandAsset(
     class Meta:
         verbose_name = _("Brand Asset")
         verbose_name_plural = _("Brand Assets")
+        ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["asset_type", "status"]),
         ]
@@ -694,6 +705,7 @@ class SocialMediaPost(
     class Meta:
         verbose_name = _("Social Media Post")
         verbose_name_plural = _("Social Media Posts")
+        ordering = ["-scheduled_time"]
         indexes = [
             models.Index(fields=["platform", "status"]),
             models.Index(fields=["scheduled_time"]),
@@ -720,6 +732,7 @@ class WebsitePage(CommunicationRecord):
     class Meta:
         verbose_name = _("Website Page")
         verbose_name_plural = _("Website Pages")
+        ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["page_type", "status"]),
             models.Index(fields=["slug"]),
@@ -771,6 +784,7 @@ class EventCommunication(CommunicationRecord):
     class Meta:
         verbose_name = _("Event Communication")
         verbose_name_plural = _("Event Communications")
+        ordering = ["-event_date"]
         indexes = [
             models.Index(fields=["event_communication_type", "status"]),
             models.Index(fields=["event_date"]),
@@ -878,6 +892,7 @@ class CommunicationAttachment(UUIDModel, TimeStampedModel):
     class Meta:
         verbose_name = _("Communication Attachment")
         verbose_name_plural = _("Communication Attachments")
+        ordering = ["-created_at"]
 
     def __str__(self) -> str:
         return self.file_name or self.file.name

@@ -1,0 +1,179 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Report Accessibility Issue" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% trans "Report Accessibility Issue" %}</h1>
+    <a href="{% url 'accessibility:issue_list' %}" class="btn btn-outline-secondary">{% trans "Back to List" %}</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">{{ entity_label }}</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label for="{{ form.title.id_for_label }}" class="form-label">{% trans "Issue Title" %} <span class="text-danger">*</span></label>
+            {{ form.title }}
+            {% if form.title.errors %}
+            <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label for="{{ form.source.id_for_label }}" class="form-label">{% trans "Source" %} <span class="text-danger">*</span></label>
+            {{ form.source }}
+            {% if form.source.errors %}
+            <div class="text-danger small mt-1">{{ form.source.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.module.id_for_label }}" class="form-label">{% trans "Module" %} <span class="text-danger">*</span></label>
+            {{ form.module }}
+            {% if form.module.errors %}
+            <div class="text-danger small mt-1">{{ form.module.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.component.id_for_label }}" class="form-label">{% trans "Component" %} <span class="text-danger">*</span></label>
+            {{ form.component }}
+            {% if form.component.errors %}
+            <div class="text-danger small mt-1">{{ form.component.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.page_url.id_for_label }}" class="form-label">{% trans "Page URL" %}</label>
+            {{ form.page_url }}
+            {% if form.page_url.errors %}
+            <div class="text-danger small mt-1">{{ form.page_url.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.severity.id_for_label }}" class="form-label">{% trans "Severity" %} <span class="text-danger">*</span></label>
+            {{ form.severity }}
+            {% if form.severity.errors %}
+            <div class="text-danger small mt-1">{{ form.severity.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.criterion.id_for_label }}" class="form-label">{% trans "WCAG Criterion" %}</label>
+            {{ form.criterion }}
+            {% if form.criterion.errors %}
+            <div class="text-danger small mt-1">{{ form.criterion.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.status.id_for_label }}" class="form-label">{% trans "Status" %}</label>
+            {{ form.status }}
+            {% if form.status.errors %}
+            <div class="text-danger small mt-1">{{ form.status.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.assigned_to.id_for_label }}" class="form-label">{% trans "Assigned To" %}</label>
+            {{ form.assigned_to }}
+            {% if form.assigned_to.errors %}
+            <div class="text-danger small mt-1">{{ form.assigned_to.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.due_date.id_for_label }}" class="form-label">{% trans "Due Date" %}</label>
+            {{ form.due_date }}
+            {% if form.due_date.errors %}
+            <div class="text-danger small mt-1">{{ form.due_date.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Description" %} <span class="text-danger">*</span></label>
+            {{ form.description }}
+            {% if form.description.errors %}
+            <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.steps_to_reproduce.id_for_label }}" class="form-label">{% trans "Steps to Reproduce" %}</label>
+            {{ form.steps_to_reproduce }}
+            {% if form.steps_to_reproduce.errors %}
+            <div class="text-danger small mt-1">{{ form.steps_to_reproduce.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.expected_behavior.id_for_label }}" class="form-label">{% trans "Expected Behavior" %}</label>
+            {{ form.expected_behavior }}
+            {% if form.expected_behavior.errors %}
+            <div class="text-danger small mt-1">{{ form.expected_behavior.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.actual_behavior.id_for_label }}" class="form-label">{% trans "Actual Behavior" %}</label>
+            {{ form.actual_behavior }}
+            {% if form.actual_behavior.errors %}
+            <div class="text-danger small mt-1">{{ form.actual_behavior.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.resolution_notes.id_for_label }}" class="form-label">{% trans "Resolution Notes" %}</label>
+            {{ form.resolution_notes }}
+            {% if form.resolution_notes.errors %}
+            <div class="text-danger small mt-1">{{ form.resolution_notes.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-check">
+              {{ form.is_regression }}
+              <label class="form-check-label" for="{{ form.is_regression.id_for_label }}">{% trans "Is Regression" %}</label>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.regression_from.id_for_label }}" class="form-label">{% trans "Regression From" %}</label>
+            {{ form.regression_from }}
+            {% if form.regression_from.errors %}
+            <div class="text-danger small mt-1">{{ form.regression_from.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.tags.id_for_label }}" class="form-label">{% trans "Tags" %}</label>
+            {{ form.tags }}
+            {% if form.tags.errors %}
+            <div class="text-danger small mt-1">{{ form.tags.errors }}</div>
+            {% endif %}
+            <div class="form-text">{% trans "JSON array, e.g., [\"form\", \"keyboard\", \"contrast\"]" %}</div>
+          </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{% url 'accessibility:issue_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> {% trans "Report Issue" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

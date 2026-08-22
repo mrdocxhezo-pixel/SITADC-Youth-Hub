@@ -1,0 +1,163 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Accessibility Configuration" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% trans "Accessibility Configuration" %}</h1>
+    <a href="{% url 'accessibility:dashboard' %}" class="btn btn-outline-secondary">{% trans "Back to Dashboard" %}</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">{% trans "Global Accessibility Settings" %}</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-3">
+          <fieldset class="col-12">
+            <legend class="h6">{% trans "Standards & Compliance" %}</legend>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="{{ form.default_standard.id_for_label }}" class="form-label">{% trans "Default Standard" %}</label>
+                {{ form.default_standard }}
+                {% if form.default_standard.errors %}
+                <div class="text-danger small mt-1">{{ form.default_standard.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.target_wcag_level.id_for_label }}" class="form-label">{% trans "Target WCAG Level" %}</label>
+                {{ form.target_wcag_level }}
+                {% if form.target_wcag_level.errors %}
+                <div class="text-danger small mt-1">{{ form.target_wcag_level.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="col-12">
+            <legend class="h6">{% trans "UI Accessibility Features" %}</legend>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  {{ form.enable_high_contrast }}
+                  <label class="form-check-label" for="{{ form.enable_high_contrast.id_for_label }}">{% trans "Enable High Contrast Mode" %}</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  {{ form.enable_font_scaling }}
+                  <label class="form-check-label" for="{{ form.enable_font_scaling.id_for_label }}">{% trans "Enable Font Scaling" %}</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  {{ form.enable_reduced_motion }}
+                  <label class="form-check-label" for="{{ form.enable_reduced_motion.id_for_label }}">{% trans "Enable Reduced Motion" %}</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  {{ form.enable_focus_indicators }}
+                  <label class="form-check-label" for="{{ form.enable_focus_indicators.id_for_label }}">{% trans "Enhanced Focus Indicators" %}</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  {{ form.enable_skip_links }}
+                  <label class="form-check-label" for="{{ form.enable_skip_links.id_for_label }}">{% trans "Enable Skip Navigation Links" %}</label>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="col-12">
+            <legend class="h6">{% trans "Automated Scanning" %}</legend>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="form-check form-switch">
+                  {{ form.auto_scan_enabled }}
+                  <label class="form-check-label" for="{{ form.auto_scan_enabled.id_for_label }}">{% trans "Enable Automated Scanning" %}</label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label for="{{ form.scan_schedule_cron.id_for_label }}" class="form-label">{% trans "Scan Schedule (Cron)" %}</label>
+                {{ form.scan_schedule_cron }}
+                {% if form.scan_schedule_cron.errors %}
+                <div class="text-danger small mt-1">{{ form.scan_schedule_cron.errors }}</div>
+                {% endif %}
+                <div class="form-text">{% trans "Default: 0 2 * * * (daily at 2 AM)" %}</div>
+              </div>
+              <div class="col-md-4">
+                <label for="{{ form.scan_modules.id_for_label }}" class="form-label">{% trans "Modules to Scan" %}</label>
+                {{ form.scan_modules }}
+                {% if form.scan_modules.errors %}
+                <div class="text-danger small mt-1">{{ form.scan_modules.errors }}</div>
+                {% endif %}
+                <div class="form-text">{% trans "JSON array of module names" %}</div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="col-12">
+            <legend class="h6">{% trans "Notifications" %}</legend>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  {{ form.notify_on_critical }}
+                  <label class="form-check-label" for="{{ form.notify_on_critical.id_for_label }}">{% trans "Notify on Critical Issues" %}</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  {{ form.notify_on_regression }}
+                  <label class="form-check-label" for="{{ form.notify_on_regression.id_for_label }}">{% trans "Notify on Regressions" %}</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.notification_recipients.id_for_label }}" class="form-label">{% trans "Notification Recipients" %}</label>
+                {{ form.notification_recipients }}
+                {% if form.notification_recipients.errors %}
+                <div class="text-danger small mt-1">{{ form.notification_recipients.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="col-12">
+            <legend class="h6">{% trans "Reporting" %}</legend>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label for="{{ form.report_retention_days.id_for_label }}" class="form-label">{% trans "Report Retention (Days)" %}</label>
+                {{ form.report_retention_days }}
+                {% if form.report_retention_days.errors %}
+                <div class="text-danger small mt-1">{{ form.report_retention_days.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <div class="form-check form-switch mt-4">
+                  {{ form.include_in_dashboard }}
+                  <label class="form-check-label" for="{{ form.include_in_dashboard.id_for_label }}">{% trans "Include in Dashboard" %}</label>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{% url 'accessibility:dashboard' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> {% trans "Save Configuration" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

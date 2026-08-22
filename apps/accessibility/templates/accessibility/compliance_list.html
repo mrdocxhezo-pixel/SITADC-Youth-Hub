@@ -1,0 +1,127 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Compliance Records" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% trans "Accessibility Compliance Records" %}</h1>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-4">
+          <input type="text" name="q" class="form-control" placeholder="{% trans 'Search modules/components...' %}" value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-2">
+          <select name="status" class="form-select">
+            <option value="">{% trans "All Statuses" %}</option>
+            <option value="COMPLIANT" {% if request.GET.status == 'COMPLIANT' %}selected{% endif %}>{% trans "Compliant" %}</option>
+            <option value="NON_COMPLIANT" {% if request.GET.status == 'NON_COMPLIANT' %}selected{% endif %}>{% trans "Non-Compliant" %}</option>
+            <option value="PARTIAL" {% if request.GET.status == 'PARTIAL' %}selected{% endif %}>{% trans "Partially Compliant" %}</option>
+            <option value="NOT_TESTED" {% if request.GET.status == 'NOT_TESTED' %}selected{% endif %}>{% trans "Not Tested" %}</option>
+            <option value="NOT_APPLICABLE" {% if request.GET.status == 'NOT_APPLICABLE' %}selected{% endif %}>{% trans "Not Applicable" %}</option>
+          </select>
+        </div>
+        <div class="col-md-6 d-flex gap-2">
+          <button type="submit" class="btn btn-outline-primary">{% trans "Filter" %}</button>
+          {% if request.GET.q or request.GET.status %}
+          <a href="{% url 'accessibility:compliance_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Compliance Table -->
+  <div class="card">
+    <div class="card-body p-0">
+      {% if records %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>{% trans "Module" %}</th>
+              <th>{% trans "Component" %}</th>
+              <th>{% trans "Page URL" %}</th>
+              <th>{% trans "Standard" %}</th>
+              <th>{% trans "Target Level" %}</th>
+              <th>{% trans "Status" %}</th>
+              <th>{% trans "Last Tested" %}</th>
+              <th>{% trans "Next Review" %}</th>
+              <th>{% trans "Open Findings" %}</th>
+              <th>{% trans "Critical" %}</th>
+              <th>{% trans "Exception" %}</th>
+              <th class="text-end">{% trans "Actions" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in records %}
+            <tr>
+              <td><strong>{{ record.module }}</strong></td>
+              <td>{{ record.component|default:"—" }}</td>
+              <td>
+                {% if record.page_url %}
+                <a href="{{ record.page_url }}" target="_blank" rel="noopener" class="text-truncate d-inline-block" style="max-width: 200px;">{{ record.page_url }}</a>
+                {% else %}—{% endif %}
+              </td>
+              <td>{{ record.standard.code }}</td>
+              <td>{{ record.get_target_level_display }}</td>
+              <td>
+                <span class="badge bg-{% if record.compliance_status == 'COMPLIANT' %}success{% elif record.compliance_status == 'NON_COMPLIANT' %}danger{% elif record.compliance_status == 'PARTIAL' %}warning{% else %}secondary{% endif %}">
+                  {{ record.get_compliance_status_display }}
+                </span>
+              </td>
+              <td>{{ record.last_tested|date:"M d, Y"|default:"—" }}</td>
+              <td>{{ record.next_review_due|date:"M d, Y"|default:"—" }}</td>
+              <td>{{ record.open_findings }}</td>
+              <td>
+                {% if record.critical_findings > 0 %}
+                <span class="badge bg-danger">{{ record.critical_findings }}</span>
+                {% else %}{{ record.critical_findings }}{% endif %}
+              </td>
+              <td>
+                {% if record.exception_granted %}
+                <span class="badge bg-warning text-dark">{% trans "Yes" %}</span>
+                {% else %}<span class="badge bg-success">{% trans "No" %}</span>{% endif %}
+              </td>
+              <td class="text-end">
+                <a href="{% url 'accessibility:compliance_detail' pk=record.pk %}" class="btn btn-sm btn-outline-primary" title="{% trans 'View' %}">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if is_paginated %}
+      <div class="card-footer">
+        <nav aria-label="{% trans 'Compliance pagination' %}">
+          <ul class="pagination justify-content-center mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1&q={{ request.GET.q }}&status={{ request.GET.status }}">&laquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}&status={{ request.GET.status }}">{{ page_obj.previous_page_number }}</a></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}&status={{ request.GET.status }}">{{ page_obj.next_page_number }}</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&q={{ request.GET.q }}&status={{ request.GET.status }}">&raquo;</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+      {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-shield-check fs-1 text-muted"></i>
+        <h5 class="mt-3 text-muted">{% trans "No compliance records found" %}</h5>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

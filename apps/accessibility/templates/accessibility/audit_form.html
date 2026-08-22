@@ -1,0 +1,150 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% if is_update %}{% trans "Edit Audit" %}{% else %}{% trans "Create Audit" %}{% endif %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% if is_update %}{% trans "Edit Audit" %}{% else %}{% trans "Create Accessibility Audit" %}{% endif %}</h1>
+    <a href="{% url 'accessibility:audit_list' %}" class="btn btn-outline-secondary">{% trans "Back to List" %}</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">{{ entity_label }}</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label for="{{ form.name.id_for_label }}" class="form-label">{% trans "Audit Name" %} <span class="text-danger">*</span></label>
+            {{ form.name }}
+            {% if form.name.errors %}
+            <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label for="{{ form.audit_type.id_for_label }}" class="form-label">{% trans "Audit Type" %} <span class="text-danger">*</span></label>
+            {{ form.audit_type }}
+            {% if form.audit_type.errors %}
+            <div class="text-danger small mt-1">{{ form.audit_type.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label for="{{ form.scope.id_for_label }}" class="form-label">{% trans "Scope" %} <span class="text-danger">*</span></label>
+            {{ form.scope }}
+            {% if form.scope.errors %}
+            <div class="text-danger small mt-1">{{ form.scope.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label for="{{ form.module.id_for_label }}" class="form-label">{% trans "Module" %}</label>
+            {{ form.module }}
+            {% if form.module.errors %}
+            <div class="text-danger small mt-1">{{ form.module.errors }}</div>
+            {% endif %}
+            <div class="form-text">{% trans "e.g., reports, dashboard, documents" %}</div>
+          </div>
+
+          <div class="col-md-4">
+            <label for="{{ form.component.id_for_label }}" class="form-label">{% trans "Component" %}</label>
+            {{ form.component }}
+            {% if form.component.errors %}
+            <div class="text-danger small mt-1">{{ form.component.errors }}</div>
+            {% endif %}
+            <div class="form-text">{% trans "Specific component or page" %}</div>
+          </div>
+
+          <div class="col-md-4">
+            <label for="{{ form.page_url.id_for_label }}" class="form-label">{% trans "Page URL" %}</label>
+            {{ form.page_url }}
+            {% if form.page_url.errors %}
+            <div class="text-danger small mt-1">{{ form.page_url.errors }}</div>
+            {% endif %}
+            <div class="form-text">{% trans "Full URL if auditing a specific page" %}</div>
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.standard.id_for_label }}" class="form-label">{% trans "Standard" %} <span class="text-danger">*</span></label>
+            {{ form.standard }}
+            {% if form.standard.errors %}
+            <div class="text-danger small mt-1">{{ form.standard.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.target_level.id_for_label }}" class="form-label">{% trans "Target Level" %}</label>
+            {{ form.target_level }}
+            {% if form.target_level.errors %}
+            <div class="text-danger small mt-1">{{ form.target_level.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.auditor.id_for_label }}" class="form-label">{% trans "Auditor" %}</label>
+            {{ form.auditor }}
+            {% if form.auditor.errors %}
+            <div class="text-danger small mt-1">{{ form.auditor.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.started_at.id_for_label }}" class="form-label">{% trans "Started At" %}</label>
+            {{ form.started_at }}
+            {% if form.started_at.errors %}
+            <div class="text-danger small mt-1">{{ form.started_at.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.completed_at.id_for_label }}" class="form-label">{% trans "Completed At" %}</label>
+            {{ form.completed_at }}
+            {% if form.completed_at.errors %}
+            <div class="text-danger small mt-1">{{ form.completed_at.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.summary.id_for_label }}" class="form-label">{% trans "Summary" %}</label>
+            {{ form.summary }}
+            {% if form.summary.errors %}
+            <div class="text-danger small mt-1">{{ form.summary.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.recommendations.id_for_label }}" class="form-label">{% trans "Recommendations" %}</label>
+            {{ form.recommendations }}
+            {% if form.recommendations.errors %}
+            <div class="text-danger small mt-1">{{ form.recommendations.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.report_file.id_for_label }}" class="form-label">{% trans "Report File" %}</label>
+            {{ form.report_file }}
+            {% if form.report_file.errors %}
+            <div class="text-danger small mt-1">{{ form.report_file.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{% url 'accessibility:audit_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle"></i> {% if is_update %}{% trans "Update" %}{% else %}{% trans "Create" %}{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

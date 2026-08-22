@@ -1,0 +1,1 @@
+# apps/configuration/migrations/__init__.py

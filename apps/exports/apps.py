@@ -19,5 +19,7 @@ class ExportsConfig(AppConfig):
         """Import provider and renderer registries so they self-register."""
         # Providers and renderers self-register on import.  Importing them
         # here guarantees the registries are populated whenever Django loads.
-        from apps.exports import providers  # noqa: F401
-        from apps.exports import renderers  # noqa: F401
+        from apps.exports import (
+            providers,  # noqa: F401
+            renderers,  # noqa: F401
+        )

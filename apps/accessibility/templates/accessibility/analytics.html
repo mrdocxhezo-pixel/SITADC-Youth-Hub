@@ -1,0 +1,254 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Accessibility Analytics" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% trans "Accessibility Analytics" %}</h1>
+    <div>
+      <form method="get" class="d-flex gap-2">
+        <select name="module" class="form-select" style="width: auto;" onchange="this.form.submit()">
+          <option value="">{% trans "All Modules (Global)" %}</option>
+          <option value="reports" {% if module == 'reports' %}selected{% endif %}>{% trans "Reports" %}</option>
+          <option value="dashboard" {% if module == 'dashboard' %}selected{% endif %}>{% trans "Dashboard" %}</option>
+          <option value="documents" {% if module == 'documents' %}selected{% endif %}>{% trans "Documents" %}</option>
+          <option value="meetings" {% if module == 'meetings' %}selected{% endif %}>{% trans "Meetings" %}</option>
+          <option value="notifications" {% if module == 'notifications' %}selected{% endif %}>{% trans "Notifications" %}</option>
+          <option value="registers" {% if module == 'registers' %}selected{% endif %}>{% trans "Registers" %}</option>
+          <option value="search" {% if module == 'search' %}selected{% endif %}>{% trans "Search" %}</option>
+          <option value="exports" {% if module == 'exports' %}selected{% endif %}>{% trans "Exports" %}</option>
+          <option value="finance" {% if module == 'finance' %}selected{% endif %}>{% trans "Finance" %}</option>
+          <option value="governance" {% if module == 'governance' %}selected{% endif %}>{% trans "Governance" %}</option>
+          <option value="communications" {% if module == 'communications' %}selected{% endif %}>{% trans "Communications" %}</option>
+          <option value="configuration" {% if module == 'configuration' %}selected{% endif %}>{% trans "Configuration" %}</option>
+          <option value="security" {% if module == 'security' %}selected{% endif %}>{% trans "Security" %}</option>
+        </select>
+      </form>
+    </div>
+  </div>
+
+  <!-- Module Label -->
+  {% if module %}
+  <div class="alert alert-info d-flex justify-content-between align-items-center mb-4">
+    <span>{% trans "Viewing analytics for" %} <strong>{{ module|title }}</strong></span>
+    <a href="{% url 'accessibility:analytics' %}" class="btn btn-sm btn-outline-secondary">{% trans "View Global" %}</a>
+  </div>
+  {% endif %}
+
+  <!-- Key Metrics -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Compliance Score" %}</h6>
+          <h2 class="mb-0 {% if analytics.overall_compliance_score < 50 %}text-danger{% elif analytics.overall_compliance_score < 80 %}text-warning{% else %}text-success{% endif %}">{{ analytics.overall_compliance_score }}%</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Total Open Issues" %}</h6>
+          <h2 class="mb-0 text-danger">{{ analytics.total_issues }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Critical Issues" %}</h6>
+          <h2 class="mb-0 text-danger">{{ analytics.critical_issues }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "High Issues" %}</h6>
+          <h2 class="mb-0 text-warning">{{ analytics.high_issues }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Medium Issues" %}</h6>
+          <h2 class="mb-0 text-info">{{ analytics.medium_issues }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Low Issues" %}</h6>
+          <h2 class="mb-0 text-secondary">{{ analytics.low_issues }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Avg Resolution (days)" %}</h6>
+          <h2 class="mb-0">{{ analytics.avg_resolution_days }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Audit Coverage" %}</h6>
+          <h2 class="mb-0">{{ analytics.audit_coverage_percent }}%</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Issue Trends -->
+    <div class="col-xl-8">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Issue Breakdown" %}</h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="card border-danger h-100">
+                <div class="card-body text-center">
+                  <h3 class="text-danger">{{ analytics.critical_issues }}</h3>
+                  <p class="text-muted mb-0">{% trans "Critical" %}</p>
+                  <div class="progress mt-2" style="height: 8px;">
+                    {% if analytics.total_issues > 0 %}
+                    <div class="progress-bar bg-danger" style="width: {{ analytics.critical_issues|divisible:analytics.total_issues|mul:100 }}%"></div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card border-warning h-100">
+                <div class="card-body text-center">
+                  <h3 class="text-warning">{{ analytics.high_issues }}</h3>
+                  <p class="text-muted mb-0">{% trans "High" %}</p>
+                  <div class="progress mt-2" style="height: 8px;">
+                    {% if analytics.total_issues > 0 %}
+                    <div class="progress-bar bg-warning" style="width: {{ analytics.high_issues|divisible:analytics.total_issues|mul:100 }}%"></div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card border-info h-100">
+                <div class="card-body text-center">
+                  <h3 class="text-info">{{ analytics.medium_issues }}</h3>
+                  <p class="text-muted mb-0">{% trans "Medium" %}</p>
+                  <div class="progress mt-2" style="height: 8px;">
+                    {% if analytics.total_issues > 0 %}
+                    <div class="progress-bar bg-info" style="width: {{ analytics.medium_issues|divisible:analytics.total_issues|mul:100 }}%"></div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <h6>{% trans "Coverage Metrics" %}</h6>
+              <dl class="row">
+                <dt class="col-sm-6">{% trans "Keyboard Test Coverage" %}</dt>
+                <dd class="col-sm-6">{{ analytics.keyboard_test_coverage }}%</dd>
+                <dt class="col-sm-6">{% trans "Screen Reader Test Coverage" %}</dt>
+                <dd class="col-sm-6">{{ analytics.screen_reader_test_coverage }}%</dd>
+                <dt class="col-sm-6">{% trans "User Preference Adoption" %}</dt>
+                <dd class="col-sm-6">{{ analytics.user_preference_adoption }}%</dd>
+              </dl>
+            </div>
+            <div class="col-md-6">
+              <h6>{% trans "Activity This Period" %}</h6>
+              <dl class="row">
+                <dt class="col-sm-6">{% trans "Resolved" %}</dt>
+                <dd class="col-sm-6 text-success">{{ analytics.resolved_this_period }}</dd>
+                <dt class="col-sm-6">{% trans "New Issues" %}</dt>
+                <dd class="col-sm-6 text-danger">{{ analytics.new_this_period }}</dd>
+                <dt class="col-sm-6">{% trans "Regressions" %}</dt>
+                <dd class="col-sm-6 text-warning">{{ analytics.regressions_count }}</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History & Actions -->
+    <div class="col-xl-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{% trans "History" %}</h5>
+          <form method="post" action="{% url 'accessibility:analytics' %}" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="module" value="{{ module }}">
+            <button type="submit" class="btn btn-sm btn-outline-primary">{% trans "Refresh" %}</button>
+          </form>
+        </div>
+        <div class="card-body">
+          {% if history %}
+          <div class="list-group list-group-flush">
+            {% for snap in history %}
+            <div class="list-group-item px-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ snap.snapshot_date }}</strong>
+                  <br>
+                  <small class="text-muted">{{ snap.module|default:"Global" }}</small>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-{% if snap.overall_compliance_score < 50 %}danger{% elif snap.overall_compliance_score < 80 %}warning{% else %}success{% endif %}">
+                    {{ snap.overall_compliance_score }}%
+                  </span>
+                  <br>
+                  <small class="text-muted">{{ snap.total_issues }} issues</small>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted text-center">{% trans "No historical data" %}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card mt-4 h-100">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Quick Actions" %}</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a href="{% url 'accessibility:audit_create' %}" class="btn btn-primary">
+              <i class="bi bi-clipboard-check"></i> {% trans "Start New Audit" %}
+            </a>
+            <a href="{% url 'accessibility:issue_create' %}" class="btn btn-outline-danger">
+              <i class="bi bi-bug"></i> {% trans "Report Issue" %}
+            </a>
+            <a href="{% url 'accessibility:recommendation_create' %}" class="btn btn-outline-success">
+              <i class="bi bi-lightbulb"></i> {% trans "Add Recommendation" %}
+            </a>
+            <a href="{% url 'accessibility:compliance_list' %}" class="btn btn-outline-info">
+              <i class="bi bi-shield-check"></i> {% trans "View Compliance" %}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

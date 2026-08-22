@@ -6,7 +6,6 @@ metadata table, narrative sections, a data table and an approval block.
 
 from __future__ import annotations
 
-import io
 from typing import Any
 
 from ..constants import ExportFormat
@@ -137,6 +136,53 @@ class DOCXRenderer(BaseRenderer):
                         r.bold = True
                         r.font.size = Pt(9)
                 cells[1].text = dataset.approval.get(label, "—")
+
+        # Digital verification block (QR code, Barcode, Digital Signature)
+        if dataset.qr_code or dataset.barcode or dataset.digital_signature:
+            document.add_page_break()
+            document.add_heading("Digital Verification", level=2)
+
+            import base64
+            import io
+
+            from docx.shared import Inches
+
+            if dataset.qr_code:
+                try:
+                    qr_data = base64.b64decode(dataset.qr_code)
+                    qr_stream = io.BytesIO(qr_data)
+                    document.add_paragraph("QR Code (Verification)")
+                    document.add_picture(qr_stream, width=Inches(1.8))
+                    document.add_paragraph()
+                except Exception:
+                    pass
+
+            if dataset.barcode:
+                try:
+                    bc_data = base64.b64decode(dataset.barcode)
+                    bc_stream = io.BytesIO(bc_data)
+                    document.add_paragraph("Barcode (Tracking)")
+                    document.add_picture(bc_stream, width=Inches(4.0))
+                    document.add_paragraph()
+                except Exception:
+                    pass
+
+            if dataset.digital_signature:
+                sig = dataset.digital_signature
+                if isinstance(sig, dict) and sig:
+                    document.add_paragraph("Digital Signature")
+                    sig_table = document.add_table(rows=0, cols=2)
+                    sig_table.style = "Table Grid"
+                    for label, value in sig.items():
+                        if value:
+                            cells = sig_table.add_row().cells
+                            label_cell = cells[0]
+                            label_cell.text = label
+                            for paragraph in label_cell.paragraphs:
+                                for r in paragraph.runs:
+                                    r.bold = True
+                                    r.font.size = Pt(9)
+                            cells[1].text = str(value)
 
         buffer = io.BytesIO()
         document.save(buffer)

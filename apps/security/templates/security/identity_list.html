@@ -1,0 +1,152 @@
+{% extends "security/base.html" %}
+{% load i18n %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-people me-2"></i>{% trans "Identities" %}</h1>
+    <div class="btn-group">
+        <a href="{% url 'security:identity_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>{% trans "Create Identity" %}
+        </a>
+        <a href="{% url 'security:identity_create' %}?type=service" class="btn btn-outline-primary">
+            <i class="bi bi-cpu me-1"></i>{% trans "Service Identity" %}
+        </a>
+        <a href="{% url 'security:identity_create' %}?type=organization" class="btn btn-outline-primary">
+            <i class="bi bi-building me-1"></i>{% trans "Org Identity" %}
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="type" class="form-label">{% trans "Identity Type" %}</label>
+                <select name="type" id="type" class="form-select">
+                    <option value="">{% trans "All Types" %}</option>
+                    {% for value, label in identity_types %}
+                    <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="status" class="form-label">{% trans "Status" %}</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">{% trans "All Statuses" %}</option>
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-funnel me-1"></i>{% trans "Filter" %}
+                </button>
+                <a href="{% url 'security:identity_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>{% trans "Clear" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Identities Table -->
+<div class="card">
+    <div class="card-body">
+        {% if identities %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{% trans "Identifier" %}</th>
+                        <th>{% trans "Display Name" %}</th>
+                        <th>{% trans "Type" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Confidentiality" %}</th>
+                        <th>{% trans "Owner" %}</th>
+                        <th>{% trans "Expires" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for identity in identities %}
+                    <tr>
+                        <td><code>{{ identity.identifier }}</code></td>
+                        <td>
+                            <a href="{% url 'security:identity_detail' identity.pk %}" class="fw-bold">{{ identity.display_name }}</a>
+                            {% if identity.identity_type == "service" %}
+                            <span class="badge bg-info ms-1">{{ identity.get_service_type_display }}</span>
+                            {% elif identity.identity_type == "organization" %}
+                            <span class="badge bg-secondary ms-1">{{ identity.get_org_identity_type_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if identity.status == 'active' %}bg-success
+                                {% elif identity.status == 'inactive' %}bg-secondary
+                                {% elif identity.status == 'pending_review' %}bg-warning text-dark
+                                {% elif identity.status == 'archived' %}bg-dark
+                                {% else %}bg-primary{% endif %}">
+                                {{ identity.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if identity.confidentiality == 'public' %}bg-success
+                                {% elif identity.confidentiality == 'internal' %}bg-info
+                                {% elif identity.confidentiality == 'restricted' %}bg-warning text-dark
+                                {% elif identity.confidentiality == 'confidential' %}bg-danger
+                                {% else %}bg-dark{% endif %}">
+                                {{ identity.get_confidentiality_display }}
+                            </span>
+                        </td>
+                        <td>{{ identity.owner|default:"-" }}</td>
+                        <td>
+                            {% if identity.expires_at %}
+                            {% if identity.is_expired %}
+                            <span class="text-danger">{{ identity.expires_at|date:"M d, Y" }} (Expired)</span>
+                            {% else %}
+                            {{ identity.expires_at|date:"M d, Y" }}
+                            {% endif %}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'security:identity_detail' identity.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'security:identity_update' identity.pk %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-people fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">{% trans "No identities found" %}</h5>
+            <p class="text-muted">{% trans "Create your first identity to get started." %}</p>
+            <a href="{% url 'security:identity_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>{% trans "Create Identity" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

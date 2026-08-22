@@ -1,0 +1,118 @@
+{% extends "security/base.html" %}
+{% load i18n %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Login Attempts" %}</h1>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="identity" class="form-label">{% trans "Identity" %}</label>
+                <select name="identity" id="identity" class="form-select">
+                    <option value="">{% trans "All Identities" %}</option>
+                    {% for ident in identities %}
+                    <option value="{{ ident.pk }}" {% if current_identity == ident.pk|stringformat:"s" %}selected{% endif %}>{{ ident.display_name }} ({{ ident.identifier }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="ip" class="form-label">{% trans "IP Address" %}</label>
+                <input type="text" name="ip" id="ip" class="form-control" value="{{ current_ip|default:'' }}" placeholder="192.168.1.1">
+            </div>
+            <div class="col-md-3">
+                <label for="outcome" class="form-label">{% trans "Outcome" %}</label>
+                <select name="outcome" id="outcome" class="form-select">
+                    <option value="">{% trans "All Outcomes" %}</option>
+                    {% for value, label in outcomes %}
+                    <option value="{{ value }}" {% if current_outcome == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-funnel me-1"></i>{% trans "Filter" %}
+                </button>
+                <a href="{% url 'security:login_attempt_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>{% trans "Clear" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Login Attempts Table -->
+<div class="card">
+    <div class="card-body">
+        {% if attempts %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{% trans "Username" %}</th>
+                        <th>{% trans "IP Address" %}</th>
+                        <th>{% trans "Identity" %}</th>
+                        <th>{% trans "Outcome" %}</th>
+                        <th>{% trans "Risk Score" %}</th>
+                        <th>{% trans "Suspicious" %}</th>
+                        <th>{% trans "Country" %}</th>
+                        <th>{% trans "Time" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in attempts %}
+                    <tr {% if attempt.is_suspicious %}class="table-warning"{% endif %}>
+                        <td>{{ attempt.username_attempted }}</td>
+                        <td>{{ attempt.ip_address }}</td>
+                        <td>
+                            {% if attempt.identity %}
+                            <a href="{% url 'security:identity_detail' attempt.identity.pk %}">{{ attempt.identity.display_name }}</a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if attempt.outcome == 'success' %}
+                            <span class="badge bg-success">{% trans "Success" %}</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ attempt.get_outcome_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-warning text-dark">{{ attempt.risk_score }}</span></td>
+                        <td>{% if attempt.is_suspicious %}<i class="bi bi-exclamation-triangle-fill text-warning"></i>{% else %}<i class="bi bi-check-circle text-success"></i>{% endif %}</td>
+                        <td>{{ attempt.country_code|default:"-" }} {{ attempt.city|default:"" }}</td>
+                        <td>{{ attempt.created_at|date:"M d, Y H:i:s" }}</td>
+                        <td>
+                            <a href="{% url 'security:login_attempt_detail' attempt.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-box-arrow-in-right fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">{% trans "No login attempts found" %}</h5>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

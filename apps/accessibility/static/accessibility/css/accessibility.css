@@ -1,0 +1,307 @@
+/* Accessibility Review Module Styles */
+
+/* High Contrast Mode */
+.high-contrast {
+  --bs-primary: #0000ee !important;
+  --bs-secondary: #6c757d !important;
+  --bs-success: #198754 !important;
+  --bs-danger: #dc3545 !important;
+  --bs-warning: #ffc107 !important;
+  --bs-info: #0dcaf0 !important;
+  --bs-light: #f8f9fa !important;
+  --bs-dark: #212529 !important;
+  --bs-body-color: #000 !important;
+  --bs-body-bg: #fff !important;
+  --bs-border-color: #000 !important;
+}
+
+.high-contrast .card {
+  border: 2px solid #000 !important;
+}
+
+.high-contrast .btn {
+  border: 2px solid currentColor !important;
+}
+
+.high-contrast .form-control,
+.high-contrast .form-select {
+  border: 2px solid #000 !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+.high-contrast .table {
+  --bs-table-border-color: #000 !important;
+}
+
+.high-contrast .badge {
+  border: 1px solid currentColor !important;
+}
+
+/* Reduced Motion */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Font Size Adjustments */
+.font-size-small html { font-size: 87.5%; }  /* 14px */
+.font-size-medium html { font-size: 100%; }   /* 16px */
+.font-size-large html { font-size: 112.5%; }  /* 18px */
+.font-size-xlarge html { font-size: 125%; }   /* 20px */
+
+/* Enhanced Focus Indicators */
+.enhanced-focus :focus-visible,
+.enhanced-focus a:focus,
+.enhanced-focus button:focus,
+.enhanced-focus input:focus,
+.enhanced-focus select:focus,
+.enhanced-focus textarea:focus {
+  outline: 3px solid #0d6efd !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 5px rgba(13, 110, 253, 0.3) !important;
+}
+
+/* Skip Link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.75rem 1.5rem;
+  background: #000;
+  color: #fff;
+  z-index: 10000;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 0 0 0.5rem 0.5rem;
+  transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Colour Theme Variables */
+:root {
+  --accessibility-font-size: 1rem;
+  --accessibility-line-height: 1.5;
+  --accessibility-letter-spacing: 0;
+  --accessibility-word-spacing: 0;
+}
+
+.theme-light {
+  --bs-body-color: #212529;
+  --bs-body-bg: #fff;
+}
+
+.theme-dark {
+  --bs-body-color: #f8f9fa;
+  --bs-body-bg: #212529;
+}
+
+.theme-high-contrast-light {
+  --bs-body-color: #000;
+  --bs-body-bg: #fff;
+}
+
+.theme-high-contrast-dark {
+  --bs-body-color: #fff;
+  --bs-body-bg: #000;
+}
+
+.theme-sepia {
+  --bs-body-color: #4a3f35;
+  --bs-body-bg: #f4f1ec;
+}
+
+/* Screen Reader Optimizations */
+.sr-optimized .sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Keyboard Navigation Enhancements */
+.kbd-enhanced :focus-visible {
+  outline: 3px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+.kbd-enhanced .dropdown-menu {
+  padding: 0.5rem 0;
+}
+
+.kbd-enhanced .dropdown-item:focus {
+  background-color: #e7f1ff;
+  outline: 2px solid #0d6efd;
+  outline-offset: -2px;
+}
+
+/* Responsive Typography */
+@media (prefers-reduced-motion: reduce) {
+  .reduced-motion *,
+  .reduced-motion *::before,
+  .reduced-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High Contrast Media Query */
+@media (prefers-contrast: high) {
+  :root {
+    --bs-primary: #0000ee;
+    --bs-border-color: #000;
+  }
+}
+
+/* Focus Visible Polyfill */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+/* Accessible Table Styles */
+.table-accessible {
+  font-size: var(--accessibility-font-size);
+  line-height: var(--accessibility-line-height);
+}
+
+.table-accessible th {
+  font-weight: 600;
+  background-color: var(--bs-gray-100);
+}
+
+/* Form Accessibility */
+.form-accessible .form-label {
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+
+.form-accessible .form-text {
+  font-size: 0.875rem;
+  color: var(--bs-gray-600);
+}
+
+.form-accessible .required-indicator {
+  color: var(--bs-danger);
+}
+
+/* Card Accessibility */
+.card-accessible {
+  border: 1px solid var(--bs-border-color);
+}
+
+.card-accessible .card-header {
+  background-color: var(--bs-gray-100);
+  border-bottom: 1px solid var(--bs-border-color);
+  font-weight: 600;
+}
+
+/* Badge Accessibility */
+.badge-accessible {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+}
+
+/* Progress Bar Accessibility */
+.progress-accessible {
+  height: 1rem;
+  font-size: 0.75rem;
+}
+
+/* Modal Accessibility */
+.modal-accessible .modal-content {
+  border: 2px solid var(--bs-border-color);
+}
+
+.modal-accessible .modal-header {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.modal-accessible .modal-footer {
+  border-top: 1px solid var(--bs-border-color);
+}
+
+/* Toast/Notification Accessibility */
+.toast-accessible {
+  border: 2px solid var(--bs-border-color);
+}
+
+/* Dropdown Accessibility */
+.dropdown-menu-accessible {
+  border: 2px solid var(--bs-border-color);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Tab Accessibility */
+.nav-tabs-accessible .nav-link {
+  border: 1px solid transparent;
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  padding: 0.75rem 1.25rem;
+}
+
+.nav-tabs-accessible .nav-link:focus {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+/* Accordion Accessibility */
+.accordion-accessible .accordion-button {
+  padding: 1rem 1.25rem;
+  font-weight: 500;
+}
+
+.accordion-accessible .accordion-button:focus {
+  outline: 2px solid #0d6efd;
+  outline-offset: -2px;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Color Theme Classes */
+.theme-custom {
+  --bs-body-color: var(--custom-text-color, #212529);
+  --bs-body-bg: var(--custom-bg-color, #fff);
+}
+
+/* Print Styles */
+@media print {
+  .skip-link,
+  .btn,
+  .navbar,
+  .sidebar,
+  .pagination {
+    display: none !important;
+  }
+
+  .card {
+    border: 1px solid #000 !important;
+    break-inside: avoid;
+  }
+
+  .table {
+    font-size: 12pt;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #000;
+  }
+}

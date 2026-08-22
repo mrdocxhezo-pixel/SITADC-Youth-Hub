@@ -1,0 +1,282 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ audit.reference_number }} - {{ audit.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">{{ audit.name }}</h1>
+      <p class="text-muted mb-0">{{ audit.reference_number }} · {{ audit.get_audit_type_display }} · {{ audit.get_scope_display }}</p>
+    </div>
+    <div class="d-flex gap-2">
+      {% if can_add_finding %}
+      <a href="{% url 'accessibility:finding_create' audit_pk=audit.pk %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> {% trans "Add Finding" %}
+      </a>
+      {% endif %}
+      {% if can_complete and audit.status != 'COMPLIANT' and audit.status != 'NON_COMPLIANT' %}
+      <form method="post" action="{% url 'accessibility:audit_complete' pk=audit.pk %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success" onclick="return confirm('{% trans \"Complete this audit?\" %}')">
+          <i class="bi bi-check-circle"></i> {% trans "Complete Audit" %}
+        </button>
+      </form>
+      {% endif %}
+      <a href="{% url 'accessibility:audit_list' %}" class="btn btn-outline-secondary">{% trans "Back to List" %}</a>
+    </div>
+  </div>
+
+  <!-- Audit Info Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Status" %}</h6>
+          <span class="badge bg-{% if audit.status == 'COMPLIANT' %}success{% elif audit.status == 'NON_COMPLIANT' %}danger{% elif audit.status == 'PARTIAL' %}warning{% else %}secondary{% endif %} fs-6">
+            {{ audit.get_status_display }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Overall Score" %}</h6>
+          <h3 class="mb-0">{{ audit.overall_score }}%</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Criteria Tested" %}</h6>
+          <h3 class="mb-0">{{ audit.total_criteria_tested }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">{% trans "Open Findings" %}</h6>
+          <h3 class="mb-0 text-danger">{{ audit.findings.filter.status__in="OPEN,IN_PROGRESS,NEEDS_REVIEW"|length }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Audit Details -->
+    <div class="col-lg-8">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Audit Details" %}</h5>
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-3">{% trans "Reference" %}</dt>
+            <dd class="col-sm-9">{{ audit.reference_number }}</dd>
+
+            <dt class="col-sm-3">{% trans "Type" %}</dt>
+            <dd class="col-sm-9">{{ audit.get_audit_type_display }}</dd>
+
+            <dt class="col-sm-3">{% trans "Scope" %}</dt>
+            <dd class="col-sm-9">{{ audit.get_scope_display }}</dd>
+
+            <dt class="col-sm-3">{% trans "Module" %}</dt>
+            <dd class="col-sm-9">{{ audit.module|default:"—" }}</dd>
+
+            <dt class="col-sm-3">{% trans "Component" %}</dt>
+            <dd class="col-sm-9">{{ audit.component|default:"—" }}</dd>
+
+            <dt class="col-sm-3">{% trans "Page URL" %}</dt>
+            <dd class="col-sm-9">
+              {% if audit.page_url %}
+              <a href="{{ audit.page_url }}" target="_blank" rel="noopener">{{ audit.page_url }}</a>
+              {% else %}—{% endif %}
+            </dd>
+
+            <dt class="col-sm-3">{% trans "Standard" %}</dt>
+            <dd class="col-sm-9">{{ audit.standard.name }} ({{ audit.standard.version }})</dd>
+
+            <dt class="col-sm-3">{% trans "Target Level" %}</dt>
+            <dd class="col-sm-9">{{ audit.get_target_level_display }}</dd>
+
+            <dt class="col-sm-3">{% trans "Auditor" %}</dt>
+            <dd class="col-sm-9">{{ audit.auditor.get_full_name|default:"—" }}</dd>
+
+            <dt class="col-sm-3">{% trans "Started" %}</dt>
+            <dd class="col-sm-9">{{ audit.started_at|date:"M d, Y H:i"|default:"—" }}</dd>
+
+            <dt class="col-sm-3">{% trans "Completed" %}</dt>
+            <dd class="col-sm-9">{{ audit.completed_at|date:"M d, Y H:i"|default:"—" }}</dd>
+
+            <dt class="col-sm-3">{% trans "Score Breakdown" %}</dt>
+            <dd class="col-sm-9">
+              <div class="row text-center">
+                <div class="col-3">
+                  <div class="text-success fw-bold">{{ audit.compliant_count }}</div>
+                  <small class="text-muted">{% trans "Compliant" %}</small>
+                </div>
+                <div class="col-3">
+                  <div class="text-warning fw-bold">{{ audit.partial_count }}</div>
+                  <small class="text-muted">{% trans "Partial" %}</small>
+                </div>
+                <div class="col-3">
+                  <div class="text-danger fw-bold">{{ audit.non_compliant_count }}</div>
+                  <small class="text-muted">{% trans "Non-Compliant" %}</small>
+                </div>
+                <div class="col-3">
+                  <div class="text-secondary fw-bold">{{ audit.not_applicable_count }}</div>
+                  <small class="text-muted">{% trans "N/A" %}</small>
+                </div>
+              </div>
+            </dd>
+          </dl>
+
+          {% if audit.summary %}
+          <hr>
+          <h6>{% trans "Summary" %}</h6>
+          <p>{{ audit.summary|linebreaks }}</p>
+          {% endif %}
+
+          {% if audit.recommendations %}
+          <hr>
+          <h6>{% trans "Recommendations" %}</h6>
+          <p>{{ audit.recommendations|linebreaks }}</p>
+          {% endif %}
+
+          {% if audit.report_file %}
+          <hr>
+          <a href="{{ audit.report_file.url }}" class="btn btn-outline-primary" target="_blank" rel="noopener">
+            <i class="bi bi-file-earmark-arrow-down"></i> {% trans "Download Report" %}
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Findings -->
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{% trans "Findings" %} <span class="badge bg-secondary">{{ findings.count }}</span></h5>
+          {% if can_add_finding %}
+          <a href="{% url 'accessibility:finding_create' audit_pk=audit.pk %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus"></i> {% trans "Add Finding" %}
+          </a>
+          {% endif %}
+        </div>
+        <div class="card-body p-0">
+          {% if findings %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>{% trans "Criterion" %}</th>
+                  <th>{% trans "Component" %}</th>
+                  <th>{% trans "Severity" %}</th>
+                  <th>{% trans "Status" %}</th>
+                  <th>{% trans "Compliance" %}</th>
+                  <th>{% trans "Assigned To" %}</th>
+                  <th>{% trans "Due Date" %}</th>
+                  <th class="text-end">{% trans "Actions" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for finding in findings %}
+                <tr class="severity-{{ finding.severity|lower }}">
+                  <td>
+                    <strong>{{ finding.criterion.guideline_number }}.{{ finding.criterion.criterion_number }}</strong>
+                    <br><small class="text-muted">{{ finding.criterion.title|truncatechars:60 }}</small>
+                  </td>
+                  <td>{{ finding.component }}</td>
+                  <td>
+                    <span class="badge bg-{% if finding.severity == 'CRITICAL' %}danger{% elif finding.severity == 'HIGH' %}warning{% elif finding.severity == 'MEDIUM' %}info{% else %}secondary{% endif %}">
+                      {{ finding.get_severity_display }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-{% if finding.status == 'VERIFIED' %}success{% elif finding.status == 'OPEN' %}danger{% elif finding.status == 'IN_PROGRESS' %}warning{% elif finding.status == 'NEEDS_REVIEW' %}info{% else %}secondary{% endif %}">
+                      {{ finding.get_status_display }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-{% if finding.compliance_status == 'COMPLIANT' %}success{% elif finding.compliance_status == 'NON_COMPLIANT' %}danger{% elif finding.compliance_status == 'PARTIAL' %}warning{% else %}secondary{% endif %}">
+                      {{ finding.get_compliance_status_display }}
+                    </span>
+                  </td>
+                  <td>{{ finding.assigned_to.get_full_name|default:"—" }}</td>
+                  <td>
+                    {% if finding.due_date %}
+                    {% if finding.due_date < today and finding.status != 'VERIFIED' %}
+                    <span class="text-danger">{{ finding.due_date }}</span>
+                    {% else %}
+                    {{ finding.due_date }}
+                    {% endif %}
+                    {% else %}—{% endif %}
+                  </td>
+                  <td class="text-end">
+                    <a href="{% url 'accessibility:finding_detail' pk=finding.pk %}" class="btn btn-sm btn-outline-primary" title="{% trans 'View' %}">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-list-check fs-1"></i>
+            <p class="mt-2">{% trans "No findings yet" %}</p>
+            {% if can_add_finding %}
+            <a href="{% url 'accessibility:finding_create' audit_pk=audit.pk %}" class="btn btn-primary mt-2">{% trans "Add First Finding" %}</a>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Quick Stats" %}</h5>
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-6">{% trans "Compliant" %}</dt>
+            <dd class="col-sm-6 text-success fw-bold">{{ audit.compliant_count }}</dd>
+            <dt class="col-sm-6">{% trans "Partial" %}</dt>
+            <dd class="col-sm-6 text-warning fw-bold">{{ audit.partial_count }}</dd>
+            <dt class="col-sm-6">{% trans "Non-Compliant" %}</dt>
+            <dd class="col-sm-6 text-danger fw-bold">{{ audit.non_compliant_count }}</dd>
+            <dt class="col-sm-6">{% trans "Not Applicable" %}</dt>
+            <dd class="col-sm-6 text-secondary fw-bold">{{ audit.not_applicable_count }}</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Findings by Severity" %}</h5>
+        </div>
+        <div class="card-body">
+          {% for finding in findings %}
+          {% if forloop.first %}
+          <div class="d-flex justify-content-between mb-2">
+            <span class="badge bg-{{ finding.severity|lower }}">{{ finding.get_severity_display }}</span>
+            <span>{{ findings.filter.severity=finding.severity|length }}</span>
+          </div>
+          {% endif %}
+          {% endfor %}
+          {% if not findings %}
+          <p class="text-muted mb-0">{% trans "No findings" %}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

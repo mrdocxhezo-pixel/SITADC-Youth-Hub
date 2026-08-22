@@ -861,11 +861,11 @@ class CategoryTemplateListView(ReportPermissionMixin, ListView):
             pk=self.kwargs["pk"],
         )
         qs = template_queryset(self.request.user).filter(category=self.category)
-        return _sort_templates_naturally(qs)
+        return qs.order_by("code")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["category"] = self.category
         context["search_query"] = self.request.GET.get("q", "")
-        context["template_count"] = len(self.get_queryset())
+        context["template_count"] = self.get_queryset().count()
         return context

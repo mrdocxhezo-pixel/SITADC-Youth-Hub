@@ -1,0 +1,144 @@
+{% extends "security/base.html" %}
+{% load i18n %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-clipboard-check me-2"></i>{% trans "Access Reviews" %}</h1>
+    <a href="{% url 'security:access_review_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>{% trans "Create Review" %}
+    </a>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="type" class="form-label">{% trans "Review Type" %}</label>
+                <select name="type" id="type" class="form-select">
+                    <option value="">{% trans "All Types" %}</option>
+                    {% for value, label in review_types %}
+                    <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="status" class="form-label">{% trans "Status" %}</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">{% trans "All Statuses" %}</option>
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-funnel me-1"></i>{% trans "Filter" %}
+                </button>
+                <a href="{% url 'security:access_review_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>{% trans "Clear" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Reviews Table -->
+<div class="card">
+    <div class="card-body">
+        {% if reviews %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{% trans "Name" %}</th>
+                        <th>{% trans "Type" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Started" %}</th>
+                        <th>{% trans "Due" %}</th>
+                        <th>{% trans "Completed" %}</th>
+                        <th>{% trans "Progress" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                    <tr {% if review.is_overdue %}class="table-danger"{% endif %}>
+                        <td>
+                            <a href="{% url 'security:access_review_detail' review.pk %}" class="fw-bold">{{ review.name }}</a>
+                        </td>
+                        <td>{{ review.get_review_type_display }}</td>
+                        <td>
+                            <span class="badge
+                                {% if review.status == 'completed' %}bg-success
+                                {% elif review.status == 'in_progress' %}bg-primary
+                                {% elif review.status == 'overdue' %}bg-danger
+                                {% elif review.status == 'cancelled' %}bg-secondary
+                                {% else %}bg-warning text-dark{% endif %}">
+                                {{ review.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ review.started_at|date:"M d, Y" }}</td>
+                        <td>
+                            {% if review.is_overdue %}
+                            <span class="text-danger fw-bold">{{ review.due_date|date:"M d, Y" }}</span>
+                            {% else %}
+                            {{ review.due_date|date:"M d, Y" }}
+                            {% endif %}
+                        </td>
+                        <td>{{ review.completed_at|date:"M d, Y"|default:"-" }}</td>
+                        <td>
+                            <div class="progress" style="height: 5px;">
+                                <div class="progress-bar
+                                    {% if review.completion_percentage == 100 %}bg-success
+                                    {% elif review.is_overdue %}bg-danger
+                                    {% else %}bg-primary{% endif %}"
+                                    role="progressbar" style="width: {{ review.completion_percentage }}%"></div>
+                            </div>
+                            <small>{{ review.completion_percentage|floatformat:1 }}%</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'security:access_review_detail' review.pk %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if review.status == 'pending' %}
+                                <a href="{% url 'security:access_review_start' review.pk %}" class="btn btn-outline-success">
+                                    <i class="bi bi-play-fill"></i>
+                                </a>
+                                {% endif %}
+                                {% if review.status == 'in_progress' %}
+                                <a href="{% url 'security:access_review_complete' review.pk %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-check-circle"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-clipboard-check fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">{% trans "No access reviews found" %}</h5>
+            <a href="{% url 'security:access_review_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>{% trans "Create Review" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

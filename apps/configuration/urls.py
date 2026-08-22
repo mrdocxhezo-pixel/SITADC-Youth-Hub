@@ -1,0 +1,293 @@
+from django.urls import path
+
+from apps.configuration import views
+
+app_name = "configuration"
+
+urlpatterns = [
+    # Dashboard
+    path("", views.ConfigurationDashboardView.as_view(), name="dashboard"),
+    # Configuration CRUD
+    path(
+        "configurations/",
+        views.ConfigurationListView.as_view(),
+        name="configuration_list",
+    ),
+    path(
+        "configurations/create/",
+        views.ConfigurationCreateView.as_view(),
+        name="configuration_create",
+    ),
+    path(
+        "configurations/<uuid:pk>/",
+        views.ConfigurationDetailView.as_view(),
+        name="configuration_detail",
+    ),
+    path(
+        "configurations/<uuid:pk>/update/",
+        views.ConfigurationUpdateView.as_view(),
+        name="configuration_update",
+    ),
+    path(
+        "configurations/<uuid:pk>/delete/",
+        views.ConfigurationDeleteView.as_view(),
+        name="configuration_delete",
+    ),
+    path(
+        "configurations/<uuid:pk>/transition/",
+        views.configuration_status_transition,
+        name="configuration_transition",
+    ),
+    path(
+        "configurations/<uuid:pk>/rollback/",
+        views.configuration_version_rollback,
+        name="configuration_rollback",
+    ),
+    # Configuration Values
+    path(
+        "configurations/<uuid:configuration_id>/values/",
+        views.ConfigurationValueListView.as_view(),
+        name="value_list",
+    ),
+    path(
+        "configurations/<uuid:configuration_id>/values/create/",
+        views.ConfigurationValueCreateView.as_view(),
+        name="value_create",
+    ),
+    path(
+        "values/<uuid:pk>/update/",
+        views.ConfigurationValueUpdateView.as_view(),
+        name="value_update",
+    ),
+    path(
+        "values/<uuid:pk>/delete/",
+        views.ConfigurationValueDeleteView.as_view(),
+        name="value_delete",
+    ),
+    # Singleton Settings
+    path(
+        "settings/application/",
+        views.ApplicationSettingsView.as_view(),
+        name="application_settings",
+    ),
+    path(
+        "settings/authentication/",
+        views.AuthenticationSettingsView.as_view(),
+        name="authentication_settings",
+    ),
+    path(
+        "settings/notifications/",
+        views.NotificationSettingsView.as_view(),
+        name="notification_settings",
+    ),
+    path(
+        "settings/branding/",
+        views.BrandingSettingsView.as_view(),
+        name="branding_settings",
+    ),
+    path(
+        "settings/documents/",
+        views.DocumentSettingsView.as_view(),
+        name="document_settings",
+    ),
+    path(
+        "settings/exports/", views.ExportSettingsView.as_view(), name="export_settings"
+    ),
+    # Organization Settings
+    path(
+        "organizations/",
+        views.OrganizationSettingsListView.as_view(),
+        name="organization_list",
+    ),
+    path(
+        "organizations/<uuid:pk>/",
+        views.OrganizationSettingsDetailView.as_view(),
+        name="organization_detail",
+    ),
+    path(
+        "organizations/<uuid:pk>/update/",
+        views.OrganizationSettingsUpdateView.as_view(),
+        name="organization_update",
+    ),
+    # Numbering Configuration
+    path(
+        "numbering/",
+        views.NumberingConfigurationListView.as_view(),
+        name="numbering_list",
+    ),
+    path(
+        "numbering/create/",
+        views.NumberingConfigurationCreateView.as_view(),
+        name="numbering_create",
+    ),
+    path(
+        "numbering/<uuid:pk>/update/",
+        views.NumberingConfigurationUpdateView.as_view(),
+        name="numbering_update",
+    ),
+    path(
+        "numbering/<uuid:pk>/delete/",
+        views.NumberingConfigurationDeleteView.as_view(),
+        name="numbering_delete",
+    ),
+    # Security Policies
+    path(
+        "security/", views.SecurityPolicyListView.as_view(), name="security_policy_list"
+    ),
+    path(
+        "security/create/",
+        views.SecurityPolicyCreateView.as_view(),
+        name="security_policy_create",
+    ),
+    path(
+        "security/<uuid:pk>/",
+        views.SecurityPolicyDetailView.as_view(),
+        name="security_policy_detail",
+    ),
+    path(
+        "security/<uuid:pk>/update/",
+        views.SecurityPolicyUpdateView.as_view(),
+        name="security_policy_update",
+    ),
+    # Backup Schedules
+    path("backups/", views.BackupScheduleListView.as_view(), name="backup_list"),
+    path(
+        "backups/create/",
+        views.BackupScheduleCreateView.as_view(),
+        name="backup_create",
+    ),
+    path(
+        "backups/<uuid:pk>/",
+        views.BackupScheduleDetailView.as_view(),
+        name="backup_detail",
+    ),
+    path(
+        "backups/<uuid:pk>/update/",
+        views.BackupScheduleUpdateView.as_view(),
+        name="backup_update",
+    ),
+    path(
+        "backups/<uuid:pk>/delete/",
+        views.BackupScheduleDeleteView.as_view(),
+        name="backup_delete",
+    ),
+    # Integration Configurations
+    path(
+        "integrations/",
+        views.IntegrationConfigurationListView.as_view(),
+        name="integration_list",
+    ),
+    path(
+        "integrations/create/",
+        views.IntegrationConfigurationCreateView.as_view(),
+        name="integration_create",
+    ),
+    path(
+        "integrations/<uuid:pk>/",
+        views.IntegrationConfigurationDetailView.as_view(),
+        name="integration_detail",
+    ),
+    path(
+        "integrations/<uuid:pk>/update/",
+        views.IntegrationConfigurationUpdateView.as_view(),
+        name="integration_update",
+    ),
+    # Maintenance Windows
+    path(
+        "maintenance/",
+        views.MaintenanceWindowListView.as_view(),
+        name="maintenance_list",
+    ),
+    path(
+        "maintenance/create/",
+        views.MaintenanceWindowCreateView.as_view(),
+        name="maintenance_create",
+    ),
+    path(
+        "maintenance/<uuid:pk>/",
+        views.MaintenanceWindowDetailView.as_view(),
+        name="maintenance_detail",
+    ),
+    path(
+        "maintenance/<uuid:pk>/update/",
+        views.MaintenanceWindowUpdateView.as_view(),
+        name="maintenance_update",
+    ),
+    # System Health
+    path("health/", views.SystemHealthView.as_view(), name="health"),
+    path("health/check/", views.system_health_check, name="health_check"),
+    # Notifications
+    path(
+        "notifications/",
+        views.ConfigurationNotificationListView.as_view(),
+        name="notifications",
+    ),
+    path(
+        "notifications/<uuid:pk>/read/",
+        views.mark_notification_read,
+        name="notification_read",
+    ),
+    path(
+        "notifications/read-all/",
+        views.mark_all_notifications_read,
+        name="notifications_read_all",
+    ),
+    # Workflow Configuration
+    path(
+        "workflows/",
+        views.WorkflowConfigurationListView.as_view(),
+        name="workflow_list",
+    ),
+    path(
+        "workflows/create/",
+        views.WorkflowConfigurationCreateView.as_view(),
+        name="workflow_create",
+    ),
+    path(
+        "workflows/<uuid:pk>/",
+        views.WorkflowConfigurationDetailView.as_view(),
+        name="workflow_detail",
+    ),
+    path(
+        "workflows/<uuid:pk>/update/",
+        views.WorkflowConfigurationUpdateView.as_view(),
+        name="workflow_update",
+    ),
+    path(
+        "workflows/<uuid:pk>/delete/",
+        views.WorkflowConfigurationDeleteView.as_view(),
+        name="workflow_delete",
+    ),
+    # Role Permission Configuration
+    path(
+        "role-permissions/",
+        views.RolePermissionConfigurationListView.as_view(),
+        name="role_permission_list",
+    ),
+    path(
+        "role-permissions/create/",
+        views.RolePermissionConfigurationCreateView.as_view(),
+        name="role_permission_create",
+    ),
+    path(
+        "role-permissions/<uuid:pk>/update/",
+        views.RolePermissionConfigurationUpdateView.as_view(),
+        name="role_permission_update",
+    ),
+    # Dashboard Configuration
+    path(
+        "dashboards/",
+        views.SystemConfigurationDashboardListView.as_view(),
+        name="dashboard_list",
+    ),
+    path(
+        "dashboards/create/",
+        views.SystemConfigurationDashboardCreateView.as_view(),
+        name="dashboard_create",
+    ),
+    path(
+        "dashboards/<uuid:pk>/update/",
+        views.SystemConfigurationDashboardUpdateView.as_view(),
+        name="dashboard_update",
+    ),
+]

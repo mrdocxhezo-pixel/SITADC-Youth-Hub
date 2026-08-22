@@ -1,0 +1,249 @@
+{% extends "security/base.html" %}
+{% load i18n %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-clipboard-check me-2"></i>{{ review.name }}</h1>
+    <div class="btn-group">
+        {% if review.status == 'pending' %}
+        <a href="{% url 'security:access_review_start' review.pk %}" class="btn btn-outline-success">
+            <i class="bi bi-play-fill me-1"></i>{% trans "Start Review" %}
+        </a>
+        {% endif %}
+        {% if review.status == 'in_progress' %}
+        <a href="{% url 'security:access_review_complete' review.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-check-circle me-1"></i>{% trans "Complete Review" %}
+        </a>
+        {% endif %}
+        <a href="{% url 'security:access_review_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>{% trans "Back to List" %}
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Review Details" %}</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">{% trans "Type" %}</dt>
+                    <dd class="col-sm-9"><span class="badge bg-info">{{ review.get_review_type_display }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans "Status" %}</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge
+                            {% if review.status == 'completed' %}bg-success
+                            {% elif review.status == 'in_progress' %}bg-primary
+                            {% elif review.status == 'overdue' %}bg-danger
+                            {% elif review.status == 'cancelled' %}bg-secondary
+                            {% else %}bg-warning text-dark{% endif %}">
+                            {{ review.get_status_display }}
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-3">{% trans "Started" %}</dt>
+                    <dd class="col-sm-9">{{ review.started_at|date:"M d, Y H:i" }}</dd>
+
+                    <dt class="col-sm-3">{% trans "Due" %}</dt>
+                    <dd class="col-sm-9">
+                        {% if review.is_overdue %}
+                        <span class="text-danger fw-bold">{{ review.due_date|date:"M d, Y H:i" }}</span>
+                        {% else %}
+                        {{ review.due_date|date:"M d, Y H:i" }}
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-3">{% trans "Completed" %}</dt>
+                    <dd class="col-sm-9">{{ review.completed_at|date:"M d, Y H:i"|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans "Progress" %}</dt>
+                    <dd class="col-sm-9">
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar
+                                {% if review.completion_percentage == 100 %}bg-success
+                                {% elif review.is_overdue %}bg-danger
+                                {% else %}bg-primary{% endif %}"
+                                role="progressbar" style="width: {{ review.completion_percentage }}%">
+                                {{ review.completion_percentage|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </dd>
+
+                    <dt class="col-sm-3">{% trans "Total Items" %}</dt>
+                    <dd class="col-sm-9">{{ review.total_items_reviewed }}</dd>
+
+                    <dt class="col-sm-3">{% trans "Approved" %}</dt>
+                    <dd class="col-sm-9"><span class="text-success">{{ review.items_approved }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans "Revoked" %}</dt>
+                    <dd class="col-sm-9"><span class="text-danger">{{ review.items_revoked }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans "Modified" %}</dt>
+                    <dd class="col-sm-9"><span class="text-warning">{{ review.items_modified }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans "Escalated" %}</dt>
+                    <dd class="col-sm-9"><span class="text-info">{{ review.items_escalated }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans "Lead Reviewer" %}</dt>
+                    <dd class="col-sm-9">{{ review.lead_reviewer|default:"-" }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        {% if review.description %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Description" %}</h5>
+            </div>
+            <div class="card-body">
+                {{ review.description|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Scope" %}</h5>
+            </div>
+            <div class="card-body">
+                {% if review.target_identity %}
+                <p><strong>{% trans "Target Identity" %}:</strong> {{ review.target_identity.display_name }}</p>
+                {% endif %}
+                {% if review.target_role %}
+                <p><strong>{% trans "Target Role" %}:</strong> {{ review.target_role.name }}</p>
+                {% endif %}
+                {% if review.target_permission %}
+                <p><strong>{% trans "Target Permission" %}:</strong> {{ review.target_permission.full_name }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Reviewers" %}</h5>
+            </div>
+            <div class="card-body">
+                {% if review.reviewers.all %}
+                <ul class="list-unstyled mb-0">
+                    {% for reviewer in review.reviewers.all %}
+                    <li>{% if reviewer == review.lead_reviewer %}<i class="bi bi-star-fill text-warning me-1"></i>{% else %}<i class="bi bi-person me-1"></i>{% endif %}{{ reviewer }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No reviewers assigned." %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Configuration" %}</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-6">{% trans "Auto-approve Low Risk" %}</dt>
+                    <dd class="col-sm-6">{% if review.auto_approve_low_risk %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %}</dd>
+
+                    <dt class="col-sm-6">{% trans "Require Justification" %}</dt>
+                    <dd class="col-sm-6">{% if review.require_justification_for_changes %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %}</dd>
+
+                    <dt class="col-sm-6">{% trans "Escalate Overdue" %}</dt>
+                    <dd class="col-sm-6">{% if review.escalate_overdue_reviews %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Items -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{% trans "Review Items" %} ({{ items|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% if items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{% trans "Target" %}</th>
+                        <th>{% trans "Risk" %}</th>
+                        <th>{% trans "Decision" %}</th>
+                        <th>{% trans "Reviewer" %}</th>
+                        <th>{% trans "Reviewed" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>
+                            {% if item.identity %}
+                            Identity: {{ item.identity.display_name }}
+                            {% elif item.role %}
+                            Role: {{ item.role.name }}
+                            {% elif item.permission %}
+                            Permission: {{ item.permission.full_name }}
+                            {% endif %}
+                            {% if item.identity_role %}
+                            <br><small class="text-muted">Assignment: {{ item.identity_role.assigned_at|date:"M d, Y" }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if item.risk_level == 'critical' %}bg-danger
+                                {% elif item.risk_level == 'high' %}bg-warning text-dark
+                                {% elif item.risk_level == 'medium' %}bg-info
+                                {% else %}bg-success{% endif %}">
+                                {{ item.get_risk_level_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if item.decision %}
+                            <span class="badge
+                                {% if item.decision == 'approve' %}bg-success
+                                {% elif item.decision == 'revoke' %}bg-danger
+                                {% elif item.decision == 'modify' %}bg-warning text-dark
+                                {% else %}bg-info{% endif %}">
+                                {{ item.get_decision_display }}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary">{% trans "Pending" %}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.reviewer|default:"-" }}</td>
+                        <td>{{ item.reviewed_at|date:"M d, Y H:i"|default:"-" }}</td>
+                        <td>
+                            {% if not item.decision and request.user in review.reviewers.all or request.user == review.lead_reviewer %}
+                            <a href="{% url 'security:access_review_item' item.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i> {% trans "Review" %}
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">{% trans "No review items." %}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

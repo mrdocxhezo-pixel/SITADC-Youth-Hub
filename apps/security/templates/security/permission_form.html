@@ -1,0 +1,113 @@
+{% extends "security/base.html" %}
+{% load i18n %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-key me-2"></i>{{ title }}</h1>
+    <a href="{% url 'security:permission_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>{% trans "Back to List" %}
+    </a>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">{% trans "Name" %} <span class="text-danger">*</span></label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="text-danger small">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.module.id_for_label }}" class="form-label">{% trans "Module" %} <span class="text-danger">*</span></label>
+                    {{ form.module }}
+                    {% if form.module.errors %}
+                    <div class="text-danger small">{{ form.module.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.resource_type.id_for_label }}" class="form-label">{% trans "Resource Type" %} <span class="text-danger">*</span></label>
+                    {{ form.resource_type }}
+                    {% if form.resource_type.errors %}
+                    <div class="text-danger small">{{ form.resource_type.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.action.id_for_label }}" class="form-label">{% trans "Action" %} <span class="text-danger">*</span></label>
+                    {{ form.action }}
+                    {% if form.action.errors %}
+                    <div class="text-danger small">{{ form.action.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Description" %}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <div class="text-danger small">{{ form.description.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="form-check">
+                        {{ form.is_system }}
+                        <label class="form-check-label" for="{{ form.is_system.id_for_label }}">{% trans "System Permission" %}</label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check">
+                        {{ form.is_assignable }}
+                        <label class="form-check-label" for="{{ form.is_assignable.id_for_label }}">{% trans "Assignable" %}</label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check">
+                        {{ form.requires_approval }}
+                        <label class="form-check-label" for="{{ form.requires_approval.id_for_label }}">{% trans "Requires Approval" %}</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.conditions.id_for_label }}" class="form-label">{% trans "Conditions (JSON)" %}</label>
+                {{ form.conditions }}
+                {% if form.conditions.help_text %}
+                <div class="form-text">{{ form.conditions.help_text }}</div>
+                {% endif %}
+                {% if form.conditions.errors %}
+                <div class="text-danger small">{{ form.conditions.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{% url 'security:permission_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle me-1"></i>{% trans "Cancel" %}
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>{% trans "Save" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

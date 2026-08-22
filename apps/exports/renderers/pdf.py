@@ -8,6 +8,7 @@ confidentiality watermarks, draft markings, wrapped tables and PDF metadata.
 from __future__ import annotations
 
 import io
+import logging
 import os
 from typing import Any
 
@@ -15,6 +16,8 @@ from django.conf import settings
 
 from ..constants import ExportFormat, PageOrientation, PageSize
 from .base import BaseRenderer, ExportDataset, RendererRegistry, RenderResult
+
+logger = logging.getLogger(__name__)
 
 
 @RendererRegistry.register(ExportFormat.PDF)
@@ -412,6 +415,71 @@ class PDFRenderer(BaseRenderer):
                 )
             )
             elements.append(approval_table)
+
+        # Digital verification block (QR code, Barcode, Digital Signature)
+        if dataset.qr_code or dataset.barcode or dataset.digital_signature:
+            elements.append(Spacer(1, 16))
+            elements.append(Paragraph("Digital Verification", heading2_style))
+
+            import base64
+            import io
+
+            from reportlab.lib.utils import ImageReader
+
+            if dataset.qr_code:
+                try:
+                    qr_data = base64.b64decode(dataset.qr_code)
+                    qr_img = ImageReader(io.BytesIO(qr_data))
+                    elements.append(Paragraph("QR Code (Verification)", body_style))
+                    elements.append(Spacer(1, 4))
+                    # Draw QR code at ~40mm width
+                    from reportlab.platypus import Image as RLImage
+                    elements.append(RLImage(qr_img, width=113.4, height=113.4))
+                    elements.append(Spacer(1, 8))
+                except Exception:
+                    logger.warning("Failed to embed QR code in PDF")
+
+            if dataset.barcode:
+                try:
+                    bc_data = base64.b64decode(dataset.barcode)
+                    bc_img = ImageReader(io.BytesIO(bc_data))
+                    elements.append(Paragraph("Barcode (Tracking)", body_style))
+                    elements.append(Spacer(1, 4))
+                    from reportlab.platypus import Image as RLImage
+                    elements.append(RLImage(bc_img, width=226.8, height=56.7))
+                    elements.append(Spacer(1, 8))
+                except Exception:
+                    logger.warning("Failed to embed barcode in PDF")
+
+            if dataset.digital_signature:
+                sig = dataset.digital_signature
+                if isinstance(sig, dict) and sig:
+                    sig_rows = []
+                    for key, value in sig.items():
+                        if value:
+                            sig_rows.append([key, str(value)])
+                    if sig_rows:
+                        sig_table = Table(
+                            [
+                                [Paragraph(label, cell_style), Paragraph(value, cell_style)]
+                                for label, value in sig_rows
+                            ],
+                            colWidths=[200, 540],
+                        )
+                        sig_table.setStyle(
+                            TableStyle(
+                                [
+                                    ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#CCCCCC")),
+                                    ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+                                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                                ]
+                            )
+                        )
+                        elements.append(Paragraph("Digital Signature", body_style))
+                        elements.append(Spacer(1, 4))
+                        elements.append(sig_table)
 
         return elements
 

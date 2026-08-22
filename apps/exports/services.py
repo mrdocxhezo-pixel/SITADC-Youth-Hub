@@ -24,10 +24,12 @@ from contextlib import suppress
 from datetime import timedelta
 
 from django.conf import settings
+from django.db.models import Avg, Count, Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core.services import BaseService
+from apps.rbac.authorization import user_has_permission
 from apps.references.services import ReferenceNumberService
 
 from .constants import (
@@ -66,8 +68,6 @@ def _require(user, *codes: str, exc_class=ExportPermissionDenied) -> None:
         raise exc_class(_("You are not authorized to perform this operation."))
     if getattr(user, "is_superuser", False):
         return
-    from apps.rbac.authorization import user_has_permission
-
     if not any(user_has_permission(user, code) for code in codes):
         raise exc_class(_("You do not have permission to perform this operation."))
 
@@ -300,6 +300,14 @@ class GenerateExportService(BaseService):
         dataset.orientation = config.default_orientation
         dataset.logo_enabled = config.logo_enabled
 
+        # Add digital verification data
+        if request.qr_code:
+            dataset.qr_code = request.qr_code
+        if request.barcode:
+            dataset.barcode = request.barcode
+        if request.digital_signature:
+            dataset.digital_signature = request.digital_signature
+
         renderer = self._get_renderer(request.format)
         result = renderer.render(dataset, config)
 
@@ -412,16 +420,14 @@ class DownloadExportService(BaseService):
             request.mark_expired()
             raise ExportExpiredError(_("This export has expired."))
 
-        if request.requested_by_id != getattr(actor, "id", None):
-            from apps.rbac.authorization import user_has_permission
-
-            if not (
-                actor.is_superuser
-                or user_has_permission(actor, "exports.view_all_history")
-            ):
-                raise ExportDownloadDenied(
-                    _("You may only download your own export requests.")
-                )
+        if (
+            request.requested_by_id != getattr(actor, "id", None)
+            and not actor.is_superuser
+            and not user_has_permission(actor, "exports.view_all_history")
+        ):
+            raise ExportDownloadDenied(
+                _("You may only download your own export requests.")
+            )
 
         if not ExportFileService.file_exists(request):
             raise ExportNotFoundError(_("The export file is no longer available."))
@@ -486,16 +492,14 @@ class RegenerateExportService(BaseService):
         request = export_request
         actor = self.user
         _require(actor, "exports.regenerate", "exports.manage")
-        if request.requested_by_id != getattr(actor, "id", None):
-            from apps.rbac.authorization import user_has_permission
-
-            if not (
-                actor.is_superuser
-                or user_has_permission(actor, "exports.view_all_history")
-            ):
-                raise ExportPermissionDenied(
-                    _("You may only regenerate your own export requests.")
-                )
+        if (
+            request.requested_by_id != getattr(actor, "id", None)
+            and not actor.is_superuser
+            and not user_has_permission(actor, "exports.view_all_history")
+        ):
+            raise ExportPermissionDenied(
+                _("You may only regenerate your own export requests.")
+            )
 
         ExportFileService.delete_export_file(request)
         request.status = ExportStatus.QUEUED
@@ -909,7 +913,15 @@ class ExportNotificationService:
 
     @staticmethod
     def _send_notification(
-        user, title: str, message: str, notification_type: str = "INFO", **kwargs
+        user,
+        title: str,
+        message: str,
+        notification_type: str = "INFO",
+        source_app: str = "exports",
+        source_model: str = "ExportRequest",
+        source_object_id: str = "",
+        source_object_reference: str = "",
+        **kwargs,
     ):
         """Send a notification via the notifications module."""
         try:
@@ -923,6 +935,10 @@ class ExportNotificationService:
                 message=message,
                 notification_type=notification_type,
                 channels=[DeliveryChannel.IN_APP],
+                source_app=source_app,
+                source_model=source_model,
+                source_object_id=source_object_id,
+                source_object_reference=source_object_reference,
                 **kwargs,
             )
         except Exception as exc:
@@ -943,7 +959,8 @@ class ExportNotificationService:
                 "is ready for download."
             ),
             notification_type="SUCCESS",
-            export_request=export_request,
+            source_object_id=str(export_request.pk),
+            source_object_reference=export_request.reference_number,
             priority="normal",
         )
 
@@ -958,7 +975,8 @@ class ExportNotificationService:
             title="Export Failed",
             message=f'Your export "{export_request.reference_number}" failed: {error}',
             notification_type="ERROR",
-            export_request=export_request,
+            source_object_id=str(export_request.pk),
+            source_object_reference=export_request.reference_number,
             priority="high",
         )
 
@@ -979,7 +997,8 @@ class ExportNotificationService:
             message=f'Batch export "{export_request.reference_number}" '
             "has been processed.",
             notification_type="SUCCESS",
-            export_request=export_request,
+            source_object_id=str(export_request.pk),
+            source_object_reference=export_request.reference_number,
             priority="normal",
         )
 
@@ -993,8 +1012,10 @@ class ExportNotificationService:
             title="Scheduled Export Executed",
             message=f'Scheduled export "{scheduled_export.name}" has been queued.',
             notification_type="INFO",
-            scheduled_export=scheduled_export,
-            export_request=export_request,
+            source_app="exports",
+            source_model="ScheduledExport",
+            source_object_id=str(scheduled_export.pk),
+            source_object_reference=scheduled_export.name,
             priority="normal",
         )
 
@@ -1012,6 +1033,403 @@ class ExportNotificationService:
                 "has expired and is no longer available for download."
             ),
             notification_type="WARNING",
-            export_request=export_request,
+            source_object_id=str(export_request.pk),
+            source_object_reference=export_request.reference_number,
             priority="normal",
         )
+
+
+# ---------------------------------------------------------------------------
+# Export Analytics Services
+# ---------------------------------------------------------------------------
+
+
+class ExportAnalyticsService(BaseService):
+    """Compute and store export analytics snapshots."""
+
+    def _execute(
+        self,
+        *,
+        period: str = "DAILY",
+        period_start=None,
+        period_end=None,
+        source_type: str = "",
+        format: str = "",
+        requested_by=None,
+    ) -> ExportAnalytics:
+        from django.db.models import Count, F, Q, Sum
+
+        from .models import ExportAnalytics, ExportRequest, ExportStatus
+
+        if period_start is None:
+            period_start = timezone.now().replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+        if period_end is None:
+            period_end = period_start + timedelta(days=1)
+
+        qs = ExportRequest.objects.filter(
+            requested_at__gte=period_start, requested_at__lt=period_end
+        )
+        if source_type:
+            qs = qs.filter(source_type=source_type)
+        if format:
+            qs = qs.filter(format=format)
+        if requested_by:
+            qs = qs.filter(requested_by=requested_by)
+
+        stats = qs.aggregate(
+            total=Count("id"),
+            completed=Count("id", filter=Q(status=ExportStatus.COMPLETED)),
+            failed=Count("id", filter=Q(status=ExportStatus.FAILED)),
+            cancelled=Count("id", filter=Q(status=ExportStatus.CANCELLED)),
+            expired=Count("id", filter=Q(status=ExportStatus.EXPIRED)),
+            total_records=Sum("record_count"),
+            total_size=Sum("file_size"),
+            avg_gen_time=Avg(
+                (F("completed_at") - F("started_at")).total_seconds()
+                * 1000,
+                filter=Q(status=ExportStatus.COMPLETED)
+                & Q(completed_at__isnull=False)
+                & Q(started_at__isnull=False),
+            ),
+        )
+
+        # Storage stats
+        completed_qs = qs.filter(
+            status=ExportStatus.COMPLETED, storage_path__isnull=False
+        ).exclude(storage_path="")
+        storage_stats = completed_qs.aggregate(
+            storage_used=Sum("file_size"),
+            storage_expired=Sum(
+                "file_size",
+                filter=Q(expires_at__isnull=False) & Q(expires_at__lt=timezone.now()),
+            ),
+        )
+
+        # Distribution stats
+        format_dist = dict(
+            qs.values("format").annotate(c=Count("id")).values_list("format", "c")
+        )
+        source_dist = dict(
+            qs.values("source_type")
+            .annotate(c=Count("id"))
+            .values_list("source_type", "c")
+        )
+        user_dist = dict(
+            qs.values("requested_by")
+            .annotate(c=Count("id"))
+            .values_list("requested_by", "c")
+        )
+
+        template_dist = {}
+        for req in qs.filter(template__isnull=False).select_related("template"):
+            key = req.template.code
+            template_dist[key] = template_dist.get(key, 0) + 1
+
+        analytics, _ = ExportAnalytics.objects.update_or_create(
+            period=period,
+            period_start=period_start,
+            period_end=period_end,
+            source_type=source_type or "",
+            format=format or "",
+            requested_by=requested_by,
+            defaults={
+                "total_exports": stats["total"] or 0,
+                "completed_exports": stats["completed"] or 0,
+                "failed_exports": stats["failed"] or 0,
+                "cancelled_exports": stats["cancelled"] or 0,
+                "expired_exports": stats["expired"] or 0,
+                "total_records_exported": stats["total_records"] or 0,
+                "total_file_size_bytes": stats["total_size"] or 0,
+                "avg_generation_time_ms": int(stats["avg_gen_time"] or 0),
+                "avg_file_size_bytes": int(
+                    (stats["total_size"] or 0) / max(stats["total"] or 1, 1)
+                ),
+                "storage_used_bytes": storage_stats["storage_used"] or 0,
+                "storage_expired_bytes": storage_stats["storage_expired"] or 0,
+                "format_distribution": format_dist,
+                "source_type_distribution": source_dist,
+                "user_activity": user_dist,
+                "template_usage": template_dist,
+            },
+        )
+        return analytics
+
+    def compute_all_periods(self, *, days_back: int = 30) -> list:
+        """Compute analytics for daily, weekly, monthly periods."""
+        results = []
+        now = timezone.now()
+
+        # Daily
+        for i in range(days_back):
+            period_start = (now - timedelta(days=i)).replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            period_end = period_start + timedelta(days=1)
+            results.append(
+                self.execute(period="DAILY", period_start=period_start, period_end=period_end)
+            )
+
+        # Weekly (last 12 weeks)
+        for i in range(12):
+            period_start = (
+                now - timedelta(weeks=i + 1)
+            ).replace(hour=0, minute=0, second=0, microsecond=0)
+            # Align to Monday
+            period_start = period_start - timedelta(days=period_start.weekday())
+            period_end = period_start + timedelta(weeks=1)
+            results.append(
+                self.execute(period="WEEKLY", period_start=period_start, period_end=period_end)
+            )
+
+        # Monthly (last 12 months)
+        for i in range(12):
+            month = (now.month - i - 1) % 12 + 1
+            year = now.year - ((now.month - i - 1) // 12)
+            period_start = timezone.datetime(year, month, 1, tzinfo=timezone.utc)
+            next_month = month % 12 + 1
+            next_year = year + (month == 12)
+            period_end = timezone.datetime(next_year, next_month, 1, tzinfo=timezone.utc)
+            results.append(
+                self.execute(period="MONTHLY", period_start=period_start, period_end=period_end)
+            )
+
+        return results
+
+    def get_dashboard_data(self, user) -> dict:
+        """Get analytics data for the export dashboard."""
+
+        from .models import ExportRequest, ExportStatus
+
+        # Get user's scope
+        if user.is_superuser or user_has_permission(user, "exports.manage"):
+            qs = ExportRequest.objects.all()
+        else:
+            qs = ExportRequest.objects.filter(requested_by=user)
+
+        # Recent period stats (last 30 days)
+        recent_start = timezone.now() - timedelta(days=30)
+        recent_qs = qs.filter(requested_at__gte=recent_start)
+
+        total_recent = recent_qs.count()
+        completed_recent = recent_qs.filter(status=ExportStatus.COMPLETED).count()
+        failed_recent = recent_qs.filter(status=ExportStatus.FAILED).count()
+        total_records = recent_qs.aggregate(Sum("record_count"))["record_count__sum"] or 0
+        total_size = recent_qs.aggregate(Sum("file_size"))["file_size__sum"] or 0
+
+        # Format distribution
+        format_dist = dict(
+            recent_qs.values("format")
+            .annotate(c=Count("id"))
+            .values_list("format", "c")
+        )
+
+        # Source type distribution
+        source_dist = dict(
+            recent_qs.values("source_type")
+            .annotate(c=Count("id"))
+            .values_list("source_type", "c")
+        )
+
+        # Top users (if manage permission)
+        if user.is_superuser or user_has_permission(user, "exports.manage"):
+            user_qs = (
+                recent_qs.values("requested_by")
+                .annotate(c=Count("id"))
+                .order_by("-c")[:10]
+            )
+            top_users = list(user_qs)
+        else:
+            top_users = []
+
+        # Scheduled exports
+        from .models import ScheduledExport
+
+        active_scheduled = ScheduledExport.objects.filter(is_active=True).count()
+        due_scheduled = ScheduledExport.objects.filter(
+            is_active=True, next_run_at__lte=timezone.now()
+        ).count()
+
+        # Queue stats
+        from .models import ExportQueue
+
+        queue_pending = ExportQueue.objects.filter(status=ExportQueue.Status.PENDING).count()
+        queue_processing = ExportQueue.objects.filter(
+            status=ExportQueue.Status.PROCESSING
+        ).count()
+        queue_failed = ExportQueue.objects.filter(status=ExportQueue.Status.FAILED).count()
+
+        return {
+            "total_recent": total_recent,
+            "completed_recent": completed_recent,
+            "failed_recent": failed_recent,
+            "success_rate": (
+                (completed_recent / total_recent * 100) if total_recent > 0 else 0
+            ),
+            "total_records": total_records,
+            "total_size_bytes": total_size,
+            "format_distribution": format_dist,
+            "source_type_distribution": source_dist,
+            "top_users": top_users,
+            "active_scheduled": active_scheduled,
+            "due_scheduled": due_scheduled,
+            "queue_pending": queue_pending,
+            "queue_processing": queue_processing,
+            "queue_failed": queue_failed,
+        }
+
+
+class ExportTemplateAnalyticsService(BaseService):
+    """Per-template analytics computation."""
+
+    def compute(
+        self,
+        *,
+        period: str = "DAILY",
+        period_start=None,
+        period_end=None,
+        template=None,
+    ) -> list:
+        from django.db.models import Count, F, Q, Sum
+
+        from .models import (
+            ExportRequest,
+            ExportStatus,
+            ExportTemplate,
+            ExportTemplateAnalytics,
+        )
+
+        if period_start is None:
+            period_start = timezone.now().replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+        if period_end is None:
+            period_end = period_start + timedelta(days=1)
+
+        templates = [template] if template else ExportTemplate.objects.filter(is_active=True)
+        results = []
+
+        for tmpl in templates:
+            qs = ExportRequest.objects.filter(
+                template=tmpl,
+                requested_at__gte=period_start,
+                requested_at__lt=period_end,
+            )
+
+            stats = qs.aggregate(
+                total=Count("id"),
+                completed=Count("id", filter=Q(status=ExportStatus.COMPLETED)),
+                failed=Count("id", filter=Q(status=ExportStatus.FAILED)),
+                total_records=Sum("record_count"),
+                total_size=Sum("file_size"),
+                avg_gen_time=Avg(
+                    (F("completed_at") - F("started_at")).total_seconds()
+                    * 1000,
+                    filter=Q(status=ExportStatus.COMPLETED)
+                    & Q(completed_at__isnull=False)
+                    & Q(started_at__isnull=False),
+                ),
+            )
+
+            format_dist = dict(
+                qs.values("format").annotate(c=Count("id")).values_list("format", "c")
+            )
+
+            analytics, _ = ExportTemplateAnalytics.objects.update_or_create(
+                template=tmpl,
+                period=period,
+                period_start=period_start,
+                period_end=period_end,
+                defaults={
+                    "export_count": stats["total"] or 0,
+                    "completed_count": stats["completed"] or 0,
+                    "failed_count": stats["failed"] or 0,
+                    "total_records": stats["total_records"] or 0,
+                    "total_size_bytes": stats["total_size"] or 0,
+                    "avg_generation_time_ms": int(stats["avg_gen_time"] or 0),
+                    "format_breakdown": format_dist,
+                },
+            )
+            results.append(analytics)
+
+        return results
+
+
+class ExportUserAnalyticsService(BaseService):
+    """Per-user analytics computation."""
+
+    def compute(
+        self,
+        *,
+        period: str = "DAILY",
+        period_start=None,
+        period_end=None,
+        user=None,
+    ) -> list:
+        from django.contrib.auth import get_user_model
+        from django.db.models import Count
+
+        from .models import ExportRequest, ExportStatus, ExportUserAnalytics
+
+        User = get_user_model()
+
+        if period_start is None:
+            period_start = timezone.now().replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+        if period_end is None:
+            period_end = period_start + timedelta(days=1)
+
+        users = [user] if user else User.objects.filter(is_active=True)
+        results = []
+
+        for u in users:
+            qs = ExportRequest.objects.filter(
+                requested_by=u,
+                requested_at__gte=period_start,
+                requested_at__lt=period_end,
+            )
+
+            stats = qs.aggregate(
+                total=Count("id"),
+                completed=Count("id", filter=Q(status=ExportStatus.COMPLETED)),
+                failed=Count("id", filter=Q(status=ExportStatus.FAILED)),
+                total_records=Sum("record_count"),
+                total_size=Sum("file_size"),
+            )
+
+            format_dist = dict(
+                qs.values("format").annotate(c=Count("id")).values_list("format", "c")
+            )
+            source_dist = dict(
+                qs.values("source_type")
+                .annotate(c=Count("id"))
+                .values_list("source_type", "c")
+            )
+            template_dist = dict(
+                qs.filter(template__isnull=False)
+                .values("template__code")
+                .annotate(c=Count("id"))
+                .values_list("template__code", "c")
+            )
+
+            analytics, _ = ExportUserAnalytics.objects.update_or_create(
+                user=u,
+                period=period,
+                period_start=period_start,
+                period_end=period_end,
+                defaults={
+                    "export_count": stats["total"] or 0,
+                    "completed_count": stats["completed"] or 0,
+                    "failed_count": stats["failed"] or 0,
+                    "total_records": stats["total_records"] or 0,
+                    "total_size_bytes": stats["total_size"] or 0,
+                    "format_breakdown": format_dist,
+                    "source_type_breakdown": source_dist,
+                    "template_breakdown": template_dist,
+                },
+            )
+            results.append(analytics)
+
+        return results

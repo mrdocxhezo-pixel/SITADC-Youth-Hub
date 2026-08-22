@@ -1,0 +1,93 @@
+{% extends "security/base.html" %}
+{% load i18n %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-key me-2"></i>{% trans "Permissions" %}</h1>
+    <a href="{% url 'security:permission_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>{% trans "Create Permission" %}
+    </a>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <label for="module" class="form-label">{% trans "Module" %}</label>
+                <select name="module" id="module" class="form-select">
+                    <option value="">{% trans "All Modules" %}</option>
+                    {% for mod in modules %}
+                    <option value="{{ mod }}" {% if current_module == mod %}selected{% endif %}>{{ mod }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-funnel me-1"></i>{% trans "Filter" %}
+                </button>
+                <a href="{% url 'security:permission_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>{% trans "Clear" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Permissions Table -->
+<div class="card">
+    <div class="card-body">
+        {% if permissions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{% trans "Name" %}</th>
+                        <th>{% trans "Module" %}</th>
+                        <th>{% trans "Resource" %}</th>
+                        <th>{% trans "Action" %}</th>
+                        <th>{% trans "System" %}</th>
+                        <th>{% trans "Assignable" %}</th>
+                        <th>{% trans "Approval Required" %}</th>
+                        <th>{% trans "Full Name" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for perm in permissions %}
+                    <tr>
+                        <td>{{ perm.name }}</td>
+                        <td><span class="badge bg-info">{{ perm.module }}</span></td>
+                        <td>{{ perm.resource_type }}</td>
+                        <td>{{ perm.action }}</td>
+                        <td>{% if perm.is_system %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %}</td>
+                        <td>{% if perm.is_assignable %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %}</td>
+                        <td>{% if perm.requires_approval %}<i class="bi bi-check-circle text-warning"></i>{% else %}<i class="bi bi-x-circle text-muted"></i>{% endif %}</td>
+                        <td><code>{{ perm.full_name }}</code></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-key fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">{% trans "No permissions found" %}</h5>
+            <a href="{% url 'security:permission_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>{% trans "Create Permission" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

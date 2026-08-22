@@ -81,6 +81,11 @@ class ExportDataset:
     approval: dict[str, str] = field(default_factory=dict)
     filters: dict[str, str] = field(default_factory=dict)
 
+    # Digital verification
+    qr_code: str = ""           # Base64-encoded PNG
+    barcode: str = ""           # Base64-encoded PNG
+    digital_signature: dict = field(default_factory=dict)
+
     page_size: str = "A4"
     orientation: str = PageOrientation.PORTRAIT
     logo_enabled: bool = True

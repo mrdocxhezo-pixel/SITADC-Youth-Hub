@@ -1,0 +1,165 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Accessibility Preferences" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% trans "My Accessibility Preferences" %}</h1>
+    <a href="{% url 'accessibility:dashboard' %}" class="btn btn-outline-secondary">{% trans "Back to Dashboard" %}</a>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">{% trans "Personalize Your Experience" %}</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="row g-3">
+              <fieldset class="col-12">
+                <legend class="h6">{% trans "Display Preferences" %}</legend>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="{{ form.font_size.id_for_label }}" class="form-label">{% trans "Font Size" %}</label>
+                    {{ form.font_size }}
+                    {% if form.font_size.errors %}
+                    <div class="text-danger small mt-1">{{ form.font_size.errors }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6">
+                    <label for="{{ form.custom_font_size_px.id_for_label }}" class="form-label">{% trans "Custom Font Size (px)" %}</label>
+                    {{ form.custom_font_size_px }}
+                    {% if form.custom_font_size_px.errors %}
+                    <div class="text-danger small mt-1">{{ form.custom_font_size_px.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">{% trans "Used when 'Custom' is selected above (12-32px)" %}</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="{{ form.colour_theme.id_for_label }}" class="form-label">{% trans "Colour Theme" %}</label>
+                    {{ form.colour_theme }}
+                    {% if form.colour_theme.errors %}
+                    <div class="text-danger small mt-1">{{ form.colour_theme.errors }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-check form-switch">
+                      {{ form.high_contrast }}
+                      <label class="form-check-label" for="{{ form.high_contrast.id_for_label }}">{% trans "High Contrast Mode" %}</label>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset class="col-12">
+                <legend class="h6">{% trans "Interaction Preferences" %}</legend>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="form-check form-switch">
+                      {{ form.reduced_motion }}
+                      <label class="form-check-label" for="{{ form.reduced_motion.id_for_label }}">{% trans "Reduced Motion" %}</label>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-check form-switch">
+                      {{ form.enhanced_focus }}
+                      <label class="form-check-label" for="{{ form.enhanced_focus.id_for_label }}">{% trans "Enhanced Focus Indicators" %}</label>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-check form-switch">
+                      {{ form.keyboard_navigation_enhanced }}
+                      <label class="form-check-label" for="{{ form.keyboard_navigation_enhanced.id_for_label }}">{% trans "Enhanced Keyboard Navigation" %}</label>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-check form-switch">
+                      {{ form.screen_reader_optimized }}
+                      <label class="form-check-label" for="{{ form.screen_reader_optimized.id_for_label }}">{% trans "Screen Reader Optimizations" %}</label>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset class="col-12">
+                <legend class="h6">{% trans "Notifications & Language" %}</legend>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="{{ form.notification_timing.id_for_label }}" class="form-label">{% trans "Notification Display Timing" %}</label>
+                    {{ form.notification_timing }}
+                    {% if form.notification_timing.errors %}
+                    <div class="text-danger small mt-1">{{ form.notification_timing.errors }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6">
+                    <label for="{{ form.preferred_language.id_for_label }}" class="form-label">{% trans "Preferred Language" %}</label>
+                    {{ form.preferred_language }}
+                    {% if form.preferred_language.errors %}
+                    <div class="text-danger small mt-1">{{ form.preferred_language.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset class="col-12">
+                <legend class="h6">{% trans "Reading Enhancements" %}</legend>
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label for="{{ form.reading_line_height.id_for_label }}" class="form-label">{% trans "Line Height" %}</label>
+                    {{ form.reading_line_height }}
+                    {% if form.reading_line_height.errors %}
+                    <div class="text-danger small mt-1">{{ form.reading_line_height.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">{% trans "Multiplier (1.0-3.0)" %}</div>
+                  </div>
+                  <div class="col-md-4">
+                    <label for="{{ form.reading_letter_spacing.id_for_label }}" class="form-label">{% trans "Letter Spacing" %}</label>
+                    {{ form.reading_letter_spacing }}
+                    {% if form.reading_letter_spacing.errors %}
+                    <div class="text-danger small mt-1">{{ form.reading_letter_spacing.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">{% trans "em units (0-1)" %}</div>
+                  </div>
+                  <div class="col-md-4">
+                    <label for="{{ form.reading_word_spacing.id_for_label }}" class="form-label">{% trans "Word Spacing" %}</label>
+                    {{ form.reading_word_spacing }}
+                    {% if form.reading_word_spacing.errors %}
+                    <div class="text-danger small mt-1">{{ form.reading_word_spacing.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">{% trans "em units (0-1)" %}</div>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset class="col-12">
+                <legend class="h6">{% trans "Synchronization" %}</legend>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="form-check form-switch">
+                      {{ form.sync_across_devices }}
+                      <label class="form-check-label" for="{{ form.sync_across_devices.id_for_label }}">{% trans "Sync Across Devices" %}</label>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-end gap-2">
+              <a href="{% url 'accessibility:dashboard' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> {% trans "Save Preferences" %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

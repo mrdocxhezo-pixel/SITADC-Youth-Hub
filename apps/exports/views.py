@@ -8,11 +8,12 @@ private media tree, then redirect to the history/detail page.
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.http import FileResponse
-from django.shortcuts import redirect
+from django.http import FileResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, View
@@ -311,4 +312,75 @@ class ExportTemplateListView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["templates"] = visible_export_templates(self.request.user)
+        return context
+
+
+class ExportAnalyticsView(TemplateView):
+    """Export Engine analytics dashboard."""
+
+    template_name = "exports/analytics.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not user_can_manage_exports(request.user):
+            raise PermissionDenied(_("You do not have permission to view analytics."))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from .services import ExportAnalyticsService
+
+        context["data"] = ExportAnalyticsService(user=self.request.user).get_dashboard_data(
+            self.request.user
+        )
+        context["period"] = self.request.GET.get("period", "DAILY")
+        return context
+
+
+class ExportAnalyticsDataView(View):
+    """JSON endpoint for analytics data (for AJAX/chart updates)."""
+
+    def get(self, request, *args, **kwargs):
+        if not user_can_manage_exports(request.user):
+            return JsonResponse({"error": "Permission denied"}, status=403)
+
+        from .services import ExportAnalyticsService
+
+        data = ExportAnalyticsService(user=request.user).get_dashboard_data(request.user)
+        return JsonResponse(data)
+
+
+class ExportTemplateAnalyticsView(TemplateView):
+    """Per-template analytics detail."""
+
+    template_name = "exports/template_analytics.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not user_can_manage_exports(request.user):
+            raise PermissionDenied(_("You do not have permission to view analytics."))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from django.utils import timezone
+
+        from apps.exports.models import ExportTemplate, ExportTemplateAnalytics
+
+        template = get_object_or_404(ExportTemplate, pk=kwargs["pk"])
+        period = self.request.GET.get("period", "DAILY")
+        days = int(self.request.GET.get("days", "30"))
+
+        end = timezone.now()
+        start = end - timedelta(days=days)
+
+        analytics = ExportTemplateAnalytics.objects.filter(
+            template=template,
+            period=period,
+            period_start__gte=start,
+            period_start__lte=end,
+        ).order_by("period_start")
+
+        context["template"] = template
+        context["analytics"] = analytics
+        context["period"] = period
+        context["days"] = days
         return context

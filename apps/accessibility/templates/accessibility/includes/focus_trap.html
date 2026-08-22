@@ -1,0 +1,7 @@
+{% if enabled %}
+<div data-focus-trap="true" tabindex="-1">
+  {% block focus_trap_content %}{% endblock %}
+</div>
+{% else %}
+  {% block focus_trap_content %}{% endblock %}
+{% endif %}

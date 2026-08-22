@@ -1,0 +1,129 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Accessibility Audits" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% trans "Accessibility Audits" %}</h1>
+    {% if can_audit %}
+    <a href="{% url 'accessibility:audit_create' %}" class="btn btn-primary">
+      <i class="bi bi-plus-circle"></i> {% trans "New Audit" %}
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-4">
+          <input type="text" name="q" class="form-control" placeholder="{% trans 'Search audits...' %}" value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-2">
+          <select name="status" class="form-select">
+            <option value="">{% trans "All Statuses" %}</option>
+            {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="audit_type" class="form-select">
+            <option value="">{% trans "All Types" %}</option>
+            {% for value, label in audit_type_choices %}
+            <option value="{{ value }}" {% if request.GET.audit_type == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+          <button type="submit" class="btn btn-outline-primary">{% trans "Filter" %}</button>
+          {% if request.GET.q or request.GET.status or request.GET.audit_type %}
+          <a href="{% url 'accessibility:audit_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Audits Table -->
+  <div class="card">
+    <div class="card-body p-0">
+      {% if audits %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>{% trans "Reference" %}</th>
+              <th>{% trans "Name" %}</th>
+              <th>{% trans "Module" %}</th>
+              <th>{% trans "Type" %}</th>
+              <th>{% trans "Scope" %}</th>
+              <th>{% trans "Standard" %}</th>
+              <th>{% trans "Target Level" %}</th>
+              <th>{% trans "Status" %}</th>
+              <th>{% trans "Score" %}</th>
+              <th>{% trans "Auditor" %}</th>
+              <th>{% trans "Completed" %}</th>
+              <th class="text-end">{% trans "Actions" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for audit in audits %}
+            <tr>
+              <td><a href="{% url 'accessibility:audit_detail' pk=audit.pk %}">{{ audit.reference_number }}</a></td>
+              <td>{{ audit.name }}</td>
+              <td>{{ audit.module|default:"—" }}</td>
+              <td>{{ audit.get_audit_type_display }}</td>
+              <td>{{ audit.get_scope_display }}</td>
+              <td>{{ audit.standard.code }}</td>
+              <td>{{ audit.get_target_level_display }}</td>
+              <td>
+                <span class="badge bg-{% if audit.status == 'COMPLIANT' %}success{% elif audit.status == 'NON_COMPLIANT' %}danger{% elif audit.status == 'PARTIAL' %}warning{% else %}secondary{% endif %}">
+                  {{ audit.get_status_display }}
+                </span>
+              </td>
+              <td>{{ audit.overall_score }}%</td>
+              <td>{{ audit.auditor.get_full_name|default:"—" }}</td>
+              <td>{{ audit.completed_at|date:"M d, Y"|default:"—" }}</td>
+              <td class="text-end">
+                <a href="{% url 'accessibility:audit_detail' pk=audit.pk %}" class="btn btn-sm btn-outline-primary" title="{% trans 'View' %}">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if is_paginated %}
+      <div class="card-footer">
+        <nav aria-label="{% trans 'Audits pagination' %}">
+          <ul class="pagination justify-content-center mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1&q={{ request.GET.q }}&status={{ request.GET.status }}&audit_type={{ request.GET.audit_type }}">&laquo;</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}&status={{ request.GET.status }}&audit_type={{ request.GET.audit_type }}">{{ page_obj.previous_page_number }}</a></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}&status={{ request.GET.status }}&audit_type={{ request.GET.audit_type }}">{{ page_obj.next_page_number }}</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&q={{ request.GET.q }}&status={{ request.GET.status }}&audit_type={{ request.GET.audit_type }}">&raquo;</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+      {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-clipboard-check fs-1 text-muted"></i>
+        <h5 class="mt-3 text-muted">{% trans "No audits found" %}</h5>
+        {% if can_audit %}
+        <a href="{% url 'accessibility:audit_create' %}" class="btn btn-primary mt-2">{% trans "Create First Audit" %}</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

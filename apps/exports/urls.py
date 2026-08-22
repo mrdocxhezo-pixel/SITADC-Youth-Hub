@@ -28,4 +28,12 @@ urlpatterns = [
     ),
     path("settings/", views.ExportSettingsView.as_view(), name="settings"),
     path("templates/", views.ExportTemplateListView.as_view(), name="templates"),
+    # Analytics
+    path("analytics/", views.ExportAnalyticsView.as_view(), name="analytics"),
+    path("analytics/data/", views.ExportAnalyticsDataView.as_view(), name="analytics_data"),
+    path(
+        "analytics/template/<uuid:pk>/",
+        views.ExportTemplateAnalyticsView.as_view(),
+        name="template_analytics",
+    ),
 ]

@@ -1,0 +1,129 @@
+{% extends "security/base.html" %}
+{% load i18n %}
+
+{% block security_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-shield-lock me-2"></i>{{ policy.name }}</h1>
+    <div class="btn-group">
+        <a href="{% url 'security:policy_update' policy.slug %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>{% trans "Edit" %}
+        </a>
+        <a href="{% url 'security:policy_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>{% trans "Back to List" %}
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Policy Details" %}</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">{% trans "Type" %}</dt>
+                    <dd class="col-sm-9"><span class="badge bg-info">{{ policy.get_policy_type_display }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans "Enforcement Level" %}</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge
+                            {% if policy.enforcement_level == 'block' %}bg-danger
+                            {% elif policy.enforcement_level == 'enforce' %}bg-primary
+                            {% elif policy.enforcement_level == 'warning' %}bg-warning text-dark
+                            {% else %}bg-secondary{% endif %}">
+                            {{ policy.get_enforcement_level_display }}
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-3">{% trans "Status" %}</dt>
+                    <dd class="col-sm-9">
+                        {% if policy.is_active %}
+                        <span class="badge bg-success">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-3">{% trans "Effective Date" %}</dt>
+                    <dd class="col-sm-9">{{ policy.effective_date|date:"M d, Y H:i"|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans "Expiry Date" %}</dt>
+                    <dd class="col-sm-9">{{ policy.expiry_date|date:"M d, Y H:i"|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans "Created" %}</dt>
+                    <dd class="col-sm-9">{{ policy.created_at|date:"M d, Y H:i" }} by {{ policy.created_by }}</dd>
+
+                    <dt class="col-sm-3">{% trans "Updated" %}</dt>
+                    <dd class="col-sm-9">{{ policy.updated_at|date:"M d, Y H:i" }} by {{ policy.updated_by }}</dd>
+
+                    {% if policy.reviewed_by %}
+                    <dt class="col-sm-3">{% trans "Reviewed" %}</dt>
+                    <dd class="col-sm-9">{{ policy.reviewed_at|date:"M d, Y H:i" }} by {{ policy.reviewed_by }}</dd>
+                    {% endif %}
+
+                    {% if policy.approved_by %}
+                    <dt class="col-sm-3">{% trans "Approved" %}</dt>
+                    <dd class="col-sm-9">{{ policy.approved_at|date:"M d, Y H:i" }} by {{ policy.approved_by }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        {% if policy.description %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Description" %}</h5>
+            </div>
+            <div class="card-body">
+                {{ policy.description|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Policy Rules" %}</h5>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3 rounded"><code>{{ policy.rules|json_script:"policy-rules" }}</code></pre>
+            </div>
+        </div>
+
+        {% if policy.scope %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Scope" %}</h5>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3 rounded"><code>{{ policy.scope|json_script:"policy-scope" }}</code></pre>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if policy.exceptions %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{% trans "Exceptions" %}</h5>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3 rounded"><code>{{ policy.exceptions|json_script:"policy-exceptions" }}</code></pre>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

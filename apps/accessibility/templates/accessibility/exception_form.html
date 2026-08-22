@@ -1,0 +1,130 @@
+{% extends "base/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Grant Accessibility Exception" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% trans "Grant Accessibility Exception" %}</h1>
+    <a href="{% url 'accessibility:compliance_list' %}" class="btn btn-outline-secondary">{% trans "Back to Compliance" %}</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">{{ entity_label }}</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="alert alert-warning">
+          <h6><i class="bi bi-exclamation-triangle"></i> {% trans "Important" %}</h6>
+          <p class="mb-0">{% trans "Granting an accessibility exception should be done only when there is a legitimate technical or business constraint that prevents compliance. An alternative accessible solution must be provided where possible." %}</p>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="{{ form.module.id_for_label }}" class="form-label">{% trans "Module" %} <span class="text-danger">*</span></label>
+            {{ form.module }}
+            {% if form.module.errors %}
+            <div class="text-danger small mt-1">{{ form.module.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.component.id_for_label }}" class="form-label">{% trans "Component" %}</label>
+            {{ form.component }}
+            {% if form.component.errors %}
+            <div class="text-danger small mt-1">{{ form.component.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.criterion.id_for_label }}" class="form-label">{% trans "WCAG Criterion" %} <span class="text-danger">*</span></label>
+            {{ form.criterion }}
+            {% if form.criterion.errors %}
+            <div class="text-danger small mt-1">{{ form.criterion.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.approved_by.id_for_label }}" class="form-label">{% trans "Approved By" %} <span class="text-danger">*</span></label>
+            {{ form.approved_by }}
+            {% if form.approved_by.errors %}
+            <div class="text-danger small mt-1">{{ form.approved_by.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.approved_date.id_for_label }}" class="form-label">{% trans "Approved Date" %} <span class="text-danger">*</span></label>
+            {{ form.approved_date }}
+            {% if form.approved_date.errors %}
+            <div class="text-danger small mt-1">{{ form.approved_date.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label for="{{ form.expires_on.id_for_label }}" class="form-label">{% trans "Expires On" %} <span class="text-danger">*</span></label>
+            {{ form.expires_on }}
+            {% if form.expires_on.errors %}
+            <div class="text-danger small mt-1">{{ form.expires_on.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.reason.id_for_label }}" class="form-label">{% trans "Reason for Exception" %} <span class="text-danger">*</span></label>
+            {{ form.reason }}
+            {% if form.reason.errors %}
+            <div class="text-danger small mt-1">{{ form.reason.errors }}</div>
+            {% endif %}
+            <div class="form-text">{% trans "Brief description of why compliance cannot be achieved" %}</div>
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.justification.id_for_label }}" class="form-label">{% trans "Technical/Business Justification" %} <span class="text-danger">*</span></label>
+            {{ form.justification }}
+            {% if form.justification.errors %}
+            <div class="text-danger small mt-1">{{ form.justification.errors }}</div>
+            {% endif %}
+            <div class="form-text">{% trans "Detailed explanation of the constraint preventing compliance" %}</div>
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.alternative_provided.id_for_label }}" class="form-label">{% trans "Alternative Provided" %}</label>
+            {{ form.alternative_provided }}
+            {% if form.alternative_provided.errors %}
+            <div class="text-danger small mt-1">{{ form.alternative_provided.errors }}</div>
+            {% endif %}
+            <div class="form-text">{% trans "Describe any alternative accessible solution provided (if applicable)" %}</div>
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.review_notes.id_for_label }}" class="form-label">{% trans "Review Notes" %}</label>
+            {{ form.review_notes }}
+            {% if form.review_notes.errors %}
+            <div class="text-danger small mt-1">{{ form.review_notes.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-check">
+              {{ form.is_active }}
+              <label class="form-check-label" for="{{ form.is_active.id_for_label }}">{% trans "Active Exception" %}</label>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{% url 'accessibility:compliance_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+          <button type="submit" class="btn btn-warning">
+            <i class="bi bi-shield-exclamation"></i> {% trans "Grant Exception" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

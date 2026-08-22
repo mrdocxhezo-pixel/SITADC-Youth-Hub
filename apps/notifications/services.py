@@ -237,6 +237,7 @@ class NotificationService(BaseService):
         is_digest_eligible: bool = False,
         channels: Iterable[str] | None = None,
         skip_preferences: bool = False,
+        export_request=None,
     ) -> Notification:
         _require_permission(self.user, NOTIFICATION_CREATE)
 
@@ -266,6 +267,17 @@ class NotificationService(BaseService):
             if scheduled_at < timezone.now():
                 status = NotificationStatus.PENDING
                 scheduled_at = None
+
+        # Extract source info from export_request if provided
+        if export_request is not None:
+            if not source_app:
+                source_app = "exports"
+            if not source_model:
+                source_model = "ExportRequest"
+            if not source_object_id:
+                source_object_id = str(export_request.pk)
+            if not source_object_reference:
+                source_object_reference = export_request.reference_number
 
         generated = self._allocate_reference(
             f"Notification for {recipient.get_full_name() or recipient}"

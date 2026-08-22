@@ -609,3 +609,260 @@ class ScheduledExport(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedByMode
 
     def __str__(self) -> str:
         return f"{self.name} ({self.get_frequency_display()})"
+
+
+# ---------------------------------------------------------------------------
+# Export Analytics
+# ---------------------------------------------------------------------------
+
+
+class ExportAnalytics(UUIDModel, TimeStampedModel):
+    """Aggregated export analytics snapshot.
+
+    Computed periodically by the analytics service; retained for trend analysis
+    and dashboard widgets.  Each row represents a time window (e.g., daily,
+    weekly, monthly) for a specific dimension combination.
+    """
+
+    class Period(models.TextChoices):
+        DAILY = "DAILY", _("Daily")
+        WEEKLY = "WEEKLY", _("Weekly")
+        MONTHLY = "MONTHLY", _("Monthly")
+        QUARTERLY = "QUARTERLY", _("Quarterly")
+        ANNUALLY = "ANNUALLY", _("Annually")
+
+    period = models.CharField(
+        _("Period type"),
+        max_length=20,
+        choices=Period.choices,
+        default=Period.DAILY,
+        db_index=True,
+    )
+    period_start = models.DateTimeField(_("Period start"), db_index=True)
+    period_end = models.DateTimeField(_("Period end"), db_index=True)
+
+    # Dimension breakdowns
+    source_type = models.CharField(
+        _("Source type"),
+        max_length=20,
+        blank=True,
+        db_index=True,
+        help_text=_("Empty means aggregate across all source types"),
+    )
+    format = models.CharField(
+        _("Format"),
+        max_length=20,
+        blank=True,
+        db_index=True,
+        help_text=_("Empty means aggregate across all formats"),
+    )
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="export_analytics_agg",
+        verbose_name=_("Requested by"),
+        help_text=_("Empty means aggregate across all users"),
+    )
+
+    # Metrics
+    total_exports = models.PositiveIntegerField(_("Total exports"), default=0)
+    completed_exports = models.PositiveIntegerField(_("Completed exports"), default=0)
+    failed_exports = models.PositiveIntegerField(_("Failed exports"), default=0)
+    cancelled_exports = models.PositiveIntegerField(_("Cancelled exports"), default=0)
+    expired_exports = models.PositiveIntegerField(_("Expired exports"), default=0)
+    total_records_exported = models.PositiveBigIntegerField(
+        _("Total records exported"), default=0
+    )
+    total_file_size_bytes = models.PositiveBigIntegerField(
+        _("Total file size (bytes)"), default=0
+    )
+    avg_generation_time_ms = models.PositiveIntegerField(
+        _("Average generation time (ms)"), default=0
+    )
+    avg_file_size_bytes = models.PositiveIntegerField(
+        _("Average file size (bytes)"), default=0
+    )
+
+    # Storage
+    storage_used_bytes = models.PositiveBigIntegerField(
+        _("Storage used (bytes)"), default=0
+    )
+    storage_expired_bytes = models.PositiveBigIntegerField(
+        _("Storage expired (bytes)"), default=0
+    )
+
+    # Template usage
+    template_usage = models.JSONField(
+        _("Template usage"),
+        default=dict,
+        blank=True,
+        help_text=_("Map of template code -> count"),
+    )
+    user_activity = models.JSONField(
+        _("User activity"),
+        default=dict,
+        blank=True,
+        help_text=_("Map of user_id -> export count"),
+    )
+    format_distribution = models.JSONField(
+        _("Format distribution"),
+        default=dict,
+        blank=True,
+        help_text=_("Map of format -> count"),
+    )
+    source_type_distribution = models.JSONField(
+        _("Source type distribution"),
+        default=dict,
+        blank=True,
+        help_text=_("Map of source_type -> count"),
+    )
+
+    class Meta:
+        verbose_name = _("Export Analytics")
+        verbose_name_plural = _("Export Analytics")
+        ordering = ("-period_start",)
+        indexes: ClassVar[list] = [
+            models.Index(fields=["period", "period_start"]),
+            models.Index(fields=["source_type", "period_start"]),
+            models.Index(fields=["format", "period_start"]),
+            models.Index(fields=["requested_by", "period_start"]),
+        ]
+        constraints: ClassVar[list] = [
+            models.UniqueConstraint(
+                fields=[
+                    "period",
+                    "period_start",
+                    "source_type",
+                    "format",
+                    "requested_by",
+                ],
+                name="export_analytics_unique_period_dimensions",
+            )
+        ]
+
+    def __str__(self) -> str:
+        dims = []
+        if self.source_type:
+            dims.append(self.source_type)
+        if self.format:
+            dims.append(self.format)
+        return f"Analytics {self.get_period_display()} {'/'.join(dims) or 'all'}"
+
+    @property
+    def success_rate(self) -> float:
+        if self.total_exports == 0:
+            return 0.0
+        return (self.completed_exports / self.total_exports) * 100
+
+    @property
+    def failure_rate(self) -> float:
+        if self.total_exports == 0:
+            return 0.0
+        return (self.failed_exports / self.total_exports) * 100
+
+
+class ExportTemplateAnalytics(UUIDModel, TimeStampedModel):
+    """Per-template export analytics."""
+
+    template = models.ForeignKey(
+        "ExportTemplate",
+        on_delete=models.CASCADE,
+        related_name="analytics",
+        verbose_name=_("Export template"),
+    )
+    period = models.CharField(
+        _("Period type"),
+        max_length=20,
+        choices=ExportAnalytics.Period.choices,
+        default=ExportAnalytics.Period.DAILY,
+        db_index=True,
+    )
+    period_start = models.DateTimeField(_("Period start"), db_index=True)
+    period_end = models.DateTimeField(_("Period end"), db_index=True)
+
+    export_count = models.PositiveIntegerField(_("Export count"), default=0)
+    completed_count = models.PositiveIntegerField(_("Completed count"), default=0)
+    failed_count = models.PositiveIntegerField(_("Failed count"), default=0)
+    total_records = models.PositiveBigIntegerField(_("Total records"), default=0)
+    total_size_bytes = models.PositiveBigIntegerField(_("Total size (bytes)"), default=0)
+    avg_generation_time_ms = models.PositiveIntegerField(
+        _("Average generation time (ms)"), default=0
+    )
+
+    # Format breakdown for this template
+    format_breakdown = models.JSONField(
+        _("Format breakdown"), default=dict, blank=True
+    )
+
+    class Meta:
+        verbose_name = _("Export Template Analytics")
+        verbose_name_plural = _("Export Template Analytics")
+        ordering = ("-period_start",)
+        constraints: ClassVar[list] = [
+            models.UniqueConstraint(
+                fields=["template", "period", "period_start"],
+                name="export_template_analytics_unique",
+            )
+        ]
+        indexes: ClassVar[list] = [
+            models.Index(fields=["template", "period_start"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.template.code} — {self.get_period_display()}"
+
+
+class ExportUserAnalytics(UUIDModel, TimeStampedModel):
+    """Per-user export analytics."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="export_analytics_user",
+        verbose_name=_("User"),
+    )
+    period = models.CharField(
+        _("Period type"),
+        max_length=20,
+        choices=ExportAnalytics.Period.choices,
+        default=ExportAnalytics.Period.DAILY,
+        db_index=True,
+    )
+    period_start = models.DateTimeField(_("Period start"), db_index=True)
+    period_end = models.DateTimeField(_("Period end"), db_index=True)
+
+    export_count = models.PositiveIntegerField(_("Export count"), default=0)
+    completed_count = models.PositiveIntegerField(_("Completed count"), default=0)
+    failed_count = models.PositiveIntegerField(_("Failed count"), default=0)
+    total_records = models.PositiveBigIntegerField(_("Total records"), default=0)
+    total_size_bytes = models.PositiveBigIntegerField(_("Total size (bytes)"), default=0)
+
+    # Breakdowns
+    format_breakdown = models.JSONField(
+        _("Format breakdown"), default=dict, blank=True
+    )
+    source_type_breakdown = models.JSONField(
+        _("Source type breakdown"), default=dict, blank=True
+    )
+    template_breakdown = models.JSONField(
+        _("Template breakdown"), default=dict, blank=True
+    )
+
+    class Meta:
+        verbose_name = _("Export User Analytics")
+        verbose_name_plural = _("Export User Analytics")
+        ordering = ("-period_start",)
+        constraints: ClassVar[list] = [
+            models.UniqueConstraint(
+                fields=["user", "period", "period_start"],
+                name="export_user_analytics_unique",
+            )
+        ]
+        indexes: ClassVar[list] = [
+            models.Index(fields=["user", "period_start"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user} — {self.get_period_display()}"
