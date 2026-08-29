@@ -1,0 +1,190 @@
+{% extends 'qa/base.html' %}
+{% load i18n %}
+
+{% block qa_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{% trans 'Test Execution' %}: {{ execution.test_case.test_id }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'qa:test_execution_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> {% trans 'Back' %}
+        </a>
+    </div>
+</div>
+
+<!-- Execution Info -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Execution Details' %}</h6>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">{% trans 'Test Case' %}</dt>
+                    <dd class="col-sm-9"><a href="{% url 'qa:test_case_detail' pk=execution.test_case.pk %}">{{ execution.test_case.test_id }} - {{ execution.test_case.title }}</a></dd>
+
+                    <dt class="col-sm-3">{% trans 'Test Plan' %}</dt>
+                    <dd class="col-sm-9">{% if execution.test_plan %}<a href="{% url 'qa:test_plan_detail' pk=execution.test_plan.pk %}">{{ execution.test_plan.name }}</a>{% else %}-{% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Test Suite' %}</dt>
+                    <dd class="col-sm-9">{% if execution.test_suite %}<a href="{% url 'qa:test_case_list' test_suite_pk=execution.test_suite.pk %}">{{ execution.test_suite.name }}</a>{% else %}-{% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Environment' %}</dt>
+                    <dd class="col-sm-9">{{ execution.environment.name|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Status' %}</dt>
+                    <dd class="col-sm-9"><span class="badge bg-{{ execution.status|lower }} fs-6">{{ execution.get_status_display }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans 'Type' %}</dt>
+                    <dd class="col-sm-9">{% if execution.is_regression %}{% trans 'Regression' %}{% else %}{% trans 'Regular' %}{% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Executed By' %}</dt>
+                    <dd class="col-sm-9">{{ execution.executed_by.get_full_name|default:execution.executed_by.username }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Started' %}</dt>
+                    <dd class="col-sm-9">{{ execution.started_at|date:"M d, Y H:i"|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Completed' %}</dt>
+                    <dd class="col-sm-9">{{ execution.completed_at|date:"M d, Y H:i"|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Duration' %}</dt>
+                    <dd class="col-sm-9">{{ execution.duration_seconds }} seconds</dd>
+
+                    <dt class="col-sm-3">{% trans 'Linked Defect' %}</dt>
+                    <dd class="col-sm-9">{% if execution.defect %}<a href="{% url 'qa:defect_detail' pk=execution.defect.pk %}">{{ execution.defect.defect_id }}</a>{% else %}-{% endif %}</dd>
+                </dl>
+
+                {% if execution.error_message %}
+                <hr>
+                <h6>{% trans 'Error Message' %}</h6>
+                <pre class="bg-light p-3 rounded">{{ execution.error_message }}</pre>
+                {% endif %}
+
+                {% if execution.stack_trace %}
+                <hr>
+                <h6>{% trans 'Stack Trace' %}</h6>
+                <pre class="bg-light p-3 rounded">{{ execution.stack_trace }}</pre>
+                {% endif %}
+
+                {% if execution.logs %}
+                <hr>
+                <h6>{% trans 'Logs' %}</h6>
+                <pre class="bg-light p-3 rounded">{{ execution.logs }}</pre>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Actions' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if execution.status == 'RUNNING' and user_can_manage_test_executions %}
+                <a href="{% url 'qa:test_execution_complete' pk=execution.pk %}" class="btn btn-success w-100 mb-2">
+                    <i class="bi bi-check-circle"></i> {% trans 'Complete Execution' %}
+                </a>
+                {% endif %}
+                {% if user_can_manage_test_executions %}
+                <a href="{% url 'qa:test_execution_start' test_plan_pk=execution.test_plan.pk test_suite_pk=execution.test_suite.pk test_case_pk=execution.test_case.pk %}" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="bi bi-arrow-repeat"></i> {% trans 'Re-execute' %}
+                </a>
+                {% endif %}
+                {% if not execution.defect and user_can_manage_defects %}
+                <a href="{% url 'qa:defect_create_for_execution' test_execution_pk=execution.pk %}" class="btn btn-outline-danger w-100 mb-2">
+                    <i class="bi bi-bug"></i> {% trans 'Report Defect' %}
+                {% endif %}
+            </div>
+        </div>
+
+        {% if execution.test_data_set %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Test Data Set' %}</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>{{ execution.test_data_set.name }}</strong> v{{ execution.test_data_set.version }}</p>
+                <p class="text-muted small">{{ execution.test_data_set.get_data_type_display }}</p>
+                <p class="text-muted small">{% trans 'Records' %}: {{ execution.test_data_set.record_count }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Test Results -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Test Step Results' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if results %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Step' %}</th>
+                                <th>{% trans 'Description' %}</th>
+                                <th>{% trans 'Expected Result' %}</th>
+                                <th>{% trans 'Actual Result' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                                <th>{% trans 'Duration' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in results %}
+                            <tr class="{% if result.status == 'FAILED' %}table-danger{% elif result.status == 'PASSED' %}table-success{% elif result.status == 'BLOCKED' %}table-warning{% endif %}">
+                                <td>{{ result.step_number }}</td>
+                                <td>{{ result.step_description }}</td>
+                                <td>{{ result.expected_result }}</td>
+                                <td>{{ result.actual_result|default:"-" }}</td>
+                                <td><span class="badge bg-{{ result.status|lower }}">{{ result.get_status_display }}</span></td>
+                                <td>{{ result.duration_seconds }}s</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No step results recorded.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Evidence -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Evidence' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if evidence %}
+                <div class="row">
+                    {% for item in evidence %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ item.get_evidence_type_display }}</h6>
+                                <p class="card-text small">{{ item.file_name }}</p>
+                                <p class="card-text small text-muted">{{ item.file_size|filesizeformat }}</p>
+                                {% if item.description %}<p class="card-text small">{{ item.description }}</p>{% endif %}
+                                <a href="{{ item.file_path }}" target="_blank" class="btn btn-sm btn-outline-primary">{% trans 'View' %}</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No evidence attached.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% load static form_tags %}
+<div class="mb-3">
+    <label for="{{ field.id_for_label }}" class="form-label fw-bold">
+        {{ field.label }}
+        {% if field.field.required %}
+            <span class="text-danger" aria-hidden="true">*</span>
+        {% else %}
+            <span class="text-muted small ms-1">(Optional)</span>
+        {% endif %}
+    </label>
+
+    {% if field.name == "profile_photo" and field.value %}
+        <div class="mb-2">
+            <img src="{{ field.value.url }}" class="rounded-circle border" width="80" height="80" alt="Current profile photo">
+            <div class="form-text mt-1">Current photo. Upload a new one to replace.</div>
+        </div>
+    {% endif %}
+
+    {% if field.name == "renewal_eligible" %}
+        <div class="form-check form-switch">
+            {{ field }}
+            {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+            {% endif %}
+            {% for error in field.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+        </div>
+    {% elif field.name == "user" and field.field.disabled %}
+        <div class="form-control-plaintext">
+            {{ field.value|default:"—" }}
+            {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+            {% endif %}
+            {% for error in field.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {% if field.field.widget.input_type == 'select' or field.field.widget.input_type == 'selectmultiple' %}
+            {{ field }}
+        {% else %}
+            {{ field|add_class:"form-control" }}
+        {% endif %}
+
+        {% if field.help_text %}
+            <div class="form-text">{{ field.help_text }}</div>
+        {% endif %}
+
+        {% for error in field.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+    {% endif %}
+</div>

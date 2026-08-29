@@ -45,6 +45,21 @@ Each release should document:
 
 # [Unreleased]
 
+## Phase 10 Dashboard – Command Center Upgrade (2026-08-23)
+
+- Consolidated duplicate dashboards: login and all internal links now land on the single permission-aware `dashboard:home` page; removed the Phase 05 placeholder preview route, view, and template, with tests updated to lock the behavior.
+- Upgraded the existing dashboard into the Phase 10 command center per `roadmaps/10-Dashboard.md`, fully server-rendered (no client-side data dependency) with a single data path through `apps/dashboard/services.py`.
+- Added welcome hero (time-of-day greeting, date, reporting-period label), personal profile summary (roles via RBAC, membership status, contact details), and organizational context strip (unit, team, supervisor, managed programs/projects).
+- Added role-gated work queues — Reports Due (next 14 days), My Drafts, Pending Approvals, Overdue Reports — plus performance widgets: program progress table (completion/budget utilization), project status summary (active/delayed/high-risk/milestones/average completion), document activity (pending approval, expiring soon, recent uploads).
+- Added audit activity section for administrators (failed logins over 7 days + recent attempts from the security module) gated server-side on `security.view`.
+- Integrated upcoming events merging meeting instances and calendar events (permission-gated on meetings/calendars views), published announcements banner with priority styling, notification summary widget, and cross-module activity feed.
+- Added per-user widget personalization: new `UserWidgetState` model (migration `dashboard.0004`) storing visibility and order overrides applied on top of the seeded default layout (`dashboard.0003`); personalize page supports hide/show, reordering, reset-to-default, and preference editing (theme, chart style, default reporting period) with changes reflected immediately.
+- Added reporting-period filter persisted to user preferences with server-side validation of allowed choices; statistic cards respect the selected period where supported.
+- Secured centralized administration: dashboard configuration overview and widget management are superuser-only (`UserPassesTestMixin`); enabling/disabling a widget writes an immutable admin `LogEntry` audit record.
+- Added auto-refresh support driven by `SystemConfiguration.dashboard_refresh_interval_seconds` (default 300s) that defers reload while a form field has focus, plus manual refresh and global search entry point.
+- Capped the Recent Activity widget to the 5 newest entries with a "Read more" link to a new paginated full activity feed page (`dashboard:activity_log`, 20 per page over a merged cross-module window).
+- Extended test suite to 21 passing dashboard tests covering rendering, permission gating of statistics/actions/widgets, personalization persistence, period filter validation, and admin access control; quality gates green (ruff check/format, mypy clean for `apps/dashboard`, `manage.py check`).
+
 ## Phase 30 Communication and Media – Implementation (2026-08-19)
 
 - Implemented the Communication and Media module (`apps/communications`), per `roadmaps/30-Communication-and-Media.md`, providing a comprehensive, permission-scaled communication management platform covering core communications, announcements, news articles, newsletters with subscriber management, press releases, social media accounts and posts, campaigns with activities, media assets (images, documents, video) with albums, photographs, videos, publications, brand assets and guidelines, website pages and content sections, event communications, and an immutable activity timeline.

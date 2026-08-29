@@ -38,6 +38,7 @@ urlpatterns = [
     path("configuration/", include("apps.configuration.urls", namespace="configuration")),
     path("organizations/", include("apps.organizations.urls", namespace="organizations")),
     path("references/", include("apps.references.urls", namespace="references")),
+    path("locations/", include("apps.locations.urls", namespace="locations")),
     path("rbac/", include("apps.rbac.urls", namespace="rbac")),
     path("search/", include("apps.search.urls", namespace="search")),
     path("exports/", include("apps.exports.urls", namespace="exports")),
@@ -45,6 +46,7 @@ urlpatterns = [
     path("security/", include("apps.security.urls", namespace="security")),
     path("accessibility/", include("apps.accessibility.urls", namespace="accessibility")),
     path("performance/", include("apps.performance.urls", namespace="performance")),
+    path("qa/", include("apps.qa.urls", namespace="qa")),
 ]
 
 if settings.DEBUG:

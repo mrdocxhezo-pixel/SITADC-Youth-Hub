@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans 'Quality Assurance' %} - {% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'qa/css/qa.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse" id="qaSidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                           href="{% url 'qa:dashboard' %}">
+                            <i class="bi bi-speedometer2"></i> {% trans 'Dashboard' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'test_plan' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:test_plan_list' %}">
+                            <i class="bi bi-file-earmark-text"></i> {% trans 'Test Plans' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'test_case' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:test_case_list' %}">
+                            <i class="bi bi-list-check"></i> {% trans 'Test Cases' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'test_execution' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:test_execution_list' %}">
+                            <i class="bi bi-play-circle"></i> {% trans 'Test Executions' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'defect' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:defect_list' %}">
+                            <i class="bi bi-bug"></i> {% trans 'Defects' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'release' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:release_candidate_list' %}">
+                            <i class="bi bi-box-seam"></i> {% trans 'Release Candidates' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'quality_metric' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:quality_metric_list' %}">
+                            <i class="bi bi-graph-up"></i> {% trans 'Quality Metrics' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'quality_dashboard' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:quality_dashboard_list' %}">
+                            <i class="bi bi-layout-sidebar-inset"></i> {% trans 'Dashboards' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'notification' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:notification_list' %}">
+                            <i class="bi bi-bell"></i> {% trans 'Notifications' %}
+                            {% if unread_count > 0 %}
+                            <span class="badge bg-danger ms-1">{{ unread_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% if user_can_manage_qa %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'configuration' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:configuration' %}">
+                            <i class="bi bi-gear"></i> {% trans 'Configuration' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'test_environment' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:test_environment_list' %}">
+                            <i class="bi bi-server"></i> {% trans 'Environments' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'test_data_set' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:test_data_set_list' %}">
+                            <i class="bi bi-database"></i> {% trans 'Test Data' %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'audit' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'qa:audit_reference_list' %}">
+                            <i class="bi bi-shield-lock"></i> {% trans 'Audit Log' %}
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            {% if messages %}
+            <div class="messages mt-3">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block qa_content %}
+            {% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'qa/js/qa.js' %}"></script>
+{% endblock %}

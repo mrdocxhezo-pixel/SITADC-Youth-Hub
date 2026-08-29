@@ -1,0 +1,329 @@
+{% extends 'qa/base.html' %}
+{% load i18n %}
+
+{% block qa_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{% trans 'Release Candidate' %}: {{ release.version }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'qa:release_candidate_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> {% trans 'Back' %}
+        </a>
+    </div>
+</div>
+
+<!-- Release Info -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Release Details' %}</h6>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">{% trans 'Version' %}</dt>
+                    <dd class="col-sm-9">{{ release.version }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Name' %}</dt>
+                    <dd class="col-sm-9">{{ release.name|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Status' %}</dt>
+                    <dd class="col-sm-9"><span class="badge bg-{{ release.status|lower }} fs-6">{{ release.get_status_display }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans 'Branch' %}</dt>
+                    <dd class="col-sm-9">{{ release.branch }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Commit Hash' %}</dt>
+                    <dd class="col-sm-9"><code>{{ release.commit_hash|default:"-" }}</code></dd>
+
+                    <dt class="col-sm-3">{% trans 'Build Number' %}</dt>
+                    <dd class="col-sm-9">{{ release.build_number|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Planned Release' %}</dt>
+                    <dd class="col-sm-9">{{ release.planned_release_date|date:"M d, Y H:i"|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Actual Release' %}</dt>
+                    <dd class="col-sm-9">{{ release.actual_release_date|date:"M d, Y H:i"|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Deployed By' %}</dt>
+                    <dd class="col-sm-9">{{ release.deployed_by.get_full_name|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Test Plan' %}</dt>
+                    <dd class="col-sm-9">{% if release.test_plan %}<a href="{% url 'qa:test_plan_detail' pk=release.test_plan.pk %}">{{ release.test_plan.name }}</a>{% else %}-{% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Rollback Reason' %}</dt>
+                    <dd class="col-sm-9">{{ release.rollback_reason|default:"-" }}</dd>
+                </dl>
+
+                {% if release.changelog %}
+                <hr>
+                <h6>{% trans 'Changelog' %}</h6>
+                <div class="bg-light p-3 rounded">{{ release.changelog|linebreaks }}</div>
+                {% endif %}
+
+                {% if release.release_notes %}
+                <hr>
+                <h6>{% trans 'Release Notes' %}</h6>
+                <div class="bg-light p-3 rounded">{{ release.release_notes|linebreaks }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Actions' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if user_can_manage_release_candidates %}
+                {% if release.status == 'DRAFT' %}
+                <a href="{% url 'qa:release_candidate_submit' pk=release.pk %}" class="btn btn-success w-100 mb-2">
+                    <i class="bi bi-send"></i> {% trans 'Submit for Testing' %}
+                </a>
+                {% endif %}
+                {% endif %}
+
+                {% if release.status in 'SUBMITTED,TESTING' and user_can_approve_release %}
+                <a href="{% url 'qa:release_candidate_approve' pk=release.pk %}" class="btn btn-info w-100 mb-2">
+                    <i class="bi bi-check-circle"></i> {% trans 'Approve Release' %}
+                </a>
+                {% endif %}
+
+                {% if release.status == 'APPROVED' and user_can_manage_release_candidates %}
+                <button class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#deployModal">
+                    <i class="bi bi-cloud-upload"></i> {% trans 'Deploy' %}
+                </button>
+                {% endif %}
+
+                {% if release.status == 'DEPLOYED' and user_can_manage_release_candidates %}
+                <button class="btn btn-danger w-100 mb-2" data-bs-toggle="modal" data-bs-target="#rollbackModal">
+                    <i class="bi bi-arrow-counterclockwise"></i> {% trans 'Rollback' %}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approvals -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Release Approvals' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if approvals %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Approver' %}</th>
+                                <th>{% trans 'Role' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                                <th>{% trans 'Approved At' %}</th>
+                                <th>{% trans 'Conditions' %}</th>
+                                <th>{% trans 'Comments' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for approval in approvals %}
+                            <tr>
+                                <td>{{ approval.approver.get_full_name }}</td>
+                                <td>{{ approval.role }}</td>
+                                <td><span class="badge bg-{{ approval.status|lower }}">{{ approval.get_status_display }}</span></td>
+                                <td>{{ approval.approved_at|date:"M d, Y H:i"|default:"-" }}</td>
+                                <td>{{ approval.conditions|default:"-" }}</td>
+                                <td>{{ approval.comments|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No approvals recorded.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- UAT Sessions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'UAT Sessions' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if uat_sessions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Name' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                                <th>{% trans 'Planned' %}</th>
+                                <th>{% trans 'Actual' %}</th>
+                                <th>{% trans 'Facilitator' %}</th>
+                                <th>{% trans 'Result' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for uat in uat_sessions %}
+                            <tr>
+                                <td>{{ uat.name }}</td>
+                                <td><span class="badge bg-{{ uat.status|lower }}">{{ uat.get_status_display }}</span></td>
+                                <td>{{ uat.planned_start|date:"M d, Y" }} - {{ uat.planned_end|date:"M d, Y" }}</td>
+                                <td>{{ uat.actual_start|date:"M d, Y"|default:"-" }} - {{ uat.actual_end|date:"M d, Y"|default:"-" }}</td>
+                                <td>{{ uat.facilitator.get_full_name|default:"-" }}</td>
+                                <td>{% if uat.overall_result %}<span class="badge bg-{{ uat.overall_result|lower }}">{{ uat.get_overall_result_display }}</span>{% else %}-{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No UAT sessions scheduled.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Regression Tests -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Regression Tests' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if regression_tests %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Name' %}</th>
+                                <th>{% trans 'Trigger' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                                <th>{% trans 'Total' %}</th>
+                                <th>{% trans 'Passed' %}</th>
+                                <th>{% trans 'Failed' %}</th>
+                                <th>{% trans 'Pass Rate' %}</th>
+                                <th>{% trans 'Completed' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reg in regression_tests %}
+                            <tr>
+                                <td>{{ reg.name }}</td>
+                                <td>{{ reg.get_trigger_display }}</td>
+                                <td><span class="badge bg-{{ reg.status|lower }}">{{ reg.get_status_display }}</span></td>
+                                <td>{{ reg.total_tests }}</td>
+                                <td>{{ reg.passed_tests }}</td>
+                                <td>{{ reg.failed_tests }}</td>
+                                <td>{{ reg.pass_rate }}%</td>
+                                <td>{{ reg.completed_at|date:"M d, Y H:i"|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No regression tests executed.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Plans -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Associated Test Plans' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if test_plans %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Name' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                                <th>{% trans 'Date Range' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for plan in test_plans %}
+                            <tr>
+                                <td><a href="{% url 'qa:test_plan_detail' pk=plan.pk %}">{{ plan.name }}</a></td>
+                                <td><span class="badge bg-{{ plan.status|lower }}">{{ plan.get_status_display }}</span></td>
+                                <td>{{ plan.start_date|date:"M d, Y" }} - {{ plan.end_date|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No test plans associated.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deploy Modal -->
+<div class="modal fade" id="deployModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans 'Deploy Release' %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'qa:release_candidate_deploy' pk=release.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>{% trans 'Are you sure you want to deploy this release?' %}</p>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans 'Deployed By' %}</label>
+                        <input type="text" class="form-control" value="{{ request.user.get_full_name }}" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'Cancel' %}</button>
+                    <button type="submit" class="btn btn-primary">{% trans 'Deploy' %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Rollback Modal -->
+<div class="modal fade" id="rollbackModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans 'Rollback Release' %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'qa:release_candidate_rollback' pk=release.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>{% trans 'Are you sure you want to rollback this release?' %}</p>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans 'Rollback Reason' %}</label>
+                        <textarea class="form-control" name="rollback_reason" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans 'Cancel' %}</button>
+                    <button type="submit" class="btn btn-danger">{% trans 'Rollback' %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

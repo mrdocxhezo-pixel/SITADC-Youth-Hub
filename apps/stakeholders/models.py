@@ -256,6 +256,33 @@ class Stakeholder(
         _("Community"), max_length=120, blank=True, db_index=True
     )
     geographic_coverage = models.TextField(_("Geographic coverage"), blank=True)
+    province_location = models.ForeignKey(
+        "locations.Province",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="stakeholder_profiles",
+        verbose_name=_("Province"),
+        db_index=True,
+    )
+    district_location = models.ForeignKey(
+        "locations.District",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="stakeholder_profiles",
+        verbose_name=_("District"),
+        db_index=True,
+    )
+    ward_location = models.ForeignKey(
+        "locations.Ward",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="stakeholder_profiles",
+        verbose_name=_("Ward / Community"),
+        db_index=True,
+    )
     gps_coordinates = models.CharField(
         _("GPS coordinates"),
         max_length=80,

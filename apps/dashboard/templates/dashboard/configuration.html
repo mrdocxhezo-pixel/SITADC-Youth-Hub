@@ -1,0 +1,63 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Dashboard Configuration - SITADC Youth Hub{% endblock %}
+
+{% block dashboard_content %}
+{% include 'components/page_header.html' with title='Dashboard Configuration' subtitle='Default layout applied to all users without personal overrides' %}
+
+{% for configuration in configurations %}
+    <div class="card border-0 mb-4">
+        <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+            <h2 class="h6 fw-bold mb-0">{{ configuration.name }}</h2>
+            <span class="badge {% if configuration.is_default %}bg-success{% else %}bg-secondary{% endif %}">
+                {% if configuration.is_default %}Default{% endif %}
+            </span>
+        </div>
+        <div class="card-body pt-0">
+            {% if configuration.description %}<p class="text-muted small">{{ configuration.description }}</p>{% endif %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Order</th>
+                            <th scope="col">Widget</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Columns</th>
+                            <th scope="col">Visible</th>
+                            <th scope="col">Configuration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for widget_config in configuration.widget_configurations.all %}
+                            <tr>
+                                <td>{{ widget_config.position }}</td>
+                                <td class="fw-semibold">{{ widget_config.widget.title }}</td>
+                                <td>{{ widget_config.widget.widget_type }}</td>
+                                <td>{{ widget_config.column_span }} &times; {{ widget_config.row_span }}</td>
+                                <td>
+                                    {% if widget_config.is_visible %}
+                                        <span class="badge bg-success-subtle text-success">Visible</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary-subtle text-secondary">Hidden</span>
+                                    {% endif %}
+                                </td>
+                                <td><code class="small">{{ widget_config.configuration|default:"&mdash;" }}</code></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="text-muted small">No widgets assigned to this configuration.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <div class="alert alert-warning">
+        No dashboard configurations exist. Run the seed migration or create one in the Django admin.
+    </div>
+{% endfor %}
+
+<a href="{% url 'dashboard:widget_management' %}" class="btn btn-outline-primary-brand">
+    <i class="bi bi-toggles me-1" aria-hidden="true"></i>Manage widgets
+</a>
+{% endblock %}

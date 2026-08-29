@@ -12,6 +12,8 @@ from django.forms import ModelChoiceField
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from apps.locations.forms import GeographicFieldsMixin
+
 from .models import (
     VolunteerActivityLog,
     VolunteerApplication,
@@ -51,7 +53,18 @@ class VolunteerFormMixin:
                 widget.attrs.setdefault("class", "form-control")
 
 
-class VolunteerProfileForm(VolunteerFormMixin, forms.ModelForm):
+class VolunteerProfileForm(VolunteerFormMixin, GeographicFieldsMixin, forms.ModelForm):
+    geo_fields = {
+        "province": {"field": "province_location", "required": False},
+        "district": {"field": "district_location", "required": False},
+        "constituency": {"field": "constituency_location", "required": False},
+        "ward": {"field": "ward_location", "required": False},
+    }
+    geo_text_fields = {
+        "province": "region",
+        "district": "district",
+    }
+
     class Meta:
         model = VolunteerProfile
         fields = [
@@ -66,6 +79,10 @@ class VolunteerProfileForm(VolunteerFormMixin, forms.ModelForm):
             "region",
             "district",
             "community",
+            "province_location",
+            "district_location",
+            "constituency_location",
+            "ward_location",
             "emergency_contact_name",
             "emergency_contact_relationship",
             "emergency_contact_phone",
@@ -94,9 +111,21 @@ class VolunteerProfileForm(VolunteerFormMixin, forms.ModelForm):
             "residential_address": forms.Textarea(
                 attrs={"class": "form-control", "rows": 2}
             ),
-            "region": forms.TextInput(attrs={"class": "form-control"}),
-            "district": forms.TextInput(attrs={"class": "form-control"}),
-            "community": forms.TextInput(attrs={"class": "form-control"}),
+            "region": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
+            "district": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
+            "community": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
+            "province_location": forms.Select(attrs={"class": "geo-province"}),
+            "district_location": forms.Select(attrs={"class": "geo-district"}),
+            "constituency_location": forms.Select(
+                attrs={"class": "geo-constituency"}
+            ),
+            "ward_location": forms.Select(attrs={"class": "geo-ward"}),
             "emergency_contact_name": forms.TextInput(attrs={"class": "form-control"}),
             "emergency_contact_relationship": forms.TextInput(
                 attrs={"class": "form-control"}

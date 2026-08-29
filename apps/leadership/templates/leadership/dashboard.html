@@ -3,21 +3,22 @@
 {% block title %}Leadership Dashboard | SITADC Youth Hub{% endblock title %}
 {% block dashboard_content %}
     <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <h1 class="h3 mb-0 text-gray-800">Leadership Dashboard</h1>
             <a href="{% url 'leadership:profile_create' %}"
                class="btn btn-primary-brand">
                 <i class="bi bi-person-plus-fill me-2"></i>Add Leader
             </a>
         </div>
-        <!-- Analytics Cards -->
-        <div class="row">
-            <div class="col-xl-4 col-md-6 mb-4">
+        
+        <!-- Key Statistics Row 1 -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-md-6">
                 <div class="card border-left-primary shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Active Leaders</div>
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Leaders</div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_leaders }}</div>
                             </div>
                             <div class="col-auto">
@@ -27,12 +28,61 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4 col-md-6 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active Leaders</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_leaders }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-person-check fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
                 <div class="card border-left-warning shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Appointments</div>
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Inactive Leaders</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ inactive_leaders }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-person-x fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-secondary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Archived Leaders</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ archived_leaders }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-archive fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Key Statistics Row 2 -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Pending Appointments</div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_appointments }}</div>
                             </div>
                             <div class="col-auto">
@@ -42,38 +92,305 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <!-- Recent Appointments -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Recent Appointments</h6>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Directors</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ directors_count }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-building fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>Leader</th>
-                                <th>Role</th>
-                                <th>Position</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for appt in recent_appointments %}
-                                <tr>
-                                    <td>{{ appt.profile.user.get_full_name }}</td>
-                                    <td>{{ appt.role }}</td>
-                                    <td>{{ appt.position }}</td>
-                                    <td>{{ appt.status }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center">No recent appointments found.</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Coordinators</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ coordinators_count }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-geo-alt fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Team Leaders</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ team_leaders_count }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-people fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Key Statistics Row 3 -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Report Authors</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ report_authors_count }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-file-earmark-text fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-danger shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Vacant Positions</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ vacant_positions }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-door-open fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Expiring Appointments</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ expiring_appointments }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-calendar-x fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Recently Added</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ recently_added }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-person-plus fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leaders by Level -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-6">
+                <div class="card shadow h-100">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Leaders by Level</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Leadership Level</th>
+                                        <th class="text-end">Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in leaders_by_level %}
+                                    <tr>
+                                        <td>{{ item.leadership_level|title }}</td>
+                                        <td class="text-end">{{ item.count }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">No data</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Leaders by Directorate -->
+            <div class="col-xl-6">
+                <div class="card shadow h-100">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Leaders by Directorate (Top 10)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Directorate</th>
+                                        <th class="text-end">Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in leaders_by_directorate %}
+                                    <tr>
+                                        <td>{{ item.directorate__name }}</td>
+                                        <td class="text-end">{{ item.count }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">No data</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leaders by Region & Recent Appointments -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-6">
+                <div class="card shadow h-100">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Leaders by Region (Top 10)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Region</th>
+                                        <th class="text-end">Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in leaders_by_region %}
+                                    <tr>
+                                        <td>{{ item.region__name }}</td>
+                                        <td class="text-end">{{ item.count }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">No data</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Appointments -->
+            <div class="col-xl-6">
+                <div class="card shadow h-100">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Recent Appointments</h6>
+                        <a href="{% url 'leadership:appointment_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Leader</th>
+                                        <th>Position</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appt in recent_appointments %}
+                                    <tr>
+                                        <td>{{ appt.profile.user.get_full_name }}</td>
+                                        <td>{{ appt.position }}</td>
+                                        <td><span class="badge bg-{{ appt.status|lower }}">{{ appt.get_status_display }}</span></td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">No recent appointments</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-6 col-md-6">
+                <div class="card shadow h-100 border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary-brand bg-opacity-10 rounded-circle p-3 me-3">
+                                <i class="bi bi-people-fill fs-3 text-primary-brand" aria-hidden="true"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold text-gray-800">View Leaders & Staff</h6>
+                                <p class="text-muted small mb-2">View all Leaders and Staffs across SITADC Youth Organization.</p>
+                                <div class="d-flex gap-3 text-muted small">
+                                    <span><i class="bi bi-person-badge me-1"></i>{{ total_leaders_count }} Leaders</span>
+                                    <span><i class="bi bi-person-workspace me-1"></i>{{ total_staff_count }} Staff</span>
+                                    <span><i class="bi bi-people me-1"></i>{{ total_active_personnel }} Total Active</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{% url 'leadership:all_leaders' %}"
+                               class="btn btn-primary-brand w-100">
+                                <i class="bi bi-arrow-right me-2"></i>View All Leaders
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-6 col-md-6">
+                <div class="card shadow h-100 border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                                <i class="bi bi-person-plus-fill fs-3 text-success" aria-hidden="true"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold text-gray-800">Add New Leader</h6>
+                                <p class="text-muted small mb-2">Register a new leadership profile in the organization.</p>
+                                <span class="text-muted small">{{ vacant_positions }} vacant positions available</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{% url 'leadership:profile_create' %}"
+                               class="btn btn-success w-100">
+                                <i class="bi bi-plus-circle me-2"></i>Add Leader
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

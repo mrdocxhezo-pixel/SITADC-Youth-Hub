@@ -7,11 +7,31 @@ against any published template.
 
 from __future__ import annotations
 
+import datetime
+from decimal import Decimal
 from typing import Any
+from uuid import UUID
 
 from django import forms
+from django.core.files.uploadedfile import UploadedFile
 
 from apps.reports.models import DynamicField, TemplateSection
+
+
+def _to_json_safe(value: Any) -> Any:
+    """Convert cleaned form values into JSON-serializable primitives.
+
+    Dynamic field responses are stored in ``JSONField`` columns, so rich
+    Python types produced by form cleaning (dates, decimals, ...) must be
+    reduced to strings before persistence.
+    """
+    if isinstance(value, (datetime.date, datetime.time)):
+        return value.isoformat()
+    if isinstance(value, Decimal):
+        return str(value)
+    if isinstance(value, UUID):
+        return str(value)
+    return value
 
 # ---------------------------------------------------------------------------
 # Field-type to form-field mapping
@@ -164,23 +184,34 @@ class DynamicReportForm(forms.Form):
     # ------------------------------------------------------------------
 
     def section_data(self, section_pk: str) -> dict[str, Any]:
-        """Return cleaned data for a specific section as a dict."""
+        """Return JSON-safe cleaned data for a specific section as a dict.
+
+        Uploaded files are excluded; the view layer persists them through
+        ``store_dynamic_field_upload`` and records the storage path as the
+        field response value.
+        """
         prefix = f"section_{section_pk}_field_"
         data: dict[str, Any] = {}
         for name, value in self.cleaned_data.items():
-            if name.startswith(prefix):
-                field_pk = name[len(prefix) :]
-                data[field_pk] = value
+            if not name.startswith(prefix) or isinstance(value, UploadedFile):
+                continue
+            data[name[len(prefix) :]] = _to_json_safe(value)
         return data
 
     def all_section_data(self) -> dict[str, dict[str, Any]]:
-        """Return a mapping of section_pk -> {field_pk: value}."""
+        """Return a mapping of section_pk -> {field_pk: value}.
+
+        Uploaded files are excluded; the view layer persists them through
+        ``store_dynamic_field_upload``.
+        """
         result: dict[str, dict[str, Any]] = {}
         for name, value in self.cleaned_data.items():
             if name.startswith("section_") and "_field_" in name:
+                if isinstance(value, UploadedFile):
+                    continue
                 parts = name.split("_")
                 # section_{pk}_field_{pk}
                 section_pk = parts[1]
                 field_pk = parts[3]
-                result.setdefault(section_pk, {})[field_pk] = value
+                result.setdefault(section_pk, {})[field_pk] = _to_json_safe(value)
         return result

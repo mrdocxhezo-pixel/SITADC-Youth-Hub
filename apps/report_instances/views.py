@@ -13,9 +13,10 @@ from typing import ClassVar
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -23,7 +24,7 @@ from django.views import View
 from apps.reports.constants import ReportStatus
 from apps.reports.models import ReportTemplate, TemplateSection
 
-from .exports import export_csv, export_html, export_json, export_pdf, export_xlsx
+from .exports import export_csv, export_docx, export_html, export_json, export_pdf, export_xlsx
 from .forms import DynamicReportForm
 from .permissions import (
     can_approve_report,
@@ -37,6 +38,7 @@ from .permissions import (
     can_withdraw_report,
     check_permission,
 )
+from apps.reports.selectors import template_queryset
 from .selectors import (
     get_all_reports,
     get_approved_reports,
@@ -67,6 +69,7 @@ from .services import (
     save_field_response,
     save_section_response,
     start_review,
+    store_dynamic_field_upload,
     submit_report,
     update_report,
     validate_report,
@@ -138,7 +141,8 @@ class ReviewActionForm(forms.Form):
     """Form for review actions (approve, return, reject)."""
 
     ACTION_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        ("approve", "Approve"),
+        ("recommend", "Recommend for Approval"),
+        ("approve", "Approve (Final)"),
         ("return", "Return for Correction"),
         ("reject", "Reject"),
     ]
@@ -245,19 +249,40 @@ class ReportDashboardView(View):
             .order_by("code")
         )
 
+        # Role-based counts
+        can_review = can_approve_report(request)
+        can_manage = check_permission(request, "report_instances.manage")
+        can_validate = check_permission(request, "report_instances.validate")
+
         context = {
+            # Submitter counts
             "my_drafts": get_draft_reports(user).count(),
             "my_submitted": get_submitted_reports(user).count(),
             "my_approved": get_approved_reports(user).count(),
             "my_archived": get_archived_reports(user).count(),
-            "pending_review": get_reports_pending_review(user).count(),
-            "overdue": get_overdue_reports().count(),
-            "total_reports": get_all_reports().count(),
+            "my_returned": get_submitted_reports(user).filter(status=ReportStatus.RETURNED_FOR_CORRECTION).count(),
+            "my_ready_to_submit": get_draft_reports(user).filter(status=ReportStatus.READY_FOR_SUBMISSION).count(),
+            
+            # Reviewer/Approver counts
+            "pending_review": get_reports_pending_review(user).count() if can_review else 0,
+            "under_review": get_submitted_reports(user).filter(status=ReportStatus.UNDER_REVIEW).count() if can_review else 0,
+            "pending_approval": get_submitted_reports(user).filter(status=ReportStatus.PENDING_APPROVAL).count() if can_review else 0,
+            
+            # Manager/Admin counts
+            "total_reports": get_all_reports().count() if can_manage else 0,
+            "overdue": get_overdue_reports().count() if can_manage else 0,
+            
+            # Recent activity
             "recent_reports": get_all_reports().select_related(
                 "template", "category", "owner"
             )[:10],
             "categories": categories,
             "today": timezone.now().date(),
+            
+            # Role flags for template
+            "can_review": can_review,
+            "can_validate": can_validate,
+            "can_manage": can_manage,
         }
         return render(request, "report_instances/dashboard.html", context)
 
@@ -316,7 +341,17 @@ class ReportCreateView(View):
             messages.error(request, "You do not have permission to create reports.")
             return redirect("report_instances:list")
 
-        form = ReportCreateForm()
+        # Support template preselection via query parameter for backward compatibility
+        template_id = request.GET.get("template")
+        initial = {}
+        if template_id:
+            try:
+                template = ReportTemplate.objects.get(pk=template_id, status="PUBLISHED")
+                initial["template"] = template
+            except ReportTemplate.DoesNotExist:
+                pass
+
+        form = ReportCreateForm(initial=initial)
         templates = ReportTemplate.objects.filter(status="PUBLISHED")
         return render(
             request,
@@ -352,6 +387,49 @@ class ReportCreateView(View):
                 messages.error(request, str(exc))
 
         return render(request, "report_instances/report_form.html", {"form": form})
+
+
+@method_decorator(login_required, name="dispatch")
+class ReportCreateFromTemplateView(View):
+    """Create a new report directly from a specific template and go to data entry."""
+
+    def get(self, request, template_id):
+        if not can_create_report(request):
+            messages.error(request, "You do not have permission to create reports.")
+            return redirect("report_instances:list")
+
+        # Get the template with permission checks
+        template_qs = template_queryset(request.user, include_archived=False).filter(
+            pk=template_id, status="PUBLISHED"
+        )
+        template = get_object_or_404(template_qs)
+
+        if not template.is_published:
+            messages.error(request, "This template is not available for creating reports.")
+            return redirect("report_instances:list")
+
+        if template.current_version is None:
+            messages.error(request, "This template has no published version.")
+            return redirect("report_instances:list")
+
+        # Create the report directly
+        try:
+            # Use template title as basis for report title
+            report_title = f"{template.title} - {timezone.now().strftime('%Y-%m-%d')}"
+            report = create_report(
+                template=template,
+                title=report_title,
+                owner=request.user,
+                department="",
+                confidentiality=template.confidentiality or "INTERNAL",
+                due_date=None,
+                notes="",
+            )
+            messages.success(request, f"Report created from '{template.title}'.")
+            return redirect("report_instances:enter_data", pk=report.pk)
+        except ValueError as exc:
+            messages.error(request, str(exc))
+            return redirect("reports:template_detail", pk=template.pk)
 
 
 @method_decorator(login_required, name="dispatch")
@@ -525,6 +603,19 @@ class ReportDataEntryView(View):
                         save_field_response(
                             report, field_pk, value, updated_by=request.user
                         )
+
+            # Uploaded files are excluded from the JSON-safe section data;
+            # persist each one and record its storage path as the response.
+            for name, value in form.cleaned_data.items():
+                if not isinstance(value, UploadedFile):
+                    continue
+                field_pk = name.split("_field_", 1)[1]
+                storage_name = store_dynamic_field_upload(
+                    report, field_pk, value, uploaded_by=request.user
+                )
+                save_field_response(
+                    report, field_pk, storage_name, updated_by=request.user
+                )
 
             messages.success(request, "Report data saved.")
             return redirect("report_instances:detail", pk=pk)
@@ -701,7 +792,7 @@ class ReportValidateView(View):
 
 @method_decorator(login_required, name="dispatch")
 class ReportReviewView(View):
-    """Process review actions (approve, return, reject)."""
+    """Process review actions (recommend, approve, return, reject)."""
 
     def post(self, request, pk):
         report = get_report_or_404(pk)
@@ -715,8 +806,11 @@ class ReportReviewView(View):
             notes = form.cleaned_data.get("notes", "")
 
             try:
-                if action == "approve":
-                    approve_report(report, approved_by=request.user, notes=notes)
+                if action == "recommend":
+                    approve_report(report, approved_by=request.user, notes=notes, is_final_approval=False)
+                    messages.success(request, "Report recommended for approval.")
+                elif action == "approve":
+                    approve_report(report, approved_by=request.user, notes=notes, is_final_approval=True)
                     messages.success(request, "Report approved.")
                 elif action == "return":
                     return_report(report, returned_by=request.user, reason=notes)
@@ -903,18 +997,15 @@ class ReportExportView(View):
                 exported_by=request.user,
             )
 
-        if format_type == "PDF":
-            return export_pdf(report)
-        elif format_type == "DOCX":
-            return export_html(report)  # Fallback
-        elif format_type == "XLSX":
-            return export_xlsx(report)
-        elif format_type == "CSV":
-            return export_csv(report)
-        elif format_type == "HTML":
-            return export_html(report)
-        else:
-            return export_json(report)
+        exporters = {
+            "PDF": export_pdf,
+            "DOCX": export_docx,
+            "XLSX": export_xlsx,
+            "CSV": export_csv,
+            "HTML": export_html,
+        }
+        exporter = exporters.get(format_type, export_json)
+        return exporter(report)
 
 
 # ---------------------------------------------------------------------------
@@ -946,6 +1037,60 @@ class ReportPreviewView(View):
                 "field_responses": field_responses,
                 "evidence": evidence,
                 "attachments": attachments,
+            },
+        )
+
+
+# ---------------------------------------------------------------------------
+# Pre-Submission Review
+# ---------------------------------------------------------------------------
+
+
+@method_decorator(login_required, name="dispatch")
+class ReportPreSubmitReviewView(View):
+    """Pre-submission review page - review report before submitting."""
+
+    def get(self, request, pk):
+        report = get_report_or_404(pk)
+        if not can_update_report(request, report):
+            messages.error(request, "You do not have permission to review this report.")
+            return redirect("report_instances:detail", pk=pk)
+
+        # Only allow pre-submission review for reports in editable states
+        if report.status not in (ReportStatus.DRAFT, ReportStatus.IN_PROGRESS, ReportStatus.READY_FOR_SUBMISSION, ReportStatus.RETURNED_FOR_CORRECTION):
+            messages.info(request, "This report cannot be reviewed for submission in its current status.")
+            return redirect("report_instances:detail", pk=pk)
+
+        section_responses = report.section_responses.select_related("section").all()
+        field_responses = report.field_responses.select_related("field").all()
+        evidence = report.evidence_items.all()
+        attachments = report.attachments.all()
+        validation_result = report.validation_results.first()
+
+        # Calculate completion stats
+        total_fields = report.template.sections.aggregate(
+            total=models.Count('groups__fields')
+        )['total'] or 0
+        filled_fields = field_responses.exclude(value__isnull=True).exclude(value='').count()
+        required_fields = report.template.sections.aggregate(
+            required=models.Count('groups__fields', filter=models.Q(groups__fields__required=True))
+        )['required'] or 0
+        required_filled = field_responses.filter(field__required=True).exclude(value__isnull=True).exclude(value='').count()
+
+        return render(
+            request,
+            "report_instances/report_presubmit_review.html",
+            {
+                "report": report,
+                "section_responses": section_responses,
+                "field_responses": field_responses,
+                "evidence": evidence,
+                "attachments": attachments,
+                "validation_result": validation_result,
+                "total_fields": total_fields,
+                "filled_fields": filled_fields,
+                "required_fields": required_fields,
+                "required_filled": required_filled,
             },
         )
 
@@ -1053,3 +1198,24 @@ class ReportTemplateFieldsView(View):
             return JsonResponse({"sections": result})
         except Exception as exc:
             return JsonResponse({"error": str(exc)}, status=400)
+
+
+@method_decorator(login_required, name="dispatch")
+class ReportDeleteView(View):
+    """Delete a draft report."""
+
+    def post(self, request, pk):
+        report = get_report_or_404(pk)
+        from .permissions import can_delete_report
+
+        if not can_delete_report(request, report):
+            messages.error(request, "You do not have permission to delete this report.")
+            return redirect("report_instances:detail", pk=pk)
+
+        try:
+            report.delete(deleted_by=request.user)
+            messages.success(request, "Report deleted successfully.")
+            return redirect("report_instances:list")
+        except Exception as exc:
+            messages.error(request, f"Failed to delete report: {exc}")
+            return redirect("report_instances:detail", pk=pk)

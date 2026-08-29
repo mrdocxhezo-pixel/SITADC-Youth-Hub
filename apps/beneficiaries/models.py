@@ -309,6 +309,42 @@ class Beneficiary(
     )
     ward = models.CharField(_("Ward"), max_length=120, blank=True)
     village = models.CharField(_("Village"), max_length=120, blank=True)
+    province_location = models.ForeignKey(
+        "locations.Province",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="beneficiary_profiles",
+        verbose_name=_("Province"),
+        db_index=True,
+    )
+    district_location = models.ForeignKey(
+        "locations.District",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="beneficiary_profiles",
+        verbose_name=_("District"),
+        db_index=True,
+    )
+    constituency_location = models.ForeignKey(
+        "locations.Constituency",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="beneficiary_profiles",
+        verbose_name=_("Constituency"),
+        db_index=True,
+    )
+    ward_location = models.ForeignKey(
+        "locations.Ward",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="beneficiary_profiles",
+        verbose_name=_("Ward"),
+        db_index=True,
+    )
     gps_coordinates = models.CharField(
         _("GPS coordinates"),
         max_length=80,
@@ -436,6 +472,7 @@ class Beneficiary(
         indexes = [
             models.Index(fields=["status", "confidentiality"]),
             models.Index(fields=["province_or_region", "district"]),
+            models.Index(fields=["province_location", "district_location"]),
             models.Index(fields=["primary_responsible_officer", "status"]),
             models.Index(fields=["case_manager", "status"]),
             models.Index(fields=["created_by", "status"]),
@@ -737,6 +774,30 @@ class BeneficiaryGroup(BeneficiaryRecord):
     province_or_region = models.CharField(max_length=120, blank=True)
     district = models.CharField(max_length=120, blank=True)
     community = models.CharField(max_length=120, blank=True)
+    province_location = models.ForeignKey(
+        "locations.Province",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="beneficiary_groups",
+        verbose_name=_("Province"),
+    )
+    district_location = models.ForeignKey(
+        "locations.District",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="beneficiary_groups",
+        verbose_name=_("District"),
+    )
+    ward_location = models.ForeignKey(
+        "locations.Ward",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="beneficiary_groups",
+        verbose_name=_("Ward / Community"),
+    )
     meeting_schedule = models.CharField(max_length=160, blank=True)
     group_leader = models.ForeignKey(
         Beneficiary,

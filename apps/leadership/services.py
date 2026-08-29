@@ -33,8 +33,10 @@ from .constants import (
     LeaveStatus,
     MentorshipStatus,
     RatingScale,
+    RenewalStatus,
     ReviewStatus,
     ScorecardStatus,
+    TermStatus,
 )
 from .models import (
     CoachingRecord,
@@ -92,8 +94,14 @@ def _require_permission(user, permission_code: str) -> None:
         raise PermissionDenied
 
 
-def _issue_reference(user, record_type: str, notes: str = ""):
-    """Issue a leadership reference number and return its value."""
+def issue_leadership_reference(user, record_type: str, notes: str = ""):
+    """
+    Issue a leadership reference number and return its value.
+
+    Public entry point reused by both the service layer and the model layer
+    (``LeadershipProfile.save`` / ``LeadershipAppointment.save``) so every
+    creation path flows through the centralized numbering service.
+    """
     generated = ReferenceNumberService(user=user).execute(
         module=ReferenceModules.LEADERS,
         record_type=record_type,
@@ -102,7 +110,9 @@ def _issue_reference(user, record_type: str, notes: str = ""):
     return generated.reference_number
 
 
-def _confirm_reference(user, reference_number: str, record_id, notes: str = "") -> None:
+def confirm_leadership_reference(
+    user, reference_number: str, record_id, notes: str = ""
+) -> None:
     """Confirm a reserved reference against a persisted leadership record."""
     from apps.references.models import GeneratedReferenceNumber
 
@@ -140,6 +150,13 @@ class CreateLeadershipProfileService(BaseService):
         emergency_contact_phone: str = "",
         appointment_date=None,
         term_expiry_date=None,
+        region=None,
+        district=None,
+        community=None,
+        terms_completed: int = 0,
+        term_status: str = TermStatus.CURRENT,
+        renewal_eligible: bool = False,
+        renewal_status: str = RenewalStatus.NOT_ELIGIBLE,
         max_terms: int = 2,
         qualifications: str = "",
         professional_skills: str = "",
@@ -149,13 +166,17 @@ class CreateLeadershipProfileService(BaseService):
         notes: str = "",
     ) -> LeadershipProfile:
         _require_permission(self.user, LEADERSHIP_CREATE)
-        if hasattr(user, "leadership_profile"):
+        # Query the database instead of using hasattr(): assigning a user to an
+        # unsaved profile (e.g. during ModelForm validation) writes the reverse
+        # one-to-one cache on the user object, which makes hasattr() report a
+        # profile that does not exist in the database.
+        if LeadershipProfile.objects.filter(user=user).exists():
             raise ValidationError(
                 _("This user already has a leadership profile."),
                 code="duplicate_leadership_profile",
             )
 
-        reference_number = _issue_reference(
+        reference_number = issue_leadership_reference(
             self.user, "leader", notes="Leadership profile registration."
         )
         profile = LeadershipProfile.objects.create(
@@ -177,6 +198,13 @@ class CreateLeadershipProfileService(BaseService):
             emergency_contact_phone=emergency_contact_phone,
             appointment_date=validators.coerce_date(appointment_date),
             term_expiry_date=validators.coerce_date(term_expiry_date),
+            region=region,
+            district=district,
+            community=community,
+            terms_completed=terms_completed,
+            term_status=term_status,
+            renewal_eligible=renewal_eligible,
+            renewal_status=renewal_status,
             max_terms=max_terms,
             qualifications=qualifications,
             professional_skills=professional_skills,
@@ -187,7 +215,7 @@ class CreateLeadershipProfileService(BaseService):
             created_by=self.user,
             updated_by=self.user,
         )
-        _confirm_reference(
+        confirm_leadership_reference(
             self.user, reference_number, profile.pk, notes="Profile registration."
         )
         LeadershipStatusHistory.objects.create(
@@ -457,7 +485,7 @@ class CreateLeadershipAppointmentService(BaseService):
             validators.coerce_date(term_end),
         )
 
-        reference_number = _issue_reference(
+        reference_number = issue_leadership_reference(
             self.user, "appointment", notes="Leadership appointment."
         )
         appointment = LeadershipAppointment.objects.create(
@@ -481,7 +509,7 @@ class CreateLeadershipAppointmentService(BaseService):
             created_by=self.user,
             updated_by=self.user,
         )
-        _confirm_reference(
+        confirm_leadership_reference(
             self.user,
             reference_number,
             appointment.pk,

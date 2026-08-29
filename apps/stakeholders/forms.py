@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.selectors import get_active_users
 from apps.leadership.models import LeadershipProfile
+from apps.locations.forms import GeographicFieldsMixin
 from apps.organizations.selectors import get_active_units
 
 from .constants import (
@@ -142,8 +143,19 @@ def _validate_date_order(
         )
 
 
-class StakeholderForm(StakeholderFormMixin, forms.ModelForm):
+class StakeholderForm(StakeholderFormMixin, GeographicFieldsMixin, forms.ModelForm):
     """Create or update an authoritative stakeholder profile."""
+
+    geo_fields = {
+        "province": {"field": "province_location", "required": False},
+        "district": {"field": "district_location", "required": False},
+        "ward": {"field": "ward_location", "required": False},
+    }
+    geo_text_fields = {
+        "province": "province_or_region",
+        "district": "district",
+        "ward": "community",
+    }
 
     class Meta:
         model = Stakeholder
@@ -182,6 +194,9 @@ class StakeholderForm(StakeholderFormMixin, forms.ModelForm):
             "province_or_region",
             "district",
             "community",
+            "province_location",
+            "district_location",
+            "ward_location",
             "geographic_coverage",
             "gps_coordinates",
             "website",

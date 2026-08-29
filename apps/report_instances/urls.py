@@ -15,6 +15,11 @@ urlpatterns = [
     path("list/", views.ReportListView.as_view(), name="list"),
     # CRUD
     path("create/", views.ReportCreateView.as_view(), name="create"),
+    path(
+        "create-from-template/<uuid:template_id>/",
+        views.ReportCreateFromTemplateView.as_view(),
+        name="create_from_template",
+    ),
     path("<uuid:pk>/", views.ReportDetailView.as_view(), name="detail"),
     path("<uuid:pk>/edit/", views.ReportEditView.as_view(), name="edit"),
     path("<uuid:pk>/duplicate/", views.ReportDuplicateView.as_view(), name="duplicate"),
@@ -56,6 +61,7 @@ urlpatterns = [
     # Export & Preview
     path("<uuid:pk>/export/", views.ReportExportView.as_view(), name="export"),
     path("<uuid:pk>/preview/", views.ReportPreviewView.as_view(), name="preview"),
+    path("<uuid:pk>/presubmit-review/", views.ReportPreSubmitReviewView.as_view(), name="presubmit_review"),
     # Assignment
     path("<uuid:pk>/assign/", views.ReportAssignView.as_view(), name="assign"),
     # API
@@ -65,4 +71,6 @@ urlpatterns = [
         views.ReportTemplateFieldsView.as_view(),
         name="template_fields",
     ),
+    # Delete (drafts only)
+    path("<uuid:pk>/delete/", views.ReportDeleteView.as_view(), name="delete"),
 ]

@@ -1,0 +1,38 @@
+Migrations for 'accounts':
+  apps\accounts\migrations\0004_userprofile_district_location_and_more.py
+    + Add field district_location to userprofile
+    + Add field province_location to userprofile
+Migrations for 'beneficiaries':
+  apps\beneficiaries\migrations\0002_beneficiary_constituency_location_and_more.py
+    + Add field constituency_location to beneficiary
+    + Add field district_location to beneficiary
+    + Add field province_location to beneficiary
+    + Add field ward_location to beneficiary
+    + Add field district_location to beneficiarygroup
+    + Add field province_location to beneficiarygroup
+    + Add field ward_location to beneficiarygroup
+    + Create index beneficiari_provinc_301070_idx on field(s) province_location, district_location of model beneficiary
+Migrations for 'memberships':
+  apps\memberships\migrations\0002_memberprofile_district_location_and_more.py
+    + Add field district_location to memberprofile
+    + Add field province_location to memberprofile
+    + Add field ward_location to memberprofile
+    + Add field district_location to membershipapplication
+    + Add field province_location to membershipapplication
+    + Add field ward_location to membershipapplication
+    + Add field from_district_location to membershiptransfer
+    + Add field from_province_location to membershiptransfer
+    + Add field to_district_location to membershiptransfer
+    + Add field to_province_location to membershiptransfer
+Migrations for 'stakeholders':
+  apps\stakeholders\migrations\0002_stakeholder_district_location_and_more.py
+    + Add field district_location to stakeholder
+    + Add field province_location to stakeholder
+    + Add field ward_location to stakeholder
+Migrations for 'volunteers':
+  apps\volunteers\migrations\0005_volunteerprofile_constituency_location_and_more.py
+    + Add field constituency_location to volunteerprofile
+    + Add field district_location to volunteerprofile
+    + Add field province_location to volunteerprofile
+    + Add field ward_location to volunteerprofile
+    + Create index volunteers__provinc_3fb321_idx on field(s) province_location, district_location of model volunteerprofile

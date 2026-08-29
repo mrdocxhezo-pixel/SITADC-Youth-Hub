@@ -158,3 +158,12 @@ def can_verify_evidence(request: HttpRequest) -> bool:
 def can_upload_attachment(request: HttpRequest) -> bool:
     """Check if the user can upload attachments."""
     return check_permission(request, UPLOAD_ATTACHMENT)
+
+
+def can_delete_report(request: HttpRequest, report: Report) -> bool:
+    """Check if the user can delete a specific report (only drafts)."""
+    if not report.is_draft:
+        return False
+    if check_permission(request, DELETE):
+        return True
+    return False

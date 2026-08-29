@@ -58,7 +58,7 @@
                     <h6 class="fw-medium mb-3">{% trans "Notification Categories" %}</h6>
                     <div class="row g-3">
                         {% for field in form %}
-                            {% if field.name not in "email_notifications in_app_notifications browser_notifications" and not field.is_hidden %}
+                            {% if field.name != "email_notifications" and field.name != "in_app_notifications" and field.name != "browser_notifications" and not field.is_hidden %}
                             <div class="col-12 col-md-6 col-lg-4">
                                 <div class="form-check form-switch">
                                     {{ field }}

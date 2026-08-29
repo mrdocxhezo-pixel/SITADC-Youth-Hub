@@ -11,5 +11,4 @@ urlpatterns = [
     path("rbac/", include("apps.rbac.urls")),
     path("organizations/", include("apps.organizations.urls")),
     path("references/", include("apps.references.urls")),
-    path("dashboard/preview/", views.dashboard_preview, name="dashboard_preview"),
 ]

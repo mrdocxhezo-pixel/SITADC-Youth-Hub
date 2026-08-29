@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.selectors import get_active_users
+from apps.locations.forms import GeographicFieldsMixin
 from apps.organizations.selectors import get_active_units
 
 from .constants import BeneficiaryStatus, ReferenceDataKind
@@ -76,6 +77,10 @@ BENEFICIARY_FORM_FIELDS = [
     "community",
     "ward",
     "village",
+    "province_location",
+    "district_location",
+    "constituency_location",
+    "ward_location",
     "gps_coordinates",
     "national_id_number",
     "birth_certificate_number",
@@ -171,8 +176,20 @@ def _validate_date_order(
         )
 
 
-class BeneficiaryForm(BeneficiaryFormMixin, forms.ModelForm):
+class BeneficiaryForm(BeneficiaryFormMixin, GeographicFieldsMixin, forms.ModelForm):
     """Create or update an authoritative beneficiary profile."""
+
+    geo_fields = {
+        "province": {"field": "province_location", "required": False},
+        "district": {"field": "district_location", "required": False},
+        "constituency": {"field": "constituency_location", "required": False},
+        "ward": {"field": "ward_location", "required": False},
+    }
+    geo_text_fields = {
+        "province": "province_or_region",
+        "district": "district",
+        "ward": "community",
+    }
 
     class Meta:
         model = Beneficiary
@@ -349,7 +366,18 @@ class HouseholdMemberForm(BeneficiaryFormMixin, forms.Form):
             _model_choice(self, "beneficiary").queryset = beneficiaries
 
 
-class GroupForm(BeneficiaryFormMixin, forms.ModelForm):
+class GroupForm(BeneficiaryFormMixin, GeographicFieldsMixin, forms.ModelForm):
+    geo_fields = {
+        "province": {"field": "province_location", "required": False},
+        "district": {"field": "district_location", "required": False},
+        "ward": {"field": "ward_location", "required": False},
+    }
+    geo_text_fields = {
+        "province": "province_or_region",
+        "district": "district",
+        "ward": "community",
+    }
+
     class Meta:
         model = BeneficiaryGroup
         fields = [
@@ -361,6 +389,9 @@ class GroupForm(BeneficiaryFormMixin, forms.ModelForm):
             "province_or_region",
             "district",
             "community",
+            "province_location",
+            "district_location",
+            "ward_location",
             "meeting_schedule",
             "group_leader",
             "notes",

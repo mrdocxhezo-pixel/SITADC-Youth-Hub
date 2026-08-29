@@ -10,13 +10,13 @@
       <p class="text-muted mb-0">Manage, track and review all organizational reports</p>
     </div>
     <div>
-      <a href="{% url 'report_instances:create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-1"></i> Create New Report
+      <a href="{% url 'reports:category_browse' %}" class="btn btn-primary">
+        <i class="bi bi-journal-bookmark me-1"></i> Browse Templates
       </a>
     </div>
   </div>
 
-  <!-- Summary Cards Row 1 -->
+  <!-- Summary Cards Row 1 - My Reports (Submitter view) -->
   <div class="row g-3 mb-4">
     <div class="col-xl-3 col-md-6">
       <div class="card border-0 shadow-sm h-100">
@@ -89,18 +89,18 @@
         <div class="card-body">
           <div class="d-flex align-items-center">
             <div class="flex-shrink-0 me-3">
-              <div class="bg-dark bg-opacity-10 rounded-3 p-3">
-                <i class="bi bi-archive text-dark fs-4"></i>
+              <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                <i class="bi bi-arrow-return-left text-warning fs-4"></i>
               </div>
             </div>
             <div class="flex-grow-1">
-              <h6 class="text-muted mb-1">My Archived</h6>
-              <h2 class="mb-0">{{ my_archived }}</h2>
+              <h6 class="text-muted mb-1">Returned for Correction</h6>
+              <h2 class="mb-0">{{ my_returned }}</h2>
             </div>
           </div>
         </div>
         <div class="card-footer bg-transparent border-top-0">
-          <a href="{% url 'report_instances:list' %}?status=ARCHIVED" class="text-decoration-none small">
+          <a href="{% url 'report_instances:list' %}?status=RETURNED_FOR_CORRECTION" class="text-decoration-none small">
             View all <i class="bi bi-arrow-right"></i>
           </a>
         </div>
@@ -108,9 +108,10 @@
     </div>
   </div>
 
-  <!-- Summary Cards Row 2 -->
+  <!-- Summary Cards Row 2 - Reviewer/Approver View -->
+  {% if can_review %}
   <div class="row g-3 mb-4">
-    <div class="col-xl-4 col-md-6">
+    <div class="col-xl-3 col-md-6">
       <div class="card border-start border-warning border-4 shadow-sm h-100">
         <div class="card-body">
           <div class="d-flex align-items-center">
@@ -120,6 +121,72 @@
             <div>
               <h6 class="text-muted mb-1">Pending Review</h6>
               <h3 class="mb-0">{{ pending_review }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-start border-info border-4 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <i class="bi bi-eye text-info fs-3"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Under Review</h6>
+              <h3 class="mb-0">{{ under_review }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-start border-purple border-4 shadow-sm h-100" style="border-left-color: #6f42c1 !important;">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <i class="bi bi-check-circle text-purple fs-3"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Pending Approval</h6>
+              <h3 class="mb-0">{{ pending_approval }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-start border-success border-4 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <i class="bi bi-check2-all text-success fs-3"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Ready to Submit</h6>
+              <h3 class="mb-0">{{ my_ready_to_submit }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Summary Cards Row 3 - Manager/Admin View -->
+  {% if can_manage %}
+  <div class="row g-3 mb-4">
+    <div class="col-xl-4 col-md-6">
+      <div class="card border-start border-secondary border-4 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <i class="bi bi-collection text-secondary fs-3"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Total Reports</h6>
+              <h3 class="mb-0">{{ total_reports }}</h3>
             </div>
           </div>
         </div>
@@ -141,6 +208,24 @@
       </div>
     </div>
     <div class="col-xl-4 col-md-6">
+      <div class="card border-start border-dark border-4 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <i class="bi bi-archive text-dark fs-3"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">My Archived</h6>
+              <h3 class="mb-0">{{ my_archived }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="row g-3 mb-4">
+    <div class="col-xl-4 col-md-6">
       <div class="card border-start border-secondary border-4 shadow-sm h-100">
         <div class="card-body">
           <div class="d-flex align-items-center">
@@ -155,7 +240,38 @@
         </div>
       </div>
     </div>
+    <div class="col-xl-4 col-md-6">
+      <div class="card border-start border-danger border-4 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <i class="bi bi-exclamation-triangle text-danger fs-3"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">Overdue</h6>
+              <h3 class="mb-0">{{ overdue }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-4 col-md-6">
+      <div class="card border-start border-dark border-4 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0 me-3">
+              <i class="bi bi-archive text-dark fs-3"></i>
+            </div>
+            <div>
+              <h6 class="text-muted mb-1">My Archived</h6>
+              <h3 class="mb-0">{{ my_archived }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+  {% endif %}
 
   <div class="row g-4">
     <!-- Recent Reports -->
@@ -228,10 +344,7 @@
         </div>
         <div class="card-body">
           <div class="d-grid gap-2">
-            <a href="{% url 'report_instances:create' %}" class="btn btn-primary">
-              <i class="bi bi-plus-circle me-2"></i>Create New Report
-            </a>
-            <a href="{% url 'reports:category_browse' %}" class="btn btn-outline-primary">
+            <a href="{% url 'reports:category_browse' %}" class="btn btn-primary">
               <i class="bi bi-journal-bookmark me-2"></i>Browse Templates
             </a>
             <a href="{% url 'report_instances:list' %}" class="btn btn-outline-secondary">

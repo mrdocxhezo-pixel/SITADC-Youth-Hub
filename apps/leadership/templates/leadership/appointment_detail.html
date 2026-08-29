@@ -1,21 +1,174 @@
 {% extends "layouts/dashboard.html" %}
-{% block title %}Appointment Detail | SITADC Youth Hub{% endblock title %}
+{% load static %}
+{% block title %}{{ appointment.profile.user.get_full_name }} - {{ appointment.position.title }} | SITADC Youth Hub{% endblock title %}
 {% block dashboard_content %}
     <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Appointment Detail</h1>
-            <a href="{% url 'leadership:appointment_update' appointment.pk %}"
-               class="btn btn-outline-primary">Edit Appointment</a>
-        </div>
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">{{ appointment.profile.user.get_full_name }} - {{ appointment.role }}</h6>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h1 class="h3 mb-0 text-gray-800">
+                {{ appointment.profile.user.get_full_name }}
+                <small class="text-muted fw-normal">({{ appointment.reference_number }})</small>
+            </h1>
+            <div class="d-flex gap-2">
+                <a href="{% url 'leadership:appointment_update' appointment.pk %}"
+                   class="btn btn-outline-primary">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Appointment
+                </a>
+                <a href="{% url 'leadership:appointment_list' %}"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to List
+                </a>
             </div>
-            <div class="card-body">
-                <p><strong>Position:</strong> {{ appointment.position }}</p>
-                <p><strong>Unit:</strong> {{ appointment.organization_unit }}</p>
-                <p><strong>Term:</strong> {{ appointment.start_date }} to {{ appointment.end_date|default:"Present" }}</p>
-                <p><strong>Status:</strong> {{ appointment.status }}</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-xl-4 col-lg-5">
+                <!-- Appointment Summary -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Appointment Summary</h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted">Reference</dt>
+                            <dd class="col-sm-8"><code>{{ appointment.reference_number }}</code></dd>
+                            
+                            <dt class="col-sm-4 text-muted">Position</dt>
+                            <dd class="col-sm-8">{{ appointment.position.title }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Organizational Unit</dt>
+                            <dd class="col-sm-8">{{ appointment.organizational_unit.name }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Appointment Type</dt>
+                            <dd class="col-sm-8">{{ appointment.get_appointment_type_display }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Appointing Authority</dt>
+                            <dd class="col-sm-8">{{ appointment.appointing_authority.get_full_name|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Appointment Date</dt>
+                            <dd class="col-sm-8">{{ appointment.appointment_date|date:"M d, Y" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Effective Date</dt>
+                            <dd class="col-sm-8">{{ appointment.effective_date|date:"M d, Y" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Term Start</dt>
+                            <dd class="col-sm-8">{{ appointment.term_start|date:"M d, Y"|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Term End</dt>
+                            <dd class="col-sm-8">{{ appointment.term_end|date:"M d, Y"|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Max Terms</dt>
+                            <dd class="col-sm-8">{{ appointment.terms_completed }} / {{ appointment.max_terms }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Renewal Eligible</dt>
+                            <dd class="col-sm-8">{{ appointment.renewal_eligible|yesno:"Yes,No" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Renewal Status</dt>
+                            <dd class="col-sm-8">{{ appointment.get_renewal_status_display }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Status</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-{% if appointment.status == "ACTIVE" %}success{% elif appointment.status == "APPROVED" %}primary{% elif appointment.status == "PENDING_APPROVAL" %}info{% elif appointment.status == "PENDING_REVIEW" %}warning{% elif appointment.status == "DRAFT" %}secondary{% elif appointment.status == "EXPIRED" %}warning{% elif appointment.status == "COMPLETED" %}info{% elif appointment.status == "TERMINATED" %}danger{% elif appointment.status == "RESIGNED" %}warning{% elif appointment.status == "REMOVED" %}danger{% elif appointment.status == "REVOKED" %}danger{% else %}secondary{% endif %} fs-6 px-3 py-2">
+                                    {{ appointment.get_status_display }}
+                                </span>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                <!-- Appointment Letter -->
+                {% if appointment.appointment_letter %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Appointment Letter</h6>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ appointment.appointment_letter.url }}" class="btn btn-primary" target="_blank">
+                            <i class="bi bi-download me-2"></i>Download Appointment Letter
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-xl-8 col-lg-7">
+                <!-- Leader Info -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Leader Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                {% if appointment.profile.user.profile_image %}
+                                    <img src="{{ appointment.profile.user.profile_image.url }}"
+                                         class="rounded-circle mb-2 img-fluid"
+                                         style="width: 100px; height: 100px; object-fit: cover;"
+                                         alt="{{ appointment.profile.user.get_full_name }}">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center mb-2"
+                                         style="width: 100px; height: 100px; font-size: 2rem">
+                                        {{ appointment.profile.user.first_name|first }}{{ appointment.profile.user.last_name|first }}
+                                    </div>
+                                {% endif %}
+                                <h5>{{ appointment.profile.user.get_full_name }}</h5>
+                                <p class="text-muted small">{{ appointment.profile.reference_number }}</p>
+                            </div>
+                            <div class="col-md-8">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-3 text-muted">Leadership Level</dt>
+                                    <dd class="col-sm-9">{{ appointment.profile.get_leadership_level_display }}</dd>
+                                    
+                                    <dt class="col-sm-3 text-muted">Current Status</dt>
+                                    <dd class="col-sm-9">
+                                        <span class="badge bg-{% if appointment.profile.status == "ACTIVE" %}success{% elif appointment.profile.status == "APPOINTED" %}primary{% elif appointment.profile.status == "ACTING" %}info{% elif appointment.profile.status == "PROBATION" %}warning{% elif appointment.profile.status == "ON_LEAVE" %}warning{% elif appointment.profile.status == "SUSPENDED" %}danger{% else %}secondary{% endif %}">
+                                            {{ appointment.profile.get_status_display }}
+                                        </span>
+                                    </dd>
+                                    
+                                    <dt class="col-sm-3 text-muted">Directorate</dt>
+                                    <dd class="col-sm-9">{{ appointment.profile.directorate.name|default:"—" }}</dd>
+                                    
+                                    <dt class="col-sm-3 text-muted">Region</dt>
+                                    <dd class="col-sm-9">{{ appointment.profile.region.name|default:"—" }}</dd>
+                                    
+                                    <dt class="col-sm-3 text-muted">District</dt>
+                                    <dd class="col-sm-9">{{ appointment.profile.district.name|default:"—" }}</dd>
+                                    
+                                    <dt class="col-sm-3 text-muted">Community</dt>
+                                    <dd class="col-sm-9">{{ appointment.profile.community.name|default:"—" }}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notes -->
+                {% if appointment.notes %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Notes</h6>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ appointment.notes|linebreaks }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Audit Trail -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Audit Trail</h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-3 text-muted">Created</dt>
+                            <dd class="col-sm-9">{{ appointment.created_at|date:"M d, Y H:i" }} by {{ appointment.created_by.get_full_name|default:"System" }}</dd>
+                            
+                            <dt class="col-sm-3 text-muted">Last Updated</dt>
+                            <dd class="col-sm-9">{{ appointment.updated_at|date:"M d, Y H:i" }} by {{ appointment.updated_by.get_full_name|default:"System" }}</dd>
+                        </dl>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

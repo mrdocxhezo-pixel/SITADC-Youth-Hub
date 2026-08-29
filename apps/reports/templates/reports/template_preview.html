@@ -14,7 +14,14 @@
                 <h1 class="h2 mb-1">{{ object.title }}</h1>
                 <p class="text-muted mb-0">Server-side preview rendered from the live schema.</p>
             </div>
-            <a class="btn btn-outline-secondary" href="{% url 'reports:template_detail' object.pk %}">Back to template</a>
+            <div class="d-flex gap-2">
+                {% if object.is_published and can_create_report %}
+                <a class="btn btn-success" href="{% url 'report_instances:create_from_template' object.pk %}">
+                  <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Create Report From Template
+                </a>
+                {% endif %}
+                <a class="btn btn-outline-secondary" href="{% url 'reports:template_detail' object.pk %}">Back to template</a>
+            </div>
         </header>
         {% include "reports/includes/preview_schema.html" %}
     </div>

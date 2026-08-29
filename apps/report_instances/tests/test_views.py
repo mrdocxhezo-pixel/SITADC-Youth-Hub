@@ -121,6 +121,108 @@ class ReportDetailAndDataEntryTest(ReportInstanceBaseTestCase):
         self.assertEqual(report.field_responses.count(), 1)
         self.assertEqual(report.section_responses.count(), 1)
 
+    def test_enter_data_post_with_date_and_file_upload(self):
+        """Dates serialize to ISO strings and files persist to storage."""
+        from django.core.files.storage import default_storage
+
+        from apps.report_instances.services import create_report
+        from apps.reports.services import (
+            ReportTemplateService,
+            TemplatePublicationService,
+            TemplateSchemaService,
+        )
+
+        template = ReportTemplateService(user=self.admin).create(
+            code="rpt-entry-mixed",
+            title="Mixed Entry Template",
+            category=self.category,
+        )
+        schema = {
+            "template": {
+                "code": template.code,
+                "title": template.title,
+                "reference_number": template.reference_number,
+            },
+            "sections": [
+                {
+                    "code": "sec1",
+                    "name": "Section 1",
+                    "sort_order": 1,
+                    "groups": [
+                        {
+                            "code": "grp1",
+                            "name": "Group 1",
+                            "sort_order": 1,
+                            "fields": [
+                                {
+                                    "code": "field1",
+                                    "label": "Full Name",
+                                    "field_type": "TEXT",
+                                    "data_type": "STRING",
+                                    "required": True,
+                                },
+                                {
+                                    "code": "fielddob",
+                                    "label": "Date of Birth",
+                                    "field_type": "DATE",
+                                    "data_type": "DATE",
+                                    "required": False,
+                                },
+                                {
+                                    "code": "fielddoc",
+                                    "label": "Evidence",
+                                    "field_type": "DOCUMENT",
+                                    "data_type": "STRING",
+                                    "required": False,
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ],
+            "conditional_rules": [],
+            "components": [],
+        }
+        TemplateSchemaService(user=self.admin).save_schema(template, schema)
+        TemplatePublicationService(user=self.admin).publish(template)
+
+        report = create_report(template=template, title="Entry Report", owner=self.owner)
+        section = template.sections.get(code="sec1")
+        group = section.groups.get(code="grp1")
+        text_field = group.fields.get(code="field1")
+        date_field = group.fields.get(code="fielddob")
+        doc_field = group.fields.get(code="fielddoc")
+
+        payload = {
+            f"section_{section.pk}_field_{text_field.pk}": "entered value",
+            f"section_{section.pk}_field_{date_field.pk}": "1999-11-18",
+            f"section_{section.pk}_field_{doc_field.pk}": SimpleUploadedFile(
+                "evidence.jpg", b"bytes", content_type="image/jpeg"
+            ),
+        }
+
+        response = self.client.post(
+            reverse("report_instances:enter_data", kwargs={"pk": report.pk}),
+            payload,
+        )
+        self.assertEqual(response.status_code, 302)
+
+        date_response = report.field_responses.get(field=date_field)
+        self.assertEqual(date_response.value, "1999-11-18")
+
+        file_response = report.field_responses.get(field=doc_field)
+        self.assertIsInstance(file_response.value, str)
+        self.assertTrue(file_response.value.startswith("report_field_uploads/"))
+        self.assertTrue(default_storage.exists(file_response.value))
+
+        section_response = report.section_responses.get(section=section)
+        self.assertEqual(section_response.data[str(date_field.pk)], "1999-11-18")
+        json.dumps(section_response.data)  # must be JSON-serializable
+
+        self.assertTrue(
+            report.timeline_events.filter(event_type="FIELD_FILE_UPLOADED").exists()
+        )
+
     def test_preview_renders(self):
         report = self.make_report()
         response = self.client.get(

@@ -1,1165 +1,396 @@
+import re
+from typing import cast
+
+from django.contrib import messages
+from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
-from django.utils import timezone
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import Paginator
+from django.http import HttpRequest, JsonResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
-from apps.rbac.authorization import (
-    get_active_role_assignments,
-    get_effective_scopes_for_user,
-    user_has_any_permission,
-    user_has_permission,
-    user_has_scope,
-)
-from apps.report_instances.models import ReportStatus
-from apps.report_instances.selectors import (
-    get_all_reports,
-    get_approved_reports,
-    get_draft_reports,
-    get_overdue_reports,
-    get_reports_pending_review,
-    get_submitted_reports,
-)
-from apps.volunteers.selectors import visible_volunteer_profiles
+from apps.accounts.models import User
+from apps.rbac.authorization import user_has_any_permission
 
+from .forms import DashboardPreferencesForm
 from .models import (
     DashboardConfiguration,
     DashboardWidget,
     DashboardWidgetConfiguration,
     UserDashboardPreference,
 )
+from .services import (
+    ACTIVITY_LOG_PAGE_SIZE,
+    ACTIVITY_LOG_WINDOW,
+    can_view_audit_activity,
+    get_announcements,
+    get_audit_activity,
+    get_default_configuration,
+    get_document_activity,
+    get_my_drafts,
+    get_notification_summary,
+    get_org_context,
+    get_overdue_list,
+    get_pending_approvals,
+    get_personalized_widgets,
+    get_profile_summary,
+    get_program_progress,
+    get_project_status_summary,
+    get_recent_activity,
+    get_recent_notifications,
+    get_refresh_interval,
+    get_reports_due,
+    get_upcoming_events,
+    get_welcome_context,
+    resolve_statistic_card,
+    resolve_widget_payload,
+    set_widget_state,
+)
+
+# Bootstrap column classes for the widget grid (column_span is 1-4).
+SPAN_CLASSES = {
+    1: "col-12 col-md-6 col-xl-3",
+    2: "col-12 col-lg-6",
+    3: "col-12 col-lg-8",
+    4: "col-12",
+}
+
+# Widget types whose information is rendered once in the welcome hero.
+HERO_WIDGET_TYPES = frozenset({"welcome", "profile", "organizational_info"})
+
+
+def visible_widget_configs(
+    dashboard_config: DashboardConfiguration,
+) -> list[DashboardWidgetConfiguration]:
+    """Visible, enabled widget configurations in display order."""
+    configs = (
+        DashboardWidgetConfiguration.objects.filter(
+            dashboard_configuration=dashboard_config,
+            is_visible=True,
+            widget__is_enabled=True,
+        )
+        .select_related("widget")
+        .order_by("position")
+    )
+    return list(configs)
+
+
+def _reporting_period_choices() -> list[tuple[str, str]]:
+    """Reporting period choices declared on the preference model."""
+    field = UserDashboardPreference._meta.get_field("default_reporting_period")
+    return cast(list[tuple[str, str]], field.choices or [])
+
+
+def _resolve_period(request, user: User) -> str:
+    """Persist the reporting-period filter selection to user preferences."""
+    pref, _created = UserDashboardPreference.objects.get_or_create(user=user)
+    requested = request.GET.get("period")
+    valid_choices = {value for value, _label in _reporting_period_choices()}
+    if requested in valid_choices:
+        if pref.default_reporting_period != requested:
+            pref.default_reporting_period = requested
+            pref.save(update_fields=["default_reporting_period"])
+        return requested
+    return pref.default_reporting_period
 
 
 class DashboardHomeView(LoginRequiredMixin, TemplateView):
-    """Main dashboard view that displays role-based dashboard."""
+    """Central command center: role-aware, permission-filtered home page."""
 
     template_name = "dashboard/home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.request.user
+        # LoginRequiredMixin guarantees an authenticated user here.
+        user = cast(User, self.request.user)
 
-        # Get or create user dashboard preference
-        user_pref, created = UserDashboardPreference.objects.get_or_create(user=user)
-
-        # Get dashboard configuration based on user role/permissions
-        # For now, we'll use the default configuration
-        try:
-            dashboard_config = DashboardConfiguration.objects.get(is_default=True)
-        except DashboardConfiguration.DoesNotExist:
-            # Create a default configuration if none exists
-            dashboard_config = DashboardConfiguration.objects.create(
-                name="Default Dashboard", is_default=True
-            )
-
-        # Get widget configurations for this dashboard
-        widget_configs = (
-            DashboardWidgetConfiguration.objects.filter(
-                dashboard_configuration=dashboard_config, is_visible=True
-            )
-            .select_related("widget")
-            .order_by("position")
+        user_pref, _created = UserDashboardPreference.objects.get_or_create(user=user)
+        current_period = _resolve_period(self.request, user)
+        user_pref.default_reporting_period = current_period
+        dashboard_config = get_default_configuration()
+        configs = get_personalized_widgets(
+            user, visible_widget_configs(dashboard_config)
         )
 
-        # Prepare widgets data for template
-        widgets = []
-        for widget_config in widget_configs:
-            widget_data = {
-                "id": widget_config.id,
-                "widget": widget_config.widget,
-                "position": widget_config.position,
-                "column_span": widget_config.column_span,
-                "row_span": widget_config.row_span,
-                "configuration": widget_config.configuration,
-                "is_visible": widget_config.is_visible,
-            }
-            widgets.append(widget_data)
+        stat_cards: list[dict] = []
+        main_widgets: list[dict] = []
+        for widget_config in configs:
+            widget = widget_config.widget
 
+            if widget.widget_type == "statistic":
+                card = resolve_statistic_card(widget_config, user)
+                if card is not None:
+                    stat_cards.append(card)
+
+            elif widget.widget_type in HERO_WIDGET_TYPES:
+                continue
+
+            else:
+                main_widgets.append(
+                    {
+                        "id": widget_config.id,
+                        "title": widget.title,
+                        "widget_type": widget.widget_type,
+                        "span_class": SPAN_CLASSES.get(
+                            widget_config.column_span, "col-12"
+                        ),
+                        "payload": resolve_widget_payload(widget_config, user),
+                    }
+                )
+
+        show_audit = can_view_audit_activity(user)
         context.update(
             {
                 "user_pref": user_pref,
                 "dashboard_config": dashboard_config,
-                "widgets": widgets,
+                "welcome": get_welcome_context(user),
+                "profile_summary": get_profile_summary(user),
+                "org_context": get_org_context(user),
+                "stat_cards": stat_cards,
+                "main_widgets": main_widgets,
+                "reports_due": get_reports_due(user),
+                "my_drafts": get_my_drafts(user),
+                "pending_approvals": (
+                    get_pending_approvals(user)
+                    if user_has_any_permission(user, ["reviews.view", "reviews.manage"])
+                    else []
+                ),
+                "overdue_reports": get_overdue_list(user),
+                "program_progress": (
+                    get_program_progress()
+                    if user_has_any_permission(
+                        user, ["programmes.view", "programmes.manage"]
+                    )
+                    else []
+                ),
+                "project_status": (
+                    get_project_status_summary()
+                    if user_has_any_permission(
+                        user, ["projects.view", "projects.manage", "programmes.view"]
+                    )
+                    else None
+                ),
+                "document_activity": (
+                    get_document_activity(user)
+                    if user_has_any_permission(
+                        user, ["documents.view", "documents.manage"]
+                    )
+                    else None
+                ),
+                "audit_activity": get_audit_activity() if show_audit else None,
+                "upcoming_events": (
+                    get_upcoming_events(user)
+                    if user_has_any_permission(
+                        user, ["meetings.view", "calendars.view", "meetings.manage"]
+                    )
+                    else []
+                ),
+                "announcements": get_announcements(),
+                "recent_notifications": get_recent_notifications(user),
+                "notification_summary": get_notification_summary(user),
+                "refresh_interval": get_refresh_interval(),
+                "current_period": current_period,
+                "current_period_label": dict(_reporting_period_choices()).get(
+                    current_period
+                ),
+                "period_choices": _reporting_period_choices(),
             }
         )
+        return context
 
+
+class DashboardActivityLogView(LoginRequiredMixin, TemplateView):
+    """Full activity feed backing the dashboard "Read more" link."""
+
+    template_name = "dashboard/activity_log.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = cast(User, self.request.user)
+        entries = get_recent_activity(
+            user, limit=ACTIVITY_LOG_WINDOW, per_source=ACTIVITY_LOG_PAGE_SIZE
+        )
+        paginator = Paginator(entries, ACTIVITY_LOG_PAGE_SIZE)
+        page = paginator.get_page(self.request.GET.get("page"))
+        context["page_obj"] = page
         return context
 
 
 @login_required
-def dashboard_widget_data(request, widget_id):
-    """AJAX endpoint to get data for a specific widget."""
+def dashboard_personalize_view(request):
+    """Personalize widget visibility/order and dashboard preferences."""
+    user = cast(User, request.user)
+    pref, _created = UserDashboardPreference.objects.get_or_create(user=user)
+    config = get_default_configuration()
+    configs = visible_widget_configs(config)
+    states = {state.widget_id: state for state in user.dashboard_widget_states.all()}
+
+    if request.method == "POST":
+        action = request.POST.get("action", "layout")
+
+        if action == "preferences":
+            form = DashboardPreferencesForm(request.POST, instance=pref)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Dashboard preferences updated.")
+            else:
+                messages.error(request, "Please correct the highlighted errors.")
+            return redirect("dashboard:personalize")
+
+        if action == "reset":
+            user.dashboard_widget_states.all().delete()
+            messages.success(request, "Dashboard layout reset to default.")
+            return redirect("dashboard:home")
+
+        # Detect which widgets were rendered by scanning posted field names
+        # like "widget_<id>_visible" / "widget_<id>_position". Unchecked
+        # checkboxes are omitted by browsers, so presence must be inferred
+        # from any sibling field.
+        posted_widget_ids = {
+            int(match.group(1))
+            for key in request.POST
+            if (match := re.match(r"^widget_(\d+)_", key))
+        }
+        config_by_widget_id = {
+            widget_config.widget_id: widget_config for widget_config in configs
+        }
+        for widget_id in posted_widget_ids:
+            widget_config = config_by_widget_id.get(widget_id)
+            if widget_config is None:
+                continue
+            prefix = f"widget_{widget_id}"
+            # Checkbox is labelled "Visible": checked means the widget stays.
+            is_visible = request.POST.get(f"{prefix}_visible") == "on"
+            raw_position = request.POST.get(f"{prefix}_position", "")
+            position = int(raw_position) if raw_position.isdigit() else None
+            set_widget_state(
+                user,
+                widget_id,
+                is_hidden=not is_visible,
+                position=position,
+            )
+        messages.success(request, "Dashboard layout saved.")
+        return redirect("dashboard:home")
+
+    preference_form = DashboardPreferencesForm(instance=pref)
+    rows = [
+        {
+            "config": widget_config,
+            "state": states.get(widget_config.widget_id),
+        }
+        for widget_config in configs
+    ]
+    return render(
+        request,
+        "dashboard/personalize.html",
+        {"rows": rows, "preference_form": preference_form},
+    )
+
+
+@login_required
+def dashboard_widget_data(request, widget_id: int):
+    """AJAX endpoint returning resolved data for a single configured widget."""
     try:
-        widget_config = DashboardWidgetConfiguration.objects.get(
-            id=widget_id, is_visible=True
-        )
+        widget_config = DashboardWidgetConfiguration.objects.select_related(
+            "widget"
+        ).get(id=widget_id, is_visible=True)
     except DashboardWidgetConfiguration.DoesNotExist:
         return JsonResponse({"error": "Widget not found"}, status=404)
 
-    widget = widget_config.widget
-    user = request.user
-
-    # Get data based on widget type
-    data = {}
-
-    if widget.widget_type == "statistic":
-        data = get_statistic_data(widget, user, widget_config.configuration)
-    elif widget.widget_type == "chart":
-        data = get_chart_data(widget, user, widget_config.configuration)
-    elif widget.widget_type == "table":
-        data = get_table_data(widget, user, widget_config.configuration)
-    elif widget.widget_type == "list":
-        data = get_list_data(widget, user, widget_config.configuration)
-    elif widget.widget_type == "activity":
-        data = get_activity_data(widget, user, widget_config.configuration)
-    elif widget.widget_type == "notification":
-        data = get_notification_data(widget, user, widget_config.configuration)
-    elif widget.widget_type == "quick_actions":
-        data = get_quick_actions_data(widget, user, widget_config.configuration)
-    elif widget.widget_type == "welcome":
-        data = get_welcome_data(widget, user, widget_config.configuration)
-    elif widget.widget_type == "profile":
-        data = get_profile_data(widget, user, widget_config.configuration)
-    elif widget.widget_type == "organizational_info":
-        data = get_organizational_info_data(widget, user, widget_config.configuration)
-
-    return JsonResponse(data)
-
-
-def get_statistic_data(widget, user, config):
-    """Get data for statistic widget."""
-    widget_type = widget.widget_type
-    widget_title = widget.title
-
-    if widget_type == "statistic":
-        # Determine which statistic to show based on widget title
-        title_lower = widget_title.lower()
-
-        if "report" in title_lower and "submitted" in title_lower:
-            # Reports submitted
-            reports = get_submitted_reports(user).count()
-            return {
-                "title": widget_title,
-                "value": str(reports),
-                "trend": "neutral",
-                "percentage": 0,
-            }
-        elif "report" in title_lower and "due" in title_lower:
-            # Reports due
-            reports = get_overdue_reports().count()
-            # Count reports due soon (within 7 days)
-            from datetime import timedelta
-
-            from apps.report_instances.models import Report
-
-            today = timezone.now().date()
-            soon = today + timedelta(days=7)
-            reports_due_soon = Report.objects.filter(
-                due_date__gte=today,
-                due_date__lt=soon,
-                status__in={
-                    ReportStatus.DRAFT,
-                    ReportStatus.IN_PROGRESS,
-                    ReportStatus.SUBMITTED,
-                    ReportStatus.UNDER_REVIEW,
-                    ReportStatus.RETURNED_FOR_CORRECTION,
-                },
-                is_deleted=False,
-            ).count()
-            total = reports + reports_due_soon
-            return {
-                "title": widget_title,
-                "value": str(total),
-                "trend": "neutral" if total == 0 else "info",
-                "percentage": 0,
-            }
-        elif "report" in title_lower and "draft" in title_lower:
-            # Draft reports
-            reports = get_draft_reports(user).count()
-            return {
-                "title": widget_title,
-                "value": str(reports),
-                "trend": "neutral",
-                "percentage": 0,
-            }
-        elif (
-            "report" in title_lower
-            and "pending" in title_lower
-            and "review" in title_lower
-        ):
-            # Reports pending review
-            reports = get_reports_pending_review(user).count()
-            return {
-                "title": widget_title,
-                "value": str(reports),
-                "trend": "neutral",
-                "percentage": 0,
-            }
-        elif "report" in title_lower and "approved" in title_lower:
-            # Approved reports
-            reports = get_approved_reports(user).count()
-            return {
-                "title": widget_title,
-                "value": str(reports),
-                "trend": "up" if reports > 0 else "neutral",
-                "percentage": 0,
-            }
-        elif "report" in title_lower and "overdue" in title_lower:
-            # Overdue reports
-            reports = get_overdue_reports().count()
-            return {
-                "title": widget_title,
-                "value": str(reports),
-                "trend": "down" if reports > 0 else "neutral",
-                "percentage": 0,
-            }
-        elif "active" in title_lower and "volunteer" in title_lower:
-            # Active volunteers
-            if user_is_superuser_or_manager(user):
-                profiles = visible_volunteer_profiles(user)
-                count = profiles.count()
-            else:
-                # Count only volunteers assigned to user's scope
-                profiles = visible_volunteer_profiles(user)
-                count = profiles.count()
-            return {
-                "title": widget_title,
-                "value": str(count),
-                "trend": "up" if count > 0 else "neutral",
-                "percentage": 0,
-            }
-        elif "active" in title_lower and "member" in title_lower:
-            # Active members - we'll need to check the memberships app
-            # For now, return 0 with note
-            return {
-                "title": widget_title,
-                "value": "0",
-                "trend": "neutral",
-                "percentage": 0,
-            }
-        else:
-            # Default statistic
-            return {
-                "title": widget_title,
-                "value": "--",
-                "trend": "neutral",
-                "percentage": 0,
-            }
-
-    return {
-        "title": widget_title,
-        "value": "--",
-        "trend": "neutral",
-        "percentage": 0,
-    }
-
-
-def user_is_superuser_or_manager(user):
-    """Check if user is superuser or has manager role."""
-    if not user or not user.is_authenticated:
-        return False
-    if user.is_superuser:
-        return True
-    # Check if user has a role that includes management permissions
-    role_assignments = get_active_role_assignments(user)
-    if role_assignments.exists():
-        for _assignment in role_assignments:
-            # Check for management-related permissions
-            if user_has_permission(user, "management.view") or user_has_permission(
-                user, "staff.manage"
-            ):
-                return True
-    return False
-
-
-def get_chart_data(widget, user, config):
-    """Get data for chart widget."""
-    widget_type = widget.widget_type
-    widget_title = widget.title
-
-    if widget_type == "chart":
-        title_lower = widget_title.lower()
-
-        if "report status" in title_lower or "report status chart" in title_lower:
-            # Chart showing report status distribution
-            from apps.report_instances.constants import ReportStatus
-
-            # Get reports visible to user
-            reports = get_all_reports()
-            if (
-                user is not None
-                and not user.is_superuser
-                and not user_has_permission(user, "reports.view")
-            ):
-                reports = reports.none()
-
-            # Count reports by status
-            status_data = {}
-            for status_code, status_name in ReportStatus.choices:
-                count = reports.filter(status=status_code).count()
-                if count > 0:
-                    status_data[status_name] = count
-
-            labels = list(status_data.keys())
-            data = list(status_data.values())
-
-            return {
-                "title": widget_title,
-                "labels": labels,
-                "datasets": [
-                    {
-                        "label": "Reports",
-                        "data": data,
-                        "backgroundColor": [
-                            "#4e73df",
-                            "#1cc88a",
-                            "#36b9cc",
-                            "#f6c23e",
-                            "#e74a3b",
-                            "#858796",
-                        ][: len(labels)],
-                    }
-                ],
-            }
-
-        elif "volunteer" in title_lower and "status" in title_lower:
-            # Chart showing volunteer status distribution
-            if user_is_superuser_or_manager(user):
-                profiles = visible_volunteer_profiles(user)
-            else:
-                profiles = visible_volunteer_profiles(user)
-
-            # Count by status
-            from apps.volunteers.models import VolunteerStatus
-
-            status_data = {}
-            for status_code, status_name in VolunteerStatus.choices:
-                count = profiles.filter(status=status_code).count()
-                if count > 0:
-                    status_data[status_name] = count
-
-            labels = list(status_data.keys())
-            data = list(status_data.values())
-
-            return {
-                "title": widget_title,
-                "labels": labels,
-                "datasets": [
-                    {
-                        "label": "Volunteers",
-                        "data": data,
-                        "backgroundColor": [
-                            "#4e73df",
-                            "#1cc88a",
-                            "#36b9cc",
-                            "#f6c23e",
-                            "#e74a3b",
-                            "#858796",
-                        ][: len(labels)],
-                    }
-                ],
-            }
-
-        elif "program" in title_lower or "project" in title_lower:
-            # Chart showing program/project progress
-            # We'll use a simple placeholder for now
-            # In a full implementation, this would query the programs/projects apps
-            labels = ["Active", "Completed", "Delayed"]
-            data = [5, 3, 2]  # Placeholder values
-
-            return {
-                "title": widget_title,
-                "labels": labels,
-                "datasets": [
-                    {
-                        "label": "Progress",
-                        "data": data,
-                        "backgroundColor": ["#1cc88a", "#36b9cc", "#f6c23e"],
-                    }
-                ],
-            }
-
-        else:
-            # Default chart
-            return {
-                "title": widget_title,
-                "labels": [],
-                "datasets": [],
-            }
-
-    return {
-        "title": widget_title,
-        "labels": [],
-        "datasets": [],
-    }
-
-
-def get_table_data(widget, user, config):
-    """Get data for table widget."""
-    widget_type = widget.widget_type
-    widget_title = widget.title
-
-    if widget_type == "table":
-        title_lower = widget_title.lower()
-
-        if (
-            "report" in title_lower
-            and "pending" in title_lower
-            and "review" in title_lower
-        ):
-            # Reports pending review table
-            from apps.report_instances.selectors import get_reports_pending_review
-
-            reports = get_reports_pending_review(user)
-
-            # Get limited fields for display
-            rows = []
-            for report in reports[:10]:  # Limit to 10 for table
-                rows.append(
-                    {
-                        "title": report.title,
-                        "submitted_by": (
-                            report.owner.get_full_name() if report.owner else "Unknown"
-                        ),
-                        "submitted_date": (
-                            str(report.submitted_at)[:10]
-                            if report.submitted_at
-                            else "N/A"
-                        ),
-                        "category": report.category.name if report.category else "N/A",
-                        "status": report.status,
-                        "deadline": str(report.due_date) if report.due_date else "N/A",
-                    }
-                )
-
-            return {
-                "title": widget_title,
-                "headers": [
-                    "Report Title",
-                    "Submitted By",
-                    "Date",
-                    "Category",
-                    "Status",
-                    "Deadline",
-                ],
-                "rows": rows,
-            }
-
-        elif "report" in title_lower and "approved" in title_lower:
-            # Approved reports table
-            from apps.report_instances.selectors import get_approved_reports
-
-            reports = get_approved_reports(user)
-
-            rows = []
-            for report in reports[:10]:
-                rows.append(
-                    {
-                        "title": report.title,
-                        "submitted_by": (
-                            report.owner.get_full_name() if report.owner else "Unknown"
-                        ),
-                        "submitted_date": (
-                            str(report.submitted_at)[:10]
-                            if report.submitted_at
-                            else "N/A"
-                        ),
-                        "category": report.category.name if report.category else "N/A",
-                        "status": report.status,
-                        "approved_date": (
-                            str(report.approved_at)[:10]
-                            if report.approved_at
-                            else "N/A"
-                        ),
-                    }
-                )
-
-            return {
-                "title": widget_title,
-                "headers": [
-                    "Report Title",
-                    "Submitted By",
-                    "Date",
-                    "Category",
-                    "Status",
-                    "Approved Date",
-                ],
-                "rows": rows,
-            }
-
-        elif "overdue" in title_lower:
-            # Overdue reports table
-            from django.utils import timezone
-
-            from apps.report_instances.selectors import get_overdue_reports
-
-            reports = get_overdue_reports()
-
-            rows = []
-            for report in reports[:10]:
-                # Calculate days overdue
-                days_overdue = 0
-                if report.due_date:
-                    today = timezone.now().date()
-                    if report.due_date < today:
-                        days_overdue = (today - report.due_date).days
-
-                rows.append(
-                    {
-                        "title": report.title,
-                        "submitted_by": (
-                            report.owner.get_full_name() if report.owner else "Unknown"
-                        ),
-                        "due_date": str(report.due_date) if report.due_date else "N/A",
-                        "days_overdue": days_overdue,
-                        "priority": (
-                            report.category.color if report.category else "#e74a3b"
-                        ),
-                        "status": report.status,
-                    }
-                )
-
-            return {
-                "title": widget_title,
-                "headers": [
-                    "Report Title",
-                    "Submitted By",
-                    "Due Date",
-                    "Days Overdue",
-                    "Priority",
-                    "Status",
-                ],
-                "rows": rows,
-            }
-
-        elif "volunteer" in title_lower:
-            # Volunteer profiles table
-            if user_is_superuser_or_manager(user):
-                profiles = visible_volunteer_profiles(user)
-            else:
-                profiles = visible_volunteer_profiles(user)
-
-            rows = []
-            for profile in profiles[:10]:
-                rows.append(
-                    {
-                        "full_name": (
-                            profile.user.get_full_name() if profile.user else "Unknown"
-                        ),
-                        "reference_number": profile.reference_number,
-                        "status": profile.status,
-                        "team": profile.team.name if profile.team else "N/A",
-                        "region": profile.region or "N/A",
-                        "email": profile.user.email if profile.user else "N/A",
-                    }
-                )
-
-            return {
-                "title": widget_title,
-                "headers": [
-                    "Full Name",
-                    "Reference Number",
-                    "Status",
-                    "Team",
-                    "Region",
-                    "Email",
-                ],
-                "rows": rows,
-            }
-
-        else:
-            # Default table
-            return {
-                "title": widget_title,
-                "headers": [],
-                "rows": [],
-            }
-
-    return {
-        "title": widget_title,
-        "headers": [],
-        "rows": [],
-    }
-
-
-def get_list_data(widget, user, config):
-    """Get data for list widget."""
-    widget_type = widget.widget_type
-    widget_title = widget.title
-
-    if widget_type == "list":
-        title_lower = widget_title.lower()
-
-        if "recent" in title_lower and "report" in title_lower:
-            # Recent reports list
-            from apps.report_instances.selectors import get_submitted_reports
-
-            reports = get_submitted_reports(user)[:10]
-
-            items = []
-            for report in reports:
-                items.append(
-                    {
-                        "title": report.title,
-                        "status": report.status,
-                        "submitted": (
-                            str(report.submitted_at)[:16]
-                            if report.submitted_at
-                            else "N/A"
-                        ),
-                        "category": report.category.name if report.category else "N/A",
-                        "link": f"/reports/{report.reference_number}/",
-                    }
-                )
-
-            return {
-                "title": widget_title,
-                "items": items,
-            }
-
-        elif "recent" in title_lower and "volunteer" in title_lower:
-            # Recent volunteer activity
-            if user_is_superuser_or_manager(user):
-                profiles = visible_volunteer_profiles(user)
-            else:
-                profiles = visible_volunteer_profiles(user)
-
-            # Get recent activity from activity logs
-
-            from apps.volunteers.models import VolunteerActivityLog
-
-            activity = (
-                VolunteerActivityLog.objects.filter(profile__in=profiles)
-                .select_related("profile__user")
-                .order_by("-activity_date")[:10]
-            )
-
-            items = []
-            for log in activity:
-                items.append(
-                    {
-                        "title": log.activity_title,
-                        "date": str(log.activity_date),
-                        "hours": str(log.hours_served) if log.hours_served else "0",
-                        "beneficiaries": log.beneficiaries_reached,
-                    }
-                )
-
-            return {
-                "title": widget_title,
-                "items": items,
-            }
-
-        elif "notification" in title_lower:
-            # Notifications list - will be handled separately
-            return {
-                "title": widget_title,
-                "items": [],
-            }
-
-        else:
-            # Default list
-            return {
-                "title": widget_title,
-                "items": [],
-            }
-
-    return {
-        "title": widget_title,
-        "items": [],
-    }
-
-
-def get_activity_data(widget, user, config):
-    """Get data for activity feed widget."""
-    widget_type = widget.widget_type
-    widget_title = widget.title
-
-    if widget_type == "activity":
-        title_lower = widget_title.lower()
-
-        if "organizational" in title_lower or "recent" in title_lower:
-            # Recent organizational activity
-
-            # Get recent reports submissions
-            from apps.report_instances.selectors import get_submitted_reports
-
-            # Get recent submitted reports
-            reports = get_submitted_reports(user)[:5]
-
-            activities = []
-
-            for report in reports:
-                submitter_name = (
-                    report.owner.get_full_name() if report.owner else "Unknown"
-                )
-                activities.append(
-                    {
-                        "title": f"Report submitted: {report.title}",
-                        "description": f"Submitted by {submitter_name}",
-                        "time": (
-                            str(report.submitted_at)[:16]
-                            if report.submitted_at
-                            else "Just now"
-                        ),
-                        "icon": "bi bi-file-text",
-                        "link": f"/reports/{report.reference_number}/",
-                    }
-                )
-
-            # Get recent approvals
-            from apps.report_instances.selectors import get_approved_reports
-
-            approved_reports = get_approved_reports(user)[:3]
-
-            for report in approved_reports:
-                activities.append(
-                    {
-                        "title": f"Report approved: {report.title}",
-                        "description": (
-                            f"Approved by "
-                            f'{getattr(user, "get_full_name", lambda: "")()}'
-                        ),
-                        "time": (
-                            str(report.approved_at)[:16]
-                            if report.approved_at
-                            else "Just now"
-                        ),
-                        "icon": "bi bi-check-circle",
-                        "link": f"/reports/{report.reference_number}/",
-                    }
-                )
-
-            # Get recent volunteer activity if user has permission
-            if user_is_superuser_or_manager(user):
-                from apps.volunteers.models import VolunteerActivityLog
-                from apps.volunteers.selectors import visible_volunteer_profiles
-
-                profiles = visible_volunteer_profiles(user)
-                recent_activity = (
-                    VolunteerActivityLog.objects.filter(profile__in=profiles)
-                    .select_related("profile__user")
-                    .order_by("-activity_date")[:3]
-                )
-
-                for log in recent_activity:
-                    activities.append(
-                        {
-                            "title": f"Volunteer activity: {log.activity_title}",
-                            "description": (
-                                f"{log.hours_served}h served, "
-                                f"{log.beneficiaries_reached} beneficiaries"
-                            ),
-                            "time": str(log.activity_date),
-                            "icon": "bi bi-person-workspace",
-                        }
-                    )
-
-            return {
-                "title": widget_title,
-                "activities": activities,
-            }
-
-        else:
-            # Default activity feed
-            return {
-                "title": widget_title,
-                "activities": [],
-            }
-
-    return {
-        "title": widget_title,
-        "activities": [],
-    }
-
-
-def get_notification_data(widget, user, config):
-    """Get data for notification widget."""
-    widget_type = widget.widget_type
-    widget_title = widget.title
-
-    if widget_type == "notification":
-        from django.core.cache import cache
-
-        # Try to get unread count from cache or compute it
-        cache_key = (
-            f"notifications_unread_{user.id}"
-            if user
-            else "notifications_unread_anonymous"
-        )
-        unread_count = cache.get(cache_key)
-
-        if unread_count is None:
-            # Compute unread count from various sources
-            unread_count = 0
-
-            # Check for report-related notifications
-
-            from apps.notifications.models import Notification
-
-            if user and user.is_authenticated:
-                # Get unread notifications for this user
-                notifications = Notification.objects.filter(
-                    recipient=user, is_read=False
-                )
-                unread_count = notifications.count()
-
-            # Cache for 1 minute
-            cache.set(cache_key, unread_count, 60)
-
-        # Get recent read notifications (limit to 5)
-        notifications = []
-        if user and user.is_authenticated:
-            recent_notifications = (
-                Notification.objects.filter(recipient=user)
-                .select_related("actor", "target_content_type")
-                .order("-created_at")[:5]
-            )
-
-            for notif in recent_notifications:
-                notifications.append(
-                    {
-                        "title": notif.title,
-                        "message": notif.message,
-                        "time": str(notif.created_at)[:16],
-                        "action_url": (
-                            notif.get_absolute_url()
-                            if hasattr(notif, "get_absolute_url")
-                            else "/notifications/"
-                        ),
-                        "icon": "bi bi-bell",
-                        "id": str(notif.id),
-                    }
-                )
-
-        return {
-            "title": widget_title,
-            "notifications": notifications,
-            "unread_count": unread_count,
-        }
-
-    return {
-        "title": widget_title,
-        "notifications": [],
-        "unread_count": 0,
-    }
-
-
-def get_quick_actions_data(widget, user, config):
-    """Get data for quick actions widget."""
-    widget_type = widget.widget_type
-    widget_title = widget.title
-
-    if widget_type == "quick_actions":
-        actions = []
-
-        if not user or not user.is_authenticated:
-            return {
-                "title": widget_title,
-                "actions": actions,
-            }
-
-        # Add actions based on user permissions
-        # Report-related actions
-        if user_has_permission(user, "reports.create") or user_has_permission(
-            user, "reports.draft"
-        ):
-            actions.append(
-                {
-                    "label": "Create Report",
-                    "handler": 'window.location.href = "/reports/create/";',
-                }
-            )
-
-        if user_has_permission(user, "reports.submit"):
-            actions.append(
-                {
-                    "label": "Submit Report",
-                    "handler": 'window.location.href = "/reports/submit/";',
-                }
-            )
-
-        if user_has_any_permission(user, ["reports.review", "reports.approve"]):
-            actions.append(
-                {
-                    "label": "Review Reports",
-                    "handler": 'window.location.href = "/reviews/";',
-                }
-            )
-
-        if user_has_permission(user, "documents.upload"):
-            actions.append(
-                {
-                    "label": "Upload Document",
-                    "handler": 'window.location.href = "/documents/upload/";',
-                }
-            )
-
-        if user_has_permission(user, "meals.indicator.view") or user_has_permission(
-            user, "meal.report"
-        ):
-            actions.append(
-                {
-                    "label": "View MEAL Indicators",
-                    "handler": 'window.location.href = "/meal/";',
-                }
-            )
-
-        if user_has_permission(user, "finance.view") or user_has_permission(
-            user, "finance.report"
-        ):
-            actions.append(
-                {
-                    "label": "View Finance",
-                    "handler": 'window.location.href = "/finance/";',
-                }
-            )
-
-        if user_has_permission(user, "partners.view") or user_has_permission(
-            user, "partners.manage"
-        ):
-            actions.append(
-                {
-                    "label": "Manage Partners",
-                    "handler": 'window.location.href = "/partners/";',
-                }
-            )
-
-        if user_has_permission(user, "stakeholders.view"):
-            actions.append(
-                {
-                    "label": "View Stakeholders",
-                    "handler": 'window.location.href = "/stakeholders/";',
-                }
-            )
-
-        # User-specific actions
-        if user_is_superuser_or_manager(user):
-            actions.append(
-                {
-                    "label": "Admin Dashboard",
-                    "handler": 'window.location.href = "/admin/dashboard/";',
-                }
-            )
-
-        # Always allow profile and notifications
-        actions.append(
-            {
-                "label": "View Profile",
-                "handler": 'window.location.href = "/accounts/profile/";',
-            }
-        )
-        actions.append(
-            {
-                "label": "View Notifications",
-                "handler": 'window.location.href = "/notifications/";',
-            }
-        )
-
-        # Sort actions: role-specific first, then general
-        role_specific = [
-            a
-            for a in actions
-            if any(
-                kw in a["label"].lower()
-                for kw in ["create", "review", "admin", "manage"]
-            )
+    payload = resolve_widget_payload(widget_config, cast(User, request.user))
+    if not payload:
+        return JsonResponse({"error": "No data available for this widget"}, status=404)
+    return JsonResponse(payload)
+
+
+@login_required
+def dashboard_widget_config(request, config_type: str):
+    """AJAX endpoint listing widget metadata for ``stats`` or ``main`` sections."""
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    dashboard_config = get_default_configuration()
+    widget_configs = visible_widget_configs(dashboard_config)
+
+    if config_type == "stats":
+        widget_configs = [
+            wc for wc in widget_configs if wc.widget.widget_type == "statistic"
         ]
-        general = [a for a in actions if a not in role_specific]
-        actions = role_specific + general
+    elif config_type == "main":
+        widget_configs = [
+            wc for wc in widget_configs if wc.widget.widget_type != "statistic"
+        ]
 
-        return {
-            "title": widget_title,
-            "actions": actions,
-        }
-
-    return {
-        "title": widget_title,
-        "actions": [],
-    }
-
-
-def get_welcome_data(widget, user, config):
-    """Get data for welcome widget."""
-    return {
-        "title": widget.title,
-        "message": f"Welcome back, {user.get_full_name() or user.username}!",
-        "user": {
-            "username": user.username,
-            "full_name": user.get_full_name(),
-        },
-        "date": "Today",
-    }
-
-
-def get_profile_data(widget, user, config):
-    """Get data for profile widget."""
-    if not user or not user.is_authenticated:
-        return {
-            "title": widget.title,
-            "user": {
-                "username": "Guest",
-                "full_name": "Guest",
-                "email": "",
-            },
-        }
-
-    # Get user's profile photo if available
-    profile_photo = None
-    try:
-        # Try to get profile photograph from user profile
-        profile_photo = (
-            getattr(user, "profile_photo", None)
-            or getattr(user, "volunteer_profile", None).profile_photo
-            if hasattr(user, "volunteer_profile")
-            else None
+    widgets = []
+    for widget_config in widget_configs:
+        widget = widget_config.widget
+        widgets.append(
+            {
+                "id": widget.id,
+                "title": widget.title,
+                "widget_type": widget.widget_type,
+                "configuration": widget.configuration,
+                "column_span": widget_config.column_span,
+                "row_span": widget_config.row_span,
+            }
         )
-    except (AttributeError, TypeError):
-        profile_photo = None
 
-    return {
-        "title": widget.title,
-        "user": {
-            "username": user.username,
-            "full_name": user.get_full_name(),
-            "email": user.email,
-            "profile_photo": profile_photo,
-            "user_id": user.id,
-        },
-    }
+    return JsonResponse({"widgets": widgets})
 
 
-def get_organizational_info_data(widget, user, config):
-    """Get data for organizational info widget."""
-    if not user or not user.is_authenticated:
-        return {
-            "title": widget.title,
-            "organizational_unit": "--",
-            "position": "--",
-            "directorate": "--",
-        }
+class StaffAdminMixin(UserPassesTestMixin):
+    """Only superusers may administer dashboard configuration."""
 
-    # Get organizational information based on user's active role assignments
-    organizational_unit = "--"
-    position = "--"
-    directorate = "--"
+    request: HttpRequest
+    login_url = reverse_lazy("core:login")
 
-    # Get active role assignments
-    role_assignments = get_active_role_assignments(user)
-
-    if role_assignments.exists():
-        for _assignment in role_assignments:
-            role = _assignment.role
-            access_scope = _assignment.access_scope
-
-            # Get organizational unit from scope
-            if access_scope:
-                organizational_unit = access_scope.name or access_scope.code or "--"
-
-            # Get position from role
-            if role:
-                position = role.name or "--"
-
-                # Check for directorate-related information
-                if user_has_scope(user, "directorate") or user_has_scope(
-                    user, "region"
-                ):
-                    # Get the highest level scope
-                    scopes = get_effective_scopes_for_user(user)
-                    if scopes:
-                        directorate = scopes[0].name or "--"
-
-    # Fallback: try to get from user's profile if available
-    if not position or position == "--":
-        try:
-            # Try to get position from various profile models
-            if hasattr(user, "volunteer_profile"):
-                position = user.volunteer_profile.position or position
-            if hasattr(user, "leader_profile"):
-                position = user.leader_profile.position or position
-        except (AttributeError, TypeError):
-            pass
-
-    return {
-        "title": widget.title,
-        "organizational_unit": organizational_unit,
-        "position": position,
-        "directorate": directorate,
-    }
+    def test_func(self) -> bool:
+        user = self.request.user
+        return bool(user.is_authenticated and user.is_superuser)
 
 
-class DashboardConfigurationView(LoginRequiredMixin, TemplateView):
-    """View for managing dashboard configuration."""
+class DashboardConfigurationView(StaffAdminMixin, TemplateView):
+    """Centralized dashboard configuration overview."""
 
     template_name = "dashboard/configuration.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["configurations"] = DashboardConfiguration.objects.all()
+        context["configurations"] = DashboardConfiguration.objects.prefetch_related(
+            "widget_configurations__widget"
+        )
         return context
 
 
-class DashboardWidgetManagementView(LoginRequiredMixin, TemplateView):
-    """View for managing dashboard widgets."""
+class DashboardWidgetManagementView(StaffAdminMixin, TemplateView):
+    """Centrally manage widgets: enable/disable with audited changes."""
 
     template_name = "dashboard/widget_management.html"
 
+    def post(self, request, *args, **kwargs):
+        widget_id = request.POST.get("widget_id")
+        enable = request.POST.get("enable") == "true"
+        widget = DashboardWidget.objects.filter(id=widget_id).first()
+        if widget is not None:
+            widget.is_enabled = enable
+            widget.save(update_fields=["is_enabled"])
+            LogEntry.objects.log_action(
+                user_id=request.user.id,
+                content_type_id=ContentType.objects.get_for_model(widget).id,
+                object_id=widget.id,
+                object_repr=str(widget),
+                action_flag=CHANGE,
+                change_message=f"Widget {'enabled' if enable else 'disabled'} "
+                "via dashboard widget management.",
+            )
+            state = "enabled" if enable else "disabled"
+            messages.success(request, f"Widget '{widget.name}' {state}.")
+        return redirect("dashboard:widget_management")
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["widgets"] = DashboardWidget.objects.all()
+        context["widgets"] = DashboardWidget.objects.order_by("widget_type", "name")
         return context
-
-
-# AJAX endpoints for widget configuration
-@login_required
-def dashboard_widget_config(request, config_type):
-    """Get widget configuration for stats row or main content."""
-    if request.method != "GET":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-
-    user = request.user
-
-    # Get or create user dashboard preference
-    user_pref, created = UserDashboardPreference.objects.get_or_create(user=user)
-
-    # Get dashboard configuration based on user role/permissions
-    try:
-        dashboard_config = DashboardConfiguration.objects.get(is_default=True)
-    except DashboardConfiguration.DoesNotExist:
-        # Create a default configuration if none exists
-        dashboard_config = DashboardConfiguration.objects.create(
-            name="Default Dashboard", is_default=True
-        )
-
-    # Get widget configurations for this dashboard
-    widget_configs = (
-        DashboardWidgetConfiguration.objects.filter(
-            dashboard_configuration=dashboard_config, is_visible=True
-        )
-        .select_related("widget")
-        .order_by("position")
-    )
-
-    # Filter widgets based on config_type
-    if config_type == "stats":
-        # For stats row, we want statistic widgets
-        widget_configs = widget_configs.filter(widget__widget_type="statistic")
-    elif config_type == "main":
-        # For main content, we want everything except statistics (for now)
-        widget_configs = widget_configs.exclude(widget__widget_type="statistic")
-
-    # Prepare widgets data
-    widgets = []
-    for widget_config in widget_configs:
-        widget_data = {
-            "id": widget_config.widget.id,
-            "title": widget_config.widget.title,
-            "widget_type": widget_config.widget.widget_type,
-            "icon": getattr(widget_config.widget, "icon", None),
-            "column_span": widget_config.column_span,
-            "row_span": widget_config.row_span,
-            "configuration": widget_config.configuration,
-        }
-        widgets.append(widget_data)
-
-    return JsonResponse({"widgets": widgets})

@@ -331,8 +331,9 @@ Production Deployment
 * ESLint, Stylelint, and Prettier now pass after installing the declared Node dependencies.
 * Scoped Bandit scans for `apps` and `config` pass with `.venv` excluded; an unrestricted root scan remains unsuitable on Windows.
 * Deploy check has six expected warnings from development settings.
-* Central Audit and Dashboard apps are absent. Stakeholder histories/versions, structured logging, and module dashboard are not those central integrations.
+* Central Audit app is absent. Stakeholder histories/versions, structured logging, and module dashboard are not those central integrations. The central Dashboard (`apps/dashboard`) is now implemented (Phase 10 command center upgrade, 2026-08-23).
 * Phase 24 Calendar & Meetings (`apps/meetings`) is implemented and acceptance-ready: the 152-test suite reports 152/152 passed (stabilized 2026-08-16). Fixed Django 5.1+Python 3.14 context copy compatibility issue and test permission assignment.
+* Pre-existing failure: `apps/accessibility/tests/test_accessibility.py::AccessibilityServiceTest::test_analytics_service_generate` raises `PermissionDenied` on a clean tree (verified 2026-08-23); unrelated to the dashboard work and owned by the accessibility module.
 
 ---
 
@@ -353,6 +354,7 @@ Risks should be reviewed regularly.
 
 # Recent Accomplishments
 
+* Upgraded the central Dashboard to the Phase 10 command center (2026-08-23): consolidated duplicate dashboards into a single permission-aware `dashboard:home`, rebuilt it fully server-rendered on `apps/dashboard/services.py` with welcome hero, profile/org context, role-gated KPI cards, work queues (due/drafts/approvals/overdue), program/project/document performance widgets, admin audit activity, upcoming events (meetings + calendar), announcements, notifications, and the cross-module activity feed. Added per-user widget personalization (`UserWidgetState`, migration `dashboard.0004`) with hide/reorder/reset plus theme/chart-style/reporting-period preferences, superuser-only widget administration with immutable audit logging, and configuration-driven auto-refresh. 21 dashboard tests green; ruff/mypy clean for `apps/dashboard`.
 * Implemented Phase 26 Global Search in the new `apps/search` app: 3 models (`RecentSearch`, `SavedSearch`, `SearchQueryLog`), a 22-provider registry (`SearchProvider`/`SearchHit`), permission-scaled universal search with grouped results, entity-type refinements, per-user recent history, named saved searches (create/list/run/delete), a permission-gated CSV export, and an immutable append-only search audit trail. `search.view`/`search.export`/`search.manage` RBAC codes seeded via `rbac.0018`; sidebar Search nav item added. Added 59 tests (green in the 2026-08-11 verification run).
 * Implemented Phase 25 Notifications & Announcements in the new `apps/notifications` app: 12 models, 15 services, 7 manager/queryset pairs, 25 views, 25 routes, 14 templates, `notifications`/`announcements`/`preferences` RBAC categories (`rbac.0017`), NTF/ANN reference schemes (`references.0011`), the notification bell/dropdown integration, and the `process_notifications` command. Added 121 tests (green in the 2026-08-10 verification run).
 * Implemented Phase 24 Calendar & Meetings in the new `apps/meetings` app: 26 models, 16 services, bounded recurrence engine, `calendars`/`events`/`meetings` RBAC categories (`rbac.0016`), 6 reference schemes, 76 views/81 routes, 30 templates, and 5 management commands. 152 tests added; stabilization with 97 failing cases is in progress.
@@ -421,11 +423,53 @@ Risks should be reviewed regularly.
 
 ---
 
+### Phase 35 - Testing & Quality Assurance Implementation Status
+
+| Area | Status | Notes |
+| --- | --- | --- |
+| QA Configuration | ✅ Implemented | `QAConfiguration` singleton with policies, thresholds, coverage targets, schedules, automation, defect rules, release workflows, UAT settings, notifications, retention, dashboards |
+| Test Environments | ✅ Implemented | `TestEnvironment` with types (Local/Dev/Integration/QA/UAT/Staging/Prod), configs, credentials, isolation |
+| Test Data Sets | ✅ Implemented | `TestDataSet` with types (Synthetic/Seed/Mock/Anonymized/Boundary/Error/Performance/Accessibility/Security), versioning, validation |
+| Test Plans | ✅ Implemented | `TestPlan` with status (Draft/Active/Completed/Archived), entry/exit criteria, risks, approval |
+| Test Suites | ✅ Implemented | `TestSuite` with hierarchy, ordering, modules, features, requirements, tags |
+| Test Cases | ✅ Implemented | `TestCase` with ID, steps, expected results, status, priority, category, automation, assignment |
+| Test Scenarios | ✅ Implemented | `TestScenario` with types (Positive/Negative/Boundary/Edge/Error/Performance/Security/Accessibility), ordering |
+| Test Executions | ✅ Implemented | `TestExecution` with status (Pending/Running/Passed/Failed/Blocked/Skipped/Error), results, evidence, defects |
+| Test Results | ✅ Implemented | `TestResult` per step with status, duration, screenshots, errors |
+| Test Evidence | ✅ Implemented | `TestEvidence` (Screenshot/Video/Log/File/API Response/DB Snapshot) |
+| Defects | ✅ Implemented | `Defect` with ID, status (New/Classified/Assigned/In Progress/Dev Verified/QA Verified/Regression Tested/Closed/Reopened/Rejected/Deferred), severity, priority, assignment, resolution |
+| Defect Assignments | ✅ Implemented | `DefectAssignment` history with assignee, assigner, timestamps |
+| Defect Resolutions | ✅ Implemented | `DefectResolution` with type (Fixed/Won't Fix/Duplicate/Not Reproducible/By Design/Workaround), verification |
+| Regression Tests | ✅ Implemented | `RegressionTest` with triggers (Release/Hotfix/Scheduled/Manual/Code/Config), pass rates |
+| UAT Sessions | ✅ Implemented | `UATSession` with participants, scenarios, acceptance criteria, sign-off |
+| Release Candidates | ✅ Implemented | `ReleaseCandidate` with version, branch, commit, build, changelog, status (Draft/Submitted/Testing/Approved/Rejected/Deployed/Rolled Back) |
+| Release Approvals | ✅ Implemented | `ReleaseApproval` with roles, status (Pending/Approved/Rejected/Conditional), conditions |
+| Quality Metrics | ✅ Implemented | `QualityMetric` with 14 KPI types (Coverage/Automated/Manual/Defect Density/Critical Count/MTTD/MTTR/Regression/UAT/Release Success/Code Quality/Security/Accessibility/Performance) |
+| Quality Dashboards | ✅ Implemented | `QualityDashboard` with 14 widget types, layouts, role access, refresh intervals |
+| QA Notifications | ✅ Implemented | `QANotification` with 10 types, priorities, read status |
+| QA Timeline | ✅ Implemented | `QATimeline` immutable events for historical analysis |
+| QA Audit References | ✅ Implemented | `QAAuditReference` immutable audit trail |
+| Services | ✅ Implemented | 11 service classes (Configuration, Environment, DataSet, Plan, Suite, Case, Scenario, Execution, Defect, Release, Metric, Dashboard, Notification) |
+| Selectors | ✅ Implemented | 25+ fail-closed selectors with RBAC integration |
+| Views & URLs | ✅ Implemented | 80+ permission-checked routes covering all entities |
+| Forms | ✅ Implemented | 35+ forms with validation and Bootstrap 5 styling |
+| Templates | ✅ Implemented | 20+ Bootstrap 5 templates (dashboard, lists, details, forms) |
+| Admin Registration | ✅ Implemented | All models registered with custom admin |
+| RBAC | ✅ Implemented | `qa.*` permissions (view/manage for config/environment/dataset/plan/suite/case/scenario/execution/result/evidence/defect/assignment/resolution/regression/uat/release/approval/metric/dashboard/notification/timeline/audit, approve_release) with role grants (QA_LEAD, QA_ENGINEER, DEVELOPER, PRODUCT_OWNER, PROJECT_MANAGER) |
+| Reference Numbering | ✅ Implemented | Schemes for test_plan (TPL), test_case (TCS), defect (DEF) under `qa` module |
+| Migrations | ✅ Implemented | `qa.0001`, `references.0018` |
+| Tests | ✅ Implemented | Model, service, selector, permission tests (`apps/qa/tests/`) |
+| Quality Gates | ✅ Green | Ruff, Black, isort, `manage.py check`, `makemigrations --check` |
+
+---
+
 # Pending Work
 
 * Stabilize Phase 24 Calendar & Meetings (`apps/meetings`): resolve the 97 failing tests (all_objects manager, transition mapping, routes/redirects, form/model constraint alignment, reverse managers, reference-command superuser setup).
 * Implement Phase 26 Global Search follow-on parts (advanced search, suggestions, bookmarks, analytics, full-text indexing) and subsequent roadmap phases.
+* Dashboard follow-ons: statistic-card period-over-period trend indicators (requires per-metric history queries) and optional chart visualizations if a local Chart.js vendor asset is added; widget drag-and-drop ordering on the personalize page.
 * Complete remaining authentication hardening (2FA, rate limiting, device management views).
+* Fix the pre-existing accessibility service test failure (`test_analytics_service_generate`).
 * Build database models.
 * Implement authentication.
 * Develop core modules.
@@ -471,8 +515,8 @@ These metrics should be updated throughout development.
 
 Immediate priorities:
 
-1. **Continue the roadmap sequence from Phase 26** - Global Search (`roadmaps/26-Global-Search.md`).
-2. Track deferred central Dashboard and Audit applications to their owning phases.
+1. **Continue the roadmap sequence from Phase 36** - Documentation and Training (`roadmaps/36-Documentation-and-Training.md`).
+2. Track the deferred central Audit application and dashboard follow-ons (trend indicators, chart vendor) to their owning phases.
 3. Track deferred Phase 13 application throttling and full browser/performance benchmark suites to their owning phases.
 
 ---
@@ -505,3 +549,4 @@ Immediate priorities:
 | 1.9.0   | 2026-08-19 | Development | Phase 32 Security Hardening initiated (`apps/security`, initial models for Identity & Access Management, authentication hardening, and RBAC improvements) |
 | 1.10.0   | 2026-08-21 | Development | Phase 28 Finance and Resource Mobilization implemented (`apps/finance`, 14 models, 9 providers, 5 renderers, 5 services, 46 tests) |
 | 1.11.0   | 2026-08-22 | Development | Phase 34 Performance Optimization & Scalability implemented (`apps/performance`, 14 models, 9 service classes, 60+ views, 18 forms, 12 templates, 10 reference schemes) |
+| 1.12.0   | 2026-08-22 | Development | Phase 35 Testing & Quality Assurance implemented (`apps/qa`, 28 models, 11 service classes, 80+ views, 35 forms, 20 templates, 25+ selectors, 3 reference schemes) |

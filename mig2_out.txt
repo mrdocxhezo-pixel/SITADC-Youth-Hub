@@ -1,0 +1,8 @@
+Operations to perform:
+  Apply all migrations: accessibility, accounts, admin, auth, beneficiaries, communications, configuration, contenttypes, dashboard, documents, exports, finance, governance, leadership, locations, meal, meetings, memberships, notifications, organizations, performance, programs, qa, rbac, references, registers, report_instances, reports, reviews, search, security, sessions, settings, stakeholders, system_settings, volunteers
+Running migrations:
+  Applying accounts.0005_backfill_userprofile_locations... OK
+  Applying beneficiaries.0003_backfill_beneficiary_locations... OK
+  Applying memberships.0003_backfill_membership_locations... OK
+  Applying stakeholders.0003_backfill_stakeholder_locations... OK
+  Applying volunteers.0006_backfill_volunteerprofile_locations... OK

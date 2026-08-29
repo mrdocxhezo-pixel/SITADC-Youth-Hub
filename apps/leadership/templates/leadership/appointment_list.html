@@ -1,43 +1,209 @@
 {% extends "layouts/dashboard.html" %}
-{% block title %}Appointments | SITADC Youth Hub{% endblock title %}
+{% load static %}
+{% block title %}Leadership Appointments | SITADC Youth Hub{% endblock title %}
 {% block dashboard_content %}
     <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <h1 class="h3 mb-0 text-gray-800">Leadership Appointments</h1>
             <a href="{% url 'leadership:appointment_create' %}"
-               class="btn btn-primary-brand">Add Appointment</a>
+               class="btn btn-primary-brand">
+                <i class="bi bi-person-plus-fill me-2"></i>Add Appointment
+            </a>
         </div>
+        
+        <!-- Search and Filter Form -->
         <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Search & Filters</h6>
+            </div>
             <div class="card-body">
+                <form method="get" class="row g-3" id="appointment-filter-form">
+                    <!-- Search -->
+                    <div class="col-md-4">
+                        <label for="search" class="form-label visually-hidden">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="search" name="search" id="search" class="form-control" 
+                                   placeholder="Search by leader name, reference, position, unit..."
+                                   value="{{ current_search }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="col-md-2">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            {% for value, label in appointment_statuses %}
+                                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Appointment Type -->
+                    <div class="col-md-2">
+                        <label for="appointment_type" class="form-label">Type</label>
+                        <select name="appointment_type" id="appointment_type" class="form-select">
+                            <option value="">All Types</option>
+                            {% for value, label in appointment_types %}
+                                <option value="{{ value }}" {% if current_appointment_type == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Organizational Unit -->
+                    <div class="col-md-2">
+                        <label for="organizational_unit" class="form-label">Organizational Unit</label>
+                        <select name="organizational_unit" id="organizational_unit" class="form-select">
+                            <option value="">All Units</option>
+                            {% for unit in org_units %}
+                                <option value="{{ unit.pk }}" {% if current_org_unit == unit.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ unit.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Date From -->
+                    <div class="col-md-2">
+                        <label for="effective_from" class="form-label">Effective From</label>
+                        <input type="date" name="effective_from" id="effective_from" class="form-control" 
+                               value="{{ current_effective_from }}">
+                    </div>
+                    
+                    <!-- Date To -->
+                    <div class="col-md-2">
+                        <label for="effective_to" class="form-label">Effective To</label>
+                        <input type="date" name="effective_to" id="effective_to" class="form-control" 
+                               value="{{ current_effective_to }}">
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100 me-1">
+                            <i class="bi bi-funnel me-1"></i>Filter
+                        </button>
+                        <a href="{% url 'leadership:appointment_list' %}" class="btn btn-outline-secondary w-100" title="Clear filters">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    Appointments 
+                    <span class="badge bg-primary">{{ appointments.paginator.count }}</span>
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                {% if appointments %}
                 <div class="table-responsive">
-                    <table class="table">
-                        <thead>
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
                             <tr>
+                                <th>Reference</th>
                                 <th>Leader</th>
-                                <th>Role</th>
                                 <th>Position</th>
-                                <th>Dates</th>
+                                <th>Organizational Unit</th>
+                                <th>Type</th>
+                                <th>Effective Date</th>
+                                <th>Term Start</th>
+                                <th>Term End</th>
                                 <th>Status</th>
+                                <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for appt in appointments %}
-                                <tr>
-                                    <td>{{ appt.profile.user.get_full_name }}</td>
-                                    <td>{{ appt.role }}</td>
-                                    <td>{{ appt.position }}</td>
-                                    <td>{{ appt.start_date }} to {{ appt.end_date|default:"Present" }}</td>
-                                    <td><span class="badge bg-secondary">{{ appt.status }}</span></td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="5">No appointments found.</td>
-                                </tr>
+                            <tr>
+                                <td><code>{{ appt.reference_number }}</code></td>
+                                <td>
+                                    <a href="{% url 'leadership:profile_detail' appt.profile.pk %}" class="fw-medium">
+                                        {{ appt.profile.user.get_full_name }}
+                                    </a>
+                                </td>
+                                <td>{{ appt.position.title }}</td>
+                                <td>{{ appt.organizational_unit.name }}</td>
+                                <td>{{ appt.get_appointment_type_display }}</td>
+                                <td>{{ appt.effective_date|date:"M d, Y" }}</td>
+                                <td>{{ appt.term_start|date:"M d, Y"|default:"—" }}</td>
+                                <td>{{ appt.term_end|date:"M d, Y"|default:"—" }}</td>
+                                <td>
+                                    <span class="badge bg-{% if appt.status == "ACTIVE" %}success{% elif appt.status == "APPROVED" %}primary{% elif appt.status == "PENDING_APPROVAL" %}info{% elif appt.status == "PENDING_REVIEW" %}warning{% elif appt.status == "DRAFT" %}secondary{% elif appt.status == "EXPIRED" %}warning{% elif appt.status == "COMPLETED" %}info{% elif appt.status == "TERMINATED" %}danger{% elif appt.status == "RESIGNED" %}warning{% elif appt.status == "REMOVED" %}danger{% elif appt.status == "REVOKED" %}danger{% else %}secondary{% endif %}">
+                                        {{ appt.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'leadership:appointment_detail' appt.pk %}"
+                                       class="btn btn-sm btn-outline-primary" title="View Appointment">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-briefcase fs-1 text-muted"></i>
+                    <h5 class="mt-3 text-muted">No appointments found</h5>
+                    <p class="text-muted">Try adjusting your search or filter criteria.</p>
+                    <a href="{% url 'leadership:appointment_list' %}" class="btn btn-outline-primary">Clear Filters</a>
+                </div>
+                {% endif %}
             </div>
+            
+            <!-- Pagination -->
+            {% if appointments.paginator.num_pages > 1 %}
+            <div class="card-footer py-3">
+                <nav aria-label="Appointments pagination">
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if appointments.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ appointments.previous_page_number }}" aria-label="Previous">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in appointments.paginator.page_range %}
+                            {% if appointments.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > appointments.number|add:'-3' and num < appointments.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if appointments.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ appointments.next_page_number }}" aria-label="Next">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
         </div>
     </div>
 {% endblock dashboard_content %}

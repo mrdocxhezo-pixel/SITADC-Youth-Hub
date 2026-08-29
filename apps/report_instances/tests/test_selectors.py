@@ -76,8 +76,12 @@ class ReportSelectorTest(ReportInstanceBaseTestCase):
     def test_get_overdue_reports(self):
         import datetime
 
+        from django.utils import timezone
+
         report = self.make_report(title="Overdue")
-        report.due_date = datetime.date.today() - datetime.timedelta(days=1)
+        # Anchor on the same clock the selector uses (UTC when USE_TZ) so
+        # local-timezone offsets cannot push this out of the overdue window.
+        report.due_date = timezone.now().date() - datetime.timedelta(days=1)
         report.save()
         overdue = get_overdue_reports()
         self.assertIn(report, overdue)

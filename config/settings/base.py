@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "apps.communications.apps.CommunicationsConfig",
     "apps.rbac.apps.RbacConfig",
     "apps.security.apps.SecurityConfig",
+    "apps.locations.apps.LocationsConfig",
     "apps.references.apps.ReferencesConfig",
     "apps.configuration.apps.ConfigurationConfig",
     "apps.system_settings.apps.SystemSettingsConfig",
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     "apps.dashboard.apps.DashboardConfig",
     "apps.accessibility.apps.AccessibilityConfig",
     "apps.performance.apps.PerformanceConfig",
+    "apps.qa.apps.QaConfig",
 ]
 
 MIDDLEWARE = [

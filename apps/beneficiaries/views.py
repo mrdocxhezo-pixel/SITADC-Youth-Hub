@@ -328,7 +328,10 @@ class BeneficiaryDirectoryView(BeneficiaryPermissionMixin, ListView):
             queryset = queryset.filter(status=status)
         region = self.request.GET.get("region", "").strip()
         if region:
-            queryset = queryset.filter(province_or_region__icontains=region)
+            queryset = queryset.filter(
+                Q(province_or_region__icontains=region)
+                | Q(province_location__name__icontains=region)
+            )
         category = self.request.GET.get("category", "").strip()
         if category:
             queryset = queryset.filter(category__code=category)

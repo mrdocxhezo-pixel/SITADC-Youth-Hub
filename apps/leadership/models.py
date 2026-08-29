@@ -150,6 +150,33 @@ class LeadershipProfile(
         verbose_name=_("Directorate"),
         help_text=_("The directorate the leader reports into, where applicable."),
     )
+    region = models.ForeignKey(
+        OrganizationUnit,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="leadership_profiles_in_region",
+        verbose_name=_("Region"),
+        help_text=_("The region the leader is assigned to, where applicable."),
+    )
+    district = models.ForeignKey(
+        OrganizationUnit,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="leadership_profiles_in_district",
+        verbose_name=_("District"),
+        help_text=_("The district the leader is assigned to, where applicable."),
+    )
+    community = models.ForeignKey(
+        OrganizationUnit,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="leadership_profiles_in_community",
+        verbose_name=_("Community"),
+        help_text=_("The community the leader is assigned to, where applicable."),
+    )
     supervisor = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
@@ -158,6 +185,15 @@ class LeadershipProfile(
         related_name="direct_reports",
         verbose_name=_("Immediate supervisor"),
         help_text=_("The leader this record reports to."),
+    )
+    reporting_line = models.JSONField(
+        _("Reporting line"),
+        default=list,
+        blank=True,
+        help_text=_(
+            "JSON array representing the full reporting chain "
+            "from top to this leader."
+        ),
     )
 
     appointment_date = models.DateField(_("Appointment date"), null=True, blank=True)
@@ -217,8 +253,42 @@ class LeadershipProfile(
         validate_supervisor_not_self(self, self.supervisor)
 
     def save(self, *args, **kwargs) -> None:
+        generated_reference = None
+        if not self.reference_number:
+            # System-generated identifier: issue through the centralized
+            # numbering service before validation requires the value.  This
+            # keeps every creation path (web form, Django admin, shell)
+            # consistent without ever regenerating an established reference.
+            from .services import issue_leadership_reference
+
+            # Use created_by if available, otherwise fall back to a system user
+            # to ensure reference generation works even when saved via forms
+            # without explicit created_by (e.g., Django admin, ModelForm).
+            created_by_user = self.created_by
+            if created_by_user is None:
+                from django.contrib.auth import get_user_model
+
+                User = get_user_model()
+                # Try to get a superuser as fallback for reference generation
+                created_by_user = User.objects.filter(is_superuser=True).first()
+
+            self.reference_number = issue_leadership_reference(
+                created_by_user,
+                "leader",
+                notes="Leadership profile registration.",
+            )
+            generated_reference = self.reference_number
         self.full_clean()
         super().save(*args, **kwargs)
+        if generated_reference:
+            from .services import confirm_leadership_reference
+
+            confirm_leadership_reference(
+                self.created_by,
+                generated_reference,
+                self.pk,
+                notes="Profile registration.",
+            )
 
     @property
     def current_appointment(self):
@@ -355,8 +425,38 @@ class LeadershipAppointment(
             )
 
     def save(self, *args, **kwargs) -> None:
+        generated_reference = None
+        if not self.reference_number:
+            from .services import issue_leadership_reference
+
+            # Use created_by if available, otherwise fall back to a system user
+            # to ensure reference generation works even when saved via forms
+            # without explicit created_by (e.g., Django admin, ModelForm).
+            created_by_user = self.created_by
+            if created_by_user is None:
+                from django.contrib.auth import get_user_model
+
+                User = get_user_model()
+                # Try to get a superuser as fallback for reference generation
+                created_by_user = User.objects.filter(is_superuser=True).first()
+
+            self.reference_number = issue_leadership_reference(
+                created_by_user,
+                "appointment",
+                notes="Leadership appointment.",
+            )
+            generated_reference = self.reference_number
         self.full_clean()
         super().save(*args, **kwargs)
+        if generated_reference:
+            from .services import confirm_leadership_reference
+
+            confirm_leadership_reference(
+                self.created_by,
+                generated_reference,
+                self.pk,
+                notes="Leadership appointment created.",
+            )
 
     def delete(self, *args, **kwargs) -> NoReturn:
         raise ValidationError(

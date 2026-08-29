@@ -1,5 +1,6 @@
 {% extends "layouts/dashboard.html" %}
 {% load i18n %}
+{% load static %}
 {% block title %}{% trans "User Profile" %} - SITADC Youth Hub{% endblock %}
 {% block dashboard_content %}
     <div class="row">
@@ -106,15 +107,8 @@
                             {{ form.alternative_contact_number }}
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-12 col-md-6 mb-3 mb-md-0">
-                            <label for="{{ form.province.id_for_label }}" class="form-label">{% trans "Province" %}</label>
-                            {{ form.province }}
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label for="{{ form.district.id_for_label }}" class="form-label">{% trans "District" %}</label>
-                            {{ form.district }}
-                        </div>
+                    <div class="row mb-4">
+                        {% include "locations/partials/geographic_dropdowns.html" with show_country=False prefix="profile" show_province=True show_district=True show_constituency=False show_ward=False province_field="province_location" district_field="district_location" %}
                     </div>
                     <div class="mb-3">
                         <label for="{{ form.residential_address.id_for_label }}" class="form-label">{% trans "Residential Address" %}</label>
@@ -142,3 +136,8 @@
         </div>
     </div>
 {% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="{% static 'locations/js/geographic_dropdowns.js' %}"></script>
+{% endblock extra_js %}

@@ -66,7 +66,7 @@ class LeadershipProfileModelTest(TestCase):
         profile = LeadershipProfile.objects.create(
             user=self.user,
             reference_number="SITADC-LDR-2026-00002",
-            leadership_level=LeadershipLevel.REGIONAL,
+            leadership_level=LeadershipLevel.REGIONAL_COORDINATOR,
             status=LeadershipStatus.ACTIVE,
         )
         self.assertIn("SITADC-LDR-2026-00002", str(profile))
@@ -76,7 +76,7 @@ class LeadershipProfileModelTest(TestCase):
         LeadershipProfile.objects.create(
             user=self.user,
             reference_number="SITADC-LDR-2026-00003",
-            leadership_level=LeadershipLevel.TEAM,
+            leadership_level=LeadershipLevel.TEAM_LEADER,
             status=LeadershipStatus.ACTIVE,
         )
         user2 = User.objects.create_user(
@@ -87,7 +87,7 @@ class LeadershipProfileModelTest(TestCase):
             LeadershipProfile.objects.create(
                 user=user2,
                 reference_number="SITADC-LDR-2026-00003",
-                leadership_level=LeadershipLevel.TEAM,
+                leadership_level=LeadershipLevel.TEAM_LEADER,
                 status=LeadershipStatus.ACTIVE,
             )
 
@@ -96,14 +96,14 @@ class LeadershipProfileModelTest(TestCase):
         LeadershipProfile.objects.create(
             user=self.user,
             reference_number="SITADC-LDR-2026-00004",
-            leadership_level=LeadershipLevel.COMMUNITY,
+            leadership_level=LeadershipLevel.COMMUNITY_COORDINATOR,
             status=LeadershipStatus.ACTIVE,
         )
         with self.assertRaises(ValidationError):
             LeadershipProfile.objects.create(
                 user=self.user,
                 reference_number="SITADC-LDR-2026-00005",
-                leadership_level=LeadershipLevel.TEAM,
+                leadership_level=LeadershipLevel.TEAM_LEADER,
                 status=LeadershipStatus.ACTIVE,
             )
 
@@ -221,7 +221,7 @@ class LeadershipAttendanceModelTest(TestCase):
         self.profile = LeadershipProfile.objects.create(
             user=self.user,
             reference_number="SITADC-LDR-2026-00020",
-            leadership_level=LeadershipLevel.TEAM,
+            leadership_level=LeadershipLevel.TEAM_LEADER,
             status=LeadershipStatus.ACTIVE,
         )
 
@@ -253,7 +253,7 @@ class PerformanceReviewModelTest(TestCase):
         self.profile = LeadershipProfile.objects.create(
             user=self.user,
             reference_number="SITADC-LDR-2026-00030",
-            leadership_level=LeadershipLevel.DEPARTMENT,
+            leadership_level=LeadershipLevel.TEAM_LEADER,
             status=LeadershipStatus.ACTIVE,
         )
         self.reviewer = LeadershipProfile.objects.create(
@@ -298,7 +298,7 @@ class MentorshipModelTest(TestCase):
         self.mentee = LeadershipProfile.objects.create(
             user=self.mentee_user,
             reference_number="SITADC-LDR-2026-00041",
-            leadership_level=LeadershipLevel.TEAM,
+            leadership_level=LeadershipLevel.TEAM_LEADER,
             status=LeadershipStatus.ACTIVE,
         )
 

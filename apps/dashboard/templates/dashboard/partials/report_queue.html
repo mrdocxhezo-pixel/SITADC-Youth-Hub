@@ -1,0 +1,37 @@
+{# Reusable work-queue card: title, icon, items, header_url, optional danger/alert flags #}
+<div class="col-12 col-md-6 col-xl-3">
+    <div class="card border-0 h-100{% if danger %} border-start border-danger border-4{% endif %}">
+        <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+            <h2 class="h6 fw-bold mb-0">
+                <i class="bi {{ icon }} me-1 text-primary-brand" aria-hidden="true"></i>{{ title }}
+                {% if items %}<span class="badge {% if danger %}bg-danger{% else %}bg-secondary{% endif %}">{{ items|length }}</span>{% endif %}
+            </h2>
+            <a href="{% url header_url %}" class="small">View all</a>
+        </div>
+        <div class="card-body pt-0">
+            {% if items %}
+                <ul class="list-unstyled mb-0">
+                    {% for item in items %}
+                        <li class="py-2 border-bottom {% if forloop.last %}border-bottom-0{% endif %}">
+                            <a href="{% url 'report_instances:detail' item.id %}" class="text-decoration-none d-block text-truncate" title="{{ item.title }}">
+                                {{ item.title|truncatechars:44 }}
+                            </a>
+                            <p class="mb-0 text-muted" style="font-size:.75rem;">
+                                <span class="badge bg-light text-dark border">{{ item.status }}</span>
+                                {% if item.due_date_display %}Due {{ item.due_date_display }}{% endif %}
+                                {% if item.days_overdue %}
+                                    <span class="text-danger fw-semibold">&middot; {{ item.days_overdue }}d overdue</span>
+                                {% endif %}
+                            </p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state py-3">
+                    <div class="empty-state-icon"><i class="bi bi-check2-circle"></i></div>
+                    <p class="text-muted small mb-0">{{ empty_text }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

@@ -4,57 +4,424 @@
 {% block title %}Dashboard - SITADC Youth Hub{% endblock %}
 
 {% block dashboard_content %}
-{% include 'components/page_header.html' with title='Dashboard' subtitle='Overview of your organizational activities' %}
+{% include 'components/page_header.html' with title='Dashboard' subtitle='Your central command center' %}
 
-<!-- Notification Bell Button -->
-<div class="d-flex justify-content-end mb-3">
-    <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="notification-toggle">
-        <i class="bi bi-bell me-1"></i>
-        <span id="notification-badge" class="badge bg-danger rounded-pill ms-1" style="display: none;">0</span>
-    </button>
-    <a href="{% url 'notifications:dashboard' %}" class="btn btn-outline-primary btn-sm">
-        <i class="bi bi-list-task me-1"></i> View All Notifications
-    </a>
+<!-- Toolbar: search, refresh, personalize -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <form action="{% url 'search:home' %}" method="get" class="d-flex" role="search" aria-label="Global search">
+        <input type="search" class="form-control form-control-sm me-2" name="q" placeholder="Search reports, people, documents..."
+               aria-label="Search query" style="min-width: 220px;">
+        <button class="btn btn-sm btn-outline-primary-brand" type="submit">
+            <i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Search</span>
+        </button>
+    </form>
+    <div class="d-flex gap-2">
+        <a href="{% url 'dashboard:home' %}" class="btn btn-sm btn-outline-secondary"
+           title="Refresh dashboard data">
+            <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i> Refresh
+        </a>
+        <a href="{% url 'dashboard:personalize' %}" class="btn btn-sm btn-outline-primary-brand">
+            <i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize
+        </a>
+    </div>
 </div>
 
-<!-- Welcome Section -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card border-0">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <img src="{% static 'images/app_logo.png' %}" alt="SITADC Youth Hub Logo" class="img-fluid" style="width: 40px; height: 40px;">
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h5 class="mb-1">Welcome back, {{ user.get_full_name|default:user.username }}!</h5>
-                        <p class="mb-0 text-muted">
-                            {% if user_profile %}
-                                {{ user_profile.position|default:'--' }} | 
-                                {{ user_profile.organizational_unit|default:'--' }}
-                            {% else %}
-                                -- | --
-                            {% endif %}
-                        </p>
-                    </div>
+{% if refresh_interval %}
+<script>
+    window.setTimeout(function () {
+        var active = document.activeElement;
+        if (!active || active.tagName !== 'INPUT') { window.location.reload(); }
+    }, {{ refresh_interval }}000);
+</script>
+{% endif %}
+
+<!-- Announcements -->
+{% if announcements %}
+    {% for announcement in announcements %}
+        <div class="alert alert-warning d-flex align-items-start gap-2 {% if announcement.priority == 'CRITICAL' %}alert-danger{% endif %}" role="status">
+            <i class="bi bi-megaphone fs-5" aria-hidden="true"></i>
+            <div class="flex-grow-1">
+                <strong>{{ announcement.title }}</strong>
+                <span class="badge bg-secondary ms-1">{{ announcement.get_priority_display|default:announcement.priority }}</span>
+                <p class="mb-0 small">{{ announcement.message|truncatewords:40 }}</p>
+            </div>
+            <small class="text-muted text-nowrap">{{ announcement.publish_at|date:"M d" }}</small>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Welcome + Profile -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="flex-shrink-0">
+                    {% if welcome.profile_photo_url %}
+                        <img src="{{ welcome.profile_photo_url }}" alt="{{ welcome.display_name }}"
+                             class="rounded-circle object-fit-cover" width="56" height="56">
+                    {% else %}
+                        <img src="{% static 'images/app_logo.png' %}" alt=""
+                             class="img-fluid rounded-circle" style="width: 56px; height: 56px;">
+                    {% endif %}
                 </div>
+                <div class="flex-grow-1 ms-3">
+                    <h2 class="h5 mb-1">{{ welcome.greeting }}, {{ welcome.display_name }}!</h2>
+                    <p class="mb-1 text-muted">
+                        {{ welcome.position_title|default:'--' }} &middot; {{ welcome.unit_name|default:'--' }}
+                    </p>
+                    <p class="mb-0 small text-muted">
+                        <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ welcome.today|date:"l, F j, Y" }}
+                        <span class="mx-2">&middot;</span>
+                        <i class="bi bi-clock-history me-1" aria-hidden="true"></i>Reporting period:
+                        <strong>{{ current_period_label|default:welcome.reporting_period }}</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h6 fw-bold mb-0">My Profile</h2>
+                    <a href="{% url 'core:profile' %}" class="btn btn-sm btn-outline-primary-brand py-0">Open</a>
+                </div>
+                <p class="mb-1 small">
+                    <i class="bi bi-patch-check me-1 text-primary-brand" aria-hidden="true"></i>
+                    {% if profile_summary.roles %}{{ profile_summary.roles|join:", " }}{% else %}No roles assigned{% endif %}
+                </p>
+                <p class="mb-1 small text-muted">
+                    <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ user.email }}
+                    {% if profile_summary.phone_number %}<span class="ms-2"><i class="bi bi-telephone me-1" aria-hidden="true"></i>{{ profile_summary.phone_number }}</span>{% endif %}
+                </p>
+                <p class="mb-0 small text-muted">
+                    <i class="bi bi-person-badge me-1" aria-hidden="true"></i>Membership:
+                    {{ profile_summary.member_status|default:"N/A" }}
+                </p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Stats Row -->
-<div class="row g-3 mb-4" id="stats-row">
-    <!-- Stats will be loaded here via JavaScript -->
+<!-- Organizational context -->
+{% if org_context.unit_name or org_context.team_name or org_context.supervisor or org_context.programs or org_context.projects %}
+    <div class="card border-0 mb-4">
+        <div class="card-body py-2">
+            <ul class="list-inline mb-0 small">
+                {% if org_context.unit_name %}<li class="list-inline-item me-3"><i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>Unit: <strong>{{ org_context.unit_name }}</strong></li>{% endif %}
+                {% if org_context.team_name %}<li class="list-inline-item me-3"><i class="bi bi-people me-1" aria-hidden="true"></i>Team: <strong>{{ org_context.team_name }}</strong></li>{% endif %}
+                {% if org_context.supervisor %}<li class="list-inline-item me-3"><i class="bi bi-person-check me-1" aria-hidden="true"></i>Supervisor: <strong>{{ org_context.supervisor }}</strong></li>{% endif %}
+                {% if org_context.programs_count %}
+                    <li class="list-inline-item me-3"><i class="bi bi-kanban me-1" aria-hidden="true"></i>
+                        My Programs: <strong>{{ org_context.programs_count }}</strong>
+                        {% for program in org_context.programs %}<span class="badge bg-light text-dark border">{{ program.title|truncatechars:24 }}</span>{% endfor %}
+                    </li>
+                {% endif %}
+                {% if org_context.projects_count %}
+                    <li class="list-inline-item"><i class="bi bi-diagram-2 me-1" aria-hidden="true"></i>
+                        My Projects: <strong>{{ org_context.projects_count }}</strong>
+                        {% for project in org_context.projects %}<span class="badge bg-light text-dark border">{{ project.title|truncatechars:24 }}</span>{% endfor %}
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Reporting period filter -->
+<div class="d-flex align-items-center gap-2 mb-3" role="group" aria-label="Reporting period filter">
+    <label for="period-select" class="small text-muted mb-0">
+        <i class="bi bi-funnel me-1" aria-hidden="true"></i>Period:
+    </label>
+    <select id="period-select" class="form-select form-select-sm w-auto"
+            onchange="window.location.href='{% url 'dashboard:home' %}?period='+this.value;">
+        {% for value, label in period_choices %}
+            <option value="{{ value }}" {% if value == current_period %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
 </div>
 
-<!-- Main Content Area -->
-<div class="row g-3" id="main-content">
-    <!-- Widgets will be loaded here via JavaScript -->
+<!-- KPI Statistics Row -->
+<h2 class="visually-hidden">Key performance indicators</h2>
+<div class="row g-3 mb-4">
+    {% for card in stat_cards %}
+        <div class="col-6 col-xl-3">
+            <a href="{% url card.url_name %}" class="text-decoration-none" aria-label="{{ card.title }}: {{ card.value }}">
+                <div class="card h-100 border-0 dashboard-stat-card{% if card.is_alert %} border-start border-danger border-4{% endif %}">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="rounded-3 p-3 bg-secondary-subtle">
+                                <i class="bi {{ card.icon }} fs-4 text-primary-brand" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="mb-0 text-muted small">{{ card.title }}</p>
+                            <p class="mb-0 fs-4 fw-bold{% if card.is_alert %} text-danger{% endif %}">{{ card.value }}</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    {% empty %}
+        <div class="col-12"><div class="alert alert-info mb-0">No statistics are available for your role yet.</div></div>
+    {% endfor %}
+</div>
+
+<!-- Work Queues -->
+<h2 class="visually-hidden">Work queues</h2>
+<div class="row g-3 mb-4">
+    {% include 'dashboard/partials/report_queue.html' with title='Reports Due' icon='bi-hourglass-split' items=reports_due queue_id='due' empty_text='Nothing due in the next 14 days.' header_url='report_instances:list' %}
+    {% include 'dashboard/partials/report_queue.html' with title='My Drafts' icon='bi-pencil-square' items=my_drafts queue_id='drafts' empty_text='You have no draft reports.' header_url='report_instances:list' %}
+    {% include 'dashboard/partials/report_queue.html' with title='Pending Approvals' icon='bi-check2-square' items=pending_approvals queue_id='approvals' empty_text='No reports awaiting your decision.' header_url='reviews:dashboard' alert=is_alert %}
+    {% include 'dashboard/partials/report_queue.html' with title='Overdue Reports' icon='bi-exclamation-octagon' items=overdue_reports queue_id='overdue' empty_text='No overdue reports.' header_url='report_instances:list' danger=True %}
+</div>
+
+<!-- Performance widgets -->
+<h2 class="visually-hidden">Performance overview</h2>
+<div class="row g-3 mb-4">
+    {% if program_progress %}
+        <div class="col-12 col-lg-7">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+                    <h2 class="h6 fw-bold mb-0">Program Progress</h2>
+                    <a href="{% url 'programs:dashboard' %}" class="small">View all</a>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead><tr><th scope="col">Program</th><th scope="col">Projects</th><th scope="col" style="min-width:130px;">Completion</th><th scope="col">Budget</th></tr></thead>
+                            <tbody>
+                                {% for program in program_progress %}
+                                    <tr>
+                                        <td class="text-truncate" style="max-width:180px;" title="{{ program.title }}">{{ program.title }}</td>
+                                        <td class="text-nowrap">{{ program.projects_completed }}/{{ program.projects_total }}</td>
+                                        <td>
+                                            <div class="progress" role="progressbar" aria-label="{{ program.title }} completion" aria-valuenow="{{ program.avg_completion }}" aria-valuemin="0" aria-valuemax="100" style="height:6px;">
+                                                <div class="progress-bar bg-primary-brand" style="width: {{ program.avg_completion }}%;"></div>
+                                            </div>
+                                            <small class="text-muted">{{ program.avg_completion }}%</small>
+                                        </td>
+                                        <td class="text-nowrap">{{ program.budget_utilization }}%</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if project_status %}
+        <div class="col-12 col-md-6 {% if program_progress %}col-lg-5{% endif %}">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+                    <h2 class="h6 fw-bold mb-0">Project Status</h2>
+                    <a href="{% url 'programs:dashboard' %}" class="small">View all</a>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="row text-center g-2">
+                        <div class="col-4"><p class="fs-4 fw-bold mb-0 text-primary-brand">{{ project_status.active }}</p><p class="small text-muted mb-0">Active</p></div>
+                        <div class="col-4"><p class="fs-4 fw-bold mb-0 text-danger">{{ project_status.delayed }}</p><p class="small text-muted mb-0">Delayed</p></div>
+                        <div class="col-4"><p class="fs-4 fw-bold mb-0 text-warning">{{ project_status.high_risk }}</p><p class="small text-muted mb-0">High Risk</p></div>
+                        <div class="col-4"><p class="fs-4 fw-bold mb-0">{{ project_status.upcoming_milestones }}</p><p class="small text-muted mb-0">Upcoming Milestones</p></div>
+                        <div class="col-4"><p class="fs-4 fw-bold mb-0">{{ project_status.completed }}</p><p class="small text-muted mb-0">Completed</p></div>
+                        <div class="col-4"><p class="fs-4 fw-bold mb-0">{{ project_status.avg_completion }}%</p><p class="small text-muted mb-0">Avg Completion</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if document_activity %}
+        <div class="col-12 {% if program_progress or project_status %}col-lg-12{% else %}col-12{% endif %}">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+                    <h2 class="h6 fw-bold mb-0">Document Activity</h2>
+                    <a href="{% url 'documents:dashboard' %}" class="small">View all</a>
+                </div>
+                <div class="card-body pt-0">
+                    <p class="small mb-2">
+                        <span class="badge bg-warning text-dark me-1">{{ document_activity.pending_approval }}</span>awaiting approval
+                        <span class="badge bg-danger ms-3 me-1">{{ document_activity.expiring_soon }}</span>expiring within 30 days
+                    </p>
+                    <ul class="list-unstyled mb-0">
+                        {% for document in document_activity.recent %}
+                            <li class="py-1 border-bottom {% if forloop.last %}border-bottom-0{% endif %}">
+                                <a href="{% url 'documents:detail' document.id %}" class="text-decoration-none stretched-link-none">
+                                    <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>{{ document.title|truncatechars:60 }}
+                                </a>
+                                <span class="text-muted small float-end">{{ document.updated_at|timesince }} ago</span>
+                            </li>
+                        {% empty %}
+                            <li class="text-muted small">No documents stored yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Audit activity (administrators only) -->
+{% if audit_activity %}
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card border-0">
+                <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+                    <h2 class="h6 fw-bold mb-0">
+                        Audit Activity
+                        <span class="badge bg-danger ms-1">{{ audit_activity.failed_logins_7d }}</span>
+                        <small class="fw-normal text-muted">failed logins (7 days)</small>
+                    </h2>
+                    <a href="{% url 'security:dashboard' %}" class="small">Security Center</a>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th scope="col">Username</th><th scope="col">IP Address</th><th scope="col">Outcome</th><th scope="col">When</th></tr></thead>
+                            <tbody>
+                                {% for attempt in audit_activity.recent_failures %}
+                                    <tr>
+                                        <td>{{ attempt.username }}</td>
+                                        <td><code>{{ attempt.ip_address }}</code></td>
+                                        <td><span class="badge bg-danger-subtle text-danger">{{ attempt.outcome }}</span></td>
+                                        <td class="text-muted small">{{ attempt.created_at|timesince }} ago</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-muted small">No failed login attempts recorded.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Configured widgets: quick actions / notifications / activity feed -->
+<h2 class="visually-hidden">Workspace widgets</h2>
+<div class="row g-3">
+    {% for widget in main_widgets %}
+        {% if widget.widget_type != 'activity' %}
+            <div class="{{ widget.span_class }}">
+                <div class="card h-100 border-0">
+                    <div class="card-header bg-white border-0 pt-3">
+                        <h2 class="h6 fw-bold mb-0">{{ widget.title }}</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if widget.widget_type == 'quick_actions' %}
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for action in widget.payload.actions %}
+                                    <a href="{% url action.url_name %}" class="btn btn-outline-primary-brand btn-sm">
+                                        <i class="bi {{ action.icon }} me-1" aria-hidden="true"></i> {{ action.label }}
+                                    </a>
+                                {% empty %}
+                                    <p class="text-muted small mb-0">No quick actions available for your role.</p>
+                                {% endfor %}
+                            </div>
+
+                        {% elif widget.widget_type == 'notification' %}
+                            <div class="row text-center g-2 mb-2">
+                                <div class="col-6 border-end">
+                                    <p class="fs-3 fw-bold mb-0 text-primary-brand">{{ widget.payload.unread }}</p>
+                                    <p class="text-muted small mb-0">Unread</p>
+                                </div>
+                                <div class="col-6">
+                                    <p class="fs-3 fw-bold mb-0 text-warning">{{ widget.payload.action_required }}</p>
+                                    <p class="text-muted small mb-0">Action Required</p>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled mb-2 small">
+                                {% for notification in recent_notifications %}
+                                    <li class="py-1 border-bottom {% if forloop.last %}border-bottom-0{% endif %} {% if not notification.read %}fw-semibold{% endif %}">
+                                        <i class="bi bi-bell me-1 text-muted" aria-hidden="true"></i>{{ notification.title|truncatechars:48 }}
+                                        <span class="text-muted d-block ps-4" style="font-size:.75rem;">{{ notification.created_at|timesince }} ago</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <div class="text-center">
+                                <a href="{% url 'notifications:dashboard' %}" class="btn btn-sm btn-outline-primary">Notification Center</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <!-- Upcoming Events (calendar integration) -->
+    {% if upcoming_events %}
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 h-100">
+                <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+                    <h2 class="h6 fw-bold mb-0">Upcoming Events</h2>
+                    <a href="{% url 'meetings:dashboard' %}" class="small">Calendar</a>
+                </div>
+                <div class="card-body pt-0">
+                    <ul class="list-unstyled mb-0">
+                        {% for event in upcoming_events %}
+                            <li class="d-flex align-items-start py-2 border-bottom {% if forloop.last %}border-bottom-0{% endif %}">
+                                <div class="rounded-3 p-2 bg-secondary-subtle me-3 flex-shrink-0">
+                                    <i class="bi {{ event.icon }}" aria-hidden="true"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <a href="{% url event.url_name event.url_id %}" class="text-decoration-none">{{ event.title|truncatechars:52 }}</a>
+                                    <p class="mb-0 text-muted" style="font-size:.75rem;">
+                                        <span class="badge bg-light text-dark border me-1">{{ event.kind }}</span>
+                                        {{ event.start_at|date:"M d, H:i" }}
+                                    </p>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Recent Activity Feed -->
+    {% for widget in main_widgets %}
+        {% if widget.widget_type == 'activity' %}
+            <div class="col-12 {% if upcoming_events %}col-lg-6{% else %}col-lg-12{% endif %}">
+                <div class="card h-100 border-0">
+                    <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+                        <h2 class="h6 fw-bold mb-0">{{ widget.title }}</h2>
+                        <a href="{% url 'dashboard:activity_log' %}" class="small"
+                           aria-label="Read more recent activity">Read more <i class="bi bi-arrow-right-short" aria-hidden="true"></i></a>
+                    </div>
+                    <div class="card-body">
+                        {% if widget.payload.entries %}
+                            <ul class="list-unstyled mb-0 dashboard-activity-feed">
+                                {% for entry in widget.payload.entries %}
+                                    <li class="d-flex align-items-start py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                                        <div class="rounded-3 p-2 bg-secondary-subtle me-3 flex-shrink-0">
+                                            <i class="bi {{ entry.icon }} {{ entry.color }}" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-0 small">
+                                                <span class="fw-semibold">{{ entry.actor }}</span>
+                                                {{ entry.action|lower }}
+                                                {% if entry.entity_type %}<span class="text-muted">&middot; {{ entry.entity_type }}</span>{% endif %}
+                                                <span class="badge bg-light text-dark border ms-1">{{ entry.module }}</span>
+                                            </p>
+                                            <p class="mb-0 text-muted" style="font-size: .75rem;">{{ entry.created_at|timesince }} ago</p>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <div class="empty-state py-4">
+                                <div class="empty-state-icon"><i class="bi bi-clock-history"></i></div>
+                                <h3 class="h6 fw-semibold mb-1">No recent activity</h3>
+                                <p class="text-muted small mb-0">Activity will appear here once records are updated.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
 </div>
 {% endblock %}
-
-{% block extra_js %}
-{{ block.super }}
-<script src="{% static 'dashboard/js/dashboard.js' %}"></script>
-{% endblock extra_js %}

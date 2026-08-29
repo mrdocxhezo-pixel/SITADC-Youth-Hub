@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% load report_instance_tags %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>Review Before Submission</h2>
+          <p class="text-muted mb-0">
+            <code>{{ report.reference_number }}</code> &middot;
+            {{ report.template.title }}
+          </p>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{% url 'report_instances:detail' report.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+          </a>
+          <a href="{% url 'report_instances:enter_data' report.pk %}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Edit Report
+          </a>
+          {% if report.status in "DRAFT IN_PROGRESS READY_FOR_SUBMISSION RETURNED_FOR_CORRECTION"|split:" " %}
+          <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#submitConfirmModal">
+            <i class="bi bi-send"></i> Submit for Review
+          </button>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Report Header Card -->
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">{{ report.title }}</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <table class="table table-borderless mb-0">
+                <tr><td class="fw-bold">Reference:</td><td>{{ report.reference_number }}</td></tr>
+                <tr><td class="fw-bold">Template:</td><td>{{ report.template.title }}</td></tr>
+                <tr><td class="fw-bold">Category:</td><td>{{ report.category.name|default:"-" }}</td></tr>
+                <tr><td class="fw-bold">Status:</td><td><span class="badge bg-primary">{{ report.get_status_display }}</span></td></tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <table class="table table-borderless mb-0">
+                <tr><td class="fw-bold">Owner:</td><td>{{ report.owner.get_full_name|default:report.owner.username }}</td></tr>
+                <tr><td class="fw-bold">Department:</td><td>{{ report.department|default:"-" }}</td></tr>
+                <tr><td class="fw-bold">Due Date:</td><td>{{ report.due_date|date:"Y-m-d"|default:"-" }}</td></tr>
+                <tr><td class="fw-bold">Version:</td><td>{{ report.version_number }}</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Completion Status Card -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Completion Status</h5>
+          <span class="badge {% if required_filled == required_fields and required_fields > 0 %}bg-success{% elif required_filled > 0 %}bg-warning{% else %}bg-danger{% endif %}">
+            {{ required_filled }} / {{ required_fields }} Required Fields
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="row text-center mb-3">
+            <div class="col-md-3">
+              <h4>{{ total_fields }}</h4>
+              <small class="text-muted">Total Fields</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="text-success">{{ filled_fields }}</h4>
+              <small class="text-muted">Filled</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="text-danger">{{ required_fields }}</h4>
+              <small class="text-muted">Required</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="{% if required_filled == required_fields and required_fields > 0 %}text-success{% else %}text-danger{% endif %}">{{ required_filled }}</h4>
+              <small class="text-muted">Required Filled</small>
+            </div>
+          </div>
+          <div class="progress mb-3" style="height: 24px;">
+            <div class="progress-bar {% if filled_fields == total_fields %}bg-success{% else %}bg-primary{% endif %}" 
+                 role="progressbar" 
+                 style="width: {% if total_fields > 0 %}{{ filled_fields|floatformat:0|div:total_fields|mul:100 }}{% else %}0{% endif %}%"></div>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">0% Complete</small>
+            <small class="text-muted">{% if total_fields > 0 %}{{ filled_fields|floatformat:0|div:total_fields|mul:100 }}{% else %}0{% endif %}%</small>
+            <small class="text-muted">100% Complete</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Validation Status -->
+      {% if validation_result %}
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Validation Status</h5>
+          {% if validation_result.is_valid %}
+          <span class="badge bg-success">Passed</span>
+          {% else %}
+          <span class="badge bg-danger">Failed</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-3">
+              <h4>{{ validation_result.total_rules }}</h4>
+              <small class="text-muted">Total Rules</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="text-success">{{ validation_result.passed_rules }}</h4>
+              <small class="text-muted">Passed</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="text-danger">{{ validation_result.failed_rules }}</h4>
+              <small class="text-muted">Failed</small>
+            </div>
+            <div class="col-md-3">
+              <h4>{{ validation_result.warnings|length }}</h4>
+              <small class="text-muted">Warnings</small>
+            </div>
+          </div>
+          {% if validation_result.errors %}
+          <hr>
+          <h6>Validation Errors:</h6>
+          <ul class="list-group list-group-flush">
+            {% for error in validation_result.errors %}
+            <li class="list-group-item text-danger">
+              <i class="bi bi-exclamation-circle me-2"></i>
+              {% if error.field %}<strong>{{ error.field }}:</strong> {% endif %}
+              {% if error.message %}{{ error.message }}{% else %}{{ error }}{% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Section Responses -->
+      {% for sr in section_responses %}
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{{ sr.section.name }}</h5>
+          <span class="badge {% if sr.is_complete %}bg-success{% else %}bg-warning{% endif %}">
+            {% if sr.is_complete %}Complete{% else %}Incomplete{% endif %}
+          </span>
+        </div>
+        <div class="card-body">
+          {% if sr.data %}
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for key, value in sr.data.items %}
+              <tr>
+                <td>{{ key }}</td>
+                <td>{{ value|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-muted">No data entered for this section.</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+
+      <!-- Field Responses (outside sections) -->
+      {% if field_responses %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Additional Field Responses</h5>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for fr in field_responses %}
+              <tr>
+                <td>{{ fr.field.label }}</td>
+                <td>{{ fr.value|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Evidence -->
+      {% if evidence %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Evidence</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for e in evidence %}
+            <div class="col-md-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6>{{ e.get_evidence_type_display }}</h6>
+                  <p class="mb-1">{{ e.original_filename }}</p>
+                  {% if e.description %}
+                  <p class="text-muted small">{{ e.description }}</p>
+                  {% endif %}
+                  {% if e.is_verified %}
+                  <span class="badge bg-success">Verified</span>
+                  {% else %}
+                  <span class="badge bg-warning">Pending</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Attachments -->
+      {% if attachments %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Attachments</h5>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Size</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in attachments %}
+              <tr>
+                <td>{{ a.original_filename }}</td>
+                <td>{{ a.file_size|filesizeformat }}</td>
+                <td>{{ a.description|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Notes -->
+      {% if report.notes %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Notes</h5>
+        </div>
+        <div class="card-body">
+          <p>{{ report.notes }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Submit Confirmation Modal -->
+      <div class="modal fade" id="submitConfirmModal" tabindex="-1" aria-labelledby="submitConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+              <h5 class="modal-title" id="submitConfirmModalLabel"><i class="bi bi-send-check me-2"></i>Submit Report for Review</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p class="mb-3">Are you sure you want to submit <strong>{{ report.reference_number }}</strong> for review?</p>
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>After submission:</strong>
+                <ul class="mb-0 mt-2">
+                  <li>The report will become read-only for you (the preparer).</li>
+                  <li>The report will enter the review workflow.</li>
+                  <li>Assigned reviewers will be notified.</li>
+                  <li>Any changes will require the report to be returned for correction.</li>
+                </ul>
+              </div>
+              <p class="mb-0">Please add any submission notes for the reviewer:</p>
+              <textarea name="notes" class="form-control mt-2" rows="3" placeholder="Optional: Add notes for the reviewer..."></textarea>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+              <form method="post" action="{% url 'report_instances:submit' report.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="notes" id="submitNotesInput" value="">
+                <button type="button" class="btn btn-success" onclick="submitWithNotes()">
+                  <i class="bi bi-send"></i> Confirm Submit
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="text-muted text-center mt-4 mb-4">
+        <small>Report prepared by {{ report.owner.get_full_name|default:report.owner.username }} &middot; {{ report.created_at|date:"Y-m-d H:i" }}</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function submitWithNotes() {
+  const notes = document.querySelector('#submitConfirmModal textarea[name="notes"]').value;
+  document.getElementById('submitNotesInput').value = notes;
+  document.querySelector('#submitConfirmModal form').submit();
+}
+</script>
+{% endblock %}

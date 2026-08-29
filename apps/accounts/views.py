@@ -41,11 +41,9 @@ def login_view(request):
     User login view with Remember Me support.
     """
     if request.user.is_authenticated:
-        return redirect("core:dashboard_preview")
+        return redirect("dashboard:home")
 
-    next_url = (
-        request.GET.get("next") or request.POST.get("next") or "core:dashboard_preview"
-    )
+    next_url = request.GET.get("next") or request.POST.get("next") or "dashboard:home"
 
     if request.method == "POST":
         form = LoginForm(request.POST)

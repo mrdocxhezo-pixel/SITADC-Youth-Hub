@@ -112,6 +112,22 @@ class UserProfile(UUIDModel, TimeStampedModel):
     residential_address = models.TextField(_("Residential address"), blank=True)
     province = models.CharField(_("Province"), max_length=100, blank=True)
     district = models.CharField(_("District"), max_length=100, blank=True)
+    province_location = models.ForeignKey(
+        "locations.Province",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="user_profiles",
+        verbose_name=_("Province"),
+    )
+    district_location = models.ForeignKey(
+        "locations.District",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="user_profiles",
+        verbose_name=_("District"),
+    )
     biography = models.TextField(_("Biography"), blank=True)
     preferred_language = models.CharField(
         _("Preferred language"), max_length=10, default="en", blank=True

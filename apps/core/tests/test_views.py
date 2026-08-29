@@ -71,14 +71,14 @@ class TestPhase05PlaceholderViews:
         )
         assert response.status_code == 200
 
-    def test_dashboard_preview_requires_login(self, client):
-        response = client.get(reverse("core:dashboard_preview"))
+    def test_dashboard_requires_login(self, client):
+        response = client.get(reverse("dashboard:home"))
         assert response.status_code == 302
         assert response.url == (
-            f"{reverse('core:login')}?next={reverse('core:dashboard_preview')}"
+            f"{reverse('core:login')}?next={reverse('dashboard:home')}"
         )
 
-    def test_dashboard_preview_contains_nav_for_superuser(
+    def test_dashboard_contains_nav_for_superuser(
         self, client, django_user_model
     ):
         user = django_user_model.objects.create_superuser(
@@ -89,7 +89,7 @@ class TestPhase05PlaceholderViews:
             password="Password123!@",
         )
         client.force_login(user)
-        response = client.get(reverse("core:dashboard_preview"))
+        response = client.get(reverse("dashboard:home"))
         assert response.status_code == 200
         assert b"dashboard-sidebar" in response.content
         assert b"dashboard-topbar" in response.content

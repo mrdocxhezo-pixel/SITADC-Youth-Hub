@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from django import forms
 
+from apps.locations.forms import GeographicFieldsMixin
+
 from .models import (
     MemberCommitteeAssignment,
     MemberLeave,
@@ -20,8 +22,19 @@ from .models import (
 )
 
 
-class MemberProfileForm(forms.ModelForm):
+class MemberProfileForm(GeographicFieldsMixin, forms.ModelForm):
     """Form for editing a member profile."""
+
+    geo_fields = {
+        "province": {"field": "province_location", "required": False},
+        "district": {"field": "district_location", "required": False},
+        "ward": {"field": "ward_location", "required": False},
+    }
+    geo_text_fields = {
+        "province": "province",
+        "district": "district",
+        "ward": "community",
+    }
 
     class Meta:
         model = MemberProfile
@@ -40,6 +53,9 @@ class MemberProfileForm(forms.ModelForm):
             "province",
             "district",
             "community",
+            "province_location",
+            "district_location",
+            "ward_location",
             "emergency_contact_name",
             "emergency_contact_phone",
             "emergency_contact_relationship",
@@ -66,9 +82,15 @@ class MemberProfileForm(forms.ModelForm):
             "physical_address": forms.Textarea(
                 attrs={"class": "form-control", "rows": 2}
             ),
-            "province": forms.TextInput(attrs={"class": "form-control"}),
-            "district": forms.TextInput(attrs={"class": "form-control"}),
-            "community": forms.TextInput(attrs={"class": "form-control"}),
+            "province": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
+            "district": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
+            "community": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
             "emergency_contact_name": forms.TextInput(attrs={"class": "form-control"}),
             "emergency_contact_phone": forms.TextInput(attrs={"class": "form-control"}),
             "emergency_contact_relationship": forms.TextInput(
@@ -89,8 +111,19 @@ class MemberProfileForm(forms.ModelForm):
         }
 
 
-class MembershipApplicationForm(forms.ModelForm):
+class MembershipApplicationForm(GeographicFieldsMixin, forms.ModelForm):
     """Public form for submitting a membership application."""
+
+    geo_fields = {
+        "province": {"field": "province_location", "required": False},
+        "district": {"field": "district_location", "required": False},
+        "ward": {"field": "ward_location", "required": False},
+    }
+    geo_text_fields = {
+        "province": "province",
+        "district": "district",
+        "ward": "community",
+    }
 
     class Meta:
         model = MembershipApplication
@@ -108,6 +141,9 @@ class MembershipApplicationForm(forms.ModelForm):
             "province",
             "district",
             "community",
+            "province_location",
+            "district_location",
+            "ward_location",
             "category",
             "membership_type",
             "level",
@@ -130,9 +166,15 @@ class MembershipApplicationForm(forms.ModelForm):
             "national_id": forms.TextInput(attrs={"class": "form-control"}),
             "occupation": forms.TextInput(attrs={"class": "form-control"}),
             "education_level": forms.Select(attrs={"class": "form-select"}),
-            "province": forms.TextInput(attrs={"class": "form-control"}),
-            "district": forms.TextInput(attrs={"class": "form-control"}),
-            "community": forms.TextInput(attrs={"class": "form-control"}),
+            "province": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
+            "district": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
+            "community": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
             "category": forms.Select(attrs={"class": "form-select"}),
             "membership_type": forms.Select(attrs={"class": "form-select"}),
             "level": forms.Select(attrs={"class": "form-select"}),
@@ -187,8 +229,17 @@ class MembershipPaymentForm(forms.ModelForm):
         }
 
 
-class MembershipTransferForm(forms.ModelForm):
+class MembershipTransferForm(GeographicFieldsMixin, forms.ModelForm):
     """Form for requesting a membership transfer."""
+
+    geo_fields = {
+        "province": {"field": "to_province_location", "required": False},
+        "district": {"field": "to_district_location", "required": False},
+    }
+    geo_text_fields = {
+        "province": "to_province",
+        "district": "to_district",
+    }
 
     class Meta:
         model = MembershipTransfer
@@ -197,14 +248,22 @@ class MembershipTransferForm(forms.ModelForm):
             "to_province",
             "to_district",
             "to_community",
+            "to_province_location",
+            "to_district_location",
             "effective_date",
             "reason",
         ]
         widgets = {
             "member": forms.Select(attrs={"class": "form-select"}),
-            "to_province": forms.TextInput(attrs={"class": "form-control"}),
-            "to_district": forms.TextInput(attrs={"class": "form-control"}),
-            "to_community": forms.TextInput(attrs={"class": "form-control"}),
+            "to_province": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
+            "to_district": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
+            "to_community": forms.TextInput(
+                attrs={"class": "form-control", "readonly": True}
+            ),
             "effective_date": forms.DateInput(
                 attrs={"type": "date", "class": "form-control"}
             ),

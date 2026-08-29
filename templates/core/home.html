@@ -1,21 +1,24 @@
 {% extends 'layouts/public.html' %}
 {% block title %}Home | SITADC Youth Hub{% endblock %}
-{% block content %}
-    <div class="homepage-hero rounded-4 mb-5">
-        <div class="row align-items-center h-100">
-            <div class="col-lg-8 mx-auto text-center">
-                {% include 'components/branding/logo.html' with logo_class="homepage-logo mb-3" %}
-                <h1 class="display-4 fw-bold mb-3 brand-font">{{ organization_name|default:"SITADC Youth Hub" }}</h1>
-                <p class="lead mb-4 opacity-75">A centralized organizational management and reporting platform for the Sustainable Initiatives Through Transformative Actions for Development in Communities (SITADC) Youth Organization.</p>
-                <div class="alert alert-info bg-opacity-75 text-dark border-0 d-inline-block shadow-sm"
-                     role="alert">
-                    <i class="bi bi-info-circle-fill me-2"></i> This system is currently under active development.
-                </div>
-                <div class="mt-4">
-                    <a href="{% url 'core:about' %}"
-                       class="btn btn-light btn-lg px-4 gap-3 text-primary-brand fw-bold shadow-sm">Learn More</a>
+{% block hero %}
+    <section class="homepage-hero">
+        <div class="container">
+            <div class="row align-items-center h-100">
+                <div class="col-lg-8 mx-auto text-center">
+                    {% include 'components/branding/logo.html' with logo_class="homepage-logo mb-3" %}
+                    <h1 class="display-4 fw-bold mb-3 brand-font">{{ organization_name|default:"SITADC Youth Hub" }}</h1>
+                    <p class="lead mb-4 opacity-75">A centralized organizational management and reporting platform for the Sustainable Initiatives Through Transformative Actions for Development in Communities (SITADC) Youth Organization.</p>
+                    <div class="alert alert-info bg-opacity-75 text-dark border-0 d-inline-block shadow-sm"
+                         role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i> This system is currently under active development.
+                    </div>
+                    <div class="mt-4">
+                        <a href="{% url 'core:about' %}"
+                           class="btn btn-light btn-lg px-4 gap-3 text-primary-brand fw-bold shadow-sm">Learn More</a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 {% endblock %}
+{% block content %}{% endblock %}

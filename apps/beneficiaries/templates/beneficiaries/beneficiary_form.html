@@ -1,4 +1,5 @@
 {% extends "layouts/dashboard.html" %}
+{% load static %}
 {% block title %}{% if object %}Edit {{ object.full_name }}{% else %}Register beneficiary{% endif %} | SITADC Youth Hub{% endblock title %}
 {% block dashboard_content %}
     <div class="container-fluid py-3">
@@ -6,7 +7,12 @@
         <div class="row justify-content-center"><div class="col-xl-10"><header class="mb-4"><h1 class="h2">{% if object %}Edit beneficiary{% else %}Register beneficiary{% endif %}</h1>{% if object %}<p class="text-muted mb-0">{{ object.full_name }} &middot; {{ object.reference_number }}</p>{% else %}<p class="text-muted mb-0">Fields marked with an asterisk are required.</p>{% endif %}</header><form method="post"
       enctype="multipart/form-data"
       class="card shadow-sm border-0"
-      novalidate>{% csrf_token %}<div class="card-body p-4"><div class="row g-3">{% include "beneficiaries/includes/form_fields.html" %}</div></div><div class="card-footer bg-body d-flex justify-content-end gap-2"><a class="btn btn-outline-secondary"
+      novalidate>{% csrf_token %}<div class="card-body p-4"><div class="row g-3"><div class="col-12"><h6 class="text-muted text-uppercase small mb-3">Geographic Information</h6>{% include "locations/partials/geographic_dropdowns.html" with show_country=False prefix="beneficiary" show_province=True show_district=True show_constituency=True show_ward=True province_field="province_location" district_field="district_location" constituency_field="constituency_location" ward_field="ward_location" initial_province=form.province_location.value|default:"" initial_district=form.district_location.value|default:"" initial_constituency=form.constituency_location.value|default:"" initial_ward=form.ward_location.value|default:"" %}</div>{% include "beneficiaries/includes/form_fields.html" %}</div></div><div class="card-footer bg-body d-flex justify-content-end gap-2"><a class="btn btn-outline-secondary"
    href="{% if object %}{% url 'beneficiaries:profile' object.pk %}{% else %}{% url 'beneficiaries:directory' %}{% endif %}">Cancel</a><button class="btn btn-primary" type="submit">{% if object %}Save changes{% else %}Register beneficiary{% endif %}</button></div></form></div></div>
     </div>
 {% endblock dashboard_content %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="{% static 'locations/js/geographic_dropdowns.js' %}"></script>
+{% endblock extra_js %}

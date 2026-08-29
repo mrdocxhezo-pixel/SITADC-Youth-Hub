@@ -1,6 +1,7 @@
 """URL configuration for the Leadership Management module."""
 
-from django.urls import path
+from django.urls import path, reverse_lazy
+from django.views.generic import RedirectView
 
 from . import views
 
@@ -13,7 +14,19 @@ urlpatterns = [
         views.DashboardView.as_view(),
         name="dashboard",
     ),
-    # Directory
+    # Profile landing - redirect to directory
+    path(
+        "profile/",
+        RedirectView.as_view(url=reverse_lazy("leadership:directory"), permanent=False),
+        name="profile_index",
+    ),
+    # All Leaders & Staff Directory
+    path(
+        "leaders/",
+        views.DirectoryView.as_view(),
+        name="all_leaders",
+    ),
+    # Directory (legacy path)
     path(
         "directory/",
         views.DirectoryView.as_view(),

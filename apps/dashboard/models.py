@@ -45,7 +45,8 @@ class DashboardWidget(models.Model):
     description = models.TextField(blank=True)
     is_enabled = models.BooleanField(default=True)
     refresh_interval = models.PositiveIntegerField(
-        default=300, help_text="Refresh interval in seconds"  # 5 minutes in seconds
+        default=300,
+        help_text="Refresh interval in seconds",  # 5 minutes in seconds
     )
     configuration = models.JSONField(
         default=dict, blank=True, help_text="Widget-specific configuration"
@@ -149,3 +150,36 @@ class DashboardWidgetConfiguration(models.Model):
 
     def __str__(self):
         return f"{self.dashboard_configuration.name} - {self.widget.name}"
+
+
+class UserWidgetState(models.Model):
+    """Per-user personalization of a dashboard widget.
+
+    Personalization only affects presentation (visibility and ordering)
+    for the owning user; permissions and the organizational default
+    layout remain authoritative.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="dashboard_widget_states",
+    )
+    widget = models.ForeignKey(DashboardWidget, on_delete=models.CASCADE)
+    is_hidden = models.BooleanField(default=False)
+    position = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text="User-specific position override (0-based index)",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "User Widget State"
+        verbose_name_plural = "User Widget States"
+        unique_together: ClassVar[list[str]] = ["user", "widget"]
+        ordering: ClassVar[list[str]] = ["position"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.widget.name}"

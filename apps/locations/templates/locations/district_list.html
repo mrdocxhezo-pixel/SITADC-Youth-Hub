@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Districts{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-0">Districts</h1>
+      <p class="text-muted mb-0">under provinces</p>
+    </div>
+    <a href="{% url 'locations:district_create' %}" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-1"></i>Add District
+    </a>
+  </div>
+  <div class="card">
+    <div class="card-header bg-white">
+      <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-3">
+          <select name="province" class="form-select">
+            <option value="">All Provinces</option>
+            {% for p in provinces %}
+            <option value="{{ p.id }}" {% if p.id|stringformat:"s" == request.GET.province %}selected{% endif %}>{{ p.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search districts...">
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+        </div>
+      </form>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr><th>Name</th><th>Province</th><th>Code</th><th>Constituencies</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for district in districts %}
+          <tr>
+            <td><a href="{% url 'locations:constituency_list' %}?district={{ district.id }}">{{ district.name }}</a></td>
+            <td>{{ district.province.name }}</td>
+            <td><code>{{ district.code }}</code></td>
+            <td>{{ district.constituency_count }}</td>
+            <td>{% if district.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+            <td class="text-end">
+              <a href="{% url 'locations:district_update' district.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No districts found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

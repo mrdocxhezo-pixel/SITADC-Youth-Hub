@@ -14,13 +14,14 @@ class LeadershipLevel(models.TextChoices):
         "NATIONAL_EXECUTIVE_COMMITTEE",
         _("National Executive Committee"),
     )
+    EXECUTIVE_DIRECTOR = "EXECUTIVE_DIRECTOR", _("Executive Director")
     EXECUTIVE_MANAGEMENT = "EXECUTIVE_MANAGEMENT", _("Executive Management")
     DIRECTORATE = "DIRECTORATE", _("Directorate")
-    DEPARTMENT = "DEPARTMENT", _("Department")
-    REGIONAL = "REGIONAL", _("Regional")
-    DISTRICT = "DISTRICT", _("District")
-    COMMUNITY = "COMMUNITY", _("Community")
-    TEAM = "TEAM", _("Team")
+    REGIONAL_COORDINATOR = "REGIONAL_COORDINATOR", _("Regional Coordinator")
+    DISTRICT_COORDINATOR = "DISTRICT_COORDINATOR", _("District Coordinator")
+    COMMUNITY_COORDINATOR = "COMMUNITY_COORDINATOR", _("Community Coordinator")
+    TEAM_LEADER = "TEAM_LEADER", _("Team Leader")
+    REPORT_AUTHOR = "REPORT_AUTHOR", _("Report Author")
 
 
 class LeadershipStatus(models.TextChoices):

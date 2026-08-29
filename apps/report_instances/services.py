@@ -24,6 +24,54 @@ from apps.reports.models import (
     ReportTemplate,
 )
 
+# Try to import notification service, but handle gracefully if not available
+try:
+    from apps.notifications.services import (
+        NotificationService,
+        EVENT_TYPE_REPORT_SUBMITTED,
+        EVENT_TYPE_REPORT_APPROVED,
+        EVENT_TYPE_REPORT_RETURNED,
+        EVENT_TYPE_REPORT_REJECTED,
+    )
+    NOTIFICATIONS_AVAILABLE = True
+except ImportError:
+    NOTIFICATIONS_AVAILABLE = False
+
+def _send_report_notification(
+    report: Report,
+    event_type: str,
+    recipient,
+    title: str,
+    message: str,
+    deep_link: str = "",
+    action_label: str = "",
+    priority: str = "NORMAL",
+) -> None:
+    """Send a notification for a report workflow event."""
+    if not NOTIFICATIONS_AVAILABLE:
+        return
+    try:
+        NotificationService(user=recipient).create_from_event(
+            recipient=recipient,
+            event_type=event_type,
+            payload={
+                "title": title,
+                "message": message,
+                "report_reference": report.reference_number,
+                "report_title": report.title,
+            },
+            source_app="report_instances",
+            source_model="Report",
+            source_object_id=str(report.pk),
+            source_object_reference=report.reference_number,
+            deep_link=deep_link,
+            action_label=action_label,
+            priority_override=priority,
+        )
+    except Exception:
+        # Silently fail - notifications shouldn't break the main workflow
+        pass
+
 from .models import (
     Report,
     ReportAssignment,
@@ -317,6 +365,41 @@ def save_field_response(
     return field_response
 
 
+@transaction.atomic
+def store_dynamic_field_upload(
+    report: Report,
+    field_id: str,
+    uploaded_file: Any,
+    *,
+    uploaded_by: Any = None,
+) -> str:
+    """Persist an uploaded file for a dynamic file-type report field.
+
+    Returns the storage name that must be recorded as the field response
+    value so the JSON response columns remain serializable.
+    """
+    if not report.is_editable:
+        raise ValueError("Report is not in an editable state.")
+
+    from django.core.files.storage import default_storage
+
+    from apps.reports.models import DynamicField
+
+    field = DynamicField.objects.get(id=field_id)
+
+    storage_name = default_storage.save(
+        f"report_field_uploads/{report.pk}/{field.pk}/{uploaded_file.name}",
+        uploaded_file,
+    )
+    _record_timeline_event(
+        report,
+        "FIELD_FILE_UPLOADED",
+        f"File '{uploaded_file.name}' uploaded for field '{field.label}'.",
+        actor=uploaded_by,
+    )
+    return storage_name
+
+
 # ---------------------------------------------------------------------------
 # Validation
 # ---------------------------------------------------------------------------
@@ -415,18 +498,29 @@ def validate_report(
 
     from_status = report.status
     if is_valid:
-        report.status = ReportStatus.READY_FOR_SUBMISSION
+        # Transition to READY_FOR_SUBMISSION if currently in an editable state
+        if report.status in (ReportStatus.DRAFT, ReportStatus.IN_PROGRESS, ReportStatus.VALIDATION_FAILED, ReportStatus.RETURNED_FOR_CORRECTION):
+            report.status = ReportStatus.READY_FOR_SUBMISSION
+        report.save(update_fields=["status"])
+
+        _record_status_change(
+            report,
+            from_status,
+            report.status,
+            "VALIDATED",
+            performed_by=validated_by,
+        )
     else:
         report.status = ReportStatus.VALIDATION_FAILED
-    report.save(update_fields=["status"])
+        report.save(update_fields=["status"])
 
-    _record_status_change(
-        report,
-        from_status,
-        report.status,
-        "VALIDATED",
-        performed_by=validated_by,
-    )
+        _record_status_change(
+            report,
+            from_status,
+            report.status,
+            "VALIDATED",
+            performed_by=validated_by,
+        )
     _record_timeline_event(
         report,
         "VALIDATION_COMPLETED",
@@ -505,6 +599,19 @@ def submit_report(
         f"Report submitted (attempt #{submission_number}).",
         actor=submitted_by,
     )
+
+    # Notify assigned reviewer
+    if report.assigned_reviewer:
+        _send_report_notification(
+            report=report,
+            event_type=EVENT_TYPE_REPORT_SUBMITTED,
+            recipient=report.assigned_reviewer,
+            title=f"Report Submitted for Review: {report.reference_number}",
+            message=f"Report '{report.title}' has been submitted for your review.",
+            deep_link=f"/report-instances/{report.pk}/",
+            action_label="Review Report",
+            priority="HIGH",
+        )
 
     return submission
 
@@ -982,6 +1089,20 @@ def return_report(
         ),
         actor=returned_by,
     )
+
+    # Notify report owner
+    if report.owner:
+        _send_report_notification(
+            report=report,
+            event_type=EVENT_TYPE_REPORT_RETURNED,
+            recipient=report.owner,
+            title=f"Report Returned for Correction: {report.reference_number}",
+            message=f"Your report '{report.title}' has been returned for correction by {returned_by}. Reason: {reason}",
+            deep_link=f"/report-instances/{report.pk}/",
+            action_label="View Corrections",
+            priority="HIGH",
+        )
+
     return report
 
 
@@ -991,11 +1112,17 @@ def approve_report(
     *,
     approved_by: Any,
     notes: str = "",
+    is_final_approval: bool = True,
 ) -> Report:
-    """Approve a report."""
-    allowed = {ReportStatus.SUBMITTED, ReportStatus.UNDER_REVIEW}
+    """Approve a report.
+
+    If is_final_approval is True (default, e.g., final approver), status goes
+    to APPROVED.  Otherwise (e.g., reviewer recommending approval), status
+    goes to PENDING_APPROVAL.
+    """
+    allowed = {ReportStatus.SUBMITTED, ReportStatus.UNDER_REVIEW, ReportStatus.PENDING_APPROVAL}
     if report.status not in allowed:
-        raise ValueError("Only submitted or under-review reports can be approved.")
+        raise ValueError("Only submitted, under-review, or pending-approval reports can be approved.")
 
     from_status = report.status
 
@@ -1007,24 +1134,43 @@ def approve_report(
             is_internal=False,
         )
 
-    report.status = ReportStatus.APPROVED
-    report.approved_at = timezone.now()
-    report.save(update_fields=["status", "approved_at"])
+    report.status = (
+        ReportStatus.APPROVED if is_final_approval else ReportStatus.PENDING_APPROVAL
+    )
+    if is_final_approval:
+        report.approved_at = timezone.now()
+        report.save(update_fields=["status", "approved_at"])
+    else:
+        report.save(update_fields=["status"])
 
     _record_status_change(
         report,
         from_status,
-        ReportStatus.APPROVED,
-        "APPROVED",
+        report.status,
+        "APPROVED" if is_final_approval else "RECOMMENDED_APPROVAL",
         notes=notes,
         performed_by=approved_by,
     )
     _record_timeline_event(
         report,
-        "REPORT_APPROVED",
-        f"Report approved by {approved_by}.",
+        "REPORT_APPROVED" if is_final_approval else "REPORT_RECOMMENDED_APPROVAL",
+        f"Report {'approved' if is_final_approval else 'recommended for approval'} by {approved_by}.",
         actor=approved_by,
     )
+
+    # Notify report owner
+    if report.owner:
+        _send_report_notification(
+            report=report,
+            event_type=EVENT_TYPE_REPORT_APPROVED if is_final_approval else EVENT_TYPE_REPORT_RETURNED,
+            recipient=report.owner,
+            title=f"Report {'Approved' if is_final_approval else 'Recommended for Approval'}: {report.reference_number}",
+            message=f"Your report '{report.title}' has been {'approved' if is_final_approval else 'recommended for approval'} by {approved_by}.",
+            deep_link=f"/report-instances/{report.pk}/",
+            action_label="View Report",
+            priority="HIGH" if is_final_approval else "NORMAL",
+        )
+
     return report
 
 
@@ -1071,6 +1217,20 @@ def reject_report(
         ),
         actor=rejected_by,
     )
+
+    # Notify report owner
+    if report.owner:
+        _send_report_notification(
+            report=report,
+            event_type=EVENT_TYPE_REPORT_REJECTED,
+            recipient=report.owner,
+            title=f"Report Rejected: {report.reference_number}",
+            message=f"Your report '{report.title}' has been rejected by {rejected_by}. Reason: {reason}",
+            deep_link=f"/report-instances/{report.pk}/",
+            action_label="View Report",
+            priority="HIGH",
+        )
+
     return report
 
 

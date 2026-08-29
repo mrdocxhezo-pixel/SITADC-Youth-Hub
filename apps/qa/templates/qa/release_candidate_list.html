@@ -1,0 +1,105 @@
+{% extends 'qa/base.html' %}
+{% load i18n %}
+
+{% block qa_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{% trans 'Release Candidates' %}</h1>
+    {% if user_can_manage_release_candidates %}
+    <a href="{% url 'qa:release_candidate_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> {% trans 'Create Release Candidate' %}
+    </a>
+    {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">{% trans 'Status' %}</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">{% trans 'All Statuses' %}</option>
+                    {% for value, label in ReleaseCandidateStatus.CHOICES %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="branch" class="form-label">{% trans 'Branch' %}</label>
+                <input type="text" name="branch" id="branch" class="form-control" value="{{ request.GET.branch }}" placeholder="{% trans 'Filter by branch...' %}">
+            </div>
+            <div class="col-md-3">
+                <label for="search" class="form-label">{% trans 'Search' %}</label>
+                <input type="text" name="search" id="search" class="form-control" value="{{ request.GET.search }}" placeholder="{% trans 'Search by version...' %}">
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Release Candidates Table -->
+<div class="card">
+    <div class="card-body">
+        {% if releases %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{% trans 'Version' %}</th>
+                        <th>{% trans 'Name' %}</th>
+                        <th>{% trans 'Status' %}</th>
+                        <th>{% trans 'Branch' %}</th>
+                        <th>{% trans 'Build' %}</th>
+                        <th>{% trans 'Planned Release' %}</th>
+                        <th>{% trans 'Test Plan' %}</th>
+                        <th>{% trans 'Actions' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for release in releases %}
+                    <tr>
+                        <td><a href="{% url 'qa:release_candidate_detail' pk=release.pk %}" class="fw-bold">{{ release.version }}</a></td>
+                        <td>{{ release.name|default:"-" }}</td>
+                        <td><span class="badge bg-{{ release.status|lower }}">{{ release.get_status_display }}</span></td>
+                        <td>{{ release.branch }}</td>
+                        <td>{{ release.build_number|default:"-" }}</td>
+                        <td>{{ release.planned_release_date|date:"M d, Y"|default:"-" }}</td>
+                        <td>{% if release.test_plan %}<a href="{% url 'qa:test_plan_detail' pk=release.test_plan.pk %}">{{ release.test_plan.name }}</a>{% else %}-{% endif %}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'qa:release_candidate_detail' pk=release.pk %}" class="btn btn-outline-primary">{% trans 'View' %}</a>
+                                {% if user_can_manage_release_candidates %}
+                                {% if release.status == 'DRAFT' %}
+                                <a href="{% url 'qa:release_candidate_submit' pk=release.pk %}" class="btn btn-outline-success">{% trans 'Submit' %}</a>
+                                {% endif %}
+                                {% if release.status in 'SUBMITTED,TESTING' and user_can_approve_release %}
+                                <a href="{% url 'qa:release_candidate_approve' pk=release.pk %}" class="btn btn-outline-info">{% trans 'Approve' %}</a>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Release Candidates pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans 'Previous' %}</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans 'Next' %}</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-center text-muted">{% trans 'No release candidates found.' %}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

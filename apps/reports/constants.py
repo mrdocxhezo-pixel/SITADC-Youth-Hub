@@ -254,6 +254,7 @@ class ReportStatus(models.TextChoices):
     UNDER_REVIEW = "UNDER_REVIEW", _("Under Review")
     RETURNED_FOR_CORRECTION = "RETURNED_FOR_CORRECTION", _("Returned for Correction")
     RESUBMITTED = "RESUBMITTED", _("Resubmitted")
+    PENDING_APPROVAL = "PENDING_APPROVAL", _("Pending Approval")
     APPROVED = "APPROVED", _("Approved")
     REJECTED = "REJECTED", _("Rejected")
     FINALIZED = "FINALIZED", _("Finalized")

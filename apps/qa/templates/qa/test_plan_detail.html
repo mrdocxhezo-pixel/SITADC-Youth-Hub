@@ -1,0 +1,251 @@
+{% extends 'qa/base.html' %}
+{% load i18n %}
+
+{% block qa_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{{ test_plan.name }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        {% if user_can_manage_test_plans %}
+        <a href="{% url 'qa:test_plan_update' pk=test_plan.pk %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil"></i> {% trans 'Edit' %}
+        </a>
+        <a href="{% url 'qa:test_suite_create' test_plan_pk=test_plan.pk %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> {% trans 'Add Test Suite' %}
+        </a>
+        <a href="{% url 'qa:test_scenario_create' test_plan_pk=test_plan.pk %}" class="btn btn-outline-info btn-sm">
+            <i class="bi bi-diagram-3"></i> {% trans 'Add Scenario' %}
+        </a>
+        {% if test_plan.status == 'DRAFT' %}
+        <a href="{% url 'qa:test_plan_approve' pk=test_plan.pk %}" class="btn btn-success btn-sm">
+            <i class="bi bi-check-circle"></i> {% trans 'Approve' %}
+        {% endif %}
+        {% endif %}
+        <a href="{% url 'qa:test_plan_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> {% trans 'Back' %}
+        </a>
+    </div>
+</div>
+
+<!-- Test Plan Info -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Test Plan Details' %}</h6>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">{% trans 'Version' %}</dt>
+                    <dd class="col-sm-9">{{ test_plan.version }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Status' %}</dt>
+                    <dd class="col-sm-9"><span class="badge bg-{{ test_plan.status|lower }}">{{ test_plan.get_status_display }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans 'Date Range' %}</dt>
+                    <dd class="col-sm-9">{{ test_plan.start_date|date:"M d, Y"|default:"-" }} - {{ test_plan.end_date|date:"M d, Y"|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Release Candidate' %}</dt>
+                    <dd class="col-sm-9">{% if test_plan.release_candidate %}<a href="{% url 'qa:release_candidate_detail' pk=test_plan.release_candidate.pk %}">{{ test_plan.release_candidate.version }}</a>{% else %}-{% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Approved By' %}</dt>
+                    <dd class="col-sm-9">{{ test_plan.approved_by.get_full_name|default:"-" }} {% if test_plan.approved_at %}({{ test_plan.approved_at|date:"M d, Y H:i" }}){% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Modules' %}</dt>
+                    <dd class="col-sm-9">{{ test_plan.modules|join:", "|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Test Categories' %}</dt>
+                    <dd class="col-sm-9">{{ test_plan.test_categories|join:", "|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Entry Criteria' %}</dt>
+                    <dd class="col-sm-9">{{ test_plan.entry_criteria|linebreaks|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Exit Criteria' %}</dt>
+                    <dd class="col-sm-9">{{ test_plan.exit_criteria|linebreaks|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Risks' %}</dt>
+                    <dd class="col-sm-9">{{ test_plan.risks|linebreaks|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Assumptions' %}</dt>
+                    <dd class="col-sm-9">{{ test_plan.assumptions|linebreaks|default:"-" }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Quality Thresholds' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if test_plan.quality_thresholds %}
+                <pre class="mb-0">{{ test_plan.quality_thresholds|pprint }}</pre>
+                {% else %}
+                <p class="text-muted">{% trans 'No thresholds defined.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Suites -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Test Suites' %}</h6>
+                {% if user_can_manage_test_plans %}
+                <a href="{% url 'qa:test_suite_create' test_plan_pk=test_plan.pk %}" class="btn btn-sm btn-primary">{% trans 'Add Suite' %}</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if test_suites %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Name' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                                <th>{% trans 'Order' %}</th>
+                                <th>{% trans 'Module' %}</th>
+                                <th>{% trans 'Feature' %}</th>
+                                <th>{% trans 'Test Cases' %}</th>
+                                <th>{% trans 'Actions' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for suite in test_suites %}
+                            <tr>
+                                <td><a href="{% url 'qa:test_case_list' test_suite_pk=suite.pk %}">{{ suite.name }}</a></td>
+                                <td><span class="badge bg-{{ suite.status|lower }}">{{ suite.get_status_display }}</span></td>
+                                <td>{{ suite.order }}</td>
+                                <td>{{ suite.module|default:"-" }}</td>
+                                <td>{{ suite.feature|default:"-" }}</td>
+                                <td>{{ suite.test_cases.count }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'qa:test_case_list' test_suite_pk=suite.pk %}" class="btn btn-outline-primary">{% trans 'Cases' %}</a>
+                                        {% if user_can_manage_test_plans %}
+                                        <a href="{% url 'qa:test_suite_update' pk=suite.pk %}" class="btn btn-outline-secondary">{% trans 'Edit' %}</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No test suites defined.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Scenarios -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Test Scenarios' %}</h6>
+                {% if user_can_manage_test_cases %}
+                <a href="{% url 'qa:test_scenario_create' test_plan_pk=test_plan.pk %}" class="btn btn-sm btn-primary">{% trans 'Add Scenario' %}</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if test_scenarios %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Name' %}</th>
+                                <th>{% trans 'Type' %}</th>
+                                <th>{% trans 'Priority' %}</th>
+                                <th>{% trans 'Module' %}</th>
+                                <th>{% trans 'Test Cases' %}</th>
+                                <th>{% trans 'Actions' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for scenario in test_scenarios %}
+                            <tr>
+                                <td>{{ scenario.name }}</td>
+                                <td>{{ scenario.get_scenario_type_display }}</td>
+                                <td><span class="badge bg-{{ scenario.priority|lower }}">{{ scenario.get_priority_display }}</span></td>
+                                <td>{{ scenario.module|default:"-" }}</td>
+                                <td>{{ scenario.test_cases.count }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if user_can_manage_test_cases %}
+                                        <a href="#" class="btn btn-outline-secondary">{% trans 'Edit' %}</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No test scenarios defined.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Executions Summary -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Test Execution Summary' %}</h6>
+                <a href="{% url 'qa:test_execution_list_by_plan' test_plan_pk=test_plan.pk %}" class="btn btn-sm btn-outline-primary">{% trans 'View All Executions' %}</a>
+            </div>
+            <div class="card-body">
+                {% with executions=test_plan.executions.all %}
+                {% if executions %}
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-primary">{{ executions.count }}</h3>
+                                <p class="mb-0">{% trans 'Total Executions' %}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-success">{{ executions.filter(status='PASSED').count }}</h3>
+                                <p class="mb-0">{% trans 'Passed' %}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-danger">{{ executions.filter(status='FAILED').count }}</h3>
+                                <p class="mb-0">{% trans 'Failed' %}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-warning">{{ executions.filter(status='BLOCKED').count }}</h3>
+                                <p class="mb-0">{% trans 'Blocked' %}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No test executions recorded.' %}</p>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

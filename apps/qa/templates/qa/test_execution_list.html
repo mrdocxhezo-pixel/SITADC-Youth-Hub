@@ -1,0 +1,133 @@
+{% extends 'qa/base.html' %}
+{% load i18n %}
+
+{% block qa_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{% trans 'Test Executions' %}</h1>
+</div>
+
+{% if test_plan %}
+<div class="alert alert-info mb-4">
+    <strong>{% trans 'Test Plan:' %}</strong> <a href="{% url 'qa:test_plan_detail' pk=test_plan.pk %}">{{ test_plan.name }}</a>
+</div>
+{% endif %}
+
+{% if test_suite %}
+<div class="alert alert-info mb-4">
+    <strong>{% trans 'Test Suite:' %}</strong> {{ test_suite.name }}
+    {% if test_plan %} > <a href="{% url 'qa:test_plan_detail' pk=test_plan.pk %}">{{ test_plan.name }}</a>{% endif %}
+</div>
+{% endif %}
+
+{% if test_case %}
+<div class="alert alert-info mb-4">
+    <strong>{% trans 'Test Case:' %}</strong> {{ test_case.test_id }} - {{ test_case.title }}
+    {% if test_suite %} > {{ test_suite.name }}{% endif %}
+    {% if test_plan %} > <a href="{% url 'qa:test_plan_detail' pk=test_plan.pk %}">{{ test_plan.name }}</a>{% endif %}
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">{% trans 'Status' %}</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">{% trans 'All Statuses' %}</option>
+                    {% for value, label in TestExecutionStatus.CHOICES %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="environment" class="form-label">{% trans 'Environment' %}</label>
+                <select name="environment" id="environment" class="form-select">
+                    <option value="">{% trans 'All Environments' %}</option>
+                    {% for env in environments %}
+                    <option value="{{ env.pk }}" {% if request.GET.environment == env.pk|stringformat:"s" %}selected{% endif %}>{{ env.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="is_regression" class="form-label">{% trans 'Type' %}</label>
+                <select name="is_regression" id="is_regression" class="form-select">
+                    <option value="">{% trans 'All' %}</option>
+                    <option value="true" {% if request.GET.is_regression == 'true' %}selected{% endif %}>{% trans 'Regression' %}</option>
+                    <option value="false" {% if request.GET.is_regression == 'false' %}selected{% endif %}>{% trans 'Regular' %}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="search" class="form-label">{% trans 'Search' %}</label>
+                <input type="text" name="search" id="search" class="form-control" value="{{ request.GET.search }}" placeholder="{% trans 'Search by test case...' %}">
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Test Executions Table -->
+<div class="card">
+    <div class="card-body">
+        {% if executions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{% trans 'Test Case' %}</th>
+                        <th>{% trans 'Test Plan' %}</th>
+                        <th>{% trans 'Test Suite' %}</th>
+                        <th>{% trans 'Environment' %}</th>
+                        <th>{% trans 'Status' %}</th>
+                        <th>{% trans 'Type' %}</th>
+                        <th>{% trans 'Executed By' %}</th>
+                        <th>{% trans 'Started' %}</th>
+                        <th>{% trans 'Duration' %}</th>
+                        <th>{% trans 'Defect' %}</th>
+                        <th>{% trans 'Actions' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exec in executions %}
+                    <tr>
+                        <td><a href="{% url 'qa:test_case_detail' pk=exec.test_case.pk %}">{{ exec.test_case.test_id }}</a></td>
+                        <td>{% if exec.test_plan %}<a href="{% url 'qa:test_plan_detail' pk=exec.test_plan.pk %}">{{ exec.test_plan.name }}</a>{% else %}-{% endif %}</td>
+                        <td>{% if exec.test_suite %}<a href="{% url 'qa:test_case_list' test_suite_pk=exec.test_suite.pk %}">{{ exec.test_suite.name }}</a>{% else %}-{% endif %}</td>
+                        <td>{{ exec.environment.name|default:"-" }}</td>
+                        <td><span class="badge bg-{{ exec.status|lower }}">{{ exec.get_status_display }}</span></td>
+                        <td>{% if exec.is_regression %}<span class="badge bg-info">{% trans 'Regression' %}</span>{% else %}<span class="badge bg-secondary">{% trans 'Regular' %}</span>{% endif %}</td>
+                        <td>{{ exec.executed_by.get_full_name|default:exec.executed_by.username }}</td>
+                        <td>{{ exec.started_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ exec.duration_seconds }}s</td>
+                        <td>{% if exec.defect %}<a href="{% url 'qa:defect_detail' pk=exec.defect.pk %}">{{ exec.defect.defect_id }}</a>{% else %}-{% endif %}</td>
+                        <td>
+                            <a href="{% url 'qa:test_execution_detail' pk=exec.pk %}" class="btn btn-sm btn-outline-primary">{% trans 'View' %}</a>
+                            {% if exec.status == 'RUNNING' and user_can_manage_test_executions %}
+                            <a href="{% url 'qa:test_execution_complete' pk=exec.pk %}" class="btn btn-sm btn-outline-success">{% trans 'Complete' %}</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Test Executions pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans 'Previous' %}</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans 'Next' %}</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-center text-muted">{% trans 'No test executions found.' %}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

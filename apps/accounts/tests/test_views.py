@@ -38,7 +38,7 @@ def test_login_view(client):
         {"username": "loginview@example.com", "password": "Password123!@"},
     )
     assert response.status_code == 302
-    assert response["Location"] == reverse("core:dashboard_preview")
+    assert response["Location"] == reverse("dashboard:home")
 
 
 @pytest.mark.django_db

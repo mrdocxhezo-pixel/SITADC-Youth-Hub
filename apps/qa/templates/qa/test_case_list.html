@@ -1,0 +1,127 @@
+{% extends 'qa/base.html' %}
+{% load i18n %}
+
+{% block qa_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{% trans 'Test Cases' %}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        {% if test_suite and user_can_manage_test_cases %}
+        <a href="{% url 'qa:test_case_create' test_suite_pk=test_suite.pk %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> {% trans 'Create Test Case' %}
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if test_suite %}
+<div class="alert alert-info mb-4">
+    <strong>{{ test_suite.test_plan.name }}</strong> > {{ test_suite.name }}
+    {% if user_can_manage_test_plans %}
+    <a href="{% url 'qa:test_suite_update' pk=test_suite.pk %}" class="btn btn-sm btn-outline-secondary ms-2">{% trans 'Edit Suite' %}</a>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">{% trans 'Status' %}</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">{% trans 'All Statuses' %}</option>
+                    {% for value, label in TestCaseStatus.CHOICES %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="priority" class="form-label">{% trans 'Priority' %}</label>
+                <select name="priority" id="priority" class="form-select">
+                    <option value="">{% trans 'All Priorities' %}</option>
+                    {% for value, label in TestPriority.CHOICES %}
+                    <option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">{% trans 'Category' %}</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">{% trans 'All Categories' %}</option>
+                    {% for value, label in TestCategory.CHOICES %}
+                    <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="search" class="form-label">{% trans 'Search' %}</label>
+                <input type="text" name="search" id="search" class="form-control" value="{{ request.GET.search }}" placeholder="{% trans 'Search by ID or title...' %}">
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Test Cases Table -->
+<div class="card">
+    <div class="card-body">
+        {% if test_cases %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>{% trans 'Test ID' %}</th>
+                        <th>{% trans 'Title' %}</th>
+                        <th>{% trans 'Status' %}</th>
+                        <th>{% trans 'Priority' %}</th>
+                        <th>{% trans 'Category' %}</th>
+                        <th>{% trans 'Automated' %}</th>
+                        <th>{% trans 'Assigned To' %}</th>
+                        <th>{% trans 'Last Result' %}</th>
+                        <th>{% trans 'Actions' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in test_cases %}
+                    <tr>
+                        <td><a href="{% url 'qa:test_case_detail' pk=case.pk %}" class="fw-bold">{{ case.test_id }}</a></td>
+                        <td>{{ case.title|truncatechars:50 }}</td>
+                        <td><span class="badge bg-{{ case.status|lower }}">{{ case.get_status_display }}</span></td>
+                        <td><span class="badge bg-{{ case.priority|lower }}">{{ case.get_priority_display }}</span></td>
+                        <td>{{ case.get_category_display }}</td>
+                        <td>{% if case.is_automated %}<i class="bi bi-check-circle text-success" title="{% trans 'Automated' %}"></i>{% else %}<i class="bi bi-x-circle text-muted" title="{% trans 'Manual' %}"></i>{% endif %}</td>
+                        <td>{{ case.assigned_to.get_full_name|default:"-" }}</td>
+                        <td>{% if case.last_result %}<span class="badge bg-{{ case.last_result|lower }}">{{ case.get_last_result_display }}</span>{% else %}-{% endif %}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'qa:test_case_detail' pk=case.pk %}" class="btn btn-outline-primary">{% trans 'View' %}</a>
+                                {% if user_can_manage_test_cases %}
+                                <a href="{% url 'qa:test_case_update' pk=case.pk %}" class="btn btn-outline-secondary">{% trans 'Edit' %}</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Test Cases pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans 'Previous' %}</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans 'Next' %}</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-center text-muted">{% trans 'No test cases found.' %}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

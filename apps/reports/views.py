@@ -50,6 +50,7 @@ from .permissions import (
     REPORT_TEMPLATE_UPDATE,
     REPORT_TEMPLATE_VIEW,
 )
+from apps.report_instances.permissions import can_create_report
 from .selectors import category_queryset, template_queryset, visible_audit_records
 from .services import (
     ReportBuilderSettingsService,
@@ -306,6 +307,7 @@ class TemplateDetailView(ReportPermissionMixin, DetailView):
         context["can_export"] = _can(user, REPORT_TEMPLATE_EXPORT)
         context["can_import"] = _can(user, REPORT_TEMPLATE_IMPORT)
         context["can_configure"] = _can(user, REPORT_TEMPLATE_CONFIGURE)
+        context["can_create_report"] = can_create_report(user)
         context["sections"] = template.sections.filter(parent__isnull=True).order_by(
             "sort_order", "name"
         )
@@ -382,6 +384,7 @@ class TemplatePreviewView(ReportPermissionMixin, TemplateView):
             self.template
         )
         context["object"] = self.template
+        context["can_create_report"] = can_create_report(self.request.user)
         context.update(preview)
         return context
 

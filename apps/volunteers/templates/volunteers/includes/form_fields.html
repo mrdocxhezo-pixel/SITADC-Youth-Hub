@@ -5,6 +5,7 @@
     </div>
 {% endif %}
 {% for field in form %}
+    {% if not field.is_hidden %}
     <div class="col-md-6">
         {% if field.field.widget.input_type == "checkbox" %}
             <div class="form-check mt-4">
@@ -22,4 +23,5 @@
         {% if field.help_text %}<div id="{{ field.id_for_label }}_help" class="form-text">{{ field.help_text }}</div>{% endif %}
         {% for error in field.errors %}<div class="invalid-feedback d-block" role="alert">{{ error }}</div>{% endfor %}
     </div>
+    {% endif %}
 {% endfor %}

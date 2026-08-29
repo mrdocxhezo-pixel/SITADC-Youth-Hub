@@ -243,7 +243,10 @@ class VolunteerDirectoryView(ManageOverridePermissionMixin, ListView):
         if category_filter:
             queryset = queryset.filter(category__code=category_filter)
         if region_filter:
-            queryset = queryset.filter(region__icontains=region_filter)
+            queryset = queryset.filter(
+                Q(region__icontains=region_filter)
+                | Q(province_location__name__icontains=region_filter)
+            )
         return queryset.distinct()
 
     def get_context_data(self, **kwargs):

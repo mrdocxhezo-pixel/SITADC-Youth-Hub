@@ -1,45 +1,519 @@
 {% extends "layouts/dashboard.html" %}
 {% load static %}
-{% block title %}Leadership Directory | SITADC Youth Hub{% endblock title %}
+{% block title %}All Leaders & Staff | SITADC Youth Hub{% endblock title %}
 {% block dashboard_content %}
     <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Leadership Directory</h1>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h1 class="h3 mb-0 text-gray-800">All Leaders & Staff</h1>
+                <p class="text-muted small mb-0">View and manage organizational leadership and staff information.</p>
+            </div>
+            <a href="{% url 'leadership:profile_create' %}"
+               class="btn btn-primary-brand">
+                <i class="bi bi-person-plus-fill me-2"></i>Add Leader
+            </a>
         </div>
-        <div class="row">
-            {% for profile in profiles %}
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body text-center">
-                            {% if profile.user.profile_image %}
-                                <img src="{{ profile.user.profile_image.url }}"
-                                     class="rounded-circle mb-3"
-                                     width="100"
-                                     height="100"
-                                     alt="Profile Image">
-                            {% else %}
-                                <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center mb-3"
-                                     style="width: 100px;
-                                            height: 100px;
-                                            font-size: 2rem">
-                                    {{ profile.user.first_name|first }}{{ profile.user.last_name|first }}
-                                </div>
-                            {% endif %}
-                            <h5 class="card-title mb-1">{{ profile.user.get_full_name }}</h5>
-                            <p class="text-muted mb-2">{{ profile.official_title }}</p>
-                            {% if profile.primary_organization_unit %}
-                                <p class="small text-muted mb-3"><i class="bi bi-building me-1"></i>{{ profile.primary_organization_unit }}</p>
-                            {% endif %}
-                            <a href="{% url 'leadership:profile_detail' profile.pk %}"
-                               class="btn btn-outline-primary btn-sm">View Profile</a>
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'leadership:dashboard' %}">Leadership</a></li>
+                <li class="breadcrumb-item active" aria-current="page">All Leaders</li>
+            </ol>
+        </nav>
+
+        <!-- Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Personnel</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_personnel }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-people fa-2x text-gray-300"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            {% empty %}
-                <div class="col-12">
-                    <div class="alert alert-info">No public leadership profiles found.</div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active Leaders</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_leaders }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-person-check fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            {% endfor %}
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Leaders</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ leaders_count }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-person-badge fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Staff</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ staff_count }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-person-workspace fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="card border-left-secondary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Directorates</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ directorates_count }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-building fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="card border-left-dark shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">Departments</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ departments_count }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-diagram-3 fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Form -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Search & Filters</h6>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3" id="directory-filter-form">
+                    <!-- Search -->
+                    <div class="col-md-4">
+                        <label for="search" class="form-label visually-hidden">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="search" name="search" id="search" class="form-control" 
+                                   placeholder="Search by name, reference, position, level, unit..."
+                                   value="{{ current_search }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Leadership Level -->
+                    <div class="col-md-2">
+                        <label for="leadership_level" class="form-label">Leadership Level</label>
+                        <select name="leadership_level" id="leadership_level" class="form-select">
+                            <option value="">All Levels</option>
+                            {% for value, label in leadership_levels %}
+                                <option value="{{ value }}" {% if current_leadership_level == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Position -->
+                    <div class="col-md-2">
+                        <label for="position" class="form-label">Position</label>
+                        <select name="position" id="position" class="form-select">
+                            <option value="">All Positions</option>
+                            {% for pos in positions %}
+                                <option value="{{ pos.pk }}" {% if current_position == pos.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ pos.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Organizational Unit -->
+                    <div class="col-md-2">
+                        <label for="organizational_unit" class="form-label">Organizational Unit</label>
+                        <select name="organizational_unit" id="organizational_unit" class="form-select">
+                            <option value="">All Units</option>
+                            {% for unit in org_units %}
+                                <option value="{{ unit.pk }}" {% if current_org_unit == unit.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ unit.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Directorate -->
+                    <div class="col-md-2">
+                        <label for="directorate" class="form-label">Directorate</label>
+                        <select name="directorate" id="directorate" class="form-select">
+                            <option value="">All Directorates</option>
+                            {% for dir in directorates %}
+                                <option value="{{ dir.pk }}" {% if current_directorate == dir.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ dir.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Region -->
+                    <div class="col-md-2">
+                        <label for="region" class="form-label">Region</label>
+                        <select name="region" id="region" class="form-select">
+                            <option value="">All Regions</option>
+                            {% for reg in regions %}
+                                <option value="{{ reg.pk }}" {% if current_region == reg.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ reg.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- District -->
+                    <div class="col-md-2">
+                        <label for="district" class="form-label">District</label>
+                        <select name="district" id="district" class="form-select">
+                            <option value="">All Districts</option>
+                            {% for dist in districts %}
+                                <option value="{{ dist.pk }}" {% if current_district == dist.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ dist.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Community -->
+                    <div class="col-md-2">
+                        <label for="community" class="form-label">Community</label>
+                        <select name="community" id="community" class="form-select">
+                            <option value="">All Communities</option>
+                            {% for comm in communities %}
+                                <option value="{{ comm.pk }}" {% if current_community == comm.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ comm.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="col-md-2">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            {% for value, label in statuses %}
+                                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Appointment Status -->
+                    <div class="col-md-2">
+                        <label for="appointment_status" class="form-label">Appointment Status</label>
+                        <select name="appointment_status" id="appointment_status" class="form-select">
+                            <option value="">All</option>
+                            {% for value, label in appointment_statuses %}
+                                <option value="{{ value }}" {% if current_appointment_status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Date From -->
+                    <div class="col-md-2">
+                        <label for="date_appointed_from" class="form-label">Appointed From</label>
+                        <input type="date" name="date_appointed_from" id="date_appointed_from" class="form-control" 
+                               value="{{ current_date_from }}">
+                    </div>
+                    
+                    <!-- Date To -->
+                    <div class="col-md-2">
+                        <label for="date_appointed_to" class="form-label">Appointed To</label>
+                        <input type="date" name="date_appointed_to" id="date_appointed_to" class="form-control" 
+                               value="{{ current_date_to }}">
+                    </div>
+                    
+                    <!-- Sort -->
+                    <div class="col-md-2">
+                        <label for="sort" class="form-label">Sort By</label>
+                        <select name="sort" id="sort" class="form-select">
+                            <option value="user__last_name" {% if current_sort == "user__last_name" %}selected{% endif %}>Name (A-Z)</option>
+                            <option value="-user__last_name" {% if current_sort == "-user__last_name" %}selected{% endif %}>Name (Z-A)</option>
+                            <option value="reference_number" {% if current_sort == "reference_number" %}selected{% endif %}>Reference (A-Z)</option>
+                            <option value="-reference_number" {% if current_sort == "-reference_number" %}selected{% endif %}>Reference (Z-A)</option>
+                            <option value="leadership_level" {% if current_sort == "leadership_level" %}selected{% endif %}>Level (A-Z)</option>
+                            <option value="-leadership_level" {% if current_sort == "-leadership_level" %}selected{% endif %}>Level (Z-A)</option>
+                            <option value="position__title" {% if current_sort == "position__title" %}selected{% endif %}>Position (A-Z)</option>
+                            <option value="-position__title" {% if current_sort == "-position__title" %}selected{% endif %}>Position (Z-A)</option>
+                            <option value="organizational_unit__name" {% if current_sort == "organizational_unit__name" %}selected{% endif %}>Unit (A-Z)</option>
+                            <option value="-organizational_unit__name" {% if current_sort == "-organizational_unit__name" %}selected{% endif %}>Unit (Z-A)</option>
+                            <option value="status" {% if current_sort == "status" %}selected{% endif %}>Status (A-Z)</option>
+                            <option value="-status" {% if current_sort == "-status" %}selected{% endif %}>Status (Z-A)</option>
+                            <option value="appointment_date" {% if current_sort == "appointment_date" %}selected{% endif %}>Appointed (Oldest)</option>
+                            <option value="-appointment_date" {% if current_sort == "-appointment_date" %}selected{% endif %}>Appointed (Newest)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100 me-1">
+                            <i class="bi bi-funnel me-1"></i>Filter
+                        </button>
+                        <a href="{% url 'leadership:directory' %}" class="btn btn-outline-secondary w-100" title="Clear filters">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    Results 
+                    <span class="badge bg-primary">{{ profiles.paginator.count }}</span>
+                </h6>
+                <div class="d-flex gap-2">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="compact-view" {% if request.GET.view == "compact" %}checked{% endif %}>
+                        <label class="form-check-label small" for="compact-view">Compact View</label>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if profiles %}
+                    <!-- Card View (Default) -->
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 p-3" id="card-view">
+                        {% for profile in profiles %}
+                        <div class="col">
+                            <div class="card h-100 shadow-sm leader-card">
+                                <div class="card-body text-center p-3">
+                                    {% if profile.profile_photo %}
+                                        <img src="{{ profile.profile_photo.url }}"
+                                             class="rounded-circle mb-2"
+                                             width="80" height="80"
+                                             style="object-fit: cover;"
+                                             alt="Profile photo of {{ profile.user.get_full_name }}">
+                                    {% elif profile.user.profile.profile_photo %}
+                                        <img src="{{ profile.user.profile.profile_photo.url }}"
+                                             class="rounded-circle mb-2"
+                                             width="80" height="80"
+                                             style="object-fit: cover;"
+                                             alt="Profile photo of {{ profile.user.get_full_name }}">
+                                    {% else %}
+                                        <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center mb-2"
+                                             style="width: 80px; height: 80px; font-size: 1.5rem"
+                                             aria-hidden="true">
+                                            {{ profile.user.first_name|first }}{{ profile.user.last_name|first }}
+                                        </div>
+                                    {% endif %}
+                                    <h6 class="card-title mb-1">{{ profile.user.get_full_name }}</h6>
+                                    <p class="text-muted small mb-1">{{ profile.position|default:"No position" }}</p>
+                                    <p class="text-muted small mb-1">
+                                        <span class="badge bg-{% if profile.leadership_level == "BOARD_OF_TRUSTEES" %}danger{% elif profile.leadership_level == "NATIONAL_EXECUTIVE_COMMITTEE" %}warning{% elif profile.leadership_level == "EXECUTIVE_DIRECTOR" %}primary{% elif profile.leadership_level == "DIRECTORATE" %}info{% elif "COORDINATOR" in profile.leadership_level %}success{% else %}secondary{% endif %}">
+                                            {{ profile.get_leadership_level_display }}
+                                        </span>
+                                    </p>
+                                    {% if profile.directorate %}
+                                        <p class="text-muted small mb-1"><i class="bi bi-building me-1"></i>{{ profile.directorate.name }}</p>
+                                    {% endif %}
+                                    {% if profile.region %}
+                                        <p class="text-muted small mb-1"><i class="bi bi-geo-alt me-1"></i>{{ profile.region.name }}</p>
+                                    {% endif %}
+                                    {% if profile.district %}
+                                        <p class="text-muted small mb-1"><i class="bi bi-geo me-1"></i>{{ profile.district.name }}</p>
+                                    {% endif %}
+                                    {% if profile.community %}
+                                        <p class="text-muted small mb-1"><i class="bi bi-people me-1"></i>{{ profile.community.name }}</p>
+                                    {% endif %}
+                                    <p class="text-muted small mb-2">
+                                        <i class="bi bi-hash me-1"></i>{{ profile.reference_number }}
+                                    </p>
+                                    <span class="badge bg-{% if profile.status == "ACTIVE" %}success{% elif profile.status == "APPOINTED" %}primary{% elif profile.status == "ACTING" %}info{% elif profile.status == "PROBATION" %}warning{% else %}secondary{% endif %}">
+                                        {{ profile.get_status_display }}
+                                    </span>
+                                    <div class="mt-2">
+                                        <a href="{% url 'leadership:profile_detail' profile.pk %}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i>View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Compact Table View -->
+                    <div class="table-responsive d-none" id="table-view">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Leader</th>
+                                    <th>Reference</th>
+                                    <th>Position</th>
+                                    <th>Level</th>
+                                    <th>Directorate</th>
+                                    <th>Region</th>
+                                    <th>District</th>
+                                    <th>Community</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for profile in profiles %}
+                                <tr>
+                                    <td class="text-center" style="width: 50px;">
+                                        {% if profile.profile_photo %}
+                                            <img src="{{ profile.profile_photo.url }}"
+                                                 class="rounded-circle"
+                                                 width="40" height="40"
+                                                 style="object-fit: cover;"
+                                                 alt="">
+                                        {% elif profile.user.profile.profile_photo %}
+                                            <img src="{{ profile.user.profile.profile_photo.url }}"
+                                                 class="rounded-circle"
+                                                 width="40" height="40"
+                                                 style="object-fit: cover;"
+                                                 alt="">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center"
+                                                 style="width: 40px; height: 40px; font-size: 0.8rem"
+                                                 aria-hidden="true">
+                                                {{ profile.user.first_name|first }}{{ profile.user.last_name|first }}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ profile.user.get_full_name }}</td>
+                                    <td><code>{{ profile.reference_number }}</code></td>
+                                    <td>{{ profile.position|default:"—" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if profile.leadership_level == "BOARD_OF_TRUSTEES" %}danger{% elif profile.leadership_level == "NATIONAL_EXECUTIVE_COMMITTEE" %}warning{% elif profile.leadership_level == "EXECUTIVE_DIRECTOR" %}primary{% elif profile.leadership_level == "DIRECTORATE" %}info{% elif "COORDINATOR" in profile.leadership_level %}success{% else %}secondary{% endif %}">
+                                            {{ profile.get_leadership_level_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ profile.directorate.name|default:"—" }}</td>
+                                    <td>{{ profile.region.name|default:"—" }}</td>
+                                    <td>{{ profile.district.name|default:"—" }}</td>
+                                    <td>{{ profile.community.name|default:"—" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if profile.status == "ACTIVE" %}success{% elif profile.status == "APPOINTED" %}primary{% elif profile.status == "ACTING" %}info{% elif profile.status == "PROBATION" %}warning{% else %}secondary{% endif %}">
+                                            {{ profile.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'leadership:profile_detail' profile.pk %}"
+                                           class="btn btn-sm btn-outline-primary" title="View Profile">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-people fs-1 text-muted"></i>
+                        <h5 class="mt-3 text-muted">No leaders found</h5>
+                        <p class="text-muted">Try adjusting your search or filter criteria.</p>
+                        <a href="{% url 'leadership:directory' %}" class="btn btn-outline-primary">Clear Filters</a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if profiles.paginator.num_pages > 1 %}
+            <div class="card-footer py-3">
+                <nav aria-label="Directory pagination">
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if profiles.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ profiles.previous_page_number }}" aria-label="Previous">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in profiles.paginator.page_range %}
+                            {% if profiles.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > profiles.number|add:'-3' and num < profiles.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if profiles.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ profiles.next_page_number }}" aria-label="Next">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
         </div>
     </div>
+    
+    <script>
+    // Toggle between card and table view
+    document.getElementById('compact-view').addEventListener('change', function(e) {
+        const cardView = document.getElementById('card-view');
+        const tableView = document.getElementById('table-view');
+        if (e.target.checked) {
+            cardView.classList.add('d-none');
+            tableView.classList.remove('d-none');
+        } else {
+            cardView.classList.remove('d-none');
+            tableView.classList.add('d-none');
+        }
+    });
+    </script>
 {% endblock dashboard_content %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Wards{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-0">Wards</h1>
+      <p class="text-muted mb-0">under constituencies</p>
+    </div>
+    <a href="{% url 'locations:ward_create' %}" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-1"></i>Add Ward
+    </a>
+  </div>
+  <div class="card">
+    <div class="card-header bg-white">
+      <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-2">
+          <select name="province" class="form-select">
+            <option value="">Province</option>
+            {% for p in provinces %}
+            <option value="{{ p.id }}" {% if p.id|stringformat:"s" == province %}selected{% endif %}>{{ p.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="district" class="form-select">
+            <option value="">District</option>
+            {% for d in districts %}
+            <option value="{{ d.id }}" {% if d.id|stringformat:"s" == district %}selected{% endif %}>{{ d.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="constituency" class="form-select">
+            <option value="">Constituency</option>
+            {% for c in constituencies %}
+            <option value="{{ c.id }}" {% if c.id|stringformat:"s" == constituency %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search wards...">
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+        </div>
+      </form>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr><th>Name</th><th>Constituency</th><th>Code</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for w in wards %}
+          <tr>
+            <td>{{ w.name }}</td>
+            <td>{{ w.constituency.name }}</td>
+            <td><code>{{ w.code }}</code></td>
+            <td>{% if w.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+            <td class="text-end">
+              <a href="{% url 'locations:ward_update' w.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-4">No wards found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

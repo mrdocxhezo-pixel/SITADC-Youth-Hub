@@ -190,6 +190,39 @@ class VolunteerProfile(
     district = models.CharField(_("District"), max_length=100, blank=True)
     community = models.CharField(_("Community"), max_length=100, blank=True)
 
+    province_location = models.ForeignKey(
+        "locations.Province",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="volunteer_profiles",
+        verbose_name=_("Province"),
+    )
+    district_location = models.ForeignKey(
+        "locations.District",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="volunteer_profiles",
+        verbose_name=_("District"),
+    )
+    constituency_location = models.ForeignKey(
+        "locations.Constituency",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="volunteer_profiles",
+        verbose_name=_("Constituency"),
+    )
+    ward_location = models.ForeignKey(
+        "locations.Ward",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="volunteer_profiles",
+        verbose_name=_("Ward / Community"),
+    )
+
     emergency_contact_name = models.CharField(
         _("Emergency contact name"), max_length=150, blank=True
     )
@@ -290,6 +323,7 @@ class VolunteerProfile(
             models.Index(fields=["status", "category"]),
             models.Index(fields=["team", "status"]),
             models.Index(fields=["region", "district"]),
+            models.Index(fields=["province_location", "district_location"]),
         ]
 
     def __str__(self) -> str:

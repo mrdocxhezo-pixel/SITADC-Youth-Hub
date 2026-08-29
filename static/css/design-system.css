@@ -192,8 +192,66 @@ body {
 }
 
 /* ============================================
-   Buttons
+   Homepage Hero
+   Desktop: strict 16:9 banner (matches the
+   background.png native landscape composition).
+   Mobile/tablet portrait: flexible height so all
+   hero content always fits without clipping.
    ============================================ */
+.homepage-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-image: url('../images/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* 16:9 on tablet landscape and desktop */
+@media (min-width: 768px) {
+    .homepage-hero {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        height: auto;
+        padding: 0;
+    }
+}
+
+.homepage-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 86, 179, 0.6);
+}
+
+.homepage-hero .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Small screens: content-driven height */
+@media (max-width: 767.98px) {
+    .homepage-hero {
+        min-height: 40vh;
+        max-height: 480px;
+        padding: 2.5rem 1rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .homepage-hero {
+        min-height: auto;
+        max-height: none;
+        padding: 3rem 1rem;
+    }
+}
+
+/* ============================================
+    Buttons
+    ============================================ */
 .btn-primary-brand {
     background-color: var(--sitadc-primary);
     border-color: var(--sitadc-primary);

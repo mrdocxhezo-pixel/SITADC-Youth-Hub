@@ -337,6 +337,30 @@ class MemberProfile(
         blank=True,
         verbose_name=_("Community"),
     )
+    province_location = models.ForeignKey(
+        "locations.Province",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="member_profiles",
+        verbose_name=_("Province"),
+    )
+    district_location = models.ForeignKey(
+        "locations.District",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="member_profiles",
+        verbose_name=_("District"),
+    )
+    ward_location = models.ForeignKey(
+        "locations.Ward",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="member_profiles",
+        verbose_name=_("Ward / Community"),
+    )
 
     # Emergency contact
     emergency_contact_name = models.CharField(
@@ -555,6 +579,30 @@ class MembershipApplication(
     district = models.CharField(max_length=100, blank=True, verbose_name=_("District"))
     community = models.CharField(
         max_length=100, blank=True, verbose_name=_("Community")
+    )
+    province_location = models.ForeignKey(
+        "locations.Province",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="membership_applications",
+        verbose_name=_("Province"),
+    )
+    district_location = models.ForeignKey(
+        "locations.District",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="membership_applications",
+        verbose_name=_("District"),
+    )
+    ward_location = models.ForeignKey(
+        "locations.Ward",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="membership_applications",
+        verbose_name=_("Ward / Community"),
     )
 
     # Membership preferences (configuration-driven)
@@ -826,6 +874,38 @@ class MembershipTransfer(
     )
     to_community = models.CharField(
         max_length=100, blank=True, verbose_name=_("To Community")
+    )
+    from_province_location = models.ForeignKey(
+        "locations.Province",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("From Province"),
+    )
+    from_district_location = models.ForeignKey(
+        "locations.District",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("From District"),
+    )
+    to_province_location = models.ForeignKey(
+        "locations.Province",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("To Province"),
+    )
+    to_district_location = models.ForeignKey(
+        "locations.District",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("To District"),
     )
     effective_date = models.DateField(verbose_name=_("Effective Date"))
     reason = models.TextField(blank=True, verbose_name=_("Reason"))

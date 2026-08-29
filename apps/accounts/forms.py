@@ -4,6 +4,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
+from apps.locations.models import District, Province
+
 from .models import UserProfile
 from .validators import validate_password_strength
 
@@ -136,6 +138,20 @@ class ProfileUpdateForm(forms.ModelForm):
         required=False,
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
+    province_location = forms.ModelChoiceField(
+        label=_("Province / Region"),
+        required=False,
+        queryset=Province.objects.all(),
+        widget=forms.Select(attrs={"class": "form-select"}),
+        empty_label=_("Select Province / Region"),
+    )
+    district_location = forms.ModelChoiceField(
+        label=_("District"),
+        required=False,
+        queryset=District.objects.all(),
+        widget=forms.Select(attrs={"class": "form-select"}),
+        empty_label=_("Select District"),
+    )
 
     class Meta:
         model = UserProfile
@@ -147,6 +163,8 @@ class ProfileUpdateForm(forms.ModelForm):
             "residential_address",
             "province",
             "district",
+            "province_location",
+            "district_location",
             "biography",
             "preferred_language",
             "time_zone",
@@ -164,8 +182,8 @@ class ProfileUpdateForm(forms.ModelForm):
             "residential_address": forms.Textarea(
                 attrs={"class": "form-control", "rows": 3}
             ),
-            "province": forms.TextInput(attrs={"class": "form-control"}),
-            "district": forms.TextInput(attrs={"class": "form-control"}),
+            "province": forms.TextInput(attrs={"class": "form-control", "readonly": True}),
+            "district": forms.TextInput(attrs={"class": "form-control", "readonly": True}),
             "biography": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
             "preferred_language": forms.TextInput(attrs={"class": "form-control"}),
             "time_zone": forms.TextInput(attrs={"class": "form-control"}),
@@ -179,8 +197,27 @@ class ProfileUpdateForm(forms.ModelForm):
             self.fields["last_name"].initial = self.instance.user.last_name
             self.fields["phone_number"].initial = self.instance.user.phone_number
 
+    def clean(self):
+        cleaned = super().clean()
+        province = cleaned.get("province_location")
+        district = cleaned.get("district_location")
+        if district and province and district.province_id != province.pk:
+            self.add_error(
+                "district_location",
+                _("The selected district does not belong to the selected province."),
+            )
+        return cleaned
+
     def save(self, commit=True):
         profile = super().save(commit=False)
+        # Mirror the structured FK values into the legacy text fields for
+        # backward compatibility and search.
+        province = self.cleaned_data.get("province_location")
+        district = self.cleaned_data.get("district_location")
+        if province:
+            profile.province = province.name
+        if district:
+            profile.district = district.name
         if commit:
             profile.save()
             user = profile.user

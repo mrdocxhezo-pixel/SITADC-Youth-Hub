@@ -1,4 +1,3 @@
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 
@@ -21,19 +20,3 @@ def about(request):
 def login_view(request):
     """Placeholder login page (UI only)."""
     return render(request, "auth/login.html")
-
-
-def password_reset_view(request):
-    """Placeholder forgot password page (UI only)."""
-    return render(request, "auth/forgot_password.html")
-
-
-def password_reset_confirm_view(request):
-    """Placeholder reset password page (UI only)."""
-    return render(request, "auth/reset_password.html")
-
-
-@login_required
-def dashboard_preview(request):
-    """Placeholder dashboard shell for layout testing (UI only)."""
-    return render(request, "core/dashboard_preview.html")

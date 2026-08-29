@@ -1,0 +1,276 @@
+{% extends 'qa/base.html' %}
+{% load i18n %}
+{% load report_instance_tags %}
+
+{% block qa_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{% trans 'Quality Assurance Dashboard' %}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        {% if user_can_manage_qa %}
+        <a href="{% url 'qa:test_plan_create' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle"></i> {% trans 'New Test Plan' %}
+        </a>
+        <a href="{% url 'qa:defect_create' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-bug"></i> {% trans 'Report Defect' %}
+        </a>
+        <a href="{% url 'qa:release_candidate_create' %}" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-box-seam"></i> {% trans 'New Release' %}
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            {% trans 'Active Test Plans' %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% with active_plans=recent_test_plans|length %}{{ active_plans }}{% endwith %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-file-earmark-text fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            {% trans 'Open Defects' %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% with open_defects=recent_defects|length %}{{ open_defects }}{% endwith %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-bug fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            {% trans 'Recent Executions' %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% with recent_exec=recent_executions|length %}{{ recent_exec }}{% endwith %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-play-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            {% trans 'Release Candidates' %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% with rel_candidates=recent_release_candidates|length %}{{ rel_candidates }}{% endwith %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-box-seam fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Widgets -->
+{% if dashboard_data %}
+<div class="row mb-4">
+    {% for widget_type, data in dashboard_data.items %}
+    <div class="col-xl-6 col-md-12 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{{ widget_type|replace:"_, "|title }}</h6>
+            </div>
+            <div class="card-body">
+                {% include 'qa/widgets/widget_'|add:widget_type|lower|add:'.html' with data=data only %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-xl-6 col-md-12 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Recent Test Plans' %}</h6>
+                <a href="{% url 'qa:test_plan_list' %}" class="btn btn-sm btn-link">{% trans 'View All' %}</a>
+            </div>
+            <div class="card-body">
+                {% if recent_test_plans %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Name' %}</th>
+                                <th>{% trans 'Version' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                                <th>{% trans 'Created' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for plan in recent_test_plans %}
+                            <tr>
+                                <td><a href="{% url 'qa:test_plan_detail' pk=plan.pk %}">{{ plan.name }}</a></td>
+                                <td>{{ plan.version }}</td>
+                                <td><span class="badge bg-{{ plan.status|lower }}">{{ plan.get_status_display }}</span></td>
+                                <td>{{ plan.created_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No test plans yet.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 col-md-12 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Recent Defects' %}</h6>
+                <a href="{% url 'qa:defect_list' %}" class="btn btn-sm btn-link">{% trans 'View All' %}</a>
+            </div>
+            <div class="card-body">
+                {% if recent_defects %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'ID' %}</th>
+                                <th>{% trans 'Title' %}</th>
+                                <th>{% trans 'Severity' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for defect in recent_defects %}
+                            <tr>
+                                <td><a href="{% url 'qa:defect_detail' pk=defect.pk %}">{{ defect.defect_id }}</a></td>
+                                <td>{{ defect.title|truncatechars:40 }}</td>
+                                <td><span class="badge bg-{{ defect.severity|lower }}">{{ defect.get_severity_display }}</span></td>
+                                <td><span class="badge bg-{{ defect.status|lower }}">{{ defect.get_status_display }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No defects reported.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-6 col-md-12 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Recent Test Executions' %}</h6>
+                <a href="{% url 'qa:test_execution_list' %}" class="btn btn-sm btn-link">{% trans 'View All' %}</a>
+            </div>
+            <div class="card-body">
+                {% if recent_executions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Test Case' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                                <th>{% trans 'Executed By' %}</th>
+                                <th>{% trans 'Started' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exec in recent_executions %}
+                            <tr>
+                                <td><a href="{% url 'qa:test_execution_detail' pk=exec.pk %}">{{ exec.test_case.test_id }}</a></td>
+                                <td><span class="badge bg-{{ exec.status|lower }}">{{ exec.get_status_display }}</span></td>
+                                <td>{{ exec.executed_by.get_full_name|default:exec.executed_by.username }}</td>
+                                <td>{{ exec.started_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No test executions yet.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 col-md-12 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Recent Release Candidates' %}</h6>
+                <a href="{% url 'qa:release_candidate_list' %}" class="btn btn-sm btn-link">{% trans 'View All' %}</a>
+            </div>
+            <div class="card-body">
+                {% if recent_release_candidates %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Version' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                                <th>{% trans 'Branch' %}</th>
+                                <th>{% trans 'Planned Release' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for release in recent_release_candidates %}
+                            <tr>
+                                <td><a href="{% url 'qa:release_candidate_detail' pk=release.pk %}">{{ release.version }}</a></td>
+                                <td><span class="badge bg-{{ release.status|lower }}">{{ release.get_status_display }}</span></td>
+                                <td>{{ release.branch }}</td>
+                                <td>{{ release.planned_release_date|date:"M d, Y"|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No release candidates yet.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

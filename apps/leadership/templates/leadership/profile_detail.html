@@ -1,101 +1,508 @@
 {% extends "layouts/dashboard.html" %}
 {% load static %}
-{% block title %}Leadership Profile | SITADC Youth Hub{% endblock title %}
+{% block title %}{{ profile.user.get_full_name }} | Leadership Profile | SITADC Youth Hub{% endblock title %}
 {% block dashboard_content %}
     <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Leadership Profile: {{ profile.user.get_full_name }}</h1>
-            <a href="{% url 'leadership:profile_update' profile.pk %}"
-               class="btn btn-outline-primary">
-                <i class="bi bi-pencil-square me-2"></i>Edit Profile
-            </a>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h1 class="h3 mb-0 text-gray-800">
+                {{ profile.user.get_full_name }}
+                <small class="text-muted fw-normal">({{ profile.reference_number }})</small>
+            </h1>
+            <div class="d-flex gap-2">
+                <a href="{% url 'leadership:profile_update' profile.pk %}"
+                   class="btn btn-outline-primary">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                </a>
+                <a href="{% url 'leadership:directory' %}"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Directory
+                </a>
+            </div>
         </div>
+        
         <div class="row">
+            <!-- Left Column: Profile Summary -->
             <div class="col-xl-4 col-lg-5">
+                <!-- Profile Card -->
                 <div class="card shadow mb-4">
                     <div class="card-body text-center">
-                        {% if profile.user.profile_image %}
-                            <img src="{{ profile.user.profile_image.url }}"
+                        {% if profile.profile_photo %}
+                            <img src="{{ profile.profile_photo.url }}"
                                  class="rounded-circle mb-3 img-fluid"
-                                 style="width: 150px;
-                                        height: 150px"
-                                 alt="Profile Image">
+                                 style="width: 150px; height: 150px; object-fit: cover;"
+                                 alt="{{ profile.user.get_full_name }}">
+                        {% elif profile.user.profile.profile_photo %}
+                            <img src="{{ profile.user.profile.profile_photo.url }}"
+                                 class="rounded-circle mb-3 img-fluid"
+                                 style="width: 150px; height: 150px; object-fit: cover;"
+                                 alt="{{ profile.user.get_full_name }}">
                         {% else %}
                             <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center mb-3"
-                                 style="width: 150px;
-                                        height: 150px;
-                                        font-size: 3rem">
+                                 style="width: 150px; height: 150px; font-size: 3rem"
+                                 aria-hidden="true">
                                 {{ profile.user.first_name|first }}{{ profile.user.last_name|first }}
                             </div>
                         {% endif %}
-                        <h4>{{ profile.user.get_full_name }}</h4>
-                        <p class="text-muted mb-1">{{ profile.official_title }}</p>
-                        <p class="text-muted small mb-3">Ref: {{ profile.reference_number }}</p>
-                        <span class="badge bg-{% if profile.status == 'ACTIVE' %}success{% else %}secondary{% endif %}">{{ profile.status }}</span>
+                        <h4 class="mb-1">{{ profile.user.get_full_name }}</h4>
+                        <p class="text-muted mb-1">{{ profile.position|default:"No position assigned" }}</p>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-hash me-1"></i>{{ profile.reference_number }}
+                        </p>
+                        <span class="badge bg-{% if profile.status == 'ACTIVE' %}success{% elif profile.status == 'APPOINTED' %}primary{% elif profile.status == 'ACTING' %}info{% elif profile.status == 'PROBATION' %}warning{% elif profile.status == 'ON_LEAVE' %}warning{% elif profile.status == 'SUSPENDED' %}danger{% else %}secondary{% endif %} fs-6 px-3 py-2">
+                            {{ profile.get_status_display }}
+                        </span>
+                        {% if profile.leadership_level %}
+                        <div class="mt-2">
+                            <span class="badge bg-{% if profile.leadership_level == "BOARD_OF_TRUSTEES" %}danger{% elif profile.leadership_level == "NATIONAL_EXECUTIVE_COMMITTEE" %}warning{% elif profile.leadership_level == "EXECUTIVE_DIRECTOR" %}primary{% elif profile.leadership_level == "DIRECTORATE" %}info{% elif "COORDINATOR" in profile.leadership_level %}success{% else %}secondary{% endif %}">
+                                {{ profile.get_leadership_level_display }}
+                            </span>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
+                
+                <!-- Organizational Information -->
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Details</h6>
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-diagram-3 me-2"></i>Organizational Information</h6>
                     </div>
                     <div class="card-body">
-                        <p><strong>Primary Unit:</strong> {{ profile.primary_organization_unit|default:"N/A" }}</p>
-                        <p><strong>Directorate:</strong> {{ profile.directorate|default:"N/A" }}</p>
-                        <p><strong>Region:</strong> {{ profile.region|default:"N/A" }}</p>
-                        <p><strong>District:</strong> {{ profile.district|default:"N/A" }}</p>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted">Organizational Unit</dt>
+                            <dd class="col-sm-8">{{ profile.organizational_unit.name|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Directorate</dt>
+                            <dd class="col-sm-8">{{ profile.directorate.name|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Region</dt>
+                            <dd class="col-sm-8">{{ profile.region.name|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">District</dt>
+                            <dd class="col-sm-8">{{ profile.district.name|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Community</dt>
+                            <dd class="col-sm-8">{{ profile.community.name|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Supervisor</dt>
+                            <dd class="col-sm-8">
+                                {% if profile.supervisor %}
+                                    <a href="{% url 'leadership:profile_detail' profile.supervisor.pk %}">
+                                        {{ profile.supervisor.user.get_full_name }}
+                                    </a>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </dd>
+                            
+                            <dt class="col-sm-4 text-muted">Appointment Date</dt>
+                            <dd class="col-sm-8">{{ profile.appointment_date|date:"M d, Y"|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Term Expiry</dt>
+                            <dd class="col-sm-8">{{ profile.term_expiry_date|date:"M d, Y"|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Terms Completed</dt>
+                            <dd class="col-sm-8">{{ profile.terms_completed }} / {{ profile.max_terms }}</dd>
+                        </dl>
                     </div>
                 </div>
+                
+                <!-- Contact Information -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-person-lines-fill me-2"></i>Contact Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted">Phone</dt>
+                            <dd class="col-sm-8">{{ profile.phone_number|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Email</dt>
+                            <dd class="col-sm-8">{{ profile.email|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">National ID</dt>
+                            <dd class="col-sm-8">{{ profile.national_id|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Gender</dt>
+                            <dd class="col-sm-8">{{ profile.gender|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Date of Birth</dt>
+                            <dd class="col-sm-8">{{ profile.date_of_birth|date:"M d, Y"|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Address</dt>
+                            <dd class="col-sm-8">{{ profile.residential_address|default:"—" }}</dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                <!-- Emergency Contact -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-shield-check me-2"></i>Emergency Contact</h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted">Name</dt>
+                            <dd class="col-sm-8">{{ profile.emergency_contact_name|default:"—" }}</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Phone</dt>
+                            <dd class="col-sm-8">{{ profile.emergency_contact_phone|default:"—" }}</dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                <!-- Direct Reports -->
+                {% if direct_reports %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-people me-2"></i>Direct Reports ({{ direct_reports.count }})</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for report in direct_reports %}
+                            <a href="{% url 'leadership:profile_detail' report.pk %}" class="list-group-item list-group-item-action d-flex align-items-center">
+                                {% if report.profile_photo %}
+                                    <img src="{{ report.profile_photo.url }}" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;" alt="">
+                                {% elif report.user.profile.profile_photo %}
+                                    <img src="{{ report.user.profile.profile_photo.url }}" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;" alt="">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-size: 0.8rem" aria-hidden="true">
+                                        {{ report.user.first_name|first }}{{ report.user.last_name|first }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-medium">{{ report.user.get_full_name }}</div>
+                                    <small class="text-muted">{{ report.position|default:"No position" }}</small>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
+            
+            <!-- Right Column: Detailed Sections -->
             <div class="col-xl-8 col-lg-7">
+                <!-- Professional Profile -->
                 <div class="card shadow mb-4">
-                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Overview</h6>
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-person-badge me-2"></i>Professional Profile</h6>
                     </div>
                     <div class="card-body">
-                        <h5 class="font-weight-bold">Biography</h5>
+                        <h5 class="font-weight-bold mb-3">Biography</h5>
                         <p>{{ profile.biography|default:"No biography provided."|linebreaks }}</p>
+                        
                         <hr>
-                        <h5 class="font-weight-bold">Skills & Expertise</h5>
-                        <p><strong>Skills:</strong> {{ profile.skills|default:"None listed" }}</p>
-                        <p><strong>Areas of Expertise:</strong> {{ profile.areas_of_expertise|default:"None listed" }}</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="font-weight-bold mb-3">Qualifications</h5>
+                                <p>{{ profile.qualifications|default:"None listed"|linebreaks }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="font-weight-bold mb-3">Professional Skills</h5>
+                                <p>{{ profile.professional_skills|default:"None listed"|linebreaks }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h5 class="font-weight-bold mb-3">Areas of Expertise</h5>
+                                <p>{{ profile.areas_of_expertise|default:"None listed"|linebreaks }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <!-- Appointments -->
+                
+                <!-- Responsibilities -->
                 <div class="card shadow mb-4">
-                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Appointments</h6>
-                        <a href="{% url 'leadership:appointment_create' %}"
-                           class="btn btn-sm btn-primary">Add Appointment</a>
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-list-check me-2"></i>Responsibilities</h6>
                     </div>
                     <div class="card-body">
+                        {% if profile.current_appointment %}
+                            <h5 class="font-weight-bold mb-2">Current Position Responsibilities</h5>
+                            <p>{{ profile.current_appointment.position.responsibilities|default:"No specific responsibilities documented."|linebreaks }}</p>
+                            
+                            <h5 class="font-weight-bold mb-2 mt-3">Reporting Responsibilities</h5>
+                            <p>{{ profile.current_appointment.position.organizational_unit.description|default:"No specific reporting responsibilities documented."|linebreaks }}</p>
+                        {% else %}
+                            <p class="text-muted">No active appointment to display responsibilities.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Appointments History -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-briefcase me-2"></i>Appointments History</h6>
+                        <a href="{% url 'leadership:appointment_create' %}" class="btn btn-sm btn-primary">Add Appointment</a>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if appointments %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <th>Role</th>
                                         <th>Position</th>
-                                        <th>Term</th>
+                                        <th>Organizational Unit</th>
+                                        <th>Type</th>
+                                        <th>Appointment Date</th>
+                                        <th>Effective Date</th>
+                                        <th>Term Start</th>
+                                        <th>Term End</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for appt in appointments %}
-                                        <tr>
-                                            <td>{{ appt.role }}</td>
-                                            <td>{{ appt.position }}</td>
-                                            <td>{{ appt.start_date }} - {{ appt.end_date|default:"Present" }}</td>
-                                            <td><span class="badge bg-info">{{ appt.status }}</span></td>
-                                        </tr>
-                                    {% empty %}
-                                        <tr>
-                                            <td colspan="4">No appointments found.</td>
-                                        </tr>
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'leadership:appointment_detail' appt.pk %}" class="fw-medium">
+                                                {{ appt.position.title }}
+                                            </a>
+                                        </td>
+                                        <td>{{ appt.organizational_unit.name }}</td>
+                                        <td>{{ appt.get_appointment_type_display }}</td>
+                                        <td>{{ appt.appointment_date|date:"M d, Y" }}</td>
+                                        <td>{{ appt.effective_date|date:"M d, Y" }}</td>
+                                        <td>{{ appt.term_start|date:"M d, Y"|default:"—" }}</td>
+                                        <td>{{ appt.term_end|date:"M d, Y"|default:"—" }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if appt.status == "ACTIVE" %}success{% elif appt.status == "APPROVED" %}primary{% elif appt.status == "PENDING_APPROVAL" %}info{% elif appt.status == "PENDING_REVIEW" %}warning{% elif appt.status == "DRAFT" %}secondary{% elif appt.status == "EXPIRED" %}warning{% elif appt.status == "COMPLETED" %}info{% else %}danger{% endif %}">
+                                                {{ appt.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-briefcase fs-1 text-muted"></i>
+                            <h5 class="mt-3 text-muted">No appointments found</h5>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Attendance Records -->
+                {% if attendance %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-calendar-check me-2"></i>Recent Attendance</h6>
+                        <a href="{% url 'leadership:attendance_list' %}?profile={{ profile.pk }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Activity</th>
+                                        <th>Venue</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for att in attendance %}
+                                    <tr>
+                                        <td>{{ att.attendance_date|date:"M d, Y" }}</td>
+                                        <td>{{ att.get_attendance_type_display }}</td>
+                                        <td>{{ att.activity_name|default:"—" }}</td>
+                                        <td>{{ att.venue|default:"—" }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if att.status == "PRESENT" %}success{% elif att.status == "ABSENT" %}danger{% elif att.status == "LATE" %}warning{% elif att.status == "EXCUSED" %}info{% else %}secondary{% endif %}">
+                                                {{ att.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+                {% endif %}
+                
+                <!-- Leave Records -->
+                {% if leave_records %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-calendar-x me-2"></i>Leave Records</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Period</th>
+                                        <th>Days</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for leave in leave_records %}
+                                    <tr>
+                                        <td>{{ leave.get_leave_type_display }}</td>
+                                        <td>{{ leave.start_date|date:"M d, Y" }} - {{ leave.end_date|date:"M d, Y" }}</td>
+                                        <td>{{ leave.duration_days }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if leave.status == "APPROVED" %}success{% elif leave.status == "PENDING" %}warning{% elif leave.status == "REJECTED" %}danger{% else %}secondary{% endif %}">
+                                                {{ leave.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Performance Reviews -->
+                {% if performance_reviews %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-clipboard-check me-2"></i>Performance Reviews</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Review Cycle</th>
+                                        <th>Period</th>
+                                        <th>Reviewer</th>
+                                        <th>Overall Rating</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for review in performance_reviews %}
+                                    <tr>
+                                        <td>{{ review.get_review_cycle_display }}</td>
+                                        <td>{{ review.period_start|date:"M d, Y" }} - {{ review.period_end|date:"M d, Y" }}</td>
+                                        <td>{{ review.reviewer.get_full_name|default:"—" }}</td>
+                                        <td>
+                                            {% if review.overall_rating %}
+                                                <span class="badge bg-primary">{{ review.overall_rating }}/5</span>
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if review.status == "APPROVED" %}success{% elif review.status == "SUBMITTED" %}info{% elif review.status == "DRAFT" %}secondary{% else %}warning{% endif %}">
+                                                {{ review.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Documents -->
+                {% if documents %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-file-earmark me-2"></i>Documents</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for doc in documents %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-medium">{{ doc.title }}</div>
+                                    <small class="text-muted">
+                                        {{ doc.get_category_display }} • v{{ doc.version }} • {{ doc.get_confidentiality_display }}
+                                    </small>
+                                </div>
+                                <a href="{{ doc.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                    <i class="bi bi-download me-1"></i>Download
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Status History -->
+                {% if status_history %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-clock-history me-2"></i>Status History</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for hist in status_history %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span>
+                                        <span class="badge bg-secondary">{{ hist.get_from_status_display }}</span>
+                                        <i class="bi bi-arrow-right mx-2"></i>
+                                        <span class="badge bg-{% if hist.to_status == "ACTIVE" %}success{% elif hist.to_status == "ARCHIVED" %}secondary{% else %}primary{% endif %}">{{ hist.get_to_status_display }}</span>
+                                    </span>
+                                    <small class="text-muted">{{ hist.changed_at|date:"M d, Y H:i" }} by {{ hist.changed_by.get_full_name|default:"System" }}</small>
+                                </div>
+                                {% if hist.notes %}
+                                <div class="text-muted small mt-1">{{ hist.notes }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Scorecards -->
+                {% if scorecards %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-graph-up me-2"></i>Performance Scorecards</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Overall Rating</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sc in scorecards %}
+                                    <tr>
+                                        <td>{{ sc.period_start|date:"M Y" }} - {{ sc.period_end|date:"M Y" }}</td>
+                                        <td>
+                                            {% if sc.overall_rating %}
+                                                <span class="fw-bold text-{% if sc.overall_rating >= 80 %}success{% elif sc.overall_rating >= 60 %}warning{% else %}danger{% endif %}">{{ sc.overall_rating }}/100</span>
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if sc.status == "PUBLISHED" %}success{% elif sc.status == "DRAFT" %}secondary{% else %}info{% endif %}">
+                                                {{ sc.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -1,0 +1,122 @@
+{% comment %}
+Reusable cascading geographic dropdown component.
+
+Include this partial to render a Country -> Province -> District -> Constituency
+-> Ward cascade. It is driven entirely by the database via the locations JSON
+API, so it never hard-codes administrative names in templates or JavaScript.
+
+Usage example:
+
+    {% include "locations/partials/geographic_dropdowns.html" with
+        show_country=False
+        show_province=True
+        show_district=True
+        show_constituency=True
+        show_ward=True
+        prefix="profile"
+        form=profile_form
+        country_field="country"
+        province_field="province_location"
+        district_field="district_location"
+        constituency_field="constituency_location"
+        ward_field="ward_location"
+        initial_province=profile.province_location_id|default:""
+        initial_district=profile.district_location_id|default:""
+        initial_constituency=profile.constituency_location_id|default:""
+        initial_ward=profile.ward_location_id|default:""
+    %}
+
+Configuration variables (all optional):
+  * prefix       - HTML id/name prefix. Use a unique prefix for multiple instances.
+  * show_country/show_province/show_district/show_constituency/show_ward
+  * initial_*    - preselected values on edit forms.
+  * required     - whether the shown selects are required.
+  * country_label/province_label/...  - overridable labels.
+{% endcomment %}
+
+{% if not show_country and not show_province and not show_district %}
+<div class="text-muted small py-2">No geographic fields selected to display.</div>
+{% endif %}
+
+{% if show_country %}
+<div class="mb-3">
+  <label class="form-label" for="{{ prefix }}_country">{{ country_label|default:"Country" }}</label>
+  <select name="{{ country_field|default:'country' }}" id="{{ prefix }}_country"
+          class="form-select geo-country {{ css_class|default:'' }}"
+          data-geo-level="country" data-target="{{ prefix }}_province"
+          {% if required %}required{% endif %}>
+    <option value="">{{ country_placeholder|default:"Select Country" }}</option>
+    {% for c in countries %}
+    <option value="{{ c.id }}" {% if c.id|stringformat:"s" == initial_country|default:"" %}selected{% endif %}>{{ c.name }}</option>
+    {% endfor %}
+  </select>
+  {% if country_help %}<div class="form-text">{{ country_help }}</div>{% endif %}
+</div>
+{% endif %}
+
+{% if show_province %}
+<div class="mb-3">
+  <label class="form-label" for="{{ prefix }}_province">{{ province_label|default:"Province / Region" }}</label>
+  <select name="{{ province_field|default:'province' }}" id="{{ prefix }}_province"
+          class="form-select geo-province {{ css_class|default:'' }}"
+          data-geo-level="province"
+          data-endpoint="{% url 'locations:api_provinces' %}"
+          data-parent-field="{{ prefix }}_country"
+          data-target="{{ prefix }}_district"
+          {% if show_province_required %}required{% endif %}>
+    <option value="">{{ province_placeholder|default:"Select Province / Region" }}</option>
+    {% if initial_province %}<option value="{{ initial_province }}" selected>{{ initial_province_name|default:"Loading..." }}</option>{% endif %}
+  </select>
+  {% if province_help %}<div class="form-text">{{ province_help }}</div>{% endif %}
+</div>
+{% endif %}
+
+{% if show_district %}
+<div class="mb-3">
+  <label class="form-label" for="{{ prefix }}_district">{{ district_label|default:"District" }}</label>
+  <select name="{{ district_field|default:'district' }}" id="{{ prefix }}_district"
+          class="form-select geo-district {{ css_class|default:'' }}"
+          data-geo-level="district"
+          data-endpoint="{% url 'locations:api_districts' %}"
+          data-parent-field="{{ prefix }}_province"
+          data-target="{{ prefix }}_constituency"
+          {% if show_district_required %}required{% endif %}>
+    <option value="">{{ district_placeholder|default:"Select District" }}</option>
+    {% if initial_district %}<option value="{{ initial_district }}" selected>{{ initial_district_name|default:"Loading..." }}</option>{% endif %}
+  </select>
+  {% if district_help %}<div class="form-text">{{ district_help }}</div>{% endif %}
+</div>
+{% endif %}
+
+{% if show_constituency %}
+<div class="mb-3">
+  <label class="form-label" for="{{ prefix }}_constituency">{{ constituency_label|default:"Constituency" }}</label>
+  <select name="{{ constituency_field|default:'constituency' }}" id="{{ prefix }}_constituency"
+          class="form-select geo-constituency {{ css_class|default:'' }}"
+          data-geo-level="constituency"
+          data-endpoint="{% url 'locations:api_constituencies' %}"
+          data-parent-field="{{ prefix }}_district"
+          data-target="{{ prefix }}_ward"
+          {% if show_constituency_required %}required{% endif %}>
+    <option value="">{{ constituency_placeholder|default:"Select Constituency" }}</option>
+    {% if initial_constituency %}<option value="{{ initial_constituency }}" selected>{{ initial_constituency_name|default:"Loading..." }}</option>{% endif %}
+  </select>
+  {% if constituency_help %}<div class="form-text">{{ constituency_help }}</div>{% endif %}
+</div>
+{% endif %}
+
+{% if show_ward %}
+<div class="mb-3">
+  <label class="form-label" for="{{ prefix }}_ward">{{ ward_label|default:"Ward" }}</label>
+  <select name="{{ ward_field|default:'ward' }}" id="{{ prefix }}_ward"
+          class="form-select geo-ward {{ css_class|default:'' }}"
+          data-geo-level="ward"
+          data-endpoint="{% url 'locations:api_wards' %}"
+          data-parent-field="{{ prefix }}_constituency"
+          {% if show_ward_required %}required{% endif %}>
+    <option value="">{{ ward_placeholder|default:"Select Ward" }}</option>
+    {% if initial_ward %}<option value="{{ initial_ward }}" selected>{{ initial_ward_name|default:"Loading..." }}</option>{% endif %}
+  </select>
+  {% if ward_help %}<div class="form-text">{{ ward_help }}</div>{% endif %}
+</div>
+{% endif %}

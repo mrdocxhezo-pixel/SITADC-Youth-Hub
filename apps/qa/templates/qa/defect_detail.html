@@ -1,0 +1,293 @@
+{% extends 'qa/base.html' %}
+{% load i18n %}
+
+{% block qa_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{{ defect.defect_id }}: {{ defect.title }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'qa:defect_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> {% trans 'Back' %}
+        </a>
+    </div>
+</div>
+
+<!-- Defect Info -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Defect Details' %}</h6>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">{% trans 'Defect ID' %}</dt>
+                    <dd class="col-sm-9">{{ defect.defect_id }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Status' %}</dt>
+                    <dd class="col-sm-9"><span class="badge bg-{{ defect.status|lower }} fs-6">{{ defect.get_status_display }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans 'Severity' %}</dt>
+                    <dd class="col-sm-9"><span class="badge bg-{{ defect.severity|lower }} fs-6">{{ defect.get_severity_display }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans 'Priority' %}</dt>
+                    <dd class="col-sm-9"><span class="badge bg-{{ defect.priority|lower }} fs-6">{{ defect.get_priority_display }}</span></dd>
+
+                    <dt class="col-sm-3">{% trans 'Module' %}</dt>
+                    <dd class="col-sm-9">{{ defect.module|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Feature' %}</dt>
+                    <dd class="col-sm-9">{{ defect.feature|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Environment' %}</dt>
+                    <dd class="col-sm-9">{{ defect.environment.name|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Reported By' %}</dt>
+                    <dd class="col-sm-9">{{ defect.reported_by.get_full_name|default:defect.reported_by.username }} ({{ defect.created_at|date:"M d, Y H:i" }})</dd>
+
+                    <dt class="col-sm-3">{% trans 'Assigned To' %}</dt>
+                    <dd class="col-sm-9">{{ defect.assigned_to.get_full_name|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Verified By' %}</dt>
+                    <dd class="col-sm-9">{{ defect.verified_by.get_full_name|default:"-" }} {% if defect.verified_at %}({{ defect.verified_at|date:"M d, Y H:i" }}){% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Resolved By' %}</dt>
+                    <dd class="col-sm-9">{{ defect.resolved_by.get_full_name|default:"-" }} {% if defect.resolved_at %}({{ defect.resolved_at|date:"M d, Y H:i" }}){% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Closed By' %}</dt>
+                    <dd class="col-sm-9">{{ defect.closed_by.get_full_name|default:"-" }} {% if defect.closed_at %}({{ defect.closed_at|date:"M d, Y H:i" }}){% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Regression Tested' %}</dt>
+                    <dd class="col-sm-9">{% if defect.regression_tested %}{% trans 'Yes' %} by {{ defect.regression_tested_by.get_full_name|default:"-" }} ({{ defect.regression_tested_at|date:"M d, Y H:i" }}){% else %}{% trans 'No' %}{% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Audit Reference' %}</dt>
+                    <dd class="col-sm-9">{{ defect.audit_reference|default:"-" }}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Linked Test Execution' %}</dt>
+                    <dd class="col-sm-9">{% if defect.test_execution %}<a href="{% url 'qa:test_execution_detail' pk=defect.test_execution.pk %}">{{ defect.test_execution.test_case.test_id }}</a>{% else %}-{% endif %}</dd>
+
+                    <dt class="col-sm-3">{% trans 'Linked Test Case' %}</dt>
+                    <dd class="col-sm-9">{% if defect.test_case %}<a href="{% url 'qa:test_case_detail' pk=defect.test_case.pk %}">{{ defect.test_case.test_id }}</a>{% else %}-{% endif %}</dd>
+                </dl>
+
+                <hr>
+                <h6>{% trans 'Description' %}</h6>
+                <p>{{ defect.description|linebreaks }}</p>
+
+                {% if defect.steps_to_reproduce %}
+                <hr>
+                <h6>{% trans 'Steps to Reproduce' %}</h6>
+                <pre class="bg-light p-3 rounded">{{ defect.steps_to_reproduce }}</pre>
+                {% endif %}
+
+                {% if defect.expected_result %}
+                <hr>
+                <h6>{% trans 'Expected Result' %}</h6>
+                <p>{{ defect.expected_result }}</p>
+                {% endif %}
+
+                {% if defect.actual_result %}
+                <hr>
+                <h6>{% trans 'Actual Result' %}</h6>
+                <p>{{ defect.actual_result }}</p>
+                {% endif %}
+
+                {% if defect.resolution_notes %}
+                <hr>
+                <h6>{% trans 'Resolution Notes' %}</h6>
+                <p>{{ defect.resolution_notes|linebreaks }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Actions' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if user_can_manage_defects %}
+                <a href="{% url 'qa:defect_update' pk=defect.pk %}" class="btn btn-outline-secondary w-100 mb-2">
+                    <i class="bi bi-pencil"></i> {% trans 'Edit' %}
+                </a>
+
+                {% if defect.status in 'NEW,CLASSIFIED,ASSIGNED,IN_PROGRESS' %}
+                <a href="{% url 'qa:defect_resolve' pk=defect.pk %}" class="btn btn-success w-100 mb-2">
+                    <i class="bi bi-check-circle"></i> {% trans 'Resolve' %}
+                </a>
+                {% endif %}
+
+                {% if defect.status == 'DEVELOPER_VERIFIED' %}
+                <a href="{% url 'qa:defect_verify' pk=defect.pk %}" class="btn btn-info w-100 mb-2">
+                    <i class="bi bi-eye"></i> {% trans 'Verify' %}
+                </a>
+                {% endif %}
+
+                {% if defect.status == 'QA_VERIFIED' %}
+                <a href="{% url 'qa:defect_close' pk=defect.pk %}" class="btn btn-primary w-100 mb-2">
+                    <i class="bi bi-lock"></i> {% trans 'Close' %}
+                </a>
+                {% endif %}
+
+                {% if defect.status in 'CLOSED,REJECTED,DEFERRED' %}
+                <a href="{% url 'qa:defect_update' pk=defect.pk %}?reopen=1" class="btn btn-warning w-100 mb-2">
+                    <i class="bi bi-arrow-counterclockwise"></i> {% trans 'Reopen' %}
+                </a>
+                {% endif %}
+                {% endif %}
+
+                <hr>
+                <h6>{% trans 'Quick Links' %}</h6>
+                {% if defect.test_execution %}
+                <a href="{% url 'qa:test_execution_detail' pk=defect.test_execution.pk %}" class="btn btn-sm btn-outline-primary w-100 mb-1">
+                    <i class="bi bi-play-circle"></i> {% trans 'View Test Execution' %}
+                </a>
+                {% endif %}
+                {% if defect.test_case %}
+                <a href="{% url 'qa:test_case_detail' pk=defect.test_case.pk %}" class="btn btn-sm btn-outline-primary w-100 mb-1">
+                    <i class="bi bi-list-check"></i> {% trans 'View Test Case' %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if defect.screenshots %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Screenshots' %}</h6>
+            </div>
+            <div class="card-body">
+                {% for screenshot in defect.screenshots %}
+                <div class="mb-2">
+                    <img src="{{ screenshot }}" alt="Screenshot" class="img-fluid rounded border" style="max-height: 200px;">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Assignment History -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Assignment History' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if assignments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Assigned To' %}</th>
+                                <th>{% trans 'Assigned By' %}</th>
+                                <th>{% trans 'Assigned At' %}</th>
+                                <th>{% trans 'Unassigned At' %}</th>
+                                <th>{% trans 'Notes' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                            <tr>
+                                <td>{{ assignment.assigned_to.get_full_name }}</td>
+                                <td>{{ assignment.assigned_by.get_full_name|default:"-" }}</td>
+                                <td>{{ assignment.assigned_at|date:"M d, Y H:i" }}</td>
+                                <td>{{ assignment.unassigned_at|date:"M d, Y H:i"|default:"-" }}</td>
+                                <td>{{ assignment.notes|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No assignment history.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resolutions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Resolution History' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if resolutions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Resolved By' %}</th>
+                                <th>{% trans 'Resolution Type' %}</th>
+                                <th>{% trans 'Resolved At' %}</th>
+                                <th>{% trans 'Verified By' %}</th>
+                                <th>{% trans 'Verified At' %}</th>
+                                <th>{% trans 'Notes' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for resolution in resolutions %}
+                            <tr>
+                                <td>{{ resolution.resolved_by.get_full_name }}</td>
+                                <td>{{ resolution.get_resolution_type_display }}</td>
+                                <td>{{ resolution.resolved_at|date:"M d, Y H:i" }}</td>
+                                <td>{{ resolution.verified_by.get_full_name|default:"-" }}</td>
+                                <td>{{ resolution.verified_at|date:"M d, Y H:i"|default:"-" }}</td>
+                                <td>{{ resolution.resolution_notes|truncatechars:100 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No resolution history.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Executions that found this defect -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans 'Test Executions Finding This Defect' %}</h6>
+            </div>
+            <div class="card-body">
+                {% if executions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Test Case' %}</th>
+                                <th>{% trans 'Status' %}</th>
+                                <th>{% trans 'Executed By' %}</th>
+                                <th>{% trans 'Date' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exec in executions %}
+                            <tr>
+                                <td><a href="{% url 'qa:test_execution_detail' pk=exec.pk %}">{{ exec.test_case.test_id }}</a></td>
+                                <td><span class="badge bg-{{ exec.status|lower }}">{{ exec.get_status_display }}</span></td>
+                                <td>{{ exec.executed_by.get_full_name }}</td>
+                                <td>{{ exec.started_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% trans 'No test executions linked to this defect.' %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

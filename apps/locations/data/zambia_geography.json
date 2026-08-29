@@ -1,0 +1,9109 @@
+{
+ "country": "Zambia",
+ "provinces": [
+  {
+   "code": "ZM101",
+   "name": "Central",
+   "districts": [
+    {
+     "code": "ZM101001",
+     "name": "Chibombo",
+     "constituencies": [
+      {
+       "code": "ZM101001001",
+       "name": "Katuba",
+       "wards": [
+        {
+         "code": "ZM101001001001",
+         "name": "Kamaila"
+        },
+        {
+         "code": "ZM101001001002",
+         "name": "Katuba"
+        },
+        {
+         "code": "ZM101001001003",
+         "name": "Chunga"
+        },
+        {
+         "code": "ZM101001001004",
+         "name": "Mungule"
+        },
+        {
+         "code": "ZM101001001005",
+         "name": "Cholokelo"
+        },
+        {
+         "code": "ZM101001001006",
+         "name": "Muchenje"
+        },
+        {
+         "code": "ZM101001001007",
+         "name": "Chilochabalenje"
+        },
+        {
+         "code": "ZM101001001008",
+         "name": "Kabile"
+        }
+       ]
+      },
+      {
+       "code": "ZM101001002",
+       "name": "Keembe",
+       "wards": [
+        {
+         "code": "ZM101001002009",
+         "name": "Keembe"
+        },
+        {
+         "code": "ZM101001002010",
+         "name": "Kalola"
+        },
+        {
+         "code": "ZM101001002011",
+         "name": "Chaloshi"
+        },
+        {
+         "code": "ZM101001002012",
+         "name": "Chibombo"
+        },
+        {
+         "code": "ZM101001002013",
+         "name": "Chikobo"
+        },
+        {
+         "code": "ZM101001002014",
+         "name": "Kakoma"
+        },
+        {
+         "code": "ZM101001002015",
+         "name": "Mashikili"
+        },
+        {
+         "code": "ZM101001002016",
+         "name": "Malambanyama"
+        },
+        {
+         "code": "ZM101001002017",
+         "name": "Lunjofwa"
+        },
+        {
+         "code": "ZM101001002018",
+         "name": "Chitanda"
+        },
+        {
+         "code": "ZM101001002019",
+         "name": "Muundu"
+        },
+        {
+         "code": "ZM101001002020",
+         "name": "Ipongo"
+        },
+        {
+         "code": "ZM101001002021",
+         "name": "Itumbwe"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM101002",
+     "name": "Chisamba",
+     "constituencies": [
+      {
+       "code": "ZM101002003",
+       "name": "Chisamba",
+       "wards": [
+        {
+         "code": "ZM101002003001",
+         "name": "Liteta"
+        },
+        {
+         "code": "ZM101002003002",
+         "name": "Monangombe"
+        },
+        {
+         "code": "ZM101002003003",
+         "name": "Mutenga"
+        },
+        {
+         "code": "ZM101002003004",
+         "name": "Chikonkomene"
+        },
+        {
+         "code": "ZM101002003005",
+         "name": "Muswishi"
+        },
+        {
+         "code": "ZM101002003006",
+         "name": "Mulungushi"
+        },
+        {
+         "code": "ZM101002003007",
+         "name": "Mwantaya"
+        },
+        {
+         "code": "ZM101002003008",
+         "name": "Mwapula"
+        },
+        {
+         "code": "ZM101002003009",
+         "name": "Chamuka"
+        },
+        {
+         "code": "ZM101002003010",
+         "name": "Kamano"
+        },
+        {
+         "code": "ZM101002003011",
+         "name": "Chisamba"
+        },
+        {
+         "code": "ZM101002003012",
+         "name": "Miswa"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM101003",
+     "name": "Chitambo",
+     "constituencies": [
+      {
+       "code": "ZM101003004",
+       "name": "Chitambo",
+       "wards": [
+        {
+         "code": "ZM101003004001",
+         "name": "Luombwa"
+        },
+        {
+         "code": "ZM101003004002",
+         "name": "Katonga"
+        },
+        {
+         "code": "ZM101003004003",
+         "name": "Lulimala"
+        },
+        {
+         "code": "ZM101003004004",
+         "name": "Mpelembe"
+        },
+        {
+         "code": "ZM101003004005",
+         "name": "Chipundu"
+        },
+        {
+         "code": "ZM101003004006",
+         "name": "Chalilo"
+        },
+        {
+         "code": "ZM101003004007",
+         "name": "Lusenga"
+        },
+        {
+         "code": "ZM101003004008",
+         "name": "Muchinka"
+        },
+        {
+         "code": "ZM101003004009",
+         "name": "Chitambo"
+        },
+        {
+         "code": "ZM101003004010",
+         "name": "Nakatambo"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM101005",
+     "name": "Kabwe",
+     "constituencies": [
+      {
+       "code": "ZM101005006",
+       "name": "Bwacha",
+       "wards": [
+        {
+         "code": "ZM101005006001",
+         "name": "Kang'omba"
+        },
+        {
+         "code": "ZM101005006002",
+         "name": "Chinyanja"
+        },
+        {
+         "code": "ZM101005006003",
+         "name": "Munyama"
+        },
+        {
+         "code": "ZM101005006004",
+         "name": "Munga"
+        },
+        {
+         "code": "ZM101005006005",
+         "name": "Chililalila"
+        },
+        {
+         "code": "ZM101005006006",
+         "name": "Moomba"
+        },
+        {
+         "code": "ZM101005006007",
+         "name": "Zambezi"
+        },
+        {
+         "code": "ZM101005006008",
+         "name": "Makululu"
+        },
+        {
+         "code": "ZM101005006009",
+         "name": "Ben Kapufi"
+        },
+        {
+         "code": "ZM101005006010",
+         "name": "Muwowo West"
+        },
+        {
+         "code": "ZM101005006011",
+         "name": "Muwowo East"
+        },
+        {
+         "code": "ZM101005006012",
+         "name": "Ngungu"
+        },
+        {
+         "code": "ZM101005006013",
+         "name": "Chimanimani"
+        },
+        {
+         "code": "ZM101005006014",
+         "name": "Bwacha"
+        },
+        {
+         "code": "ZM101005006015",
+         "name": "Kawama"
+        }
+       ]
+      },
+      {
+       "code": "ZM101005007",
+       "name": "Kabwe Central",
+       "wards": [
+        {
+         "code": "ZM101005007016",
+         "name": "Luangwa"
+        },
+        {
+         "code": "ZM101005007017",
+         "name": "Lukanga"
+        },
+        {
+         "code": "ZM101005007018",
+         "name": "Kalonga"
+        },
+        {
+         "code": "ZM101005007019",
+         "name": "Nakoli"
+        },
+        {
+         "code": "ZM101005007020",
+         "name": "Kaputula"
+        },
+        {
+         "code": "ZM101005007021",
+         "name": "Mpima"
+        },
+        {
+         "code": "ZM101005007022",
+         "name": "Luansase"
+        },
+        {
+         "code": "ZM101005007023",
+         "name": "Waya"
+        },
+        {
+         "code": "ZM101005007024",
+         "name": "Katondo"
+        },
+        {
+         "code": "ZM101005007025",
+         "name": "Chirwa"
+        },
+        {
+         "code": "ZM101005007026",
+         "name": "Njanji"
+        },
+        {
+         "code": "ZM101005007027",
+         "name": "Highridge"
+        },
+        {
+         "code": "ZM101005007028",
+         "name": "Justine Kabwe"
+        },
+        {
+         "code": "ZM101005007029",
+         "name": "David Ramushu"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM101006",
+     "name": "Kapiri Mposhi",
+     "constituencies": [
+      {
+       "code": "ZM101006008",
+       "name": "Kapiri Mposhi",
+       "wards": [
+        {
+         "code": "ZM101006008001",
+         "name": "Kashitu"
+        },
+        {
+         "code": "ZM101006008002",
+         "name": "Kasanta"
+        },
+        {
+         "code": "ZM101006008003",
+         "name": "Mushimbili"
+        },
+        {
+         "code": "ZM101006008004",
+         "name": "Kapiri Mposhi"
+        },
+        {
+         "code": "ZM101006008005",
+         "name": "Muteteshi"
+        },
+        {
+         "code": "ZM101006008006",
+         "name": "Lunchu"
+        },
+        {
+         "code": "ZM101006008007",
+         "name": "Lunsemfwa"
+        },
+        {
+         "code": "ZM101006008008",
+         "name": "Chang'ondo"
+        },
+        {
+         "code": "ZM101006008009",
+         "name": "Kakwelesa"
+        },
+        {
+         "code": "ZM101006008010",
+         "name": "Mubofwe"
+        },
+        {
+         "code": "ZM101006008011",
+         "name": "Kampumba"
+        },
+        {
+         "code": "ZM101006008012",
+         "name": "Nchembwe"
+        },
+        {
+         "code": "ZM101006008013",
+         "name": "Chibwelelo"
+        },
+        {
+         "code": "ZM101006008014",
+         "name": "Kabwale"
+        },
+        {
+         "code": "ZM101006008015",
+         "name": "Imansa"
+        },
+        {
+         "code": "ZM101006008016",
+         "name": "Lukanga"
+        },
+        {
+         "code": "ZM101006008017",
+         "name": "Mpunde"
+        },
+        {
+         "code": "ZM101006008018",
+         "name": "Munga"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM101007",
+     "name": "Luano",
+     "constituencies": [
+      {
+       "code": "ZM101007009",
+       "name": "Mkushi South",
+       "wards": [
+        {
+         "code": "ZM101007009001",
+         "name": "Mibanga"
+        },
+        {
+         "code": "ZM101007009002",
+         "name": "Munda"
+        },
+        {
+         "code": "ZM101007009003",
+         "name": "Katukutu"
+        },
+        {
+         "code": "ZM101007009004",
+         "name": "Lwambulu"
+        },
+        {
+         "code": "ZM101007009005",
+         "name": "Kamimbya"
+        },
+        {
+         "code": "ZM101007009006",
+         "name": "Lundashi"
+        },
+        {
+         "code": "ZM101007009007",
+         "name": "Nkomashi"
+        },
+        {
+         "code": "ZM101007009008",
+         "name": "Muswishi"
+        },
+        {
+         "code": "ZM101007009009",
+         "name": "Ching'ombe"
+        },
+        {
+         "code": "ZM101007009010",
+         "name": "Chipaba"
+        },
+        {
+         "code": "ZM101007009011",
+         "name": "Mwalala"
+        },
+        {
+         "code": "ZM101007009012",
+         "name": "Chimika"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM101008",
+     "name": "Mkushi",
+     "constituencies": [
+      {
+       "code": "ZM101008010",
+       "name": "Mkushi North",
+       "wards": [
+        {
+         "code": "ZM101008010001",
+         "name": "Chitina"
+        },
+        {
+         "code": "ZM101008010002",
+         "name": "Nkumbi"
+        },
+        {
+         "code": "ZM101008010003",
+         "name": "Musofu"
+        },
+        {
+         "code": "ZM101008010004",
+         "name": "Munsakamba"
+        },
+        {
+         "code": "ZM101008010005",
+         "name": "Chibefwe"
+        },
+        {
+         "code": "ZM101008010006",
+         "name": "Upper Lunsenfwa"
+        },
+        {
+         "code": "ZM101008010007",
+         "name": "Nkolonga"
+        },
+        {
+         "code": "ZM101008010008",
+         "name": "Chalata"
+        },
+        {
+         "code": "ZM101008010009",
+         "name": "Kabengeeshi"
+        },
+        {
+         "code": "ZM101008010010",
+         "name": "Nshinso"
+        },
+        {
+         "code": "ZM101008010011",
+         "name": "Kalwa"
+        },
+        {
+         "code": "ZM101008010012",
+         "name": "Nkulumashiba"
+        },
+        {
+         "code": "ZM101008010013",
+         "name": "Chikanda"
+        },
+        {
+         "code": "ZM101008010014",
+         "name": "Matuku"
+        },
+        {
+         "code": "ZM101008010015",
+         "name": "Tembwe"
+        },
+        {
+         "code": "ZM101008010016",
+         "name": "Munshibemba"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM101009",
+     "name": "Mumbwa",
+     "constituencies": [
+      {
+       "code": "ZM101009011",
+       "name": "Mumbwa",
+       "wards": [
+        {
+         "code": "ZM101009011001",
+         "name": "Nalusanga"
+        },
+        {
+         "code": "ZM101009011002",
+         "name": "Lutale"
+        },
+        {
+         "code": "ZM101009011003",
+         "name": "Chibolyo"
+        },
+        {
+         "code": "ZM101009011004",
+         "name": "Nambala"
+        },
+        {
+         "code": "ZM101009011005",
+         "name": "Shimbizhi"
+        },
+        {
+         "code": "ZM101009011006",
+         "name": "Naluvwi"
+        },
+        {
+         "code": "ZM101009011007",
+         "name": "Kalwanyembe"
+        },
+        {
+         "code": "ZM101009011008",
+         "name": "Mpusu"
+        },
+        {
+         "code": "ZM101009011009",
+         "name": "Kamilambo"
+        },
+        {
+         "code": "ZM101009011010",
+         "name": "Mumba"
+        },
+        {
+         "code": "ZM101009011011",
+         "name": "Mupona"
+        },
+        {
+         "code": "ZM101009011012",
+         "name": "Makebo"
+        }
+       ]
+      },
+      {
+       "code": "ZM101009012",
+       "name": "Nangoma",
+       "wards": [
+        {
+         "code": "ZM101009012013",
+         "name": "Nakasaka"
+        },
+        {
+         "code": "ZM101009012014",
+         "name": "Matala"
+        },
+        {
+         "code": "ZM101009012015",
+         "name": "Nangoma"
+        },
+        {
+         "code": "ZM101009012016",
+         "name": "Chisalu"
+        },
+        {
+         "code": "ZM101009012017",
+         "name": "Keezwa"
+        },
+        {
+         "code": "ZM101009012018",
+         "name": "Choma"
+        },
+        {
+         "code": "ZM101009012019",
+         "name": "Nalubanda"
+        },
+        {
+         "code": "ZM101009012020",
+         "name": "Shichanzu"
+        },
+        {
+         "code": "ZM101009012021",
+         "name": "Myooye"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM101010",
+     "name": "Ngabwe",
+     "constituencies": [
+      {
+       "code": "ZM101010013",
+       "name": "Lufubu",
+       "wards": [
+        {
+         "code": "ZM101010013001",
+         "name": "Ngabwe"
+        },
+        {
+         "code": "ZM101010013002",
+         "name": "Luamala"
+        },
+        {
+         "code": "ZM101010013003",
+         "name": "Chisangwa"
+        },
+        {
+         "code": "ZM101010013004",
+         "name": "Iwonde"
+        },
+        {
+         "code": "ZM101010013005",
+         "name": "Chilwa"
+        },
+        {
+         "code": "ZM101010013006",
+         "name": "Chitumba"
+        },
+        {
+         "code": "ZM101010013007",
+         "name": "Mukubwe"
+        },
+        {
+         "code": "ZM101010013008",
+         "name": "Chisanga"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM101011",
+     "name": "Serenje",
+     "constituencies": [
+      {
+       "code": "ZM101011014",
+       "name": "Muchinga",
+       "wards": [
+        {
+         "code": "ZM101011014010",
+         "name": "Mweshe"
+        },
+        {
+         "code": "ZM101011014011",
+         "name": "Kanona"
+        },
+        {
+         "code": "ZM101011014012",
+         "name": "Mailo"
+        },
+        {
+         "code": "ZM101011014013",
+         "name": "Lushibashi"
+        },
+        {
+         "code": "ZM101011014014",
+         "name": "Serenje"
+        },
+        {
+         "code": "ZM101011014015",
+         "name": "Kabansa"
+        },
+        {
+         "code": "ZM101011014016",
+         "name": "Chisomo"
+        },
+        {
+         "code": "ZM101011014017",
+         "name": "Lukusashi"
+        },
+        {
+         "code": "ZM101011014018",
+         "name": "Sancha"
+        },
+        {
+         "code": "ZM101011014019",
+         "name": "Chibale"
+        },
+        {
+         "code": "ZM101011014020",
+         "name": "Kabwe Kupela"
+        },
+        {
+         "code": "ZM101011014021",
+         "name": "Masaninga"
+        }
+       ]
+      },
+      {
+       "code": "ZM101011015",
+       "name": "Serenje",
+       "wards": [
+        {
+         "code": "ZM101011015001",
+         "name": "Muchinda"
+        },
+        {
+         "code": "ZM101011015002",
+         "name": "Musangashi"
+        },
+        {
+         "code": "ZM101011015003",
+         "name": "Kashishi"
+        },
+        {
+         "code": "ZM101011015004",
+         "name": "Lupiya"
+        },
+        {
+         "code": "ZM101011015005",
+         "name": "Milenje"
+        },
+        {
+         "code": "ZM101011015006",
+         "name": "Ibolelo"
+        },
+        {
+         "code": "ZM101011015007",
+         "name": "Chisangwa"
+        },
+        {
+         "code": "ZM101011015008",
+         "name": "Mbaswa"
+        },
+        {
+         "code": "ZM101011015009",
+         "name": "Kabamba"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM101012",
+     "name": "Shibuyunji",
+     "constituencies": [
+      {
+       "code": "ZM101012001",
+       "name": "Mwembezhi",
+       "wards": [
+        {
+         "code": "ZM101012001001",
+         "name": "Kapyanga West"
+        },
+        {
+         "code": "ZM101012001002",
+         "name": "Kapyanga East"
+        },
+        {
+         "code": "ZM101012001003",
+         "name": "Mukulaikwa"
+        },
+        {
+         "code": "ZM101012001004",
+         "name": "Mutombe"
+        },
+        {
+         "code": "ZM101012001005",
+         "name": "Kalundu"
+        },
+        {
+         "code": "ZM101012001006",
+         "name": "Chabota"
+        },
+        {
+         "code": "ZM101012001007",
+         "name": "Makombwe"
+        },
+        {
+         "code": "ZM101012001008",
+         "name": "Nampeya"
+        },
+        {
+         "code": "ZM101012001009",
+         "name": "Nampundwe"
+        },
+        {
+         "code": "ZM101012001010",
+         "name": "Sala"
+        },
+        {
+         "code": "ZM101012001011",
+         "name": "Chikonka"
+        },
+        {
+         "code": "ZM101012001012",
+         "name": "Nakaiba"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "ZM102",
+   "name": "Copperbelt",
+   "districts": [
+    {
+     "code": "ZM102001",
+     "name": "Chililabombwe",
+     "constituencies": [
+      {
+       "code": "ZM102001016",
+       "name": "Chililabombwe",
+       "wards": [
+        {
+         "code": "ZM102001016001",
+         "name": "Chilimina"
+        },
+        {
+         "code": "ZM102001016002",
+         "name": "Miyanda"
+        },
+        {
+         "code": "ZM102001016003",
+         "name": "Silwizya"
+        },
+        {
+         "code": "ZM102001016004",
+         "name": "Joseph Mwilwa"
+        },
+        {
+         "code": "ZM102001016005",
+         "name": "Kasumbalesa"
+        },
+        {
+         "code": "ZM102001016006",
+         "name": "Anoya Zulu"
+        },
+        {
+         "code": "ZM102001016007",
+         "name": "Kawama"
+        },
+        {
+         "code": "ZM102001016008",
+         "name": "Lubansa"
+        },
+        {
+         "code": "ZM102001016009",
+         "name": "Chitambi"
+        },
+        {
+         "code": "ZM102001016010",
+         "name": "Kakoso"
+        },
+        {
+         "code": "ZM102001016011",
+         "name": "Kamenza East"
+        },
+        {
+         "code": "ZM102001016012",
+         "name": "Mumba"
+        },
+        {
+         "code": "ZM102001016013",
+         "name": "Kafue"
+        },
+        {
+         "code": "ZM102001016014",
+         "name": "Nakatindi"
+        },
+        {
+         "code": "ZM102001016015",
+         "name": "Mvula"
+        },
+        {
+         "code": "ZM102001016016",
+         "name": "Chitimukulu"
+        },
+        {
+         "code": "ZM102001016017",
+         "name": "Ilute Yeta"
+        },
+        {
+         "code": "ZM102001016018",
+         "name": "Ngebe"
+        },
+        {
+         "code": "ZM102001016019",
+         "name": "Kamima"
+        },
+        {
+         "code": "ZM102001016020",
+         "name": "Mukuka"
+        },
+        {
+         "code": "ZM102001016021",
+         "name": "Yotam Muleya"
+        },
+        {
+         "code": "ZM102001016022",
+         "name": "Helen Kaunda"
+        },
+        {
+         "code": "ZM102001016023",
+         "name": "James Phiri"
+        },
+        {
+         "code": "ZM102001016024",
+         "name": "Mathew Nkoloma"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM102002",
+     "name": "Chingola",
+     "constituencies": [
+      {
+       "code": "ZM102002017",
+       "name": "Chingola",
+       "wards": [
+        {
+         "code": "ZM102002017001",
+         "name": "Mutenda"
+        },
+        {
+         "code": "ZM102002017002",
+         "name": "Muchinshi"
+        },
+        {
+         "code": "ZM102002017003",
+         "name": "Ipafu"
+        },
+        {
+         "code": "ZM102002017004",
+         "name": "Kalilo"
+        },
+        {
+         "code": "ZM102002017005",
+         "name": "Kabungo"
+        },
+        {
+         "code": "ZM102002017006",
+         "name": "Chiwempala"
+        },
+        {
+         "code": "ZM102002017007",
+         "name": "Chikola"
+        },
+        {
+         "code": "ZM102002017008",
+         "name": "Chingola"
+        },
+        {
+         "code": "ZM102002017009",
+         "name": "Kasompe"
+        },
+        {
+         "code": "ZM102002017010",
+         "name": "Musenga"
+        },
+        {
+         "code": "ZM102002017011",
+         "name": "Mimbula"
+        },
+        {
+         "code": "ZM102002017012",
+         "name": "Lulamba"
+        },
+        {
+         "code": "ZM102002017013",
+         "name": "Kamuchanga"
+        },
+        {
+         "code": "ZM102002017014",
+         "name": "Maiteneke"
+        },
+        {
+         "code": "ZM102002017015",
+         "name": "Chitimukulu"
+        },
+        {
+         "code": "ZM102002017016",
+         "name": "Chabanyama"
+        },
+        {
+         "code": "ZM102002017017",
+         "name": "Twatasha"
+        },
+        {
+         "code": "ZM102002017018",
+         "name": "Gibson Chimfwembe"
+        }
+       ]
+      },
+      {
+       "code": "ZM102002018",
+       "name": "Nchanga",
+       "wards": [
+        {
+         "code": "ZM102002018019",
+         "name": "Kwacha"
+        },
+        {
+         "code": "ZM102002018020",
+         "name": "Nchanga"
+        },
+        {
+         "code": "ZM102002018021",
+         "name": "Sekela"
+        },
+        {
+         "code": "ZM102002018022",
+         "name": "Nsansa"
+        },
+        {
+         "code": "ZM102002018023",
+         "name": "Buntungwa"
+        },
+        {
+         "code": "ZM102002018024",
+         "name": "Kabundi"
+        },
+        {
+         "code": "ZM102002018025",
+         "name": "Kasala"
+        },
+        {
+         "code": "ZM102002018026",
+         "name": "Kabuta"
+        },
+        {
+         "code": "ZM102002018027",
+         "name": "Bupalo"
+        },
+        {
+         "code": "ZM102002018028",
+         "name": "Luano"
+        },
+        {
+         "code": "ZM102002018029",
+         "name": "Kapisha"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM102003",
+     "name": "Kalulushi",
+     "constituencies": [
+      {
+       "code": "ZM102003019",
+       "name": "Kalulushi",
+       "wards": [
+        {
+         "code": "ZM102003019001",
+         "name": "Musakashi"
+        },
+        {
+         "code": "ZM102003019002",
+         "name": "Sitwe"
+        },
+        {
+         "code": "ZM102003019003",
+         "name": "Chambishi"
+        },
+        {
+         "code": "ZM102003019004",
+         "name": "Twaiteka"
+        },
+        {
+         "code": "ZM102003019005",
+         "name": "Lukoshi"
+        },
+        {
+         "code": "ZM102003019006",
+         "name": "Lulamba"
+        },
+        {
+         "code": "ZM102003019007",
+         "name": "Mwambashi"
+        },
+        {
+         "code": "ZM102003019008",
+         "name": "Ichimpe"
+        },
+        {
+         "code": "ZM102003019009",
+         "name": "Kalanga"
+        },
+        {
+         "code": "ZM102003019010",
+         "name": "Lubuto"
+        },
+        {
+         "code": "ZM102003019011",
+         "name": "Dongwe"
+        },
+        {
+         "code": "ZM102003019012",
+         "name": "Kalungwishi"
+        },
+        {
+         "code": "ZM102003019013",
+         "name": "Luapula"
+        },
+        {
+         "code": "ZM102003019014",
+         "name": "Kalengwa"
+        },
+        {
+         "code": "ZM102003019015",
+         "name": "Buseko"
+        },
+        {
+         "code": "ZM102003019016",
+         "name": "Kankonshi"
+        },
+        {
+         "code": "ZM102003019017",
+         "name": "Chibuluma"
+        },
+        {
+         "code": "ZM102003019018",
+         "name": "Remmy Chisupa"
+        },
+        {
+         "code": "ZM102003019019",
+         "name": "Ngweshi"
+        },
+        {
+         "code": "ZM102003019020",
+         "name": "Kafue"
+        },
+        {
+         "code": "ZM102003019021",
+         "name": "Nsokoloko"
+        },
+        {
+         "code": "ZM102003019022",
+         "name": "Lubanga"
+        },
+        {
+         "code": "ZM102003019023",
+         "name": "Chembe"
+        },
+        {
+         "code": "ZM102003019024",
+         "name": "Chati"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM102004",
+     "name": "Kitwe",
+     "constituencies": [
+      {
+       "code": "ZM102004020",
+       "name": "Chimwemwe",
+       "wards": [
+        {
+         "code": "ZM102004020001",
+         "name": "Itimpi"
+        },
+        {
+         "code": "ZM102004020002",
+         "name": "Twatasha"
+        },
+        {
+         "code": "ZM102004020003",
+         "name": "Kawama"
+        },
+        {
+         "code": "ZM102004020004",
+         "name": "Kamatipa"
+        },
+        {
+         "code": "ZM102004020005",
+         "name": "Buntungwa"
+        },
+        {
+         "code": "ZM102004020006",
+         "name": "Lubuto"
+        },
+        {
+         "code": "ZM102004020007",
+         "name": "Chimwemwe"
+        }
+       ]
+      },
+      {
+       "code": "ZM102004021",
+       "name": "Kamfinsa",
+       "wards": [
+        {
+         "code": "ZM102004021008",
+         "name": "Bupe"
+        },
+        {
+         "code": "ZM102004021009",
+         "name": "Ndeke"
+        },
+        {
+         "code": "ZM102004021010",
+         "name": "Kafue"
+        },
+        {
+         "code": "ZM102004021011",
+         "name": "Kamfinsa"
+        }
+       ]
+      },
+      {
+       "code": "ZM102004022",
+       "name": "Kwacha",
+       "wards": [
+        {
+         "code": "ZM102004022012",
+         "name": "Kwacha"
+        },
+        {
+         "code": "ZM102004022013",
+         "name": "Bulangililo"
+        },
+        {
+         "code": "ZM102004022014",
+         "name": "Ipusukilo"
+        },
+        {
+         "code": "ZM102004022015",
+         "name": "Chantete"
+        },
+        {
+         "code": "ZM102004022016",
+         "name": "Musonda"
+        },
+        {
+         "code": "ZM102004022017",
+         "name": "Riverside"
+        },
+        {
+         "code": "ZM102004022018",
+         "name": "Lubwa"
+        }
+       ]
+      },
+      {
+       "code": "ZM102004023",
+       "name": "Nkana",
+       "wards": [
+        {
+         "code": "ZM102004023019",
+         "name": "Buchi"
+        },
+        {
+         "code": "ZM102004023020",
+         "name": "Parklands"
+        },
+        {
+         "code": "ZM102004023021",
+         "name": "Mukuba"
+        },
+        {
+         "code": "ZM102004023022",
+         "name": "Rokana"
+        },
+        {
+         "code": "ZM102004023023",
+         "name": "Kamakonde"
+        },
+        {
+         "code": "ZM102004023024",
+         "name": "Miseshi"
+        },
+        {
+         "code": "ZM102004023025",
+         "name": "Mindolo"
+        },
+        {
+         "code": "ZM102004023026",
+         "name": "Luyando"
+        }
+       ]
+      },
+      {
+       "code": "ZM102004024",
+       "name": "Wusakile",
+       "wards": [
+        {
+         "code": "ZM102004024027",
+         "name": "Wusakile"
+        },
+        {
+         "code": "ZM102004024028",
+         "name": "Chibote"
+        },
+        {
+         "code": "ZM102004024029",
+         "name": "Chamboli"
+        },
+        {
+         "code": "ZM102004024030",
+         "name": "Luangwa"
+        },
+        {
+         "code": "ZM102004024031",
+         "name": "Luto"
+        },
+        {
+         "code": "ZM102004024032",
+         "name": "Limaposa"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM102005",
+     "name": "Luanshya",
+     "constituencies": [
+      {
+       "code": "ZM102005025",
+       "name": "Luanshya",
+       "wards": [
+        {
+         "code": "ZM102005025001",
+         "name": "Baluba"
+        },
+        {
+         "code": "ZM102005025002",
+         "name": "Fisenge"
+        },
+        {
+         "code": "ZM102005025003",
+         "name": "Chitwi"
+        },
+        {
+         "code": "ZM102005025004",
+         "name": "Twashuka"
+        },
+        {
+         "code": "ZM102005025005",
+         "name": "Buntungwa"
+        },
+        {
+         "code": "ZM102005025006",
+         "name": "Kamuchanga"
+        },
+        {
+         "code": "ZM102005025007",
+         "name": "Mwaiseni"
+        },
+        {
+         "code": "ZM102005025008",
+         "name": "Mulungushi"
+        },
+        {
+         "code": "ZM102005025009",
+         "name": "Zambezi"
+        },
+        {
+         "code": "ZM102005025010",
+         "name": "Mikomfwa"
+        },
+        {
+         "code": "ZM102005025011",
+         "name": "Levi Chito"
+        },
+        {
+         "code": "ZM102005025012",
+         "name": "Mipundu"
+        },
+        {
+         "code": "ZM102005025013",
+         "name": "James Phiri"
+        },
+        {
+         "code": "ZM102005025014",
+         "name": "Buteko"
+        },
+        {
+         "code": "ZM102005025015",
+         "name": "Mpelembe"
+        },
+        {
+         "code": "ZM102005025016",
+         "name": "Chawama"
+        }
+       ]
+      },
+      {
+       "code": "ZM102005026",
+       "name": "Roan",
+       "wards": [
+        {
+         "code": "ZM102005026017",
+         "name": "Maposa"
+        },
+        {
+         "code": "ZM102005026018",
+         "name": "Kawama"
+        },
+        {
+         "code": "ZM102005026019",
+         "name": "Lumumba"
+        },
+        {
+         "code": "ZM102005026020",
+         "name": "Nkoloma"
+        },
+        {
+         "code": "ZM102005026021",
+         "name": "Kafubu"
+        },
+        {
+         "code": "ZM102005026022",
+         "name": "Chilabula"
+        },
+        {
+         "code": "ZM102005026023",
+         "name": "Kafue"
+        },
+        {
+         "code": "ZM102005026024",
+         "name": "Justine Kabwe"
+        },
+        {
+         "code": "ZM102005026025",
+         "name": "Nkulumashiba"
+        },
+        {
+         "code": "ZM102005026026",
+         "name": "Mpatamatu"
+        },
+        {
+         "code": "ZM102005026027",
+         "name": "Milyashi"
+        },
+        {
+         "code": "ZM102005026028",
+         "name": "Ngebe"
+        },
+        {
+         "code": "ZM102005026029",
+         "name": "Kansengu"
+        },
+        {
+         "code": "ZM102005026030",
+         "name": "Buyantanshi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM102006",
+     "name": "Lufwanyama",
+     "constituencies": [
+      {
+       "code": "ZM102006027",
+       "name": "Lufwanyama",
+       "wards": [
+        {
+         "code": "ZM102006027001",
+         "name": "Kansanta"
+        },
+        {
+         "code": "ZM102006027002",
+         "name": "Milopa"
+        },
+        {
+         "code": "ZM102006027003",
+         "name": "Kansoka"
+        },
+        {
+         "code": "ZM102006027004",
+         "name": "Chinemu"
+        },
+        {
+         "code": "ZM102006027005",
+         "name": "Katembula"
+        },
+        {
+         "code": "ZM102006027006",
+         "name": "Mitwe"
+        },
+        {
+         "code": "ZM102006027007",
+         "name": "Kafubu"
+        },
+        {
+         "code": "ZM102006027008",
+         "name": "Chibanga"
+        },
+        {
+         "code": "ZM102006027009",
+         "name": "Sokontwe"
+        },
+        {
+         "code": "ZM102006027010",
+         "name": "Bulaya"
+        },
+        {
+         "code": "ZM102006027011",
+         "name": "Chantete"
+        },
+        {
+         "code": "ZM102006027012",
+         "name": "Mibenge"
+        },
+        {
+         "code": "ZM102006027013",
+         "name": "Mukumbo"
+        },
+        {
+         "code": "ZM102006027014",
+         "name": "Mwelushi"
+        },
+        {
+         "code": "ZM102006027015",
+         "name": "Lwabufubo"
+        },
+        {
+         "code": "ZM102006027016",
+         "name": "Lufwanyama"
+        },
+        {
+         "code": "ZM102006027017",
+         "name": "Mpindi"
+        },
+        {
+         "code": "ZM102006027018",
+         "name": "Kabundia"
+        },
+        {
+         "code": "ZM102006027019",
+         "name": "Luswishi"
+        },
+        {
+         "code": "ZM102006027020",
+         "name": "Mushingashi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM102007",
+     "name": "Masaiti",
+     "constituencies": [
+      {
+       "code": "ZM102007028",
+       "name": "Kafulafuta",
+       "wards": [
+        {
+         "code": "ZM102007028001",
+         "name": "Mapalo"
+        },
+        {
+         "code": "ZM102007028002",
+         "name": "Mwatishi"
+        },
+        {
+         "code": "ZM102007028003",
+         "name": "Majaliwa"
+        },
+        {
+         "code": "ZM102007028004",
+         "name": "Chondwe"
+        },
+        {
+         "code": "ZM102007028005",
+         "name": "Mutaba"
+        },
+        {
+         "code": "ZM102007028006",
+         "name": "Katonte"
+        },
+        {
+         "code": "ZM102007028007",
+         "name": "Ishitwe"
+        },
+        {
+         "code": "ZM102007028008",
+         "name": "Miengwe"
+        }
+       ]
+      },
+      {
+       "code": "ZM102007029",
+       "name": "Masaiti",
+       "wards": [
+        {
+         "code": "ZM102007029009",
+         "name": "Kamifungo"
+        },
+        {
+         "code": "ZM102007029010",
+         "name": "Miputu"
+        },
+        {
+         "code": "ZM102007029011",
+         "name": "Chilulu"
+        },
+        {
+         "code": "ZM102007029012",
+         "name": "Shimibanga"
+        },
+        {
+         "code": "ZM102007029013",
+         "name": "Katuba"
+        },
+        {
+         "code": "ZM102007029014",
+         "name": "Lumano"
+        },
+        {
+         "code": "ZM102007029015",
+         "name": "Masangano"
+        },
+        {
+         "code": "ZM102007029016",
+         "name": "Mishikishi"
+        },
+        {
+         "code": "ZM102007029017",
+         "name": "Chinondo"
+        },
+        {
+         "code": "ZM102007029018",
+         "name": "Kashitu"
+        },
+        {
+         "code": "ZM102007029019",
+         "name": "Luansobe"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM102008",
+     "name": "Mpongwe",
+     "constituencies": [
+      {
+       "code": "ZM102008030",
+       "name": "Mpongwe",
+       "wards": [
+        {
+         "code": "ZM102008030001",
+         "name": "Luswishi"
+        },
+        {
+         "code": "ZM102008030002",
+         "name": "Kasonga"
+        },
+        {
+         "code": "ZM102008030003",
+         "name": "Munkumpu"
+        },
+        {
+         "code": "ZM102008030004",
+         "name": "Ipumbu"
+        },
+        {
+         "code": "ZM102008030005",
+         "name": "Kashiba"
+        },
+        {
+         "code": "ZM102008030006",
+         "name": "Mpongwe Central"
+        },
+        {
+         "code": "ZM102008030007",
+         "name": "Kanyenda"
+        },
+        {
+         "code": "ZM102008030008",
+         "name": "Kasamba"
+        },
+        {
+         "code": "ZM102008030009",
+         "name": "Ibenga"
+        },
+        {
+         "code": "ZM102008030010",
+         "name": "Chisapa"
+        },
+        {
+         "code": "ZM102008030011",
+         "name": "Kalweo"
+        },
+        {
+         "code": "ZM102008030012",
+         "name": "Ntanda"
+        },
+        {
+         "code": "ZM102008030013",
+         "name": "Mikata"
+        },
+        {
+         "code": "ZM102008030014",
+         "name": "Nampamba"
+        },
+        {
+         "code": "ZM102008030015",
+         "name": "Musofu"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM102009",
+     "name": "Mufulira",
+     "constituencies": [
+      {
+       "code": "ZM102009031",
+       "name": "Kankoyo",
+       "wards": [
+        {
+         "code": "ZM102009031001",
+         "name": "Luansobe"
+        },
+        {
+         "code": "ZM102009031002",
+         "name": "Butondo"
+        },
+        {
+         "code": "ZM102009031003",
+         "name": "Mpelembe"
+        },
+        {
+         "code": "ZM102009031004",
+         "name": "Fibusa"
+        },
+        {
+         "code": "ZM102009031005",
+         "name": "Bufuke"
+        },
+        {
+         "code": "ZM102009031006",
+         "name": "Kwacha"
+        },
+        {
+         "code": "ZM102009031007",
+         "name": "Buntungwa"
+        },
+        {
+         "code": "ZM102009031008",
+         "name": "John Kampengele"
+        },
+        {
+         "code": "ZM102009031009",
+         "name": "Kangwa Nsuluka"
+        }
+       ]
+      },
+      {
+       "code": "ZM102009032",
+       "name": "Kantanshi",
+       "wards": [
+        {
+         "code": "ZM102009032010",
+         "name": "Minambe"
+        },
+        {
+         "code": "ZM102009032011",
+         "name": "Mokambo"
+        },
+        {
+         "code": "ZM102009032012",
+         "name": "Murundu"
+        },
+        {
+         "code": "ZM102009032013",
+         "name": "Mupambe"
+        },
+        {
+         "code": "ZM102009032014",
+         "name": "David Kaunda"
+        },
+        {
+         "code": "ZM102009032015",
+         "name": "Maina Soko"
+        },
+        {
+         "code": "ZM102009032016",
+         "name": "Leya Mukutu"
+        },
+        {
+         "code": "ZM102009032017",
+         "name": "Bwafwano"
+        },
+        {
+         "code": "ZM102009032018",
+         "name": "Mulungushi"
+        },
+        {
+         "code": "ZM102009032019",
+         "name": "Shinde"
+        },
+        {
+         "code": "ZM102009032020",
+         "name": "Bwembya Silwizya"
+        }
+       ]
+      },
+      {
+       "code": "ZM102009033",
+       "name": "Mufulira",
+       "wards": [
+        {
+         "code": "ZM102009033021",
+         "name": "Kafue"
+        },
+        {
+         "code": "ZM102009033022",
+         "name": "Kansuswa"
+        },
+        {
+         "code": "ZM102009033023",
+         "name": "Kawama"
+        },
+        {
+         "code": "ZM102009033024",
+         "name": "Hanky Kalanga"
+        },
+        {
+         "code": "ZM102009033025",
+         "name": "Kasempa"
+        },
+        {
+         "code": "ZM102009033026",
+         "name": "Kamuchanga"
+        },
+        {
+         "code": "ZM102009033027",
+         "name": "Chachacha"
+        },
+        {
+         "code": "ZM102009033028",
+         "name": "David Lunda"
+        },
+        {
+         "code": "ZM102009033029",
+         "name": "Bwananyina"
+        },
+        {
+         "code": "ZM102009033030",
+         "name": "Mutundu"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM102010",
+     "name": "Ndola",
+     "constituencies": [
+      {
+       "code": "ZM102010034",
+       "name": "Bwana Mkubwa",
+       "wards": [
+        {
+         "code": "ZM102010034001",
+         "name": "Chichele"
+        },
+        {
+         "code": "ZM102010034002",
+         "name": "Kantolomba"
+        },
+        {
+         "code": "ZM102010034003",
+         "name": "Mushili"
+        },
+        {
+         "code": "ZM102010034004",
+         "name": "Lupili"
+        },
+        {
+         "code": "ZM102010034005",
+         "name": "Twashuka"
+        },
+        {
+         "code": "ZM102010034006",
+         "name": "Itawa"
+        },
+        {
+         "code": "ZM102010034007",
+         "name": "Munkulungwe"
+        },
+        {
+         "code": "ZM102010034008",
+         "name": "Kavu"
+        }
+       ]
+      },
+      {
+       "code": "ZM102010035",
+       "name": "Chifubu",
+       "wards": [
+        {
+         "code": "ZM102010035009",
+         "name": "Kaniki"
+        },
+        {
+         "code": "ZM102010035010",
+         "name": "Kamba"
+        },
+        {
+         "code": "ZM102010035011",
+         "name": "Kawama"
+        },
+        {
+         "code": "ZM102010035012",
+         "name": "Kanyanje"
+        },
+        {
+         "code": "ZM102010035013",
+         "name": "Pamodzi"
+        },
+        {
+         "code": "ZM102010035014",
+         "name": "Fibobe"
+        },
+        {
+         "code": "ZM102010035015",
+         "name": "Chifubu"
+        }
+       ]
+      },
+      {
+       "code": "ZM102010036",
+       "name": "Kabushi",
+       "wards": [
+        {
+         "code": "ZM102010036016",
+         "name": "Lubuto"
+        },
+        {
+         "code": "ZM102010036017",
+         "name": "Mukuba"
+        },
+        {
+         "code": "ZM102010036018",
+         "name": "Kafubu"
+        },
+        {
+         "code": "ZM102010036019",
+         "name": "Skyways"
+        },
+        {
+         "code": "ZM102010036020",
+         "name": "Masala"
+        },
+        {
+         "code": "ZM102010036021",
+         "name": "Kaloko"
+        },
+        {
+         "code": "ZM102010036022",
+         "name": "Kabushi"
+        },
+        {
+         "code": "ZM102010036023",
+         "name": "Toka"
+        }
+       ]
+      },
+      {
+       "code": "ZM102010037",
+       "name": "Ndola Central",
+       "wards": [
+        {
+         "code": "ZM102010037024",
+         "name": "Dag Hammersjoeld"
+        },
+        {
+         "code": "ZM102010037025",
+         "name": "Twapia"
+        },
+        {
+         "code": "ZM102010037026",
+         "name": "Kanini"
+        },
+        {
+         "code": "ZM102010037027",
+         "name": "Kansenshi"
+        },
+        {
+         "code": "ZM102010037028",
+         "name": "Nkwazi"
+        },
+        {
+         "code": "ZM102010037029",
+         "name": "Yengwe"
+        },
+        {
+         "code": "ZM102010037030",
+         "name": "Mapalo"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "ZM103",
+   "name": "Eastern",
+   "districts": [
+    {
+     "code": "ZM103001",
+     "name": "Chadiza",
+     "constituencies": [
+      {
+       "code": "ZM103001038",
+       "name": "Chadiza",
+       "wards": [
+        {
+         "code": "ZM103001038001",
+         "name": "Tikondane"
+        },
+        {
+         "code": "ZM103001038002",
+         "name": "Mangwe"
+        },
+        {
+         "code": "ZM103001038003",
+         "name": "Nsadzu"
+        },
+        {
+         "code": "ZM103001038004",
+         "name": "Chanjowe"
+        },
+        {
+         "code": "ZM103001038005",
+         "name": "Chadiza"
+        },
+        {
+         "code": "ZM103001038006",
+         "name": "Kapachi"
+        },
+        {
+         "code": "ZM103001038007",
+         "name": "Manje"
+        },
+        {
+         "code": "ZM103001038008",
+         "name": "Bwanunkha"
+        },
+        {
+         "code": "ZM103001038009",
+         "name": "Kaluma"
+        },
+        {
+         "code": "ZM103001038010",
+         "name": "Khumba"
+        },
+        {
+         "code": "ZM103001038011",
+         "name": "Ngala"
+        },
+        {
+         "code": "ZM103001038012",
+         "name": "Mwangazi"
+        },
+        {
+         "code": "ZM103001038013",
+         "name": "Kabvumo"
+        },
+        {
+         "code": "ZM103001038014",
+         "name": "Kandabwako"
+        },
+        {
+         "code": "ZM103001038015",
+         "name": "Chilenga"
+        },
+        {
+         "code": "ZM103001038016",
+         "name": "Naviluri"
+        },
+        {
+         "code": "ZM103001038017",
+         "name": "Chamandala"
+        },
+        {
+         "code": "ZM103001038018",
+         "name": "Kampini"
+        },
+        {
+         "code": "ZM103001038019",
+         "name": "Taferansoni"
+        },
+        {
+         "code": "ZM103001038020",
+         "name": "Ambidzi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103002",
+     "name": "Chipata",
+     "constituencies": [
+      {
+       "code": "ZM103002040",
+       "name": "Chipata Central",
+       "wards": [
+        {
+         "code": "ZM103002040001",
+         "name": "Kanjala"
+        },
+        {
+         "code": "ZM103002040002",
+         "name": "Masupe"
+        },
+        {
+         "code": "ZM103002040003",
+         "name": "Msanga"
+        },
+        {
+         "code": "ZM103002040004",
+         "name": "Kapata"
+        },
+        {
+         "code": "ZM103002040005",
+         "name": "Dilika"
+        }
+       ]
+      },
+      {
+       "code": "ZM103002042",
+       "name": "Luangeni",
+       "wards": [
+        {
+         "code": "ZM103002042006",
+         "name": "Nsingo"
+        },
+        {
+         "code": "ZM103002042007",
+         "name": "Mwami"
+        },
+        {
+         "code": "ZM103002042008",
+         "name": "Khova"
+        },
+        {
+         "code": "ZM103002042009",
+         "name": "Makangila"
+        },
+        {
+         "code": "ZM103002042010",
+         "name": "Chikando"
+        },
+        {
+         "code": "ZM103002042011",
+         "name": "Kazimule"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103003",
+     "name": "Katete",
+     "constituencies": [
+      {
+       "code": "ZM103003043",
+       "name": "Milanzi",
+       "wards": [
+        {
+         "code": "ZM103003043011",
+         "name": "Kazakaluba"
+        },
+        {
+         "code": "ZM103003043012",
+         "name": "Kamphambe"
+        },
+        {
+         "code": "ZM103003043013",
+         "name": "Katiula"
+        },
+        {
+         "code": "ZM103003043014",
+         "name": "Kazala"
+        },
+        {
+         "code": "ZM103003043015",
+         "name": "Yowoyani"
+        },
+        {
+         "code": "ZM103003043016",
+         "name": "Kafumbwe"
+        },
+        {
+         "code": "ZM103003043017",
+         "name": "Milanzi"
+        },
+        {
+         "code": "ZM103003043018",
+         "name": "Kapoche"
+        },
+        {
+         "code": "ZM103003043019",
+         "name": "Chindwale"
+        },
+        {
+         "code": "ZM103003043020",
+         "name": "Kapangulula"
+        },
+        {
+         "code": "ZM103003043021",
+         "name": "Kasambandola"
+        },
+        {
+         "code": "ZM103003043022",
+         "name": "Dole"
+        }
+       ]
+      },
+      {
+       "code": "ZM103003044",
+       "name": "Mkaika",
+       "wards": [
+        {
+         "code": "ZM103003044001",
+         "name": "Vulamkoko"
+        },
+        {
+         "code": "ZM103003044002",
+         "name": "Kadula"
+        },
+        {
+         "code": "ZM103003044003",
+         "name": "Chavuka"
+        },
+        {
+         "code": "ZM103003044004",
+         "name": "Chimtende"
+        },
+        {
+         "code": "ZM103003044005",
+         "name": "Lukweta"
+        },
+        {
+         "code": "ZM103003044006",
+         "name": "Chilongamabwe"
+        },
+        {
+         "code": "ZM103003044007",
+         "name": "Mkaika"
+        },
+        {
+         "code": "ZM103003044008",
+         "name": "Kamiza"
+        },
+        {
+         "code": "ZM103003044009",
+         "name": "Matunga"
+        },
+        {
+         "code": "ZM103003044010",
+         "name": "Mphangwe"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103004",
+     "name": "Lundazi",
+     "constituencies": [
+      {
+       "code": "ZM103004047",
+       "name": "Lundazi",
+       "wards": [
+        {
+         "code": "ZM103004047001",
+         "name": "Vuu"
+        },
+        {
+         "code": "ZM103004047002",
+         "name": "Mphamba"
+        },
+        {
+         "code": "ZM103004047003",
+         "name": "Mnyamazi"
+        },
+        {
+         "code": "ZM103004047004",
+         "name": "Msuzi"
+        },
+        {
+         "code": "ZM103004047005",
+         "name": "Ndonda"
+        },
+        {
+         "code": "ZM103004047006",
+         "name": "Chilola"
+        },
+        {
+         "code": "ZM103004047007",
+         "name": "Chimaliro"
+        },
+        {
+         "code": "ZM103004047008",
+         "name": "Lunevwa"
+        },
+        {
+         "code": "ZM103004047009",
+         "name": "Mkomba"
+        },
+        {
+         "code": "ZM103004047010",
+         "name": "Nthitimila"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103005",
+     "name": "Mambwe",
+     "constituencies": [
+      {
+       "code": "ZM103005048",
+       "name": "Malambo",
+       "wards": [
+        {
+         "code": "ZM103005048001",
+         "name": "Nsefu"
+        },
+        {
+         "code": "ZM103005048002",
+         "name": "Mnkhanya"
+        },
+        {
+         "code": "ZM103005048003",
+         "name": "Ncheka"
+        },
+        {
+         "code": "ZM103005048004",
+         "name": "Chipako"
+        },
+        {
+         "code": "ZM103005048005",
+         "name": "Malama"
+        },
+        {
+         "code": "ZM103005048006",
+         "name": "Kakumbi"
+        },
+        {
+         "code": "ZM103005048007",
+         "name": "Jumbe"
+        },
+        {
+         "code": "ZM103005048008",
+         "name": "Chipapa"
+        },
+        {
+         "code": "ZM103005048009",
+         "name": "Chisengu"
+        },
+        {
+         "code": "ZM103005048010",
+         "name": "Mphomwa"
+        },
+        {
+         "code": "ZM103005048011",
+         "name": "Chikowa"
+        },
+        {
+         "code": "ZM103005048012",
+         "name": "Msoro"
+        },
+        {
+         "code": "ZM103005048013",
+         "name": "Nyakatokoli"
+        },
+        {
+         "code": "ZM103005048014",
+         "name": "Kasamanda"
+        },
+        {
+         "code": "ZM103005048015",
+         "name": "Mdima"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103006",
+     "name": "Nyimba",
+     "constituencies": [
+      {
+       "code": "ZM103006049",
+       "name": "Nyimba",
+       "wards": [
+        {
+         "code": "ZM103006049001",
+         "name": "Luangwa"
+        },
+        {
+         "code": "ZM103006049002",
+         "name": "Chinambi"
+        },
+        {
+         "code": "ZM103006049003",
+         "name": "Nyimba"
+        },
+        {
+         "code": "ZM103006049004",
+         "name": "Kaliwe"
+        },
+        {
+         "code": "ZM103006049005",
+         "name": "Msima"
+        },
+        {
+         "code": "ZM103006049006",
+         "name": "Chiweza"
+        },
+        {
+         "code": "ZM103006049007",
+         "name": "Mombe"
+        },
+        {
+         "code": "ZM103006049008",
+         "name": "Chamilala"
+        },
+        {
+         "code": "ZM103006049009",
+         "name": "Chinsimbwe"
+        },
+        {
+         "code": "ZM103006049010",
+         "name": "Katipa"
+        },
+        {
+         "code": "ZM103006049011",
+         "name": "Mphundwe"
+        },
+        {
+         "code": "ZM103006049012",
+         "name": "Vizimumba"
+        },
+        {
+         "code": "ZM103006049013",
+         "name": "Ngozi"
+        },
+        {
+         "code": "ZM103006049014",
+         "name": "Lwezi"
+        },
+        {
+         "code": "ZM103006049015",
+         "name": "Mtilizi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103007",
+     "name": "Petauke",
+     "constituencies": [
+      {
+       "code": "ZM103007050",
+       "name": "Kaumbwe",
+       "wards": [
+        {
+         "code": "ZM103007050014",
+         "name": "Lusinde"
+        },
+        {
+         "code": "ZM103007050015",
+         "name": "Kaumbwe"
+        },
+        {
+         "code": "ZM103007050016",
+         "name": "Manjazi"
+        },
+        {
+         "code": "ZM103007050017",
+         "name": "Kanyanga"
+        },
+        {
+         "code": "ZM103007050018",
+         "name": "Manyane"
+        }
+       ]
+      },
+      {
+       "code": "ZM103007052",
+       "name": "Petauke",
+       "wards": [
+        {
+         "code": "ZM103007052001",
+         "name": "Chingolo"
+        },
+        {
+         "code": "ZM103007052002",
+         "name": "Mateyo Mzeka"
+        },
+        {
+         "code": "ZM103007052003",
+         "name": "Lutwazi"
+        },
+        {
+         "code": "ZM103007052004",
+         "name": "Singozi"
+        },
+        {
+         "code": "ZM103007052005",
+         "name": "Nyakawise"
+        },
+        {
+         "code": "ZM103007052006",
+         "name": "Nsimbo"
+        },
+        {
+         "code": "ZM103007052007",
+         "name": "Nyika"
+        },
+        {
+         "code": "ZM103007052008",
+         "name": "Chilimanyama"
+        },
+        {
+         "code": "ZM103007052009",
+         "name": "Kovyane"
+        },
+        {
+         "code": "ZM103007052010",
+         "name": "Mbala"
+        },
+        {
+         "code": "ZM103007052011",
+         "name": "Msumbazi"
+        },
+        {
+         "code": "ZM103007052012",
+         "name": "Minga"
+        },
+        {
+         "code": "ZM103007052013",
+         "name": "Ongolwe"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103008",
+     "name": "Sinda",
+     "constituencies": [
+      {
+       "code": "ZM103008053",
+       "name": "Kapoche",
+       "wards": [
+        {
+         "code": "ZM103008053009",
+         "name": "Luandazi"
+        },
+        {
+         "code": "ZM103008053010",
+         "name": "Chamakuwi"
+        },
+        {
+         "code": "ZM103008053011",
+         "name": "Nchingilizya"
+        },
+        {
+         "code": "ZM103008053012",
+         "name": "Kamwaza"
+        },
+        {
+         "code": "ZM103008053013",
+         "name": "Ching'ombe"
+        },
+        {
+         "code": "ZM103008053014",
+         "name": "Siwva"
+        },
+        {
+         "code": "ZM103008053015",
+         "name": "Kapoche"
+        },
+        {
+         "code": "ZM103008053016",
+         "name": "Mwangaila"
+        },
+        {
+         "code": "ZM103008053017",
+         "name": "Nchembwe"
+        },
+        {
+         "code": "ZM103008053018",
+         "name": "Matambazi"
+        },
+        {
+         "code": "ZM103008053019",
+         "name": "Kapungwe"
+        }
+       ]
+      },
+      {
+       "code": "ZM103008054",
+       "name": "Sinda",
+       "wards": [
+        {
+         "code": "ZM103008054001",
+         "name": "Nyamasonkho"
+        },
+        {
+         "code": "ZM103008054002",
+         "name": "Chilongozi"
+        },
+        {
+         "code": "ZM103008054003",
+         "name": "Mng'omba"
+        },
+        {
+         "code": "ZM103008054004",
+         "name": "Chitawe"
+        },
+        {
+         "code": "ZM103008054005",
+         "name": "Mnyamanzi"
+        },
+        {
+         "code": "ZM103008054006",
+         "name": "Kasangazi"
+        },
+        {
+         "code": "ZM103008054007",
+         "name": "Sinda"
+        },
+        {
+         "code": "ZM103008054008",
+         "name": "Chiwuyu"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103009",
+     "name": "Vubwi",
+     "constituencies": [
+      {
+       "code": "ZM103009055",
+       "name": "Vubwi",
+       "wards": [
+        {
+         "code": "ZM103009055001",
+         "name": "Mbozi"
+        },
+        {
+         "code": "ZM103009055002",
+         "name": "Vubwi"
+        },
+        {
+         "code": "ZM103009055003",
+         "name": "Mbande"
+        },
+        {
+         "code": "ZM103009055004",
+         "name": "Matemba"
+        },
+        {
+         "code": "ZM103009055005",
+         "name": "Chisiya"
+        },
+        {
+         "code": "ZM103009055006",
+         "name": "Chimphanje"
+        },
+        {
+         "code": "ZM103009055007",
+         "name": "Mlawe"
+        },
+        {
+         "code": "ZM103009055008",
+         "name": "Zozwe"
+        },
+        {
+         "code": "ZM103009055009",
+         "name": "Sindemisale"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103010",
+     "name": "Chasefu",
+     "constituencies": [
+      {
+       "code": "ZM103010045",
+       "name": "Chasefu",
+       "wards": [
+        {
+         "code": "ZM103010045001",
+         "name": "Manda Hill"
+        },
+        {
+         "code": "ZM103010045002",
+         "name": "Susa"
+        },
+        {
+         "code": "ZM103010045003",
+         "name": "Magodi"
+        },
+        {
+         "code": "ZM103010045004",
+         "name": "Kajilime"
+        },
+        {
+         "code": "ZM103010045005",
+         "name": "Luwerezi"
+        },
+        {
+         "code": "ZM103010045006",
+         "name": "Kapilisanga"
+        },
+        {
+         "code": "ZM103010045007",
+         "name": "Membe"
+        },
+        {
+         "code": "ZM103010045008",
+         "name": "Chaboli"
+        },
+        {
+         "code": "ZM103010045009",
+         "name": "Nkhanga"
+        },
+        {
+         "code": "ZM103010045010",
+         "name": "Chizingizi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103011",
+     "name": "Chipangali",
+     "constituencies": [
+      {
+       "code": "ZM103011039",
+       "name": "Chipangali",
+       "wards": [
+        {
+         "code": "ZM103011039001",
+         "name": "Sisinje"
+        },
+        {
+         "code": "ZM103011039002",
+         "name": "Lunkhuswe"
+        },
+        {
+         "code": "ZM103011039003",
+         "name": "Nthope"
+        },
+        {
+         "code": "ZM103011039004",
+         "name": "Madziatuba"
+        },
+        {
+         "code": "ZM103011039005",
+         "name": "Chipangali"
+        },
+        {
+         "code": "ZM103011039006",
+         "name": "Rukuzye"
+        },
+        {
+         "code": "ZM103011039007",
+         "name": "Kasenga"
+        },
+        {
+         "code": "ZM103011039008",
+         "name": "Msandile"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103012",
+     "name": "Kasenengwa",
+     "constituencies": [
+      {
+       "code": "ZM103012041",
+       "name": "Kasenengwa",
+       "wards": [
+        {
+         "code": "ZM103012041001",
+         "name": "Kwenje"
+        },
+        {
+         "code": "ZM103012041002",
+         "name": "Mpunza"
+        },
+        {
+         "code": "ZM103012041003",
+         "name": "Ng'ongwe"
+        },
+        {
+         "code": "ZM103012041004",
+         "name": "Chingazi"
+        },
+        {
+         "code": "ZM103012041005",
+         "name": "Makungwa"
+        },
+        {
+         "code": "ZM103012041006",
+         "name": "Mboza"
+        },
+        {
+         "code": "ZM103012041007",
+         "name": "Mkowe"
+        },
+        {
+         "code": "ZM103012041008",
+         "name": "Chiparamba"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103013",
+     "name": "Lumezi",
+     "constituencies": [
+      {
+       "code": "ZM103013046",
+       "name": "Lumezi",
+       "wards": [
+        {
+         "code": "ZM103013046001",
+         "name": "Chibande"
+        },
+        {
+         "code": "ZM103013046002",
+         "name": "Lukusuzi"
+        },
+        {
+         "code": "ZM103013046003",
+         "name": "Lumimba"
+        },
+        {
+         "code": "ZM103013046004",
+         "name": "Kazembe"
+        },
+        {
+         "code": "ZM103013046005",
+         "name": "Kapangala"
+        },
+        {
+         "code": "ZM103013046006",
+         "name": "Kaikumbe"
+        },
+        {
+         "code": "ZM103013046007",
+         "name": "Wachitangachi"
+        },
+        {
+         "code": "ZM103013046008",
+         "name": "Chamtowa"
+        },
+        {
+         "code": "ZM103013046009",
+         "name": "Kachama"
+        },
+        {
+         "code": "ZM103013046010",
+         "name": "Kamimba"
+        },
+        {
+         "code": "ZM103013046011",
+         "name": "Diwa"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103014",
+     "name": "Lusangazi",
+     "constituencies": [
+      {
+       "code": "ZM103014051",
+       "name": "Msanzala",
+       "wards": [
+        {
+         "code": "ZM103014051001",
+         "name": "Mawanda"
+        },
+        {
+         "code": "ZM103014051002",
+         "name": "Chikowa"
+        },
+        {
+         "code": "ZM103014051003",
+         "name": "Lusangazi"
+        },
+        {
+         "code": "ZM103014051004",
+         "name": "Mudonsa"
+        },
+        {
+         "code": "ZM103014051005",
+         "name": "Chisangu"
+        },
+        {
+         "code": "ZM103014051006",
+         "name": "Ukwimi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM103015",
+     "name": "Chama",
+     "constituencies": [
+      {
+       "code": "ZM103015085",
+       "name": "Chama North",
+       "wards": [
+        {
+         "code": "ZM103015085001",
+         "name": "Muchinga"
+        },
+        {
+         "code": "ZM103015085002",
+         "name": "Mazonde"
+        },
+        {
+         "code": "ZM103015085003",
+         "name": "Nkhankha"
+        },
+        {
+         "code": "ZM103015085004",
+         "name": "Luangwa"
+        },
+        {
+         "code": "ZM103015085005",
+         "name": "Chisunga"
+        },
+        {
+         "code": "ZM103015085006",
+         "name": "Mwalala"
+        },
+        {
+         "code": "ZM103015085007",
+         "name": "Ndunda"
+        },
+        {
+         "code": "ZM103015085008",
+         "name": "Mbazi"
+        },
+        {
+         "code": "ZM103015085009",
+         "name": "Manthepa"
+        },
+        {
+         "code": "ZM103015085010",
+         "name": "Kalinkhu"
+        },
+        {
+         "code": "ZM103015085011",
+         "name": "Kaozi"
+        },
+        {
+         "code": "ZM103015085012",
+         "name": "Mphalausenga"
+        },
+        {
+         "code": "ZM103015085013",
+         "name": "Kamphemba"
+        }
+       ]
+      },
+      {
+       "code": "ZM103015086",
+       "name": "Chama South",
+       "wards": [
+        {
+         "code": "ZM103015086014",
+         "name": "Bazimu"
+        },
+        {
+         "code": "ZM103015086015",
+         "name": "Mabinga"
+        },
+        {
+         "code": "ZM103015086016",
+         "name": "Lupamazi"
+        },
+        {
+         "code": "ZM103015086017",
+         "name": "Chibungwe"
+        },
+        {
+         "code": "ZM103015086018",
+         "name": "Chilubaluba"
+        },
+        {
+         "code": "ZM103015086019",
+         "name": "Lumezi"
+        },
+        {
+         "code": "ZM103015086020",
+         "name": "Lunzi"
+        },
+        {
+         "code": "ZM103015086021",
+         "name": "Chipala"
+        },
+        {
+         "code": "ZM103015086022",
+         "name": "Vilimukulu"
+        },
+        {
+         "code": "ZM103015086023",
+         "name": "Chilenje"
+        },
+        {
+         "code": "ZM103015086024",
+         "name": "Mapamba"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "ZM104",
+   "name": "Luapula",
+   "districts": [
+    {
+     "code": "ZM104001",
+     "name": "Chembe",
+     "constituencies": [
+      {
+       "code": "ZM104001056",
+       "name": "Chembe",
+       "wards": [
+        {
+         "code": "ZM104001056001",
+         "name": "Kundamfumu"
+        },
+        {
+         "code": "ZM104001056002",
+         "name": "Lukola"
+        },
+        {
+         "code": "ZM104001056003",
+         "name": "Kasomalwela"
+        },
+        {
+         "code": "ZM104001056004",
+         "name": "Mushingwa"
+        },
+        {
+         "code": "ZM104001056005",
+         "name": "Luapula"
+        },
+        {
+         "code": "ZM104001056006",
+         "name": "Luwo"
+        },
+        {
+         "code": "ZM104001056007",
+         "name": "Kapwepwe"
+        },
+        {
+         "code": "ZM104001056008",
+         "name": "Mumfula"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104002",
+     "name": "Chienge",
+     "constituencies": [
+      {
+       "code": "ZM104002057",
+       "name": "Chienge",
+       "wards": [
+        {
+         "code": "ZM104002057001",
+         "name": "Lunchinda"
+        },
+        {
+         "code": "ZM104002057002",
+         "name": "Chibamba"
+        },
+        {
+         "code": "ZM104002057003",
+         "name": "Chipungu"
+        },
+        {
+         "code": "ZM104002057004",
+         "name": "Luau"
+        },
+        {
+         "code": "ZM104002057005",
+         "name": "Chitunda"
+        },
+        {
+         "code": "ZM104002057006",
+         "name": "Lambwe Chomba"
+        },
+        {
+         "code": "ZM104002057007",
+         "name": "Chienge"
+        },
+        {
+         "code": "ZM104002057008",
+         "name": "Katete"
+        },
+        {
+         "code": "ZM104002057009",
+         "name": "Ifuna"
+        },
+        {
+         "code": "ZM104002057010",
+         "name": "Chipamba"
+        },
+        {
+         "code": "ZM104002057011",
+         "name": "Kalobwa"
+        },
+        {
+         "code": "ZM104002057012",
+         "name": "Chitutu"
+        },
+        {
+         "code": "ZM104002057013",
+         "name": "Kalungwishi"
+        },
+        {
+         "code": "ZM104002057014",
+         "name": "Munwa"
+        },
+        {
+         "code": "ZM104002057015",
+         "name": "Mununga"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104003",
+     "name": "Chipili",
+     "constituencies": [
+      {
+       "code": "ZM104003058",
+       "name": "Chipili",
+       "wards": [
+        {
+         "code": "ZM104003058001",
+         "name": "Makabe"
+        },
+        {
+         "code": "ZM104003058002",
+         "name": "Nsenga"
+        },
+        {
+         "code": "ZM104003058003",
+         "name": "Mweshi"
+        },
+        {
+         "code": "ZM104003058004",
+         "name": "Mumbwe"
+        },
+        {
+         "code": "ZM104003058005",
+         "name": "Kabuta"
+        },
+        {
+         "code": "ZM104003058006",
+         "name": "Lufubu"
+        },
+        {
+         "code": "ZM104003058007",
+         "name": "Chibalashi"
+        },
+        {
+         "code": "ZM104003058008",
+         "name": "Kanshimba"
+        },
+        {
+         "code": "ZM104003058009",
+         "name": "Nalupembe"
+        },
+        {
+         "code": "ZM104003058010",
+         "name": "Nkonge"
+        },
+        {
+         "code": "ZM104003058011",
+         "name": "Musufya"
+        },
+        {
+         "code": "ZM104003058012",
+         "name": "Chulu Luongo"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104004",
+     "name": "Kawambwa",
+     "constituencies": [
+      {
+       "code": "ZM104004059",
+       "name": "Kawambwa",
+       "wards": [
+        {
+         "code": "ZM104004059001",
+         "name": "Iyanga"
+        },
+        {
+         "code": "ZM104004059002",
+         "name": "Lushiba"
+        },
+        {
+         "code": "ZM104004059003",
+         "name": "Fisaka"
+        },
+        {
+         "code": "ZM104004059004",
+         "name": "Ng'ona"
+        },
+        {
+         "code": "ZM104004059005",
+         "name": "Kawambwa"
+        },
+        {
+         "code": "ZM104004059006",
+         "name": "Ntumbachushi"
+        },
+        {
+         "code": "ZM104004059007",
+         "name": "Senga"
+        },
+        {
+         "code": "ZM104004059008",
+         "name": "Kala"
+        },
+        {
+         "code": "ZM104004059009",
+         "name": "Luena"
+        }
+       ]
+      },
+      {
+       "code": "ZM104004060",
+       "name": "Pambashe",
+       "wards": [
+        {
+         "code": "ZM104004060010",
+         "name": "Kabanse"
+        },
+        {
+         "code": "ZM104004060011",
+         "name": "Ilombe"
+        },
+        {
+         "code": "ZM104004060012",
+         "name": "Pambashe"
+        },
+        {
+         "code": "ZM104004060013",
+         "name": "Filenge"
+        },
+        {
+         "code": "ZM104004060014",
+         "name": "Mulunda"
+        },
+        {
+         "code": "ZM104004060015",
+         "name": "Chibote"
+        },
+        {
+         "code": "ZM104004060016",
+         "name": "Chimpili"
+        },
+        {
+         "code": "ZM104004060017",
+         "name": "Chikanda"
+        },
+        {
+         "code": "ZM104004060018",
+         "name": "Luongo"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104005",
+     "name": "Lunga",
+     "constituencies": [
+      {
+       "code": "ZM104005061",
+       "name": "Luapula",
+       "wards": [
+        {
+         "code": "ZM104005061001",
+         "name": "Mweshi"
+        },
+        {
+         "code": "ZM104005061002",
+         "name": "Lunga"
+        },
+        {
+         "code": "ZM104005061003",
+         "name": "Itala"
+        },
+        {
+         "code": "ZM104005061004",
+         "name": "Mashiba"
+        },
+        {
+         "code": "ZM104005061005",
+         "name": "Lubale"
+        },
+        {
+         "code": "ZM104005061006",
+         "name": "Nsalushi"
+        },
+        {
+         "code": "ZM104005061007",
+         "name": "Chumbwe"
+        },
+        {
+         "code": "ZM104005061008",
+         "name": "Shinga"
+        },
+        {
+         "code": "ZM104005061009",
+         "name": "Ncheta"
+        },
+        {
+         "code": "ZM104005061010",
+         "name": "Nkutila"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104006",
+     "name": "Mansa",
+     "constituencies": [
+      {
+       "code": "ZM104006062",
+       "name": "Bahati",
+       "wards": [
+        {
+         "code": "ZM104006062001",
+         "name": "Mutuna"
+        },
+        {
+         "code": "ZM104006062002",
+         "name": "Kampemba"
+        },
+        {
+         "code": "ZM104006062003",
+         "name": "Mushipashi"
+        },
+        {
+         "code": "ZM104006062004",
+         "name": "Kaole"
+        },
+        {
+         "code": "ZM104006062005",
+         "name": "Chofoshi"
+        },
+        {
+         "code": "ZM104006062006",
+         "name": "Misakalala"
+        },
+        {
+         "code": "ZM104006062007",
+         "name": "Mansa"
+        },
+        {
+         "code": "ZM104006062008",
+         "name": "Myulu"
+        },
+        {
+         "code": "ZM104006062009",
+         "name": "Chipoka"
+        },
+        {
+         "code": "ZM104006062010",
+         "name": "Katangashi"
+        }
+       ]
+      },
+      {
+       "code": "ZM104006063",
+       "name": "Mansa Central",
+       "wards": [
+        {
+         "code": "ZM104006063011",
+         "name": "Musaba"
+        },
+        {
+         "code": "ZM104006063012",
+         "name": "Lwingishi"
+        },
+        {
+         "code": "ZM104006063013",
+         "name": "Chansunsu"
+        },
+        {
+         "code": "ZM104006063014",
+         "name": "Namwandwe"
+        },
+        {
+         "code": "ZM104006063015",
+         "name": "Chilyapa"
+        },
+        {
+         "code": "ZM104006063016",
+         "name": "Muchinka"
+        },
+        {
+         "code": "ZM104006063017",
+         "name": "Mulenshi"
+        },
+        {
+         "code": "ZM104006063018",
+         "name": "Lukangaba"
+        },
+        {
+         "code": "ZM104006063019",
+         "name": "Fimpulu"
+        },
+        {
+         "code": "ZM104006063020",
+         "name": "Chibeleka"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104007",
+     "name": "Milenge",
+     "constituencies": [
+      {
+       "code": "ZM104007064",
+       "name": "Milenge",
+       "wards": [
+        {
+         "code": "ZM104007064001",
+         "name": "Matontola"
+        },
+        {
+         "code": "ZM104007064002",
+         "name": "Lwela"
+        },
+        {
+         "code": "ZM104007064003",
+         "name": "Fishikwa"
+        },
+        {
+         "code": "ZM104007064004",
+         "name": "Mulumbi"
+        },
+        {
+         "code": "ZM104007064005",
+         "name": "Fibalala"
+        },
+        {
+         "code": "ZM104007064006",
+         "name": "Lusumbwe"
+        },
+        {
+         "code": "ZM104007064007",
+         "name": "Nsaka"
+        },
+        {
+         "code": "ZM104007064008",
+         "name": "Milambo"
+        },
+        {
+         "code": "ZM104007064009",
+         "name": "Nsunga"
+        },
+        {
+         "code": "ZM104007064010",
+         "name": "Chipundu"
+        },
+        {
+         "code": "ZM104007064011",
+         "name": "Sokontwe"
+        },
+        {
+         "code": "ZM104007064012",
+         "name": "Mikula"
+        },
+        {
+         "code": "ZM104007064013",
+         "name": "Katena"
+        },
+        {
+         "code": "ZM104007064014",
+         "name": "Kapalala"
+        },
+        {
+         "code": "ZM104007064015",
+         "name": "Mumbotuta"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104008",
+     "name": "Mwansabombwe",
+     "constituencies": [
+      {
+       "code": "ZM104008065",
+       "name": "Mwansabombwe",
+       "wards": [
+        {
+         "code": "ZM104008065001",
+         "name": "Kayo"
+        },
+        {
+         "code": "ZM104008065002",
+         "name": "Mbereshi"
+        },
+        {
+         "code": "ZM104008065003",
+         "name": "Kabalenge"
+        },
+        {
+         "code": "ZM104008065004",
+         "name": "Kakose"
+        },
+        {
+         "code": "ZM104008065005",
+         "name": "Kazembe"
+        },
+        {
+         "code": "ZM104008065006",
+         "name": "Chipita"
+        },
+        {
+         "code": "ZM104008065007",
+         "name": "Mwansabombwe"
+        },
+        {
+         "code": "ZM104008065008",
+         "name": "Pembe"
+        },
+        {
+         "code": "ZM104008065009",
+         "name": "Lufubu"
+        },
+        {
+         "code": "ZM104008065010",
+         "name": "Mulele"
+        },
+        {
+         "code": "ZM104008065011",
+         "name": "Salanga"
+        },
+        {
+         "code": "ZM104008065012",
+         "name": "Mununshi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104009",
+     "name": "Mwense",
+     "constituencies": [
+      {
+       "code": "ZM104009066",
+       "name": "Mambilima",
+       "wards": [
+        {
+         "code": "ZM104009066001",
+         "name": "Michelo"
+        },
+        {
+         "code": "ZM104009066002",
+         "name": "Mpasa"
+        },
+        {
+         "code": "ZM104009066003",
+         "name": "Chibembe"
+        },
+        {
+         "code": "ZM104009066004",
+         "name": "Musonda"
+        },
+        {
+         "code": "ZM104009066005",
+         "name": "Lundashi"
+        },
+        {
+         "code": "ZM104009066006",
+         "name": "Mambilima"
+        },
+        {
+         "code": "ZM104009066007",
+         "name": "Munwa"
+        },
+        {
+         "code": "ZM104009066008",
+         "name": "Nsomfi"
+        },
+        {
+         "code": "ZM104009066009",
+         "name": "Chansha"
+        },
+        {
+         "code": "ZM104009066010",
+         "name": "Kalanga"
+        }
+       ]
+      },
+      {
+       "code": "ZM104009067",
+       "name": "Mwense",
+       "wards": [
+        {
+         "code": "ZM104009067011",
+         "name": "Mwense"
+        },
+        {
+         "code": "ZM104009067012",
+         "name": "Kasengu"
+        },
+        {
+         "code": "ZM104009067013",
+         "name": "Katiti"
+        },
+        {
+         "code": "ZM104009067014",
+         "name": "Chachacha"
+        },
+        {
+         "code": "ZM104009067015",
+         "name": "Kapela"
+        },
+        {
+         "code": "ZM104009067016",
+         "name": "Pebekabesa"
+        },
+        {
+         "code": "ZM104009067017",
+         "name": "Luche"
+        },
+        {
+         "code": "ZM104009067018",
+         "name": "Kapamba"
+        },
+        {
+         "code": "ZM104009067019",
+         "name": "Chiwasha"
+        },
+        {
+         "code": "ZM104009067020",
+         "name": "Nkanga"
+        },
+        {
+         "code": "ZM104009067021",
+         "name": "Kaombe"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104010",
+     "name": "Nchelenge",
+     "constituencies": [
+      {
+       "code": "ZM104010068",
+       "name": "Nchelenge",
+       "wards": [
+        {
+         "code": "ZM104010068001",
+         "name": "Kabuta"
+        },
+        {
+         "code": "ZM104010068002",
+         "name": "Munkombwe"
+        },
+        {
+         "code": "ZM104010068003",
+         "name": "Mwatishi"
+        },
+        {
+         "code": "ZM104010068004",
+         "name": "Chilongo"
+        },
+        {
+         "code": "ZM104010068005",
+         "name": "Kashikishi"
+        },
+        {
+         "code": "ZM104010068006",
+         "name": "Nsembaishe"
+        },
+        {
+         "code": "ZM104010068007",
+         "name": "Kilwa"
+        },
+        {
+         "code": "ZM104010068008",
+         "name": "Isokwe"
+        },
+        {
+         "code": "ZM104010068009",
+         "name": "Nchelenge"
+        },
+        {
+         "code": "ZM104010068010",
+         "name": "Kasamba"
+        },
+        {
+         "code": "ZM104010068011",
+         "name": "Chisenga"
+        },
+        {
+         "code": "ZM104010068012",
+         "name": "Mulwe"
+        },
+        {
+         "code": "ZM104010068013",
+         "name": "Shabo"
+        },
+        {
+         "code": "ZM104010068014",
+         "name": "Mofwe"
+        },
+        {
+         "code": "ZM104010068015",
+         "name": "Katofyo"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104011",
+     "name": "Samfya",
+     "constituencies": [
+      {
+       "code": "ZM104011069",
+       "name": "Bangweulu",
+       "wards": [
+        {
+         "code": "ZM104011069001",
+         "name": "Lumamya"
+        },
+        {
+         "code": "ZM104011069002",
+         "name": "Kapilibila"
+        },
+        {
+         "code": "ZM104011069003",
+         "name": "Lufwishi"
+        },
+        {
+         "code": "ZM104011069004",
+         "name": "Musaba"
+        },
+        {
+         "code": "ZM104011069005",
+         "name": "Isamba"
+        },
+        {
+         "code": "ZM104011069006",
+         "name": "Kapata"
+        },
+        {
+         "code": "ZM104011069007",
+         "name": "Katanshya"
+        },
+        {
+         "code": "ZM104011069008",
+         "name": "Mano"
+        },
+        {
+         "code": "ZM104011069009",
+         "name": "Lupili"
+        },
+        {
+         "code": "ZM104011069010",
+         "name": "Chimana"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM104012",
+     "name": "Chifunabuli",
+     "constituencies": [
+      {
+       "code": "ZM104012070",
+       "name": "Chifunabuli",
+       "wards": [
+        {
+         "code": "ZM104012070001",
+         "name": "Mbabala"
+        },
+        {
+         "code": "ZM104012070002",
+         "name": "Chishi"
+        },
+        {
+         "code": "ZM104012070003",
+         "name": "Kafumbo"
+        },
+        {
+         "code": "ZM104012070004",
+         "name": "Lubwe"
+        },
+        {
+         "code": "ZM104012070005",
+         "name": "Chifunabuli"
+        },
+        {
+         "code": "ZM104012070006",
+         "name": "Kasongole"
+        },
+        {
+         "code": "ZM104012070007",
+         "name": "Mubansenshi"
+        },
+        {
+         "code": "ZM104012070008",
+         "name": "Masonde"
+        },
+        {
+         "code": "ZM104012070009",
+         "name": "Chinkutila"
+        },
+        {
+         "code": "ZM104012070010",
+         "name": "Kasansa"
+        },
+        {
+         "code": "ZM104012070011",
+         "name": "Kasaba"
+        },
+        {
+         "code": "ZM104012070012",
+         "name": "Kapamba"
+        },
+        {
+         "code": "ZM104012070013",
+         "name": "Kapeshi"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "ZM105",
+   "name": "Lusaka",
+   "districts": [
+    {
+     "code": "ZM105001",
+     "name": "Chilanga",
+     "constituencies": [
+      {
+       "code": "ZM105001071",
+       "name": "Chilanga",
+       "wards": [
+        {
+         "code": "ZM105001071001",
+         "name": "Mwembeshi"
+        },
+        {
+         "code": "ZM105001071002",
+         "name": "Chinyanja"
+        },
+        {
+         "code": "ZM105001071003",
+         "name": "Mondengwa"
+        },
+        {
+         "code": "ZM105001071004",
+         "name": "Nyemba"
+        },
+        {
+         "code": "ZM105001071005",
+         "name": "Kasupe"
+        },
+        {
+         "code": "ZM105001071006",
+         "name": "Namalombwe"
+        },
+        {
+         "code": "ZM105001071007",
+         "name": "New Farms"
+        },
+        {
+         "code": "ZM105001071008",
+         "name": "Chilanga"
+        },
+        {
+         "code": "ZM105001071009",
+         "name": "Mount Makulu"
+        },
+        {
+         "code": "ZM105001071010",
+         "name": "Chilongolo"
+        },
+        {
+         "code": "ZM105001071011",
+         "name": "Nakachenje"
+        },
+        {
+         "code": "ZM105001071012",
+         "name": "Kalundu"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM105002",
+     "name": "Chirundu",
+     "constituencies": [
+      {
+       "code": "ZM105002072",
+       "name": "Chirundu",
+       "wards": [
+        {
+         "code": "ZM105002072001",
+         "name": "Musaya"
+        },
+        {
+         "code": "ZM105002072002",
+         "name": "Kapululira"
+        },
+        {
+         "code": "ZM105002072003",
+         "name": "Chirundu"
+        },
+        {
+         "code": "ZM105002072004",
+         "name": "Chirundu West"
+        },
+        {
+         "code": "ZM105002072005",
+         "name": "Mushungu"
+        },
+        {
+         "code": "ZM105002072006",
+         "name": "Njame"
+        },
+        {
+         "code": "ZM105002072007",
+         "name": "Ng'ombe Ilede"
+        },
+        {
+         "code": "ZM105002072008",
+         "name": "Nkandabwe"
+        },
+        {
+         "code": "ZM105002072009",
+         "name": "Lusitu"
+        },
+        {
+         "code": "ZM105002072010",
+         "name": "Kanyanga"
+        },
+        {
+         "code": "ZM105002072011",
+         "name": "Sikoongo"
+        },
+        {
+         "code": "ZM105002072012",
+         "name": "Ibbwemunyama"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM105003",
+     "name": "Chongwe",
+     "constituencies": [
+      {
+       "code": "ZM105003073",
+       "name": "Chongwe",
+       "wards": [
+        {
+         "code": "ZM105003073001",
+         "name": "Kasenga"
+        },
+        {
+         "code": "ZM105003073002",
+         "name": "Kasisi"
+        },
+        {
+         "code": "ZM105003073003",
+         "name": "Chinkuli"
+        },
+        {
+         "code": "ZM105003073004",
+         "name": "Ntandabale"
+        },
+        {
+         "code": "ZM105003073005",
+         "name": "Palabana"
+        },
+        {
+         "code": "ZM105003073006",
+         "name": "Madido"
+        },
+        {
+         "code": "ZM105003073007",
+         "name": "Ngwerere"
+        },
+        {
+         "code": "ZM105003073008",
+         "name": "Kapwayambale"
+        },
+        {
+         "code": "ZM105003073009",
+         "name": "Kanakantapa"
+        },
+        {
+         "code": "ZM105003073010",
+         "name": "Kapete"
+        },
+        {
+         "code": "ZM105003073011",
+         "name": "Mulenje"
+        },
+        {
+         "code": "ZM105003073012",
+         "name": "Chalimbana"
+        },
+        {
+         "code": "ZM105003073013",
+         "name": "Chongwe"
+        },
+        {
+         "code": "ZM105003073014",
+         "name": "Chainda"
+        },
+        {
+         "code": "ZM105003073015",
+         "name": "Manyika"
+        },
+        {
+         "code": "ZM105003073016",
+         "name": "Mwalumina"
+        },
+        {
+         "code": "ZM105003073017",
+         "name": "Lwimba"
+        },
+        {
+         "code": "ZM105003073018",
+         "name": "Katoba"
+        },
+        {
+         "code": "ZM105003073019",
+         "name": "Njolwe"
+        },
+        {
+         "code": "ZM105003073020",
+         "name": "Nakatindi"
+        },
+        {
+         "code": "ZM105003073021",
+         "name": "Nchute"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM105004",
+     "name": "Kafue",
+     "constituencies": [
+      {
+       "code": "ZM105004074",
+       "name": "Kafue",
+       "wards": [
+        {
+         "code": "ZM105004074001",
+         "name": "Magoba"
+        },
+        {
+         "code": "ZM105004074002",
+         "name": "Chikupi"
+        },
+        {
+         "code": "ZM105004074003",
+         "name": "Mungu"
+        },
+        {
+         "code": "ZM105004074004",
+         "name": "Kabweza"
+        },
+        {
+         "code": "ZM105004074005",
+         "name": "Kasenje"
+        },
+        {
+         "code": "ZM105004074006",
+         "name": "Shikoswe"
+        },
+        {
+         "code": "ZM105004074007",
+         "name": "Shabusale"
+        },
+        {
+         "code": "ZM105004074008",
+         "name": "Matanda"
+        },
+        {
+         "code": "ZM105004074009",
+         "name": "Kafue"
+        },
+        {
+         "code": "ZM105004074010",
+         "name": "Lukolongo"
+        },
+        {
+         "code": "ZM105004074011",
+         "name": "Shimabala"
+        },
+        {
+         "code": "ZM105004074012",
+         "name": "Malundu"
+        },
+        {
+         "code": "ZM105004074013",
+         "name": "Chisankane"
+        },
+        {
+         "code": "ZM105004074014",
+         "name": "Chifwema"
+        },
+        {
+         "code": "ZM105004074015",
+         "name": "Chisakila"
+        },
+        {
+         "code": "ZM105004074016",
+         "name": "Kambale"
+        },
+        {
+         "code": "ZM105004074017",
+         "name": "Chitende"
+        },
+        {
+         "code": "ZM105004074018",
+         "name": "Chiyaba"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM105005",
+     "name": "Luangwa",
+     "constituencies": [
+      {
+       "code": "ZM105005075",
+       "name": "Feira",
+       "wards": [
+        {
+         "code": "ZM105005075001",
+         "name": "Mankhokwe"
+        },
+        {
+         "code": "ZM105005075002",
+         "name": "Kaluluzi"
+        },
+        {
+         "code": "ZM105005075003",
+         "name": "Mwalilia"
+        },
+        {
+         "code": "ZM105005075004",
+         "name": "Chikoma"
+        },
+        {
+         "code": "ZM105005075005",
+         "name": "Lunya"
+        },
+        {
+         "code": "ZM105005075006",
+         "name": "Katondwe"
+        },
+        {
+         "code": "ZM105005075007",
+         "name": "Mburuma"
+        },
+        {
+         "code": "ZM105005075008",
+         "name": "Kaunga"
+        },
+        {
+         "code": "ZM105005075009",
+         "name": "Chiriwe"
+        },
+        {
+         "code": "ZM105005075010",
+         "name": "Kapoche"
+        },
+        {
+         "code": "ZM105005075011",
+         "name": "Mphuka"
+        },
+        {
+         "code": "ZM105005075012",
+         "name": "Phwazi"
+        },
+        {
+         "code": "ZM105005075013",
+         "name": "Mandombe"
+        },
+        {
+         "code": "ZM105005075014",
+         "name": "Dzalo"
+        },
+        {
+         "code": "ZM105005075015",
+         "name": "Kavuula"
+        },
+        {
+         "code": "ZM105005075016",
+         "name": "M'kaliva"
+        },
+        {
+         "code": "ZM105005075017",
+         "name": "Kabowo"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM105006",
+     "name": "Lusaka",
+     "constituencies": [
+      {
+       "code": "ZM105006076",
+       "name": "Chawama",
+       "wards": [
+        {
+         "code": "ZM105006076001",
+         "name": "Nkoloma"
+        },
+        {
+         "code": "ZM105006076002",
+         "name": "Chawama"
+        },
+        {
+         "code": "ZM105006076003",
+         "name": "John Howard"
+        },
+        {
+         "code": "ZM105006076004",
+         "name": "Lilayi"
+        }
+       ]
+      },
+      {
+       "code": "ZM105006077",
+       "name": "Kabwata",
+       "wards": [
+        {
+         "code": "ZM105006077005",
+         "name": "Kamwala"
+        },
+        {
+         "code": "ZM105006077006",
+         "name": "Kabwata"
+        },
+        {
+         "code": "ZM105006077007",
+         "name": "Libala"
+        },
+        {
+         "code": "ZM105006077008",
+         "name": "Chilenje"
+        },
+        {
+         "code": "ZM105006077009",
+         "name": "Kamulanga"
+        }
+       ]
+      },
+      {
+       "code": "ZM105006078",
+       "name": "Kanyama",
+       "wards": [
+        {
+         "code": "ZM105006078010",
+         "name": "Garden Park"
+        },
+        {
+         "code": "ZM105006078011",
+         "name": "Chinika"
+        },
+        {
+         "code": "ZM105006078012",
+         "name": "Harry Mwaanga Nkumbula"
+        },
+        {
+         "code": "ZM105006078013",
+         "name": "Kanyama"
+        },
+        {
+         "code": "ZM105006078014",
+         "name": "Makeni Villa"
+        },
+        {
+         "code": "ZM105006078015",
+         "name": "Munkolo"
+        }
+       ]
+      },
+      {
+       "code": "ZM105006079",
+       "name": "Lusaka Central",
+       "wards": [
+        {
+         "code": "ZM105006079016",
+         "name": "Silwizya"
+        },
+        {
+         "code": "ZM105006079017",
+         "name": "Independence"
+        },
+        {
+         "code": "ZM105006079018",
+         "name": "Lubwa"
+        },
+        {
+         "code": "ZM105006079019",
+         "name": "Kabulonga"
+        }
+       ]
+      },
+      {
+       "code": "ZM105006080",
+       "name": "Mandevu",
+       "wards": [
+        {
+         "code": "ZM105006080020",
+         "name": "Roma"
+        },
+        {
+         "code": "ZM105006080021",
+         "name": "Mulungushi"
+        },
+        {
+         "code": "ZM105006080022",
+         "name": "Ngwerere"
+        },
+        {
+         "code": "ZM105006080023",
+         "name": "Chaisa"
+        },
+        {
+         "code": "ZM105006080024",
+         "name": "Justine Kabwe"
+        },
+        {
+         "code": "ZM105006080025",
+         "name": "Raphael Chota"
+        },
+        {
+         "code": "ZM105006080026",
+         "name": "Mpulungu"
+        },
+        {
+         "code": "ZM105006080027",
+         "name": "Kabanana"
+        }
+       ]
+      },
+      {
+       "code": "ZM105006081",
+       "name": "Matero",
+       "wards": [
+        {
+         "code": "ZM105006081028",
+         "name": "Muchinga"
+        },
+        {
+         "code": "ZM105006081029",
+         "name": "Kapwepwe"
+        },
+        {
+         "code": "ZM105006081030",
+         "name": "Lima"
+        },
+        {
+         "code": "ZM105006081031",
+         "name": "Mwembeshi"
+        },
+        {
+         "code": "ZM105006081032",
+         "name": "Matero"
+        }
+       ]
+      },
+      {
+       "code": "ZM105006082",
+       "name": "Munali",
+       "wards": [
+        {
+         "code": "ZM105006082033",
+         "name": "Kalingalinga"
+        },
+        {
+         "code": "ZM105006082034",
+         "name": "Munali"
+        },
+        {
+         "code": "ZM105006082035",
+         "name": "Chakunkula"
+        },
+        {
+         "code": "ZM105006082036",
+         "name": "Chainda"
+        },
+        {
+         "code": "ZM105006082037",
+         "name": "Kalikiliki"
+        },
+        {
+         "code": "ZM105006082038",
+         "name": "Mtendere"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM105007",
+     "name": "Rufunsa",
+     "constituencies": [
+      {
+       "code": "ZM105007083",
+       "name": "Rufunsa",
+       "wards": [
+        {
+         "code": "ZM105007083001",
+         "name": "Kabuyu"
+        },
+        {
+         "code": "ZM105007083002",
+         "name": "Bundabunda"
+        },
+        {
+         "code": "ZM105007083003",
+         "name": "Nyamanongo"
+        },
+        {
+         "code": "ZM105007083004",
+         "name": "Mwachilele"
+        },
+        {
+         "code": "ZM105007083005",
+         "name": "Chamulimba"
+        },
+        {
+         "code": "ZM105007083006",
+         "name": "Nyangwena"
+        },
+        {
+         "code": "ZM105007083007",
+         "name": "Kankumba"
+        },
+        {
+         "code": "ZM105007083008",
+         "name": "Mulamba"
+        },
+        {
+         "code": "ZM105007083009",
+         "name": "Rufunsa"
+        },
+        {
+         "code": "ZM105007083010",
+         "name": "Shikabeta"
+        },
+        {
+         "code": "ZM105007083011",
+         "name": "Mankhanda"
+        },
+        {
+         "code": "ZM105007083012",
+         "name": "Chintimbwi"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "ZM106",
+   "name": "Muchinga",
+   "districts": [
+    {
+     "code": "ZM106002",
+     "name": "Chinsali",
+     "constituencies": [
+      {
+       "code": "ZM106002087",
+       "name": "Chinsali",
+       "wards": [
+        {
+         "code": "ZM106002087001",
+         "name": "Itapa"
+        },
+        {
+         "code": "ZM106002087002",
+         "name": "Chunga"
+        },
+        {
+         "code": "ZM106002087003",
+         "name": "Chilunda"
+        },
+        {
+         "code": "ZM106002087004",
+         "name": "Chilinda"
+        },
+        {
+         "code": "ZM106002087005",
+         "name": "Mikunku"
+        },
+        {
+         "code": "ZM106002087006",
+         "name": "Milemba"
+        },
+        {
+         "code": "ZM106002087007",
+         "name": "Kaunga"
+        },
+        {
+         "code": "ZM106002087008",
+         "name": "Malalo"
+        },
+        {
+         "code": "ZM106002087009",
+         "name": "Chipanga"
+        },
+        {
+         "code": "ZM106002087010",
+         "name": "Lubu"
+        },
+        {
+         "code": "ZM106002087011",
+         "name": "Munwakubili"
+        },
+        {
+         "code": "ZM106002087012",
+         "name": "Ituntwe"
+        },
+        {
+         "code": "ZM106002087013",
+         "name": "Nkakula"
+        },
+        {
+         "code": "ZM106002087014",
+         "name": "Lubwa"
+        },
+        {
+         "code": "ZM106002087015",
+         "name": "Ichinga"
+        },
+        {
+         "code": "ZM106002087016",
+         "name": "Chinsali"
+        },
+        {
+         "code": "ZM106002087017",
+         "name": "Chambeshi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM106003",
+     "name": "Isoka",
+     "constituencies": [
+      {
+       "code": "ZM106003088",
+       "name": "Isoka",
+       "wards": [
+        {
+         "code": "ZM106003088001",
+         "name": "Milongo"
+        },
+        {
+         "code": "ZM106003088002",
+         "name": "Itukuta"
+        },
+        {
+         "code": "ZM106003088003",
+         "name": "Chinyonga"
+        },
+        {
+         "code": "ZM106003088004",
+         "name": "Kasoka"
+        },
+        {
+         "code": "ZM106003088005",
+         "name": "Kawenga"
+        },
+        {
+         "code": "ZM106003088006",
+         "name": "Kantenshya"
+        },
+        {
+         "code": "ZM106003088007",
+         "name": "Kapililonga"
+        },
+        {
+         "code": "ZM106003088008",
+         "name": "Kalungu"
+        },
+        {
+         "code": "ZM106003088009",
+         "name": "Sansamwenje"
+        },
+        {
+         "code": "ZM106003088010",
+         "name": "Mpungu"
+        },
+        {
+         "code": "ZM106003088011",
+         "name": "Kanyala"
+        },
+        {
+         "code": "ZM106003088012",
+         "name": "Kabandama"
+        },
+        {
+         "code": "ZM106003088013",
+         "name": "Luangwa"
+        },
+        {
+         "code": "ZM106003088014",
+         "name": "Nkombwa"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM106004",
+     "name": "Mafinga",
+     "constituencies": [
+      {
+       "code": "ZM106004089",
+       "name": "Mafinga",
+       "wards": [
+        {
+         "code": "ZM106004089001",
+         "name": "Mafinga"
+        },
+        {
+         "code": "ZM106004089002",
+         "name": "Musipizi"
+        },
+        {
+         "code": "ZM106004089003",
+         "name": "Senje"
+        },
+        {
+         "code": "ZM106004089004",
+         "name": "Ntonga"
+        },
+        {
+         "code": "ZM106004089005",
+         "name": "Thendere"
+        },
+        {
+         "code": "ZM106004089006",
+         "name": "Mululu"
+        },
+        {
+         "code": "ZM106004089007",
+         "name": "Bemba"
+        },
+        {
+         "code": "ZM106004089008",
+         "name": "Kakoma"
+        },
+        {
+         "code": "ZM106004089009",
+         "name": "Mahobe"
+        },
+        {
+         "code": "ZM106004089010",
+         "name": "Kalanga"
+        },
+        {
+         "code": "ZM106004089011",
+         "name": "Vumbo"
+        },
+        {
+         "code": "ZM106004089012",
+         "name": "Luhoka"
+        },
+        {
+         "code": "ZM106004089013",
+         "name": "Mukutu"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM106005",
+     "name": "Mpika",
+     "constituencies": [
+      {
+       "code": "ZM106005092",
+       "name": "Mpika",
+       "wards": [
+        {
+         "code": "ZM106005092001",
+         "name": "Chipembele"
+        },
+        {
+         "code": "ZM106005092002",
+         "name": "Mutekwe"
+        },
+        {
+         "code": "ZM106005092003",
+         "name": "Kapamba"
+        },
+        {
+         "code": "ZM106005092004",
+         "name": "Chifungwe"
+        },
+        {
+         "code": "ZM106005092005",
+         "name": "Muchinga"
+        },
+        {
+         "code": "ZM106005092006",
+         "name": "Nachikufu"
+        },
+        {
+         "code": "ZM106005092007",
+         "name": "Chishibesonde"
+        },
+        {
+         "code": "ZM106005092008",
+         "name": "Lubambala"
+        },
+        {
+         "code": "ZM106005092009",
+         "name": "Musakanya"
+        },
+        {
+         "code": "ZM106005092010",
+         "name": "Mukungwa"
+        },
+        {
+         "code": "ZM106005092011",
+         "name": "Lwitikila"
+        },
+        {
+         "code": "ZM106005092012",
+         "name": "Mutamba"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM106006",
+     "name": "Nakonde",
+     "constituencies": [
+      {
+       "code": "ZM106006093",
+       "name": "Nakonde",
+       "wards": [
+        {
+         "code": "ZM106006093001",
+         "name": "Mwanga"
+        },
+        {
+         "code": "ZM106006093002",
+         "name": "Mulalo"
+        },
+        {
+         "code": "ZM106006093003",
+         "name": "Luchinde"
+        },
+        {
+         "code": "ZM106006093004",
+         "name": "Ng'umba"
+        },
+        {
+         "code": "ZM106006093005",
+         "name": "Popomozi"
+        },
+        {
+         "code": "ZM106006093006",
+         "name": "Musyani"
+        },
+        {
+         "code": "ZM106006093007",
+         "name": "Ikumbi"
+        },
+        {
+         "code": "ZM106006093008",
+         "name": "Nakonde"
+        },
+        {
+         "code": "ZM106006093009",
+         "name": "Isunda"
+        },
+        {
+         "code": "ZM106006093010",
+         "name": "Old Fife"
+        },
+        {
+         "code": "ZM106006093011",
+         "name": "Musele"
+        },
+        {
+         "code": "ZM106006093012",
+         "name": "Mpande"
+        },
+        {
+         "code": "ZM106006093013",
+         "name": "Mukulika"
+        },
+        {
+         "code": "ZM106006093014",
+         "name": "Chiwanza"
+        },
+        {
+         "code": "ZM106006093015",
+         "name": "Ilonda"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM106007",
+     "name": "Shiwang'andu",
+     "constituencies": [
+      {
+       "code": "ZM106007094",
+       "name": "Shiwang'andu",
+       "wards": [
+        {
+         "code": "ZM106007094001",
+         "name": "Nkulungwe"
+        },
+        {
+         "code": "ZM106007094002",
+         "name": "Nyimbwe"
+        },
+        {
+         "code": "ZM106007094003",
+         "name": "Chimpundu"
+        },
+        {
+         "code": "ZM106007094004",
+         "name": "Kalebe"
+        },
+        {
+         "code": "ZM106007094005",
+         "name": "Mwilakabuswe"
+        },
+        {
+         "code": "ZM106007094006",
+         "name": "Muchinga"
+        },
+        {
+         "code": "ZM106007094007",
+         "name": "Mwambwa"
+        },
+        {
+         "code": "ZM106007094008",
+         "name": "Chamusenga"
+        },
+        {
+         "code": "ZM106007094009",
+         "name": "Chandaula"
+        },
+        {
+         "code": "ZM106007094010",
+         "name": "Manshya"
+        },
+        {
+         "code": "ZM106007094011",
+         "name": "Mukumbi"
+        },
+        {
+         "code": "ZM106007094012",
+         "name": "Kulamwele"
+        },
+        {
+         "code": "ZM106007094013",
+         "name": "Lukalashi"
+        },
+        {
+         "code": "ZM106007094014",
+         "name": "Mayembe"
+        },
+        {
+         "code": "ZM106007094015",
+         "name": "Chibinda"
+        },
+        {
+         "code": "ZM106007094016",
+         "name": "Ichingo"
+        },
+        {
+         "code": "ZM106007094017",
+         "name": "Mwiche"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM106008",
+     "name": "Kanchibiya",
+     "constituencies": [
+      {
+       "code": "ZM106008090",
+       "name": "Kanchibiya",
+       "wards": [
+        {
+         "code": "ZM106008090001",
+         "name": "Chambeshi"
+        },
+        {
+         "code": "ZM106008090002",
+         "name": "Mansha"
+        },
+        {
+         "code": "ZM106008090003",
+         "name": "Mumbubu"
+        },
+        {
+         "code": "ZM106008090004",
+         "name": "Lubaleshi"
+        },
+        {
+         "code": "ZM106008090005",
+         "name": "Chibwa"
+        },
+        {
+         "code": "ZM106008090006",
+         "name": "Chewe Shimfwamba"
+        },
+        {
+         "code": "ZM106008090007",
+         "name": "Chinama"
+        },
+        {
+         "code": "ZM106008090008",
+         "name": "Munikashi"
+        },
+        {
+         "code": "ZM106008090009",
+         "name": "Lulingila"
+        },
+        {
+         "code": "ZM106008090010",
+         "name": "Mbati"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM106009",
+     "name": "Lavushimanda",
+     "constituencies": [
+      {
+       "code": "ZM106009091",
+       "name": "Mfuwe",
+       "wards": [
+        {
+         "code": "ZM106009091001",
+         "name": "Lulimala"
+        },
+        {
+         "code": "ZM106009091002",
+         "name": "Lukulu"
+        },
+        {
+         "code": "ZM106009091003",
+         "name": "Lupembashi"
+        },
+        {
+         "code": "ZM106009091004",
+         "name": "Mutinondo"
+        },
+        {
+         "code": "ZM106009091005",
+         "name": "Mupamadzi"
+        },
+        {
+         "code": "ZM106009091006",
+         "name": "Chikanda"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "ZM107",
+   "name": "Northern",
+   "districts": [
+    {
+     "code": "ZM107001",
+     "name": "Chilubi",
+     "constituencies": [
+      {
+       "code": "ZM107001095",
+       "name": "Chilubi",
+       "wards": [
+        {
+         "code": "ZM107001095001",
+         "name": "Chinkundu"
+        },
+        {
+         "code": "ZM107001095002",
+         "name": "Kanama"
+        },
+        {
+         "code": "ZM107001095003",
+         "name": "Mubemba"
+        },
+        {
+         "code": "ZM107001095004",
+         "name": "Kawena"
+        },
+        {
+         "code": "ZM107001095005",
+         "name": "Nguni"
+        },
+        {
+         "code": "ZM107001095006",
+         "name": "Kapoka"
+        },
+        {
+         "code": "ZM107001095007",
+         "name": "Kanchindi"
+        },
+        {
+         "code": "ZM107001095008",
+         "name": "Mpanshya"
+        },
+        {
+         "code": "ZM107001095009",
+         "name": "Kashitu"
+        },
+        {
+         "code": "ZM107001095010",
+         "name": "Kambashi"
+        },
+        {
+         "code": "ZM107001095011",
+         "name": "Muteka"
+        },
+        {
+         "code": "ZM107001095012",
+         "name": "Katamba"
+        },
+        {
+         "code": "ZM107001095013",
+         "name": "Ndela"
+        },
+        {
+         "code": "ZM107001095014",
+         "name": "Mulanda"
+        },
+        {
+         "code": "ZM107001095015",
+         "name": "Chifwenge"
+        },
+        {
+         "code": "ZM107001095016",
+         "name": "Bulilo"
+        },
+        {
+         "code": "ZM107001095017",
+         "name": "Lwenda"
+        },
+        {
+         "code": "ZM107001095018",
+         "name": "Chiloba"
+        },
+        {
+         "code": "ZM107001095019",
+         "name": "Mofu"
+        },
+        {
+         "code": "ZM107001095020",
+         "name": "Chisupa"
+        },
+        {
+         "code": "ZM107001095021",
+         "name": "Lumfwi"
+        },
+        {
+         "code": "ZM107001095022",
+         "name": "Chishiba"
+        },
+        {
+         "code": "ZM107001095023",
+         "name": "Bumba"
+        },
+        {
+         "code": "ZM107001095024",
+         "name": "Luangwa"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107002",
+     "name": "Kaputa",
+     "constituencies": [
+      {
+       "code": "ZM107002096",
+       "name": "Kaputa",
+       "wards": [
+        {
+         "code": "ZM107002096001",
+         "name": "Munkonge"
+        },
+        {
+         "code": "ZM107002096002",
+         "name": "Mwawe"
+        },
+        {
+         "code": "ZM107002096003",
+         "name": "Kapulwa"
+        },
+        {
+         "code": "ZM107002096004",
+         "name": "Kaleulu"
+        },
+        {
+         "code": "ZM107002096005",
+         "name": "Lubendwa"
+        },
+        {
+         "code": "ZM107002096006",
+         "name": "Mowa"
+        },
+        {
+         "code": "ZM107002096007",
+         "name": "Miyonga"
+        },
+        {
+         "code": "ZM107002096008",
+         "name": "Chitandala"
+        },
+        {
+         "code": "ZM107002096009",
+         "name": "Choma"
+        },
+        {
+         "code": "ZM107002096010",
+         "name": "Chipili"
+        },
+        {
+         "code": "ZM107002096011",
+         "name": "Nkonta"
+        },
+        {
+         "code": "ZM107002096012",
+         "name": "Kayamba"
+        },
+        {
+         "code": "ZM107002096013",
+         "name": "Chiyilunda"
+        },
+        {
+         "code": "ZM107002096014",
+         "name": "Chisoko"
+        },
+        {
+         "code": "ZM107002096015",
+         "name": "Mofwe"
+        },
+        {
+         "code": "ZM107002096016",
+         "name": "Kalungwishi"
+        },
+        {
+         "code": "ZM107002096017",
+         "name": "Luntomfwe"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107003",
+     "name": "Kasama",
+     "constituencies": [
+      {
+       "code": "ZM107003097",
+       "name": "Kasama Central",
+       "wards": [
+        {
+         "code": "ZM107003097001",
+         "name": "Lukulu"
+        },
+        {
+         "code": "ZM107003097002",
+         "name": "Kasenga"
+        },
+        {
+         "code": "ZM107003097003",
+         "name": "Bululu"
+        },
+        {
+         "code": "ZM107003097004",
+         "name": "Ituna"
+        },
+        {
+         "code": "ZM107003097005",
+         "name": "Chilunga"
+        },
+        {
+         "code": "ZM107003097006",
+         "name": "Lukupa"
+        },
+        {
+         "code": "ZM107003097007",
+         "name": "Julia Chikamoneka"
+        },
+        {
+         "code": "ZM107003097008",
+         "name": "Mulilansolo"
+        },
+        {
+         "code": "ZM107003097009",
+         "name": "Buseko"
+        }
+       ]
+      },
+      {
+       "code": "ZM107003098",
+       "name": "Lukashya",
+       "wards": [
+        {
+         "code": "ZM107003098010",
+         "name": "Kupumaula"
+        },
+        {
+         "code": "ZM107003098011",
+         "name": "Chiba"
+        },
+        {
+         "code": "ZM107003098012",
+         "name": "Lualuo"
+        },
+        {
+         "code": "ZM107003098013",
+         "name": "Kapongolo"
+        },
+        {
+         "code": "ZM107003098014",
+         "name": "Chibundu"
+        },
+        {
+         "code": "ZM107003098015",
+         "name": "Chumba"
+        },
+        {
+         "code": "ZM107003098016",
+         "name": "Musowa"
+        },
+        {
+         "code": "ZM107003098017",
+         "name": "Mukanga"
+        },
+        {
+         "code": "ZM107003098018",
+         "name": "Lusenga"
+        },
+        {
+         "code": "ZM107003098019",
+         "name": "Kapanda"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107004",
+     "name": "Luwingu",
+     "constituencies": [
+      {
+       "code": "ZM107004099",
+       "name": "Lubansenshi",
+       "wards": [
+        {
+         "code": "ZM107004099001",
+         "name": "Mushishe"
+        },
+        {
+         "code": "ZM107004099002",
+         "name": "Mwela Wamangu"
+        },
+        {
+         "code": "ZM107004099003",
+         "name": "Ipusukilo"
+        },
+        {
+         "code": "ZM107004099004",
+         "name": "Katopola"
+        },
+        {
+         "code": "ZM107004099005",
+         "name": "Namukolo"
+        },
+        {
+         "code": "ZM107004099006",
+         "name": "Chulungoma"
+        },
+        {
+         "code": "ZM107004099007",
+         "name": "Masonde"
+        },
+        {
+         "code": "ZM107004099008",
+         "name": "Lukutu"
+        },
+        {
+         "code": "ZM107004099009",
+         "name": "Chifwile"
+        },
+        {
+         "code": "ZM107004099010",
+         "name": "Isansa"
+        },
+        {
+         "code": "ZM107004099011",
+         "name": "Mushitu-Wamboo"
+        },
+        {
+         "code": "ZM107004099012",
+         "name": "Lwata"
+        },
+        {
+         "code": "ZM107004099013",
+         "name": "Isangano"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107005",
+     "name": "Mbala",
+     "constituencies": [
+      {
+       "code": "ZM107005101",
+       "name": "Mbala",
+       "wards": [
+        {
+         "code": "ZM107005101001",
+         "name": "Mwambezi"
+        },
+        {
+         "code": "ZM107005101002",
+         "name": "Kazimolwa"
+        },
+        {
+         "code": "ZM107005101003",
+         "name": "Motomoto"
+        },
+        {
+         "code": "ZM107005101004",
+         "name": "Kalambo Falls"
+        },
+        {
+         "code": "ZM107005101005",
+         "name": "Intala"
+        },
+        {
+         "code": "ZM107005101006",
+         "name": "Kawimbe"
+        },
+        {
+         "code": "ZM107005101007",
+         "name": "Mwamba"
+        },
+        {
+         "code": "ZM107005101008",
+         "name": "Lwandi"
+        },
+        {
+         "code": "ZM107005101009",
+         "name": "Nsunzu"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107006",
+     "name": "Mporokoso",
+     "constituencies": [
+      {
+       "code": "ZM107006104",
+       "name": "Mporokoso",
+       "wards": [
+        {
+         "code": "ZM107006104001",
+         "name": "Chikulu"
+        },
+        {
+         "code": "ZM107006104002",
+         "name": "Lumangwe"
+        },
+        {
+         "code": "ZM107006104003",
+         "name": "Chimbofuma"
+        },
+        {
+         "code": "ZM107006104004",
+         "name": "Mumbulama"
+        },
+        {
+         "code": "ZM107006104005",
+         "name": "Chimpolonge"
+        },
+        {
+         "code": "ZM107006104006",
+         "name": "Kapumo"
+        },
+        {
+         "code": "ZM107006104007",
+         "name": "Njalamimba"
+        },
+        {
+         "code": "ZM107006104008",
+         "name": "Chishamwamba"
+        },
+        {
+         "code": "ZM107006104009",
+         "name": "Mikomba"
+        },
+        {
+         "code": "ZM107006104010",
+         "name": "Muchinga"
+        },
+        {
+         "code": "ZM107006104011",
+         "name": "Mutotoshi"
+        },
+        {
+         "code": "ZM107006104012",
+         "name": "Mabale"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107007",
+     "name": "Mpulungu",
+     "constituencies": [
+      {
+       "code": "ZM107007105",
+       "name": "Mpulungu",
+       "wards": [
+        {
+         "code": "ZM107007105001",
+         "name": "Kapembwa"
+        },
+        {
+         "code": "ZM107007105002",
+         "name": "Chibulula"
+        },
+        {
+         "code": "ZM107007105003",
+         "name": "Mpulungu Central"
+        },
+        {
+         "code": "ZM107007105004",
+         "name": "Namukale"
+        },
+        {
+         "code": "ZM107007105005",
+         "name": "Chilumba"
+        },
+        {
+         "code": "ZM107007105006",
+         "name": "Isoko"
+        },
+        {
+         "code": "ZM107007105007",
+         "name": "Mankonga"
+        },
+        {
+         "code": "ZM107007105008",
+         "name": "Tanganyika"
+        },
+        {
+         "code": "ZM107007105009",
+         "name": "Iyendwe"
+        },
+        {
+         "code": "ZM107007105010",
+         "name": "Itimbwe"
+        },
+        {
+         "code": "ZM107007105011",
+         "name": "Mumila"
+        },
+        {
+         "code": "ZM107007105012",
+         "name": "Chitimbwa"
+        },
+        {
+         "code": "ZM107007105013",
+         "name": "Musengenzi"
+        },
+        {
+         "code": "ZM107007105014",
+         "name": "Vyamba"
+        },
+        {
+         "code": "ZM107007105015",
+         "name": "Chisha"
+        },
+        {
+         "code": "ZM107007105016",
+         "name": "Lwambazi"
+        },
+        {
+         "code": "ZM107007105017",
+         "name": "Isunga"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107008",
+     "name": "Mungwi",
+     "constituencies": [
+      {
+       "code": "ZM107008106",
+       "name": "Malole",
+       "wards": [
+        {
+         "code": "ZM107008106001",
+         "name": "Fibwe"
+        },
+        {
+         "code": "ZM107008106002",
+         "name": "Kabisha"
+        },
+        {
+         "code": "ZM107008106003",
+         "name": "Luchewe"
+        },
+        {
+         "code": "ZM107008106004",
+         "name": "Lubala"
+        },
+        {
+         "code": "ZM107008106005",
+         "name": "Mpanda"
+        },
+        {
+         "code": "ZM107008106006",
+         "name": "Kalungu"
+        },
+        {
+         "code": "ZM107008106007",
+         "name": "Iyaya"
+        },
+        {
+         "code": "ZM107008106008",
+         "name": "Fube"
+        },
+        {
+         "code": "ZM107008106009",
+         "name": "Chamfubu"
+        },
+        {
+         "code": "ZM107008106010",
+         "name": "Katumba"
+        },
+        {
+         "code": "ZM107008106011",
+         "name": "Ngulula"
+        },
+        {
+         "code": "ZM107008106012",
+         "name": "Mungwi"
+        },
+        {
+         "code": "ZM107008106013",
+         "name": "Mabula"
+        },
+        {
+         "code": "ZM107008106014",
+         "name": "Mfinshe"
+        },
+        {
+         "code": "ZM107008106015",
+         "name": "Chambeshi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107009",
+     "name": "Nsama",
+     "constituencies": [
+      {
+       "code": "ZM107009107",
+       "name": "Chimbamilonga",
+       "wards": [
+        {
+         "code": "ZM107009107001",
+         "name": "Kapisha"
+        },
+        {
+         "code": "ZM107009107002",
+         "name": "Nsumbu"
+        },
+        {
+         "code": "ZM107009107003",
+         "name": "Katwatwa"
+        },
+        {
+         "code": "ZM107009107004",
+         "name": "Chishela"
+        },
+        {
+         "code": "ZM107009107005",
+         "name": "Munwa"
+        },
+        {
+         "code": "ZM107009107006",
+         "name": "Mikose"
+        },
+        {
+         "code": "ZM107009107007",
+         "name": "Kampinda"
+        },
+        {
+         "code": "ZM107009107008",
+         "name": "Mululu"
+        },
+        {
+         "code": "ZM107009107009",
+         "name": "Lunsangwe"
+        },
+        {
+         "code": "ZM107009107010",
+         "name": "Fungwe"
+        },
+        {
+         "code": "ZM107009107011",
+         "name": "Mwambeshi"
+        },
+        {
+         "code": "ZM107009107012",
+         "name": "Chubo"
+        },
+        {
+         "code": "ZM107009107013",
+         "name": "Chishi"
+        },
+        {
+         "code": "ZM107009107014",
+         "name": "Kakoma"
+        },
+        {
+         "code": "ZM107009107015",
+         "name": "Mukubwe"
+        },
+        {
+         "code": "ZM107009107016",
+         "name": "Kashikishi"
+        },
+        {
+         "code": "ZM107009107017",
+         "name": "Kakusu"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107010",
+     "name": "Senga Hill",
+     "constituencies": [
+      {
+       "code": "ZM107010102",
+       "name": "Senga Hill",
+       "wards": [
+        {
+         "code": "ZM107010102001",
+         "name": "Mwiluzi"
+        },
+        {
+         "code": "ZM107010102002",
+         "name": "Chela"
+        },
+        {
+         "code": "ZM107010102003",
+         "name": "Chimbili"
+        },
+        {
+         "code": "ZM107010102004",
+         "name": "Luombe"
+        },
+        {
+         "code": "ZM107010102005",
+         "name": "Chinyika"
+        },
+        {
+         "code": "ZM107010102006",
+         "name": "Malamba"
+        },
+        {
+         "code": "ZM107010102007",
+         "name": "Lapisha"
+        },
+        {
+         "code": "ZM107010102008",
+         "name": "Mukololo"
+        },
+        {
+         "code": "ZM107010102009",
+         "name": "Ipembe"
+        },
+        {
+         "code": "ZM107010102010",
+         "name": "Chozi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107011",
+     "name": "Lunte",
+     "constituencies": [
+      {
+       "code": "ZM107011103",
+       "name": "Lunte",
+       "wards": [
+        {
+         "code": "ZM107011103001",
+         "name": "Chewe"
+        },
+        {
+         "code": "ZM107011103002",
+         "name": "Luangwa"
+        },
+        {
+         "code": "ZM107011103003",
+         "name": "Kasanshi"
+        },
+        {
+         "code": "ZM107011103004",
+         "name": "Isenga"
+        },
+        {
+         "code": "ZM107011103005",
+         "name": "Nchelenje"
+        },
+        {
+         "code": "ZM107011103006",
+         "name": "Myangaluba"
+        },
+        {
+         "code": "ZM107011103007",
+         "name": "Malaila"
+        },
+        {
+         "code": "ZM107011103008",
+         "name": "Malambwa"
+        },
+        {
+         "code": "ZM107011103009",
+         "name": "Kalungwishi"
+        },
+        {
+         "code": "ZM107011103010",
+         "name": "Kanyanta"
+        },
+        {
+         "code": "ZM107011103011",
+         "name": "Lubushi"
+        },
+        {
+         "code": "ZM107011103012",
+         "name": "Lunte"
+        },
+        {
+         "code": "ZM107011103013",
+         "name": "Masonde"
+        },
+        {
+         "code": "ZM107011103014",
+         "name": "Bwandela"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM107012",
+     "name": "Lupososhi",
+     "constituencies": [
+      {
+       "code": "ZM107012100",
+       "name": "Lupososhi",
+       "wards": [
+        {
+         "code": "ZM107012100001",
+         "name": "Intandashi"
+        },
+        {
+         "code": "ZM107012100002",
+         "name": "Kaela"
+        },
+        {
+         "code": "ZM107012100003",
+         "name": "Kalinga"
+        },
+        {
+         "code": "ZM107012100004",
+         "name": "Munshinga"
+        },
+        {
+         "code": "ZM107012100005",
+         "name": "Katilye"
+        },
+        {
+         "code": "ZM107012100006",
+         "name": "Kafinsa"
+        },
+        {
+         "code": "ZM107012100007",
+         "name": "Kampemba"
+        },
+        {
+         "code": "ZM107012100008",
+         "name": "Mulalashi"
+        },
+        {
+         "code": "ZM107012100009",
+         "name": "Mufili"
+        },
+        {
+         "code": "ZM107012100010",
+         "name": "Ilambo"
+        },
+        {
+         "code": "ZM107012100011",
+         "name": "Ibale"
+        },
+        {
+         "code": "ZM107012100012",
+         "name": "Bwalinde"
+        },
+        {
+         "code": "ZM107012100013",
+         "name": "Lubwa"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "ZM108",
+   "name": "North-Western",
+   "districts": [
+    {
+     "code": "ZM108001",
+     "name": "Chavuma",
+     "constituencies": [
+      {
+       "code": "ZM108001108",
+       "name": "Chavuma",
+       "wards": [
+        {
+         "code": "ZM108001108001",
+         "name": "Nguvu Mukuku"
+        },
+        {
+         "code": "ZM108001108002",
+         "name": "Nyatanda"
+        },
+        {
+         "code": "ZM108001108003",
+         "name": "Nyambingila"
+        },
+        {
+         "code": "ZM108001108004",
+         "name": "Chambi Mandalo"
+        },
+        {
+         "code": "ZM108001108005",
+         "name": "Sanjongo Mavili"
+        },
+        {
+         "code": "ZM108001108006",
+         "name": "Chavuma Central"
+        },
+        {
+         "code": "ZM108001108007",
+         "name": "Sewe Mungole"
+        },
+        {
+         "code": "ZM108001108008",
+         "name": "Chiyeke"
+        },
+        {
+         "code": "ZM108001108009",
+         "name": "Kakhoma"
+        },
+        {
+         "code": "ZM108001108010",
+         "name": "Lingelengenda Chinwandumba"
+        },
+        {
+         "code": "ZM108001108011",
+         "name": "Kalombo Kamisamba"
+        },
+        {
+         "code": "ZM108001108012",
+         "name": "Chivombo Mbalango"
+        },
+        {
+         "code": "ZM108001108013",
+         "name": "Lingundu Kayinda"
+        },
+        {
+         "code": "ZM108001108014",
+         "name": "Lukolwe Musunga"
+        },
+        {
+         "code": "ZM108001108015",
+         "name": "Kambuya Mukelangombe"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM108002",
+     "name": "Ikelenge",
+     "constituencies": [
+      {
+       "code": "ZM108002109",
+       "name": "Ikeleng'i",
+       "wards": [
+        {
+         "code": "ZM108002109001",
+         "name": "Mwininyilamba"
+        },
+        {
+         "code": "ZM108002109002",
+         "name": "Kafweku"
+        },
+        {
+         "code": "ZM108002109003",
+         "name": "Mwilombi"
+        },
+        {
+         "code": "ZM108002109004",
+         "name": "Jimbe"
+        },
+        {
+         "code": "ZM108002109005",
+         "name": "Chanachamuhing'a"
+        },
+        {
+         "code": "ZM108002109006",
+         "name": "Nyakaseya"
+        },
+        {
+         "code": "ZM108002109007",
+         "name": "Sakeji"
+        },
+        {
+         "code": "ZM108002109008",
+         "name": "Ikeleng'i"
+        },
+        {
+         "code": "ZM108002109009",
+         "name": "Mukang'ala"
+        },
+        {
+         "code": "ZM108002109010",
+         "name": "Lwakela"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM108003",
+     "name": "Kabompo",
+     "constituencies": [
+      {
+       "code": "ZM108003110",
+       "name": "Kabompo",
+       "wards": [
+        {
+         "code": "ZM108003110001",
+         "name": "Kayombo"
+        },
+        {
+         "code": "ZM108003110002",
+         "name": "Chikonkwelo"
+        },
+        {
+         "code": "ZM108003110003",
+         "name": "Luli"
+        },
+        {
+         "code": "ZM108003110004",
+         "name": "Kamafwafwa"
+        },
+        {
+         "code": "ZM108003110005",
+         "name": "Kabompo"
+        },
+        {
+         "code": "ZM108003110006",
+         "name": "Litoya"
+        },
+        {
+         "code": "ZM108003110007",
+         "name": "Chifuwe"
+        },
+        {
+         "code": "ZM108003110008",
+         "name": "Kamisombo"
+        },
+        {
+         "code": "ZM108003110009",
+         "name": "Nkulwashi"
+        },
+        {
+         "code": "ZM108003110010",
+         "name": "Kabulamema"
+        },
+        {
+         "code": "ZM108003110011",
+         "name": "Kamisamba"
+        },
+        {
+         "code": "ZM108003110012",
+         "name": "Mumbeji"
+        },
+        {
+         "code": "ZM108003110013",
+         "name": "Maveve"
+        },
+        {
+         "code": "ZM108003110014",
+         "name": "Kalwilo"
+        },
+        {
+         "code": "ZM108003110015",
+         "name": "Chikenge"
+        },
+        {
+         "code": "ZM108003110016",
+         "name": "Katuva"
+        },
+        {
+         "code": "ZM108003110017",
+         "name": "Lunyiwe"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM108004",
+     "name": "Kasempa",
+     "constituencies": [
+      {
+       "code": "ZM108004111",
+       "name": "Kasempa",
+       "wards": [
+        {
+         "code": "ZM108004111001",
+         "name": "Kamakuku"
+        },
+        {
+         "code": "ZM108004111002",
+         "name": "Nselauke"
+        },
+        {
+         "code": "ZM108004111003",
+         "name": "Ingwe"
+        },
+        {
+         "code": "ZM108004111004",
+         "name": "Kaimbwe"
+        },
+        {
+         "code": "ZM108004111005",
+         "name": "Kamatete"
+        },
+        {
+         "code": "ZM108004111006",
+         "name": "Mukema"
+        },
+        {
+         "code": "ZM108004111007",
+         "name": "Mukinda"
+        },
+        {
+         "code": "ZM108004111008",
+         "name": "Nyoka"
+        },
+        {
+         "code": "ZM108004111009",
+         "name": "Maako"
+        },
+        {
+         "code": "ZM108004111010",
+         "name": "Lubofu"
+        },
+        {
+         "code": "ZM108004111011",
+         "name": "Kelongwa"
+        },
+        {
+         "code": "ZM108004111012",
+         "name": "Kamakechi"
+        },
+        {
+         "code": "ZM108004111013",
+         "name": "Jifumpa"
+        },
+        {
+         "code": "ZM108004111014",
+         "name": "Mukunashi"
+        },
+        {
+         "code": "ZM108004111015",
+         "name": "Kanongo"
+        },
+        {
+         "code": "ZM108004111016",
+         "name": "Mpungu"
+        },
+        {
+         "code": "ZM108004111017",
+         "name": "Kantenda"
+        },
+        {
+         "code": "ZM108004111018",
+         "name": "Shibende"
+        },
+        {
+         "code": "ZM108004111019",
+         "name": "Nkenyauna"
+        },
+        {
+         "code": "ZM108004111020",
+         "name": "Kikonkomene"
+        },
+        {
+         "code": "ZM108004111021",
+         "name": "Njenga"
+        },
+        {
+         "code": "ZM108004111022",
+         "name": "Kalombe"
+        },
+        {
+         "code": "ZM108004111023",
+         "name": "Dengwe"
+        },
+        {
+         "code": "ZM108004111024",
+         "name": "Kamusongolwa"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM108005",
+     "name": "Manyinga",
+     "constituencies": [
+      {
+       "code": "ZM108005112",
+       "name": "Manyinga",
+       "wards": [
+        {
+         "code": "ZM108005112001",
+         "name": "Chiteve"
+        },
+        {
+         "code": "ZM108005112002",
+         "name": "Loloma"
+        },
+        {
+         "code": "ZM108005112003",
+         "name": "Sikufele"
+        },
+        {
+         "code": "ZM108005112004",
+         "name": "Kaula"
+        },
+        {
+         "code": "ZM108005112005",
+         "name": "Kawanda"
+        },
+        {
+         "code": "ZM108005112006",
+         "name": "Kasamba"
+        },
+        {
+         "code": "ZM108005112007",
+         "name": "Chongo"
+        },
+        {
+         "code": "ZM108005112008",
+         "name": "Chifuwe North"
+        },
+        {
+         "code": "ZM108005112009",
+         "name": "Manyinga"
+        },
+        {
+         "code": "ZM108005112010",
+         "name": "Mukosho"
+        },
+        {
+         "code": "ZM108005112011",
+         "name": "Kachikenge"
+        },
+        {
+         "code": "ZM108005112012",
+         "name": "Dihamba"
+        },
+        {
+         "code": "ZM108005112013",
+         "name": "Lunsong'wa"
+        },
+        {
+         "code": "ZM108005112014",
+         "name": "Kashinakaji"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM108006",
+     "name": "Mufumbwe",
+     "constituencies": [
+      {
+       "code": "ZM108006113",
+       "name": "Mufumbwe",
+       "wards": [
+        {
+         "code": "ZM108006113001",
+         "name": "Kashima West"
+        },
+        {
+         "code": "ZM108006113002",
+         "name": "Kashima East"
+        },
+        {
+         "code": "ZM108006113003",
+         "name": "Matushi"
+        },
+        {
+         "code": "ZM108006113004",
+         "name": "Kamabuta"
+        },
+        {
+         "code": "ZM108006113005",
+         "name": "Kalambu"
+        },
+        {
+         "code": "ZM108006113006",
+         "name": "Chizela"
+        },
+        {
+         "code": "ZM108006113007",
+         "name": "Shukwe"
+        },
+        {
+         "code": "ZM108006113008",
+         "name": "Kikonge"
+        },
+        {
+         "code": "ZM108006113009",
+         "name": "Kalengwa"
+        },
+        {
+         "code": "ZM108006113010",
+         "name": "Munyambala"
+        },
+        {
+         "code": "ZM108006113011",
+         "name": "Kabipupu"
+        },
+        {
+         "code": "ZM108006113012",
+         "name": "Musonweji"
+        },
+        {
+         "code": "ZM108006113013",
+         "name": "Kilale"
+        },
+        {
+         "code": "ZM108006113014",
+         "name": "Mushima"
+        },
+        {
+         "code": "ZM108006113015",
+         "name": "Kaminzekenzeke"
+        },
+        {
+         "code": "ZM108006113016",
+         "name": "Lalafuta"
+        },
+        {
+         "code": "ZM108006113017",
+         "name": "Shimpandanga"
+        },
+        {
+         "code": "ZM108006113018",
+         "name": "Miluji"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM108007",
+     "name": "Mwinilunga",
+     "constituencies": [
+      {
+       "code": "ZM108007114",
+       "name": "Mwinilunga",
+       "wards": [
+        {
+         "code": "ZM108007114001",
+         "name": "Kanzenzi"
+        },
+        {
+         "code": "ZM108007114002",
+         "name": "Chibwika"
+        },
+        {
+         "code": "ZM108007114003",
+         "name": "Kamapanda"
+        },
+        {
+         "code": "ZM108007114004",
+         "name": "Kanongesha"
+        },
+        {
+         "code": "ZM108007114005",
+         "name": "Kawiku"
+        },
+        {
+         "code": "ZM108007114006",
+         "name": "Kabanda"
+        },
+        {
+         "code": "ZM108007114007",
+         "name": "Mulumbi"
+        },
+        {
+         "code": "ZM108007114008",
+         "name": "Kampemba"
+        },
+        {
+         "code": "ZM108007114009",
+         "name": "Mudanyama"
+        },
+        {
+         "code": "ZM108007114010",
+         "name": "Mundwiji"
+        },
+        {
+         "code": "ZM108007114011",
+         "name": "Kapundu"
+        },
+        {
+         "code": "ZM108007114012",
+         "name": "Kanyama"
+        },
+        {
+         "code": "ZM108007114013",
+         "name": "Kakoma"
+        },
+        {
+         "code": "ZM108007114014",
+         "name": "Kasampula"
+        },
+        {
+         "code": "ZM108007114015",
+         "name": "Lumwana"
+        },
+        {
+         "code": "ZM108007114016",
+         "name": "Chisasa"
+        },
+        {
+         "code": "ZM108007114017",
+         "name": "Makuya"
+        },
+        {
+         "code": "ZM108007114018",
+         "name": "Ntambu"
+        },
+        {
+         "code": "ZM108007114019",
+         "name": "Sailunga"
+        },
+        {
+         "code": "ZM108007114020",
+         "name": "Samuteba"
+        },
+        {
+         "code": "ZM108007114021",
+         "name": "Kanyikomboshi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM108008",
+     "name": "Solwezi",
+     "constituencies": [
+      {
+       "code": "ZM108008115",
+       "name": "Solwezi",
+       "wards": [
+        {
+         "code": "ZM108008115001",
+         "name": "Kimasala"
+        },
+        {
+         "code": "ZM108008115002",
+         "name": "Kamalamba"
+        },
+        {
+         "code": "ZM108008115003",
+         "name": "Kapijimpanga"
+        },
+        {
+         "code": "ZM108008115004",
+         "name": "Sandang'ombe"
+        },
+        {
+         "code": "ZM108008115005",
+         "name": "Kyalalankuba"
+        },
+        {
+         "code": "ZM108008115006",
+         "name": "Rodwell Mwepu"
+        },
+        {
+         "code": "ZM108008115007",
+         "name": "Tumvwang'anai"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM108009",
+     "name": "Zambezi",
+     "constituencies": [
+      {
+       "code": "ZM108009118",
+       "name": "Zambezi East",
+       "wards": [
+        {
+         "code": "ZM108009118001",
+         "name": "Nyakuleng'a"
+        },
+        {
+         "code": "ZM108009118002",
+         "name": "Lwitadi Lwatembu"
+        },
+        {
+         "code": "ZM108009118003",
+         "name": "Mpidi Kakong'a"
+        },
+        {
+         "code": "ZM108009118004",
+         "name": "Chitokoloki"
+        },
+        {
+         "code": "ZM108009118005",
+         "name": "Kasesi Chivweji"
+        },
+        {
+         "code": "ZM108009118006",
+         "name": "Zambezi"
+        },
+        {
+         "code": "ZM108009118007",
+         "name": "Chileng'a Chizenzi"
+        },
+        {
+         "code": "ZM108009118008",
+         "name": "Mukanda Nkunda"
+        },
+        {
+         "code": "ZM108009118009",
+         "name": "Dipalata"
+        },
+        {
+         "code": "ZM108009118010",
+         "name": "Lunkunyi"
+        }
+       ]
+      },
+      {
+       "code": "ZM108009119",
+       "name": "Zambezi West",
+       "wards": [
+        {
+         "code": "ZM108009119011",
+         "name": "Mapachi Chinyingi"
+        },
+        {
+         "code": "ZM108009119012",
+         "name": "Likungu"
+        },
+        {
+         "code": "ZM108009119013",
+         "name": "Liyovu"
+        },
+        {
+         "code": "ZM108009119014",
+         "name": "Muyembe"
+        },
+        {
+         "code": "ZM108009119015",
+         "name": "Mwange Nyawanda"
+        },
+        {
+         "code": "ZM108009119016",
+         "name": "Matondo Nyachikayi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM108010",
+     "name": "Kalumbila",
+     "constituencies": [
+      {
+       "code": "ZM108010117",
+       "name": "Kalumbila",
+       "wards": [
+        {
+         "code": "ZM108010117001",
+         "name": "Kibanza"
+        },
+        {
+         "code": "ZM108010117002",
+         "name": "Mwajimambwe"
+        },
+        {
+         "code": "ZM108010117003",
+         "name": "Wabituwo"
+        },
+        {
+         "code": "ZM108010117004",
+         "name": "Shilenda"
+        },
+        {
+         "code": "ZM108010117005",
+         "name": "Mumena"
+        },
+        {
+         "code": "ZM108010117006",
+         "name": "Matebo"
+        },
+        {
+         "code": "ZM108010117007",
+         "name": "Chovwe"
+        },
+        {
+         "code": "ZM108010117008",
+         "name": "Musele"
+        },
+        {
+         "code": "ZM108010117009",
+         "name": "Kisasa"
+        },
+        {
+         "code": "ZM108010117010",
+         "name": "Chitung'u"
+        },
+        {
+         "code": "ZM108010117011",
+         "name": "Mukumbi"
+        },
+        {
+         "code": "ZM108010117012",
+         "name": "Mumbezhi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM108011",
+     "name": "Mushindamo",
+     "constituencies": [
+      {
+       "code": "ZM108011116",
+       "name": "Mushindamo",
+       "wards": [
+        {
+         "code": "ZM108011116001",
+         "name": "Kilumba"
+        },
+        {
+         "code": "ZM108011116002",
+         "name": "Mulonga"
+        },
+        {
+         "code": "ZM108011116003",
+         "name": "Musaka"
+        },
+        {
+         "code": "ZM108011116004",
+         "name": "Kikola"
+        },
+        {
+         "code": "ZM108011116005",
+         "name": "Kangwena"
+        },
+        {
+         "code": "ZM108011116006",
+         "name": "Kalilele"
+        },
+        {
+         "code": "ZM108011116007",
+         "name": "Mapunga"
+        },
+        {
+         "code": "ZM108011116008",
+         "name": "Mujimanzovu"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "ZM109",
+   "name": "Southern",
+   "districts": [
+    {
+     "code": "ZM109001",
+     "name": "Chikankata",
+     "constituencies": [
+      {
+       "code": "ZM109001120",
+       "name": "Chikankata",
+       "wards": [
+        {
+         "code": "ZM109001120001",
+         "name": "Kasengo"
+        },
+        {
+         "code": "ZM109001120002",
+         "name": "Nansenga"
+        },
+        {
+         "code": "ZM109001120003",
+         "name": "Turnpike"
+        },
+        {
+         "code": "ZM109001120004",
+         "name": "Namalundu"
+        },
+        {
+         "code": "ZM109001120005",
+         "name": "Musaya"
+        },
+        {
+         "code": "ZM109001120006",
+         "name": "Chikani"
+        },
+        {
+         "code": "ZM109001120007",
+         "name": "Nzingu"
+        },
+        {
+         "code": "ZM109001120008",
+         "name": "Chitete"
+        },
+        {
+         "code": "ZM109001120009",
+         "name": "Malala"
+        },
+        {
+         "code": "ZM109001120010",
+         "name": "Chikombola"
+        },
+        {
+         "code": "ZM109001120011",
+         "name": "Munyomenzyi"
+        },
+        {
+         "code": "ZM109001120012",
+         "name": "Mabwetuba"
+        },
+        {
+         "code": "ZM109001120013",
+         "name": "Upper Kaleya"
+        },
+        {
+         "code": "ZM109001120014",
+         "name": "Chakanza"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109002",
+     "name": "Choma",
+     "constituencies": [
+      {
+       "code": "ZM109002121",
+       "name": "Choma Central",
+       "wards": [
+        {
+         "code": "ZM109002121001",
+         "name": "Namuswa"
+        },
+        {
+         "code": "ZM109002121002",
+         "name": "Masuku"
+        },
+        {
+         "code": "ZM109002121003",
+         "name": "Siasikabole"
+        },
+        {
+         "code": "ZM109002121004",
+         "name": "Singani"
+        },
+        {
+         "code": "ZM109002121005",
+         "name": "Nakeempa"
+        },
+        {
+         "code": "ZM109002121006",
+         "name": "Mutandalike"
+        },
+        {
+         "code": "ZM109002121007",
+         "name": "Mubula"
+        },
+        {
+         "code": "ZM109002121008",
+         "name": "Sikalundu"
+        },
+        {
+         "code": "ZM109002121009",
+         "name": "Stateland"
+        },
+        {
+         "code": "ZM109002121010",
+         "name": "Kulundana"
+        },
+        {
+         "code": "ZM109002121011",
+         "name": "Simacheche"
+        },
+        {
+         "code": "ZM109002121012",
+         "name": "Siamambo"
+        },
+        {
+         "code": "ZM109002121013",
+         "name": "Sikalongo"
+        },
+        {
+         "code": "ZM109002121014",
+         "name": "Batoka"
+        },
+        {
+         "code": "ZM109002121015",
+         "name": "Moomba"
+        },
+        {
+         "code": "ZM109002121016",
+         "name": "Simamvwa"
+        }
+       ]
+      },
+      {
+       "code": "ZM109002122",
+       "name": "Mbabala",
+       "wards": [
+        {
+         "code": "ZM109002122017",
+         "name": "Ng'onga"
+        },
+        {
+         "code": "ZM109002122018",
+         "name": "Kabimba"
+        },
+        {
+         "code": "ZM109002122019",
+         "name": "Mutanga"
+        },
+        {
+         "code": "ZM109002122020",
+         "name": "Macha"
+        },
+        {
+         "code": "ZM109002122021",
+         "name": "Kabanze-Mayobo"
+        },
+        {
+         "code": "ZM109002122022",
+         "name": "Simaubi"
+        },
+        {
+         "code": "ZM109002122023",
+         "name": "Chilalantambo"
+        },
+        {
+         "code": "ZM109002122024",
+         "name": "Mapanza"
+        },
+        {
+         "code": "ZM109002122025",
+         "name": "Kalundu"
+        },
+        {
+         "code": "ZM109002122026",
+         "name": "Nchembe"
+        },
+        {
+         "code": "ZM109002122027",
+         "name": "Mang'unza"
+        },
+        {
+         "code": "ZM109002122028",
+         "name": "Mbabala"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109003",
+     "name": "Gwembe",
+     "constituencies": [
+      {
+       "code": "ZM109003123",
+       "name": "Gwembe",
+       "wards": [
+        {
+         "code": "ZM109003123001",
+         "name": "Jongola"
+        },
+        {
+         "code": "ZM109003123002",
+         "name": "Fumbo"
+        },
+        {
+         "code": "ZM109003123003",
+         "name": "Makuyu"
+        },
+        {
+         "code": "ZM109003123004",
+         "name": "Lukonde"
+        },
+        {
+         "code": "ZM109003123005",
+         "name": "Bbondo"
+        },
+        {
+         "code": "ZM109003123006",
+         "name": "Chaamwe"
+        },
+        {
+         "code": "ZM109003123007",
+         "name": "Luumbo"
+        },
+        {
+         "code": "ZM109003123008",
+         "name": "Kkole"
+        },
+        {
+         "code": "ZM109003123009",
+         "name": "Siampande"
+        },
+        {
+         "code": "ZM109003123010",
+         "name": "Kkota Kkota"
+        },
+        {
+         "code": "ZM109003123011",
+         "name": "Chibuwe"
+        },
+        {
+         "code": "ZM109003123012",
+         "name": "Syambabala"
+        },
+        {
+         "code": "ZM109003123013",
+         "name": "Kkoma"
+        },
+        {
+         "code": "ZM109003123014",
+         "name": "Sinafala"
+        },
+        {
+         "code": "ZM109003123015",
+         "name": "Chisanga"
+        },
+        {
+         "code": "ZM109003123016",
+         "name": "Jumbo Sompani"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109004",
+     "name": "Kalomo",
+     "constituencies": [
+      {
+       "code": "ZM109004124",
+       "name": "Dundumwezi",
+       "wards": [
+        {
+         "code": "ZM109004124001",
+         "name": "Kasukwe"
+        },
+        {
+         "code": "ZM109004124002",
+         "name": "Naluja"
+        },
+        {
+         "code": "ZM109004124003",
+         "name": "Bbilili"
+        },
+        {
+         "code": "ZM109004124004",
+         "name": "Katanda"
+        },
+        {
+         "code": "ZM109004124005",
+         "name": "Omba"
+        },
+        {
+         "code": "ZM109004124006",
+         "name": "Mikata"
+        },
+        {
+         "code": "ZM109004124007",
+         "name": "Chikanta"
+        },
+        {
+         "code": "ZM109004124008",
+         "name": "Chamuka"
+        }
+       ]
+      },
+      {
+       "code": "ZM109004125",
+       "name": "Kalomo Central",
+       "wards": [
+        {
+         "code": "ZM109004125009",
+         "name": "Chifusa"
+        },
+        {
+         "code": "ZM109004125010",
+         "name": "Siachitema"
+        },
+        {
+         "code": "ZM109004125011",
+         "name": "Kalonda"
+        },
+        {
+         "code": "ZM109004125012",
+         "name": "Choonga"
+        },
+        {
+         "code": "ZM109004125013",
+         "name": "Mwaata"
+        },
+        {
+         "code": "ZM109004125014",
+         "name": "Chilesha"
+        },
+        {
+         "code": "ZM109004125015",
+         "name": "Mayoba"
+        },
+        {
+         "code": "ZM109004125016",
+         "name": "Namwianga"
+        },
+        {
+         "code": "ZM109004125017",
+         "name": "Sipatunyana"
+        },
+        {
+         "code": "ZM109004125018",
+         "name": "Chawila"
+        },
+        {
+         "code": "ZM109004125019",
+         "name": "Simayakwe"
+        },
+        {
+         "code": "ZM109004125020",
+         "name": "Nachikungu"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109005",
+     "name": "Kazungula",
+     "constituencies": [
+      {
+       "code": "ZM109005126",
+       "name": "Katombola",
+       "wards": [
+        {
+         "code": "ZM109005126001",
+         "name": "Moomba"
+        },
+        {
+         "code": "ZM109005126002",
+         "name": "Chooma"
+        },
+        {
+         "code": "ZM109005126003",
+         "name": "Nguba"
+        },
+        {
+         "code": "ZM109005126004",
+         "name": "Kauwe"
+        },
+        {
+         "code": "ZM109005126005",
+         "name": "Nyawa"
+        },
+        {
+         "code": "ZM109005126006",
+         "name": "Bombwe"
+        },
+        {
+         "code": "ZM109005126007",
+         "name": "Sikaunzwe"
+        },
+        {
+         "code": "ZM109005126008",
+         "name": "Kazungula Central"
+        },
+        {
+         "code": "ZM109005126009",
+         "name": "Mandia"
+        },
+        {
+         "code": "ZM109005126010",
+         "name": "Sekute"
+        },
+        {
+         "code": "ZM109005126011",
+         "name": "Ngwezi"
+        },
+        {
+         "code": "ZM109005126012",
+         "name": "Kanchele"
+        },
+        {
+         "code": "ZM109005126013",
+         "name": "Simango"
+        },
+        {
+         "code": "ZM109005126014",
+         "name": "Musokotwane"
+        },
+        {
+         "code": "ZM109005126015",
+         "name": "Katapazi"
+        },
+        {
+         "code": "ZM109005126016",
+         "name": "Mukuni"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109006",
+     "name": "Livingstone",
+     "constituencies": [
+      {
+       "code": "ZM109006127",
+       "name": "Livingstone",
+       "wards": [
+        {
+         "code": "ZM109006127001",
+         "name": "Freedom"
+        },
+        {
+         "code": "ZM109006127002",
+         "name": "Musi-Oa-Tunya"
+        },
+        {
+         "code": "ZM109006127003",
+         "name": "Akapelwa"
+        },
+        {
+         "code": "ZM109006127004",
+         "name": "Lizuma"
+        },
+        {
+         "code": "ZM109006127005",
+         "name": "Dambwa Central"
+        },
+        {
+         "code": "ZM109006127006",
+         "name": "Zambezi"
+        },
+        {
+         "code": "ZM109006127007",
+         "name": "Nakatindi"
+        },
+        {
+         "code": "ZM109006127008",
+         "name": "Simonga"
+        },
+        {
+         "code": "ZM109006127009",
+         "name": "Dr. Mubitana"
+        },
+        {
+         "code": "ZM109006127010",
+         "name": "Kasiya"
+        },
+        {
+         "code": "ZM109006127011",
+         "name": "Simatobolo"
+        },
+        {
+         "code": "ZM109006127012",
+         "name": "Libuyu"
+        },
+        {
+         "code": "ZM109006127013",
+         "name": "Kabila"
+        },
+        {
+         "code": "ZM109006127014",
+         "name": "Shungu"
+        },
+        {
+         "code": "ZM109006127015",
+         "name": "Nansanzu"
+        },
+        {
+         "code": "ZM109006127016",
+         "name": "Kariba"
+        },
+        {
+         "code": "ZM109006127017",
+         "name": "Maramba"
+        },
+        {
+         "code": "ZM109006127018",
+         "name": "Mulungushi"
+        },
+        {
+         "code": "ZM109006127019",
+         "name": "Mwalibonena"
+        },
+        {
+         "code": "ZM109006127020",
+         "name": "Namatama"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109007",
+     "name": "Mazabuka",
+     "constituencies": [
+      {
+       "code": "ZM109007128",
+       "name": "Magoye",
+       "wards": [
+        {
+         "code": "ZM109007128001",
+         "name": "Nkonkola"
+        },
+        {
+         "code": "ZM109007128002",
+         "name": "Chivuna"
+        },
+        {
+         "code": "ZM109007128003",
+         "name": "Mbaya"
+        },
+        {
+         "code": "ZM109007128004",
+         "name": "Musuma"
+        },
+        {
+         "code": "ZM109007128005",
+         "name": "Munjile"
+        },
+        {
+         "code": "ZM109007128006",
+         "name": "Ngwezi"
+        },
+        {
+         "code": "ZM109007128007",
+         "name": "Nachipooma"
+        },
+        {
+         "code": "ZM109007128008",
+         "name": "Mwanachingwala"
+        },
+        {
+         "code": "ZM109007128009",
+         "name": "Munenga"
+        },
+        {
+         "code": "ZM109007128010",
+         "name": "Kalama"
+        },
+        {
+         "code": "ZM109007128011",
+         "name": "Itebe"
+        }
+       ]
+      },
+      {
+       "code": "ZM109007129",
+       "name": "Mazabuka Central",
+       "wards": [
+        {
+         "code": "ZM109007129012",
+         "name": "Siyoowi"
+        },
+        {
+         "code": "ZM109007129013",
+         "name": "Mazabuka Central"
+        },
+        {
+         "code": "ZM109007129014",
+         "name": "Bennie Mwiinga"
+        },
+        {
+         "code": "ZM109007129015",
+         "name": "Chizobo"
+        },
+        {
+         "code": "ZM109007129016",
+         "name": "Kaonga"
+        },
+        {
+         "code": "ZM109007129017",
+         "name": "Nakambala"
+        },
+        {
+         "code": "ZM109007129018",
+         "name": "Nega Nega"
+        },
+        {
+         "code": "ZM109007129019",
+         "name": "Lubombo"
+        },
+        {
+         "code": "ZM109007129020",
+         "name": "Mugoto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109008",
+     "name": "Monze",
+     "constituencies": [
+      {
+       "code": "ZM109008130",
+       "name": "Bweengwa",
+       "wards": [
+        {
+         "code": "ZM109008130001",
+         "name": "Malundu"
+        },
+        {
+         "code": "ZM109008130002",
+         "name": "Hamusonde"
+        },
+        {
+         "code": "ZM109008130003",
+         "name": "Kaila"
+        },
+        {
+         "code": "ZM109008130004",
+         "name": "Keemba"
+        },
+        {
+         "code": "ZM109008130005",
+         "name": "Choongo East"
+        },
+        {
+         "code": "ZM109008130006",
+         "name": "Choongo West"
+        },
+        {
+         "code": "ZM109008130007",
+         "name": "Bweengwa"
+        },
+        {
+         "code": "ZM109008130008",
+         "name": "Hamangaba"
+        }
+       ]
+      },
+      {
+       "code": "ZM109008131",
+       "name": "Monze Central",
+       "wards": [
+        {
+         "code": "ZM109008131009",
+         "name": "Hamamvwa"
+        },
+        {
+         "code": "ZM109008131010",
+         "name": "Katimba"
+        },
+        {
+         "code": "ZM109008131011",
+         "name": "Bbombo"
+        },
+        {
+         "code": "ZM109008131012",
+         "name": "Hatontola"
+        },
+        {
+         "code": "ZM109008131013",
+         "name": "Hufwa-Hamapande"
+        },
+        {
+         "code": "ZM109008131014",
+         "name": "Mayaba"
+        },
+        {
+         "code": "ZM109008131015",
+         "name": "Chisekese"
+        },
+        {
+         "code": "ZM109008131016",
+         "name": "Ufwenuka"
+        },
+        {
+         "code": "ZM109008131017",
+         "name": "Singonya"
+        },
+        {
+         "code": "ZM109008131018",
+         "name": "Chipembele"
+        },
+        {
+         "code": "ZM109008131019",
+         "name": "Manungu"
+        },
+        {
+         "code": "ZM109008131020",
+         "name": "Monze Urban"
+        }
+       ]
+      },
+      {
+       "code": "ZM109008132",
+       "name": "Moomba",
+       "wards": [
+        {
+         "code": "ZM109008132021",
+         "name": "Mwanza West"
+        },
+        {
+         "code": "ZM109008132022",
+         "name": "Mwanza Central"
+        },
+        {
+         "code": "ZM109008132023",
+         "name": "Mwanza East"
+        },
+        {
+         "code": "ZM109008132024",
+         "name": "Chona"
+        },
+        {
+         "code": "ZM109008132025",
+         "name": "Moomba"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109009",
+     "name": "Namwala",
+     "constituencies": [
+      {
+       "code": "ZM109009133",
+       "name": "Namwala",
+       "wards": [
+        {
+         "code": "ZM109009133001",
+         "name": "Moobola"
+        },
+        {
+         "code": "ZM109009133002",
+         "name": "Namakube"
+        },
+        {
+         "code": "ZM109009133003",
+         "name": "Itapa"
+        },
+        {
+         "code": "ZM109009133004",
+         "name": "Ichila"
+        },
+        {
+         "code": "ZM109009133005",
+         "name": "Ngabo"
+        },
+        {
+         "code": "ZM109009133006",
+         "name": "Namwala Central"
+        },
+        {
+         "code": "ZM109009133007",
+         "name": "Baambwe"
+        },
+        {
+         "code": "ZM109009133008",
+         "name": "Maala"
+        },
+        {
+         "code": "ZM109009133009",
+         "name": "Namusonde"
+        },
+        {
+         "code": "ZM109009133010",
+         "name": "Kabulamwanda"
+        },
+        {
+         "code": "ZM109009133011",
+         "name": "Kantengwa"
+        },
+        {
+         "code": "ZM109009133012",
+         "name": "Mandondo"
+        },
+        {
+         "code": "ZM109009133013",
+         "name": "Mbeza"
+        },
+        {
+         "code": "ZM109009133014",
+         "name": "Nakamboma"
+        },
+        {
+         "code": "ZM109009133015",
+         "name": "Chitongo"
+        },
+        {
+         "code": "ZM109009133016",
+         "name": "Ndema"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109010",
+     "name": "Pemba",
+     "constituencies": [
+      {
+       "code": "ZM109010134",
+       "name": "Pemba",
+       "wards": [
+        {
+         "code": "ZM109010134001",
+         "name": "Kasiya"
+        },
+        {
+         "code": "ZM109010134002",
+         "name": "Pemba"
+        },
+        {
+         "code": "ZM109010134003",
+         "name": "Hamaundu"
+        },
+        {
+         "code": "ZM109010134004",
+         "name": "Demu"
+        },
+        {
+         "code": "ZM109010134005",
+         "name": "Kasikili"
+        },
+        {
+         "code": "ZM109010134006",
+         "name": "Maambo"
+        },
+        {
+         "code": "ZM109010134007",
+         "name": "Kauba"
+        },
+        {
+         "code": "ZM109010134008",
+         "name": "Yotam Muleya"
+        },
+        {
+         "code": "ZM109010134009",
+         "name": "Habunkululu"
+        },
+        {
+         "code": "ZM109010134010",
+         "name": "Dobo"
+        },
+        {
+         "code": "ZM109010134011",
+         "name": "Nachibanga"
+        },
+        {
+         "code": "ZM109010134012",
+         "name": "Muzoka"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109011",
+     "name": "Siavonga",
+     "constituencies": [
+      {
+       "code": "ZM109011135",
+       "name": "Siavonga",
+       "wards": [
+        {
+         "code": "ZM109011135001",
+         "name": "Manchamvwa Inland"
+        },
+        {
+         "code": "ZM109011135002",
+         "name": "Sinadambwe"
+        },
+        {
+         "code": "ZM109011135003",
+         "name": "Lusangazi"
+        },
+        {
+         "code": "ZM109011135004",
+         "name": "Mulimya"
+        },
+        {
+         "code": "ZM109011135005",
+         "name": "Mutuba"
+        },
+        {
+         "code": "ZM109011135006",
+         "name": "Nabuteezi"
+        },
+        {
+         "code": "ZM109011135007",
+         "name": "Nanyanga"
+        },
+        {
+         "code": "ZM109011135008",
+         "name": "Simamba"
+        },
+        {
+         "code": "ZM109011135009",
+         "name": "Kariba"
+        },
+        {
+         "code": "ZM109011135010",
+         "name": "Namuzunga"
+        },
+        {
+         "code": "ZM109011135011",
+         "name": "Munyama"
+        },
+        {
+         "code": "ZM109011135012",
+         "name": "Manchamvwa Lake Shore"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109012",
+     "name": "Sinazongwe",
+     "constituencies": [
+      {
+       "code": "ZM109012136",
+       "name": "Sinazongwe",
+       "wards": [
+        {
+         "code": "ZM109012136001",
+         "name": "Chiyabi"
+        },
+        {
+         "code": "ZM109012136002",
+         "name": "Malima"
+        },
+        {
+         "code": "ZM109012136003",
+         "name": "Sinenge"
+        },
+        {
+         "code": "ZM109012136004",
+         "name": "Nang'ombe"
+        },
+        {
+         "code": "ZM109012136005",
+         "name": "Nkandabbwe"
+        },
+        {
+         "code": "ZM109012136006",
+         "name": "Sinazongwe"
+        },
+        {
+         "code": "ZM109012136007",
+         "name": "Mweezya"
+        },
+        {
+         "code": "ZM109012136008",
+         "name": "Maamba"
+        },
+        {
+         "code": "ZM109012136009",
+         "name": "Muchekwa"
+        },
+        {
+         "code": "ZM109012136010",
+         "name": "Mweemba"
+        },
+        {
+         "code": "ZM109012136011",
+         "name": "Muuka"
+        },
+        {
+         "code": "ZM109012136012",
+         "name": "Tekelo"
+        },
+        {
+         "code": "ZM109012136013",
+         "name": "Mweenda"
+        },
+        {
+         "code": "ZM109012136014",
+         "name": "Siameja"
+        },
+        {
+         "code": "ZM109012136015",
+         "name": "Namazambwe"
+        },
+        {
+         "code": "ZM109012136016",
+         "name": "Mabinga"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109013",
+     "name": "Zimba",
+     "constituencies": [
+      {
+       "code": "ZM109013137",
+       "name": "Mapatizya",
+       "wards": [
+        {
+         "code": "ZM109013137001",
+         "name": "Zimba"
+        },
+        {
+         "code": "ZM109013137002",
+         "name": "Mangonda"
+        },
+        {
+         "code": "ZM109013137003",
+         "name": "Chuundwe"
+        },
+        {
+         "code": "ZM109013137004",
+         "name": "Mafumba"
+        },
+        {
+         "code": "ZM109013137005",
+         "name": "Luyaba"
+        },
+        {
+         "code": "ZM109013137006",
+         "name": "Chidi"
+        },
+        {
+         "code": "ZM109013137007",
+         "name": "Mulamfu"
+        },
+        {
+         "code": "ZM109013137008",
+         "name": "Mbwiko"
+        },
+        {
+         "code": "ZM109013137009",
+         "name": "Simwatachela"
+        },
+        {
+         "code": "ZM109013137010",
+         "name": "Siamafumba"
+        },
+        {
+         "code": "ZM109013137011",
+         "name": "Chalimongela"
+        },
+        {
+         "code": "ZM109013137012",
+         "name": "Kanyanga"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM109014",
+     "name": "Itezhi-Tezhi",
+     "constituencies": [
+      {
+       "code": "ZM109014005",
+       "name": "Itezhi-Tezhi",
+       "wards": [
+        {
+         "code": "ZM109014005001",
+         "name": "Itezhi-Tezhi"
+        },
+        {
+         "code": "ZM109014005002",
+         "name": "Itumbi"
+        },
+        {
+         "code": "ZM109014005003",
+         "name": "Kaanzwa"
+        },
+        {
+         "code": "ZM109014005004",
+         "name": "Masemu"
+        },
+        {
+         "code": "ZM109014005005",
+         "name": "Babizhi"
+        },
+        {
+         "code": "ZM109014005006",
+         "name": "Lubanda"
+        },
+        {
+         "code": "ZM109014005007",
+         "name": "Banamwaze"
+        },
+        {
+         "code": "ZM109014005008",
+         "name": "Makunku"
+        },
+        {
+         "code": "ZM109014005009",
+         "name": "Nyambo"
+        },
+        {
+         "code": "ZM109014005010",
+         "name": "Kabulungwe"
+        },
+        {
+         "code": "ZM109014005011",
+         "name": "Basanga"
+        },
+        {
+         "code": "ZM109014005012",
+         "name": "Luubwe"
+        },
+        {
+         "code": "ZM109014005013",
+         "name": "Mbila"
+        },
+        {
+         "code": "ZM109014005014",
+         "name": "Shambala"
+        },
+        {
+         "code": "ZM109014005015",
+         "name": "Luchena"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "ZM110",
+   "name": "Western",
+   "districts": [
+    {
+     "code": "ZM110001",
+     "name": "Kalabo",
+     "constituencies": [
+      {
+       "code": "ZM110001138",
+       "name": "Kalabo Central",
+       "wards": [
+        {
+         "code": "ZM110001138001",
+         "name": "Muchatanga"
+        },
+        {
+         "code": "ZM110001138002",
+         "name": "Luanginga"
+        },
+        {
+         "code": "ZM110001138003",
+         "name": "Mapungu"
+        },
+        {
+         "code": "ZM110001138004",
+         "name": "Buleya"
+        },
+        {
+         "code": "ZM110001138005",
+         "name": "Ndoka"
+        },
+        {
+         "code": "ZM110001138006",
+         "name": "Lukona"
+        },
+        {
+         "code": "ZM110001138007",
+         "name": "Namulilo"
+        },
+        {
+         "code": "ZM110001138008",
+         "name": "Ng'uma"
+        },
+        {
+         "code": "ZM110001138009",
+         "name": "Mitwi"
+        },
+        {
+         "code": "ZM110001138010",
+         "name": "Kandambo"
+        },
+        {
+         "code": "ZM110001138011",
+         "name": "Chilele"
+        },
+        {
+         "code": "ZM110001138012",
+         "name": "Lutwi"
+        },
+        {
+         "code": "ZM110001138013",
+         "name": "Liumba"
+        },
+        {
+         "code": "ZM110001138014",
+         "name": "Yuka"
+        }
+       ]
+      },
+      {
+       "code": "ZM110001139",
+       "name": "Liuwa",
+       "wards": [
+        {
+         "code": "ZM110001139015",
+         "name": "Salunda"
+        },
+        {
+         "code": "ZM110001139016",
+         "name": "Luola"
+        },
+        {
+         "code": "ZM110001139017",
+         "name": "Siluwe"
+        },
+        {
+         "code": "ZM110001139018",
+         "name": "Likulundundu"
+        },
+        {
+         "code": "ZM110001139019",
+         "name": "Upangoma"
+        },
+        {
+         "code": "ZM110001139020",
+         "name": "Kuuli"
+        },
+        {
+         "code": "ZM110001139021",
+         "name": "Mishulundu"
+        },
+        {
+         "code": "ZM110001139022",
+         "name": "Sishekanu"
+        },
+        {
+         "code": "ZM110001139023",
+         "name": "Libonda"
+        },
+        {
+         "code": "ZM110001139024",
+         "name": "Ng'unyama"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110002",
+     "name": "Kaoma",
+     "constituencies": [
+      {
+       "code": "ZM110002140",
+       "name": "Kaoma Central",
+       "wards": [
+        {
+         "code": "ZM110002140001",
+         "name": "Lunyati"
+        },
+        {
+         "code": "ZM110002140002",
+         "name": "Kalumwange"
+        },
+        {
+         "code": "ZM110002140003",
+         "name": "Shitwa"
+        },
+        {
+         "code": "ZM110002140004",
+         "name": "Namaloba"
+        },
+        {
+         "code": "ZM110002140005",
+         "name": "Longe"
+        },
+        {
+         "code": "ZM110002140006",
+         "name": "Mulamatila"
+        },
+        {
+         "code": "ZM110002140007",
+         "name": "Kashamu"
+        },
+        {
+         "code": "ZM110002140008",
+         "name": "Naliele"
+        },
+        {
+         "code": "ZM110002140009",
+         "name": "Shilombo"
+        }
+       ]
+      },
+      {
+       "code": "ZM110002141",
+       "name": "Mangango",
+       "wards": [
+        {
+         "code": "ZM110002141010",
+         "name": "Shikombwe"
+        },
+        {
+         "code": "ZM110002141011",
+         "name": "Mangango"
+        },
+        {
+         "code": "ZM110002141012",
+         "name": "Mushwala"
+        },
+        {
+         "code": "ZM110002141013",
+         "name": "Kapili"
+        },
+        {
+         "code": "ZM110002141014",
+         "name": "Luambuwa"
+        },
+        {
+         "code": "ZM110002141015",
+         "name": "Nalulembwe"
+        },
+        {
+         "code": "ZM110002141016",
+         "name": "Namafulo"
+        },
+        {
+         "code": "ZM110002141017",
+         "name": "Lukute"
+        },
+        {
+         "code": "ZM110002141018",
+         "name": "Winda"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110003",
+     "name": "Limulunga",
+     "constituencies": [
+      {
+       "code": "ZM110003142",
+       "name": "Luena",
+       "wards": [
+        {
+         "code": "ZM110003142001",
+         "name": "Limulunga West"
+        },
+        {
+         "code": "ZM110003142002",
+         "name": "Makuku"
+        },
+        {
+         "code": "ZM110003142003",
+         "name": "Mabili"
+        },
+        {
+         "code": "ZM110003142004",
+         "name": "Ushaa"
+        },
+        {
+         "code": "ZM110003142005",
+         "name": "Ikwichi"
+        },
+        {
+         "code": "ZM110003142006",
+         "name": "Limulunga East"
+        },
+        {
+         "code": "ZM110003142007",
+         "name": "Namboma"
+        },
+        {
+         "code": "ZM110003142008",
+         "name": "Miulwe"
+        },
+        {
+         "code": "ZM110003142009",
+         "name": "Nangula"
+        },
+        {
+         "code": "ZM110003142010",
+         "name": "Sitoya"
+        },
+        {
+         "code": "ZM110003142011",
+         "name": "Simaa"
+        },
+        {
+         "code": "ZM110003142012",
+         "name": "Ndanda"
+        },
+        {
+         "code": "ZM110003142013",
+         "name": "Ituku"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110004",
+     "name": "Luampa",
+     "constituencies": [
+      {
+       "code": "ZM110004143",
+       "name": "Luampa",
+       "wards": [
+        {
+         "code": "ZM110004143001",
+         "name": "Lububa"
+        },
+        {
+         "code": "ZM110004143002",
+         "name": "Lui"
+        },
+        {
+         "code": "ZM110004143003",
+         "name": "Mbanyutu"
+        },
+        {
+         "code": "ZM110004143004",
+         "name": "Nkenga"
+        },
+        {
+         "code": "ZM110004143005",
+         "name": "Mwanawasa"
+        },
+        {
+         "code": "ZM110004143006",
+         "name": "Namando"
+        },
+        {
+         "code": "ZM110004143007",
+         "name": "Kahumbu"
+        },
+        {
+         "code": "ZM110004143008",
+         "name": "Luampa"
+        },
+        {
+         "code": "ZM110004143009",
+         "name": "Mulwa"
+        },
+        {
+         "code": "ZM110004143010",
+         "name": "Nakayembe"
+        },
+        {
+         "code": "ZM110004143011",
+         "name": "Nyambi"
+        },
+        {
+         "code": "ZM110004143012",
+         "name": "Inkunikila"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110005",
+     "name": "Lukulu",
+     "constituencies": [
+      {
+       "code": "ZM110005144",
+       "name": "Lukulu East",
+       "wards": [
+        {
+         "code": "ZM110005144001",
+         "name": "Simakumba"
+        },
+        {
+         "code": "ZM110005144002",
+         "name": "Kamilende"
+        },
+        {
+         "code": "ZM110005144003",
+         "name": "Kaluwawa"
+        },
+        {
+         "code": "ZM110005144004",
+         "name": "Dongwe"
+        },
+        {
+         "code": "ZM110005144005",
+         "name": "Kashamba"
+        },
+        {
+         "code": "ZM110005144006",
+         "name": "Mwito"
+        },
+        {
+         "code": "ZM110005144007",
+         "name": "Shizize"
+        },
+        {
+         "code": "ZM110005144008",
+         "name": "Kang'oti"
+        },
+        {
+         "code": "ZM110005144009",
+         "name": "Luanchuma"
+        },
+        {
+         "code": "ZM110005144010",
+         "name": "Namayula"
+        },
+        {
+         "code": "ZM110005144011",
+         "name": "Mwandi"
+        },
+        {
+         "code": "ZM110005144012",
+         "name": "Ngimbu"
+        },
+        {
+         "code": "ZM110005144013",
+         "name": "Kawaya"
+        },
+        {
+         "code": "ZM110005144014",
+         "name": "Lukau"
+        },
+        {
+         "code": "ZM110005144015",
+         "name": "Mbanga"
+        },
+        {
+         "code": "ZM110005144016",
+         "name": "Lyambai"
+        },
+        {
+         "code": "ZM110005144017",
+         "name": "Likapai"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110006",
+     "name": "Mitete",
+     "constituencies": [
+      {
+       "code": "ZM110006145",
+       "name": "Mitete",
+       "wards": [
+        {
+         "code": "ZM110006145001",
+         "name": "Mataba"
+        },
+        {
+         "code": "ZM110006145002",
+         "name": "Lwambimba"
+        },
+        {
+         "code": "ZM110006145003",
+         "name": "Lupui"
+        },
+        {
+         "code": "ZM110006145004",
+         "name": "Kakwacha"
+        },
+        {
+         "code": "ZM110006145005",
+         "name": "Lutembwe"
+        },
+        {
+         "code": "ZM110006145006",
+         "name": "Mitete"
+        },
+        {
+         "code": "ZM110006145007",
+         "name": "Kashizhi"
+        },
+        {
+         "code": "ZM110006145008",
+         "name": "Lungwevungu"
+        },
+        {
+         "code": "ZM110006145009",
+         "name": "Chinonwe"
+        },
+        {
+         "code": "ZM110006145010",
+         "name": "Kakulunda"
+        },
+        {
+         "code": "ZM110006145011",
+         "name": "Mumbumbu"
+        },
+        {
+         "code": "ZM110006145012",
+         "name": "Muyondoti"
+        },
+        {
+         "code": "ZM110006145013",
+         "name": "Nyaala"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110007",
+     "name": "Mongu",
+     "constituencies": [
+      {
+       "code": "ZM110007146",
+       "name": "Mongu Central",
+       "wards": [
+        {
+         "code": "ZM110007146001",
+         "name": "Mulambwa"
+        },
+        {
+         "code": "ZM110007146002",
+         "name": "Katongo"
+        },
+        {
+         "code": "ZM110007146003",
+         "name": "Yeta"
+        },
+        {
+         "code": "ZM110007146004",
+         "name": "Namushekende"
+        },
+        {
+         "code": "ZM110007146005",
+         "name": "Namasho"
+        },
+        {
+         "code": "ZM110007146006",
+         "name": "Kama"
+        },
+        {
+         "code": "ZM110007146007",
+         "name": "Lumbo"
+        },
+        {
+         "code": "ZM110007146008",
+         "name": "Lealui Lower"
+        },
+        {
+         "code": "ZM110007146009",
+         "name": "Mabumbu"
+        },
+        {
+         "code": "ZM110007146010",
+         "name": "Lealui Upper"
+        },
+        {
+         "code": "ZM110007146011",
+         "name": "Kanyonyo"
+        },
+        {
+         "code": "ZM110007146012",
+         "name": "Lewanika"
+        },
+        {
+         "code": "ZM110007146013",
+         "name": "Imwiko"
+        },
+        {
+         "code": "ZM110007146014",
+         "name": "Kambule"
+        },
+        {
+         "code": "ZM110007146015",
+         "name": "Ilute"
+        },
+        {
+         "code": "ZM110007146016",
+         "name": "Kaande"
+        }
+       ]
+      },
+      {
+       "code": "ZM110007147",
+       "name": "Nalikwanda",
+       "wards": [
+        {
+         "code": "ZM110007147017",
+         "name": "Nakato"
+        },
+        {
+         "code": "ZM110007147018",
+         "name": "Looma"
+        },
+        {
+         "code": "ZM110007147019",
+         "name": "Nalwei"
+        },
+        {
+         "code": "ZM110007147020",
+         "name": "Siyowe"
+        },
+        {
+         "code": "ZM110007147021",
+         "name": "Lukalanya"
+        },
+        {
+         "code": "ZM110007147022",
+         "name": "Imalyo"
+        },
+        {
+         "code": "ZM110007147023",
+         "name": "Mutondo"
+        },
+        {
+         "code": "ZM110007147024",
+         "name": "Namengo"
+        },
+        {
+         "code": "ZM110007147025",
+         "name": "Litawa"
+        },
+        {
+         "code": "ZM110007147026",
+         "name": "Nakanyaa"
+        },
+        {
+         "code": "ZM110007147027",
+         "name": "Mbekise"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110008",
+     "name": "Mulobezi",
+     "constituencies": [
+      {
+       "code": "ZM110008148",
+       "name": "Mulobezi",
+       "wards": [
+        {
+         "code": "ZM110008148001",
+         "name": "Kasompa"
+        },
+        {
+         "code": "ZM110008148002",
+         "name": "Kamanga"
+        },
+        {
+         "code": "ZM110008148003",
+         "name": "Luamuloba"
+        },
+        {
+         "code": "ZM110008148004",
+         "name": "Nawinda"
+        },
+        {
+         "code": "ZM110008148005",
+         "name": "Kabanga"
+        },
+        {
+         "code": "ZM110008148006",
+         "name": "Sichili"
+        },
+        {
+         "code": "ZM110008148007",
+         "name": "Mulobezi"
+        },
+        {
+         "code": "ZM110008148008",
+         "name": "Machile"
+        },
+        {
+         "code": "ZM110008148009",
+         "name": "Salumbwe"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110009",
+     "name": "Mwandi",
+     "constituencies": [
+      {
+       "code": "ZM110009149",
+       "name": "Mwandi",
+       "wards": [
+        {
+         "code": "ZM110009149001",
+         "name": "Chisu"
+        },
+        {
+         "code": "ZM110009149002",
+         "name": "Mushukula"
+        },
+        {
+         "code": "ZM110009149003",
+         "name": "Kalundu"
+        },
+        {
+         "code": "ZM110009149004",
+         "name": "Lwazamba"
+        },
+        {
+         "code": "ZM110009149005",
+         "name": "Magumwi"
+        },
+        {
+         "code": "ZM110009149006",
+         "name": "Adonsi"
+        },
+        {
+         "code": "ZM110009149007",
+         "name": "Lutaba"
+        },
+        {
+         "code": "ZM110009149008",
+         "name": "Sankolonga"
+        },
+        {
+         "code": "ZM110009149009",
+         "name": "Mabumbu"
+        },
+        {
+         "code": "ZM110009149010",
+         "name": "Mwandi"
+        },
+        {
+         "code": "ZM110009149011",
+         "name": "Simungoma"
+        },
+        {
+         "code": "ZM110009149012",
+         "name": "Loanja"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110010",
+     "name": "Nalolo",
+     "constituencies": [
+      {
+       "code": "ZM110010150",
+       "name": "Nalolo",
+       "wards": [
+        {
+         "code": "ZM110010150001",
+         "name": "Mukukutu"
+        },
+        {
+         "code": "ZM110010150002",
+         "name": "Kataba"
+        },
+        {
+         "code": "ZM110010150003",
+         "name": "Lubosi"
+        },
+        {
+         "code": "ZM110010150004",
+         "name": "Nanjucha"
+        },
+        {
+         "code": "ZM110010150005",
+         "name": "Muoyo"
+        },
+        {
+         "code": "ZM110010150006",
+         "name": "Ukolo"
+        },
+        {
+         "code": "ZM110010150007",
+         "name": "Kambai"
+        },
+        {
+         "code": "ZM110010150008",
+         "name": "Makoka"
+        },
+        {
+         "code": "ZM110010150009",
+         "name": "Lyamakumba"
+        },
+        {
+         "code": "ZM110010150010",
+         "name": "Silowana"
+        },
+        {
+         "code": "ZM110010150011",
+         "name": "Likulwe"
+        },
+        {
+         "code": "ZM110010150012",
+         "name": "Shekela"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110011",
+     "name": "Nkeyema",
+     "constituencies": [
+      {
+       "code": "ZM110011151",
+       "name": "Nkeyema",
+       "wards": [
+        {
+         "code": "ZM110011151001",
+         "name": "Maloba"
+        },
+        {
+         "code": "ZM110011151002",
+         "name": "Shishamba"
+        },
+        {
+         "code": "ZM110011151003",
+         "name": "Namilangi"
+        },
+        {
+         "code": "ZM110011151004",
+         "name": "Munkuye"
+        },
+        {
+         "code": "ZM110011151005",
+         "name": "Lombelombe"
+        },
+        {
+         "code": "ZM110011151006",
+         "name": "Nkeyema"
+        },
+        {
+         "code": "ZM110011151007",
+         "name": "Shimano"
+        },
+        {
+         "code": "ZM110011151008",
+         "name": "Litoya"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110012",
+     "name": "Senanga",
+     "constituencies": [
+      {
+       "code": "ZM110012152",
+       "name": "Senanga",
+       "wards": [
+        {
+         "code": "ZM110012152001",
+         "name": "Lumbe Nanyezu"
+        },
+        {
+         "code": "ZM110012152002",
+         "name": "Mata"
+        },
+        {
+         "code": "ZM110012152003",
+         "name": "Namukokoba"
+        },
+        {
+         "code": "ZM110012152004",
+         "name": "Muweswa"
+        },
+        {
+         "code": "ZM110012152005",
+         "name": "Sibukali"
+        },
+        {
+         "code": "ZM110012152006",
+         "name": "Lumbe"
+        },
+        {
+         "code": "ZM110012152007",
+         "name": "Silwizi"
+        },
+        {
+         "code": "ZM110012152008",
+         "name": "Naluywa"
+        },
+        {
+         "code": "ZM110012152009",
+         "name": "Wanyau"
+        },
+        {
+         "code": "ZM110012152010",
+         "name": "Imatanda"
+        },
+        {
+         "code": "ZM110012152011",
+         "name": "Imatongo"
+        },
+        {
+         "code": "ZM110012152012",
+         "name": "Lipuwe"
+        },
+        {
+         "code": "ZM110012152013",
+         "name": "Mwanambuyu"
+        },
+        {
+         "code": "ZM110012152014",
+         "name": "Liangati"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110013",
+     "name": "Sesheke",
+     "constituencies": [
+      {
+       "code": "ZM110013153",
+       "name": "Sesheke",
+       "wards": [
+        {
+         "code": "ZM110013153001",
+         "name": "Maondo"
+        },
+        {
+         "code": "ZM110013153002",
+         "name": "Nakatindi"
+        },
+        {
+         "code": "ZM110013153003",
+         "name": "Mulimambango"
+        },
+        {
+         "code": "ZM110013153004",
+         "name": "Katima"
+        },
+        {
+         "code": "ZM110013153005",
+         "name": "Imusho"
+        },
+        {
+         "code": "ZM110013153006",
+         "name": "Kalobelelwa"
+        },
+        {
+         "code": "ZM110013153007",
+         "name": "Silumbu"
+        },
+        {
+         "code": "ZM110013153008",
+         "name": "Nangombe"
+        },
+        {
+         "code": "ZM110013153009",
+         "name": "Luampungu"
+        },
+        {
+         "code": "ZM110013153010",
+         "name": "Lusu"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110014",
+     "name": "Shangombo",
+     "constituencies": [
+      {
+       "code": "ZM110014154",
+       "name": "Shangombo",
+       "wards": [
+        {
+         "code": "ZM110014154001",
+         "name": "Sipuma"
+        },
+        {
+         "code": "ZM110014154002",
+         "name": "Lilondo"
+        },
+        {
+         "code": "ZM110014154003",
+         "name": "Simu"
+        },
+        {
+         "code": "ZM110014154004",
+         "name": "Mambolomoka"
+        },
+        {
+         "code": "ZM110014154005",
+         "name": "Mulangu"
+        },
+        {
+         "code": "ZM110014154006",
+         "name": "Keyana"
+        },
+        {
+         "code": "ZM110014154007",
+         "name": "Namono"
+        },
+        {
+         "code": "ZM110014154008",
+         "name": "Nalitengeya"
+        },
+        {
+         "code": "ZM110014154009",
+         "name": "Mulonga"
+        },
+        {
+         "code": "ZM110014154010",
+         "name": "Beshe"
+        },
+        {
+         "code": "ZM110014154011",
+         "name": "State Ranch"
+        },
+        {
+         "code": "ZM110014154012",
+         "name": "Kaunga Mashi"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110015",
+     "name": "Sikongo",
+     "constituencies": [
+      {
+       "code": "ZM110015155",
+       "name": "Sikongo",
+       "wards": [
+        {
+         "code": "ZM110015155001",
+         "name": "Nengu"
+        },
+        {
+         "code": "ZM110015155002",
+         "name": "Mutala"
+        },
+        {
+         "code": "ZM110015155003",
+         "name": "Mwenyi"
+        },
+        {
+         "code": "ZM110015155004",
+         "name": "Lubuta"
+        },
+        {
+         "code": "ZM110015155005",
+         "name": "Lwambi"
+        },
+        {
+         "code": "ZM110015155006",
+         "name": "Natalui"
+        },
+        {
+         "code": "ZM110015155007",
+         "name": "Licha"
+        },
+        {
+         "code": "ZM110015155008",
+         "name": "Maala"
+        },
+        {
+         "code": "ZM110015155009",
+         "name": "Liumena"
+        },
+        {
+         "code": "ZM110015155010",
+         "name": "Tuuwa"
+        },
+        {
+         "code": "ZM110015155011",
+         "name": "Malamo"
+        },
+        {
+         "code": "ZM110015155012",
+         "name": "Lumbamba"
+        },
+        {
+         "code": "ZM110015155013",
+         "name": "Lueti"
+        },
+        {
+         "code": "ZM110015155014",
+         "name": "Ng'umbele"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "code": "ZM110016",
+     "name": "Sioma",
+     "constituencies": [
+      {
+       "code": "ZM110016156",
+       "name": "Sioma",
+       "wards": [
+        {
+         "code": "ZM110016156001",
+         "name": "Kalongola"
+        },
+        {
+         "code": "ZM110016156002",
+         "name": "Watembo"
+        },
+        {
+         "code": "ZM110016156003",
+         "name": "Nalwashi"
+        },
+        {
+         "code": "ZM110016156004",
+         "name": "Nangweshi"
+        },
+        {
+         "code": "ZM110016156005",
+         "name": "Mbeta"
+        },
+        {
+         "code": "ZM110016156006",
+         "name": "Sioma"
+        },
+        {
+         "code": "ZM110016156007",
+         "name": "Mbume"
+        },
+        {
+         "code": "ZM110016156008",
+         "name": "Sikabenga"
+        },
+        {
+         "code": "ZM110016156009",
+         "name": "Mutomena"
+        },
+        {
+         "code": "ZM110016156010",
+         "name": "Liwandamo"
+        },
+        {
+         "code": "ZM110016156011",
+         "name": "Lipaneno"
+        },
+        {
+         "code": "ZM110016156012",
+         "name": "Mulamba"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

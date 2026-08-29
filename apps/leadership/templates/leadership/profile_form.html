@@ -1,47 +1,381 @@
 {% extends "layouts/dashboard.html" %}
-{% block title %}Leadership Form | SITADC Youth Hub{% endblock title %}
+{% load static %}
+{% block title %}
+    {% if form.instance.pk %}Edit{% else %}Create{% endif %} Leadership Profile | SITADC Youth Hub
+{% endblock title %}
 {% block dashboard_content %}
     <div class="container-fluid py-4">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            {% if form.instance.pk %}Edit{% else %}Create{% endif %} Leadership Profile
-                        </h6>
-                    </div>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h1 class="h3 mb-0 text-gray-800">
+                {% if form.instance.pk %}
+                    Edit Leadership Profile
+                {% else %}
+                    Create Leadership Profile
+                {% endif %}
+            </h1>
+            <a href="{% url 'leadership:directory' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Directory
+            </a>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate id="leadership-profile-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Please correct the errors below:</strong>
+                    <ul class="mb-0 mt-2">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+
+            <!-- PROFILE HEADER -->
+            {% if form.instance.pk %}
+                <div class="card shadow mb-4 border-0">
                     <div class="card-body">
-                        <form method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            {% if form.errors %}
-                                <div class="alert alert-danger" role="alert">
-                                    <strong>Please correct the errors below:</strong>
-                                    {{ form.errors }}
-                                </div>
-                            {% endif %}
-                            {% for field in form %}
-                                <div class="mb-3">
-                                    <label for="{{ field.id_for_label }}" class="form-label fw-bold">
-                                        {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
-                                    </label>
-                                    {{ field }}
-                                    {% if field.help_text %}
-                                        <div class="form-text">{{ field.help_text }}</div>
-                                    {% endif %}
-                                    {% for error in field.errors %}
-                                        <div class="invalid-feedback d-block">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                            {% endfor %}
-                            <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary-brand">Save Profile</button>
-                                <a href="{% url 'leadership:directory' %}"
-                                   class="btn btn-outline-secondary">Cancel</a>
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                {% if form.instance.user.profile_image %}
+                                    <img src="{{ form.instance.user.profile_image.url }}"
+                                         class="rounded-circle border"
+                                         width="80" height="80"
+                                         alt="{{ form.instance.user.get_full_name }}">
+                                {% elif form.instance.profile_photo %}
+                                    <img src="{{ form.instance.profile_photo.url }}"
+                                         class="rounded-circle border"
+                                         width="80" height="80"
+                                         alt="{{ form.instance.user.get_full_name }}">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                         style="width: 80px; height: 80px; font-size: 2rem;">
+                                        {{ form.instance.user.first_name|first }}{{ form.instance.user.last_name|first }}
+                                    </div>
+                                {% endif %}
                             </div>
-                        </form>
+                            <div class="col ms-3">
+                                <h4 class="mb-1">{{ form.instance.user.get_full_name }}</h4>
+                                <p class="text-muted mb-1">
+                                    {% if form.instance.position %}{{ form.instance.position }}{% else %}No position assigned{% endif %}
+                                </p>
+                                <p class="text-muted small mb-1">
+                                    <i class="bi bi-award me-1"></i>{{ form.instance.get_leadership_level_display }}
+                                </p>
+                                <div class="d-flex align-items-center gap-3 flex-wrap">
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-hash me-1"></i>{{ form.instance.reference_number }}
+                                    </span>
+                                    <span class="badge bg-{% if form.instance.status == 'ACTIVE' %}success{% elif form.instance.status == 'APPOINTED' %}primary{% elif form.instance.status == 'ACTING' %}info{% elif form.instance.status == 'PROBATION' %}warning{% elif form.instance.status == 'ON_LEAVE' %}warning{% elif form.instance.status == 'SUSPENDED' %}danger{% else %}secondary{% endif %}">
+                                        {{ form.instance.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- SECTION 1: PERSONAL INFORMATION -->
+            <div class="card shadow mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="bi bi-person-circle me-2"></i>1. Personal Information
+                    </h5>
+                    <p class="text-muted small mb-0">Basic personal details of the leader.</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.user %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.reference_number %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.profile_photo %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.national_id %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.gender %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.date_of_birth %}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- SECTION 2: CONTACT INFORMATION -->
+            <div class="card shadow mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="bi bi-telephone me-2"></i>2. Contact Information
+                    </h5>
+                    <p class="text-muted small mb-0">Contact details for communication.</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.phone_number %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.email %}
+                        </div>
+                        <div class="col-12">
+                            {% include "leadership/includes/form_field.html" with field=form.residential_address %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: EMERGENCY CONTACT -->
+            <div class="card shadow mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="bi bi-shield-check me-2"></i>3. Emergency Contact
+                    </h5>
+                    <p class="text-muted small mb-0">Emergency contact information for safety purposes.</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.emergency_contact_name %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.emergency_contact_phone %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: ORGANIZATIONAL INFORMATION -->
+            <div class="card shadow mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="bi bi-diagram-3 me-2"></i>4. Organizational Information
+                    </h5>
+                    <p class="text-muted small mb-0">Organizational structure assignments and hierarchy.</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.leadership_level %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.position %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.organizational_unit %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.directorate %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.region %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.district %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.community %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: REPORTING & SUPERVISION -->
+            <div class="card shadow mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="bi bi-people me-2"></i>5. Reporting & Supervision
+                    </h5>
+                    <p class="text-muted small mb-0">Supervisory relationships and reporting lines.</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.supervisor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 6: PROFESSIONAL INFORMATION -->
+            <div class="card shadow mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="bi bi-briefcase me-2"></i>6. Professional Information
+                    </h5>
+                    <p class="text-muted small mb-0">Professional background, qualifications, and expertise.</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            {% include "leadership/includes/form_field.html" with field=form.biography %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.qualifications %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.professional_skills %}
+                        </div>
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.areas_of_expertise %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 7: APPOINTMENT INFORMATION -->
+            <div class="card shadow mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="bi bi-calendar-check me-2"></i>7. Appointment Information
+                    </h5>
+                    <p class="text-muted small mb-0">Appointment dates, terms, and renewal details.</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            {% include "leadership/includes/form_field.html" with field=form.appointment_date %}
+                        </div>
+                        <div class="col-md-4">
+                            {% include "leadership/includes/form_field.html" with field=form.term_expiry_date %}
+                        </div>
+                        <div class="col-md-4">
+                            {% include "leadership/includes/form_field.html" with field=form.term_status %}
+                        </div>
+                        <div class="col-md-4">
+                            {% include "leadership/includes/form_field.html" with field=form.terms_completed %}
+                        </div>
+                        <div class="col-md-4">
+                            {% include "leadership/includes/form_field.html" with field=form.max_terms %}
+                        </div>
+                        <div class="col-md-4">
+                            {% include "leadership/includes/form_field.html" with field=form.renewal_eligible %}
+                        </div>
+                        <div class="col-md-4">
+                            {% include "leadership/includes/form_field.html" with field=form.renewal_status %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 8: STATUS -->
+            <div class="card shadow mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="bi bi-flag me-2"></i>8. Status
+                    </h5>
+                    <p class="text-muted small mb-0">Current leadership status.</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {% include "leadership/includes/form_field.html" with field=form.status %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="card shadow mb-4 border-0">
+                <div class="card-body d-flex justify-content-end gap-2 flex-wrap pt-0">
+                    <a href="{% url 'leadership:directory' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary-brand" id="save-btn">
+                        <i class="bi bi-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('leadership-profile-form');
+        const saveBtn = document.getElementById('save-btn');
+        let formChanged = false;
+
+        // Track form changes
+        const formInputs = form.querySelectorAll('input, select, textarea');
+        formInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                formChanged = true;
+            });
+            input.addEventListener('input', function() {
+                formChanged = true;
+            });
+        });
+
+        // Save button loading state
+        form.addEventListener('submit', function(e) {
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+            }
+        });
+
+        // Unsaved changes warning
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Profile photo preview
+        const photoInput = document.getElementById('id_profile_photo');
+        if (photoInput) {
+            photoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file type
+                    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('Please select a valid image file (JPEG or PNG).');
+                        this.value = '';
+                        return;
+                    }
+                    // Validate file size (5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size must be less than 5MB.');
+                        this.value = '';
+                        return;
+                    }
+                    // Preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        let preview = document.getElementById('photo-preview');
+                        if (!preview) {
+                            preview = document.createElement('img');
+                            preview.id = 'photo-preview';
+                            preview.className = 'rounded-circle border mt-2';
+                            preview.style.width = '100px';
+                            preview.style.height = '100px';
+                            preview.style.objectFit = 'cover';
+                            photoInput.parentNode.appendChild(preview);
+                        }
+                        preview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Prevent self-supervision
+        const supervisorSelect = document.getElementById('id_supervisor');
+        if (supervisorSelect) {
+            supervisorSelect.addEventListener('change', function() {
+                // The validation is also done server-side
+            });
+        }
+    });
+    </script>
 {% endblock dashboard_content %}
