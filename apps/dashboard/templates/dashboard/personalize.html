@@ -1,4 +1,5 @@
 {% extends "layouts/dashboard.html" %}
+{% load static %}
 
 {% block title %}Personalize Dashboard - SITADC Youth Hub{% endblock %}
 
@@ -7,7 +8,7 @@
 
 <div class="row g-3">
     <div class="col-12 col-lg-8">
-        <form method="post" action="{% url 'dashboard:personalize' %}" novalidate>
+        <form method="post" action="{% url 'dashboard:personalize' %}" novalidate id="layout-form">
             {% csrf_token %}
             <input type="hidden" name="action" value="layout">
             <div class="card border-0 mb-4">
@@ -62,7 +63,7 @@
     </div>
 
     <div class="col-12 col-lg-4">
-        <form method="post" action="{% url 'dashboard:personalize' %}" novalidate>
+        <form method="post" action="{% url 'dashboard:personalize' %}" novalidate id="preferences-form">
             {% csrf_token %}
             <input type="hidden" name="action" value="preferences">
             <div class="card border-0 h-100">
@@ -70,16 +71,49 @@
                     <h2 class="h6 fw-bold mb-0">Preferences</h2>
                 </div>
                 <div class="card-body pt-2">
-                    {% for field in preference_form %}
-                        <div class="mb-3">
-                            <label class="form-label" for="{{ field.id_for_label }}">
-                                {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+                    <!-- Theme -->
+                    <div class="mb-4">
+                        <label class="form-label fw-medium">Theme</label>
+                        <div class="btn-group w-100" role="group" aria-label="Theme selection">
+                            {% for value, label in preference_form.theme.field.choices %}
+                            <input type="radio" class="btn-check" name="theme" id="theme_{{ value }}" value="{{ value }}" {% if preference_form.theme.value == value %}checked{% endif %} autocomplete="off">
+                            <label class="btn btn-outline-primary flex-fill py-3 d-flex flex-column align-items-center gap-2" for="theme_{{ value }}">
+                                <i class="bi bi-{% if value == 'light' %}sun{% elif value == 'dark' %}moon{% else %}cpu{% endif %} fs-3" aria-hidden="true"></i>
+                                <span class="fw-medium">{{ label }}</span>
+                                <small class="text-muted">
+                                    {% if value == 'light' %}Always light{% elif value == 'dark' %}Always dark{% else %}Follow system{% endif %}
+                                </small>
                             </label>
-                            {{ field }}
-                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                            {% if field.errors %}<div class="text-danger small">{{ field.errors.0 }}</div>{% endif %}
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+                        {% if preference_form.theme.errors %}
+                        <div class="text-danger small mt-1">{{ preference_form.theme.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Choose how SITADC Youth Hub appears.</div>
+                    </div>
+
+                    <!-- Chart Style -->
+                    <div class="mb-4">
+                        <label for="{{ preference_form.preferred_chart_style.id_for_label }}" class="form-label fw-medium">{{ preference_form.preferred_chart_style.label }}</label>
+                        {{ preference_form.preferred_chart_style }}
+                        {% if preference_form.preferred_chart_style.errors %}
+                        <div class="text-danger small mt-1">{{ preference_form.preferred_chart_style.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Choose your preferred dashboard chart presentation.</div>
+                    </div>
+
+                    <!-- Default Reporting Period -->
+                    <div class="mb-4">
+                        <label for="{{ preference_form.default_reporting_period.id_for_label }}" class="form-label fw-medium">{{ preference_form.default_reporting_period.label }}</label>
+                        {{ preference_form.default_reporting_period }}
+                        {% if preference_form.default_reporting_period.errors %}
+                        <div class="text-danger small mt-1">{{ preference_form.default_reporting_period.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Choose the period used when opening your dashboard.</div>
+                    </div>
+
+                    <div id="preferences-feedback" class="mb-3" style="display: none;"></div>
+                    
                     <button type="submit" class="btn btn-primary-brand w-100">
                         <i class="bi bi-check-lg me-1" aria-hidden="true"></i>Save preferences
                     </button>
@@ -89,4 +123,132 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('preferences-form');
+    const feedback = document.getElementById('preferences-feedback');
+    const themeRadios = form.querySelectorAll('input[name="theme"]');
+    
+    // Theme application functions (defined first for hoisting clarity)
+    function applyTheme(theme) {
+        const body = document.body;
+        if (theme === 'system') {
+            body.removeAttribute('data-theme');
+        } else {
+            body.setAttribute('data-theme', theme);
+        }
+        // Also update the radio button selection to match
+        const radio = form.querySelector('input[name="theme"][value="' + theme + '"]');
+        if (radio) {
+            radio.checked = true;
+        }
+    }
+    
+    function applyThemePreview(theme) {
+        const body = document.body;
+        if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            body.setAttribute('data-theme', 'dark');
+        } else if (theme === 'light') {
+            body.setAttribute('data-theme', 'light');
+        } else {
+            body.removeAttribute('data-theme');
+        }
+    }
+    
+    // Live theme preview on radio button change
+    themeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            applyThemePreview(this.value);
+        });
+    });
+    
+    // Initialize preview with current saved value
+    const currentTheme = form.querySelector('input[name="theme"]:checked');
+    if (currentTheme) {
+        applyThemePreview(currentTheme.value);
+    }
+    
+    // AJAX submit for preferences
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+        
+        fetch('{% url "dashboard:preferences_ajax" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+            
+            if (data.success) {
+                feedback.className = 'alert alert-success small mb-3';
+                feedback.textContent = data.message + ' (Reloading...)';
+                feedback.style.display = 'block';
+                
+                // Apply theme immediately BEFORE reload
+                if (data.theme) {
+                    console.log('Applying theme:', data.theme);
+                    applyTheme(data.theme);
+                }
+                
+                // Reload page to ensure server-side rendering is consistent
+                setTimeout(() => {
+                    window.location.reload();
+                }, 800);
+            } else {
+                feedback.className = 'alert alert-danger small mb-3';
+                feedback.textContent = 'Please correct the highlighted errors.';
+                feedback.style.display = 'block';
+                
+                // Show field errors
+                if (data.errors) {
+                    Object.keys(data.errors).forEach(field => {
+                        const input = form.querySelector('[name="' + field + '"]');
+                        if (input) {
+                            input.classList.add('is-invalid');
+                            let errorDiv = input.parentNode.querySelector('.text-danger');
+                            if (!errorDiv) {
+                                errorDiv = document.createElement('div');
+                                errorDiv.className = 'text-danger small';
+                                input.parentNode.appendChild(errorDiv);
+                            }
+                            errorDiv.textContent = Array.isArray(data.errors[field]) ? data.errors[field][0] : data.errors[field];
+                        }
+                    });
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Save error:', err);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+            feedback.className = 'alert alert-danger small mb-3';
+            feedback.textContent = 'An error occurred: ' + err.message + '. Please try again.';
+            feedback.style.display = 'block';
+        });
+    });
+});
+</script>
 {% endblock %}

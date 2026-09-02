@@ -651,7 +651,7 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "Export Configuration",
                 "constraints": [
                     models.CheckConstraint(
-                        condition=models.Q(("singleton_key", "default")),
+                        check=models.Q(("singleton_key", "default")),
                         name="export_configuration_singleton",
                     )
                 ],

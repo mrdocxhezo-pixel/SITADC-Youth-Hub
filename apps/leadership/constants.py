@@ -7,20 +7,97 @@ from django.utils.translation import gettext_lazy as _
 
 
 class LeadershipLevel(models.TextChoices):
-    """Organizational leadership levels supported by the module."""
+    """Organizational leadership levels supported by the module.
 
-    BOARD_OF_TRUSTEES = "BOARD_OF_TRUSTEES", _("Board of Trustees")
+    The hierarchy follows the official SITADC Youth Organization structure:
+
+    LEVEL 1 — GENERAL ASSEMBLY
+    GENERAL_ASSEMBLY: Highest organizational governance level
+
+    LEVEL 2 — BOARD OF DIRECTORS / BOARD OF TRUSTEES
+    BOARD_OF_DIRECTORS_TRUSTEES: Board governance level
+
+    LEVEL 3 — NATIONAL EXECUTIVE COMMITTEE (NEC)
+    NATIONAL_EXECUTIVE_COMMITTEE: NEC governance level
+
+    LEVEL 4 — EXECUTIVE MANAGEMENT
+    EXECUTIVE_MANAGEMENT: Executive Management leadership level
+    EXECUTIVE_DIRECTOR: Executive Director position level
+    EXECUTIVE_OFFICE: Executive Office leadership
+
+    LEVEL 5 — DIRECTORATES (17 Directorates)
+    DIRECTORATE: Directorate leadership level
+
+    LEVEL 6 — DEPARTMENTS (10 Operational Departments)
+    DEPARTMENT: Department leadership level
+
+    LEVEL 7 — PROGRAM AND TECHNICAL MANAGEMENT
+    PROGRAM_TECHNICAL_MANAGEMENT: Program and Technical Management positions
+
+    LEVEL 8 — REGIONAL LEADERSHIP
+    REGIONAL_COORDINATOR: Regional Coordinator leadership level
+
+    LEVEL 9 — DISTRICT LEADERSHIP
+    DISTRICT_COORDINATOR: District Coordinator leadership level
+
+    LEVEL 10 — COMMUNITY LEADERSHIP
+    COMMUNITY_COORDINATOR: Community Coordinator leadership level
+
+    LEVEL 11 — TEAM LEADERSHIP
+    TEAM_LEADER: Team Leader leadership level
+
+    LEVEL 12 — VOLUNTEERS AND MEMBERS
+    VOLUNTEER_MEMBER: Volunteer / Member operational level
+
+    OTHER:
+    REPORT_AUTHOR: Personnel authorized to author official reports
+    """
+
+    # LEVEL 1 — GENERAL ASSEMBLY
+    GENERAL_ASSEMBLY = "GENERAL_ASSEMBLY", _("General Assembly")
+
+    # LEVEL 2 — BOARD OF DIRECTORS / BOARD OF TRUSTEES
+    BOARD_OF_DIRECTORS_TRUSTEES = (
+        "BOARD_OF_DIRECTORS_TRUSTEES",
+        _("Board of Directors / Board of Trustees"),
+    )
+
+    # LEVEL 3 — NATIONAL EXECUTIVE COMMITTEE
     NATIONAL_EXECUTIVE_COMMITTEE = (
         "NATIONAL_EXECUTIVE_COMMITTEE",
         _("National Executive Committee"),
     )
-    EXECUTIVE_DIRECTOR = "EXECUTIVE_DIRECTOR", _("Executive Director")
+
+    # LEVEL 4 — EXECUTIVE MANAGEMENT
     EXECUTIVE_MANAGEMENT = "EXECUTIVE_MANAGEMENT", _("Executive Management")
+    EXECUTIVE_DIRECTOR = "EXECUTIVE_DIRECTOR", _("Executive Director")
+    EXECUTIVE_OFFICE = "EXECUTIVE_OFFICE", _("Executive Office")
+
+    # LEVEL 5 — DIRECTORATES
     DIRECTORATE = "DIRECTORATE", _("Directorate")
+
+    # LEVEL 6 — DEPARTMENTS
+    DEPARTMENT = "DEPARTMENT", _("Department")
+
+    # LEVEL 7 — PROGRAM AND TECHNICAL MANAGEMENT
+    PROGRAM_TECHNICAL_MANAGEMENT = "PROGRAM_TECHNICAL_MANAGEMENT", _("Program and Technical Management")
+
+    # LEVEL 8 — REGIONAL LEADERSHIP
     REGIONAL_COORDINATOR = "REGIONAL_COORDINATOR", _("Regional Coordinator")
+
+    # LEVEL 9 — DISTRICT LEADERSHIP
     DISTRICT_COORDINATOR = "DISTRICT_COORDINATOR", _("District Coordinator")
+
+    # LEVEL 10 — COMMUNITY LEADERSHIP
     COMMUNITY_COORDINATOR = "COMMUNITY_COORDINATOR", _("Community Coordinator")
+
+    # LEVEL 11 — TEAM LEADERSHIP
     TEAM_LEADER = "TEAM_LEADER", _("Team Leader")
+
+    # LEVEL 12 — VOLUNTEERS AND MEMBERS
+    VOLUNTEER_MEMBER = "VOLUNTEER_MEMBER", _("Volunteers / Members")
+
+    # OTHER
     REPORT_AUTHOR = "REPORT_AUTHOR", _("Report Author")
 
 

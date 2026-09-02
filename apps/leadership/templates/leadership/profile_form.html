@@ -86,28 +86,40 @@
                     </h5>
                     <p class="text-muted small mb-0">Basic personal details of the leader.</p>
                 </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            {% include "leadership/includes/form_field.html" with field=form.user %}
-                        </div>
-                        <div class="col-md-6">
-                            {% include "leadership/includes/form_field.html" with field=form.reference_number %}
-                        </div>
-                        <div class="col-md-6">
-                            {% include "leadership/includes/form_field.html" with field=form.profile_photo %}
-                        </div>
-                        <div class="col-md-6">
-                            {% include "leadership/includes/form_field.html" with field=form.national_id %}
-                        </div>
-                        <div class="col-md-6">
-                            {% include "leadership/includes/form_field.html" with field=form.gender %}
-                        </div>
-                        <div class="col-md-6">
-                            {% include "leadership/includes/form_field.html" with field=form.date_of_birth %}
-                        </div>
-                    </div>
-                </div>
+<div class="card-body">
+    <div class="row g-3">
+        <div class="col-md-6">
+            {% include "leadership/includes/form_field.html" with field=form.user %}
+        </div>
+        <div class="col-md-6">
+            {% include "leadership/includes/form_field.html" with field=form.reference_number %}
+        </div>
+        <div class="col-md-6">
+            {% include "leadership/includes/form_field.html" with field=form.profile_photo %}
+        </div>
+        <div class="col-md-6">
+            {% include "leadership/includes/form_field.html" with field=form.national_id %}
+        </div>
+<div class="col-md-6">
+    {% include "leadership/includes/form_field.html" with field=form.gender %}
+</div>
+<div class="col-md-6">
+    {% include "leadership/includes/form_field.html" with field=form.full_name %}
+</div>
+<div class="col-md-6">
+    {% include "leadership/includes/form_field.html" with field=form.date_of_birth %}
+</div>
+        <div class="col-md-6">
+            {% include "leadership/includes/form_field.html" with field=form.region %}
+        </div>
+        <div class="col-md-6">
+            {% include "leadership/includes/form_field.html" with field=form.district %}
+        </div>
+        <div class="col-md-6">
+            {% include "leadership/includes/form_field.html" with field=form.community %}
+        </div>
+    </div>
+</div>
             </div>
 
             <!-- SECTION 2: CONTACT INFORMATION -->
@@ -176,13 +188,14 @@
                             {% include "leadership/includes/form_field.html" with field=form.directorate %}
                         </div>
                         <div class="col-md-6">
-                            {% include "leadership/includes/form_field.html" with field=form.region %}
+                            {% include "leadership/includes/form_field.html" with field=form.department %}
                         </div>
                         <div class="col-md-6">
-                            {% include "leadership/includes/form_field.html" with field=form.district %}
+                            {% include "leadership/includes/form_field.html" with field=form.program_technical_management %}
                         </div>
+                        
                         <div class="col-md-6">
-                            {% include "leadership/includes/form_field.html" with field=form.community %}
+                            {% include "leadership/includes/form_field.html" with field=form.team %}
                         </div>
                     </div>
                 </div>
@@ -330,6 +343,14 @@
             }
         });
 
+        // Reset loading state if form has validation errors
+        if (form.querySelector('.invalid-feedback') || form.querySelector('.alert-danger')) {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bi bi-save me-2"></i>Save Changes';
+            }
+        }
+
         // Profile photo preview
         const photoInput = document.getElementById('id_profile_photo');
         if (photoInput) {
@@ -376,6 +397,39 @@
                 // The validation is also done server-side
             });
         }
+        
+        // Synchronize user selector and full name field
+        const userSelect = document.getElementById('id_user');
+        const fullNameInput = document.getElementById('id_full_name');
+        
+        if (userSelect && fullNameInput) {
+            // When user selector changes, update full name field
+            userSelect.addEventListener('change', function() {
+                const selectedOption = this.selectedOptions[0];
+                if (selectedOption) {
+                    const optionText = selectedOption.textContent;
+                    // Extract full name from format "First Last (email)"
+                    const fullName = optionText.split(' (')[0];
+                    fullNameInput.value = fullName;
+                }
+            });
+            
+            // Initialize full name field based on current user selection
+            // (in case the form was loaded with a user pre-selected)
+            if (userSelect.value) {
+                const selectedOption = userSelect.querySelector(`option[value="${userSelect.value}"]`);
+                if (selectedOption) {
+                    const optionText = selectedOption.textContent;
+                    const fullName = optionText.split(' (')[0];
+                    fullNameInput.value = fullName;
+                }
+            }
+        }
     });
     </script>
 {% endblock dashboard_content %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="{% static 'leadership/js/leadership_dropdowns.js' %}"></script>
+{% endblock extra_js %}

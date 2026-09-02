@@ -138,6 +138,9 @@ class CreateLeadershipProfileService(BaseService):
         position=None,
         organizational_unit=None,
         directorate=None,
+        department=None,
+        program_technical_management=None,
+        team=None,
         supervisor=None,
         profile_photo=None,
         national_id: str = "",
@@ -186,6 +189,9 @@ class CreateLeadershipProfileService(BaseService):
             position=position,
             organizational_unit=organizational_unit,
             directorate=directorate,
+            department=department,
+            program_technical_management=program_technical_management,
+            team=team,
             supervisor=supervisor,
             profile_photo=profile_photo,
             national_id=national_id,
@@ -234,6 +240,16 @@ class CreateLeadershipProfileService(BaseService):
                 "reference_number": profile.reference_number,
                 "user": str(user),
                 "leadership_level": profile.leadership_level,
+                "position": profile.position.title if profile.position else None,
+                "organizational_unit": profile.organizational_unit.name if profile.organizational_unit else None,
+                "directorate": profile.directorate.name if profile.directorate else None,
+                "department": profile.department.name if profile.department else None,
+                "program_technical_management": profile.program_technical_management.name if profile.program_technical_management else None,
+                "team": profile.team.name if profile.team else None,
+                "supervisor": str(profile.supervisor) if profile.supervisor else None,
+                "region": profile.region.name if profile.region else None,
+                "district": profile.district.name if profile.district else None,
+                "community": profile.community.name if profile.community else None,
             },
             notes="Leadership profile created.",
         )
@@ -254,6 +270,9 @@ class UpdateLeadershipProfileService(BaseService):
         position=None,
         organizational_unit=None,
         directorate=None,
+        department=None,
+        program_technical_management=None,
+        team=None,
         supervisor=None,
         profile_photo=None,
         national_id: str = "",
@@ -277,12 +296,20 @@ class UpdateLeadershipProfileService(BaseService):
         from_data = {
             "leadership_level": profile.leadership_level,
             "position": profile.position.title if profile.position else None,
+            "organizational_unit": profile.organizational_unit.name if profile.organizational_unit else None,
+            "directorate": profile.directorate.name if profile.directorate else None,
+            "department": profile.department.name if profile.department else None,
+            "program_technical_management": profile.program_technical_management.name if profile.program_technical_management else None,
+            "team": profile.team.name if profile.team else None,
             "supervisor": str(profile.supervisor) if profile.supervisor else None,
         }
         profile.leadership_level = leadership_level
         profile.position = position
         profile.organizational_unit = organizational_unit
         profile.directorate = directorate
+        profile.department = department
+        profile.program_technical_management = program_technical_management
+        profile.team = team
         if supervisor is not None:
             profile.supervisor = supervisor
         if profile_photo:
@@ -315,6 +342,11 @@ class UpdateLeadershipProfileService(BaseService):
             to_data={
                 "leadership_level": profile.leadership_level,
                 "position": profile.position.title if profile.position else None,
+                "organizational_unit": profile.organizational_unit.name if profile.organizational_unit else None,
+                "directorate": profile.directorate.name if profile.directorate else None,
+                "department": profile.department.name if profile.department else None,
+                "program_technical_management": profile.program_technical_management.name if profile.program_technical_management else None,
+                "team": profile.team.name if profile.team else None,
                 "supervisor": str(profile.supervisor) if profile.supervisor else None,
             },
             notes="Leadership profile updated.",

@@ -108,7 +108,7 @@
                         </div>
                     </div>
                     <div class="row mb-4">
-                        {% include "locations/partials/geographic_dropdowns.html" with show_country=False prefix="profile" show_province=True show_district=True show_constituency=False show_ward=False province_field="province_location" district_field="district_location" %}
+                        {% include "locations/partials/geographic_dropdowns.html" with show_country=False prefix="profile" show_province=True show_district=True show_constituency=False show_ward=False province_field="province_location" district_field="district_location" initial_province=form.province_location.value|default:"" initial_district=form.district_location.value|default:"" initial_province_name=form.instance.province_location.name|default:"" initial_district_name=form.instance.district_location.name|default:"" %}
                     </div>
                     <div class="mb-3">
                         <label for="{{ form.residential_address.id_for_label }}" class="form-label">{% trans "Residential Address" %}</label>

@@ -24,7 +24,7 @@
         <link rel="stylesheet" href="{% static 'css/app.css' %}">
         {% block extra_css %}{% endblock %}
     </head>
-    <body class="d-flex flex-column min-vh-100">
+    <body class="d-flex flex-column min-vh-100" data-theme="{{ dashboard_theme|default:'system' }}">
         <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
         {% block navbar %}{% endblock %}
         {% block hero %}{% endblock %}
@@ -44,5 +44,36 @@
         <!-- Custom JS -->
         <script src="{% static 'js/app.js' %}"></script>
         {% block extra_js %}{% endblock %}
+        <!-- Theme initialization script -->
+        <script>
+            (function() {
+                'use strict';
+                var theme = '{{ dashboard_theme|default:"system" }}';
+                var body = document.body;
+                
+                function applyTheme(themeValue) {
+                    if (themeValue === 'system') {
+                        // Remove explicit theme, let CSS media query handle it
+                        body.removeAttribute('data-theme');
+                    } else {
+                        body.setAttribute('data-theme', themeValue);
+                    }
+                }
+                
+                // Apply initial theme
+                applyTheme(theme);
+                
+                // Listen for system theme changes when using 'system' preference
+                var mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                function handleSystemThemeChange(e) {
+                    if (theme === 'system') {
+                        // CSS media query handles this automatically, but we can force update if needed
+                        body.removeAttribute('data-theme');
+                    }
+                }
+                
+                mediaQuery.addEventListener ? mediaQuery.addEventListener('change', handleSystemThemeChange) : mediaQuery.addListener(handleSystemThemeChange);
+            })();
+        </script>
     </body>
 </html>

@@ -312,13 +312,14 @@
                     </div>
                     <div class="card-body">
                         {% if widget.widget_type == 'quick_actions' %}
-                            <div class="d-flex flex-wrap gap-2">
+                            <div class="quick-actions-grid" role="list" aria-label="Quick Actions">
                                 {% for action in widget.payload.actions %}
-                                    <a href="{% url action.url_name %}" class="btn btn-outline-primary-brand btn-sm">
-                                        <i class="bi {{ action.icon }} me-1" aria-hidden="true"></i> {{ action.label }}
-                                    </a>
+                                    {% include 'components/quick_action.html' with action=action %}
                                 {% empty %}
-                                    <p class="text-muted small mb-0">No quick actions available for your role.</p>
+                                    <div class="quick-action-empty text-center py-4">
+                                        <i class="bi bi-lightning-charge fs-1 text-muted" aria-hidden="true"></i>
+                                        <p class="text-muted small mt-2 mb-0">No quick actions available for your role.</p>
+                                    </div>
                                 {% endfor %}
                             </div>
 
@@ -344,6 +345,34 @@
                             <div class="text-center">
                                 <a href="{% url 'notifications:dashboard' %}" class="btn btn-sm btn-outline-primary">Notification Center</a>
                             </div>
+
+                        {% elif widget.widget_type == 'chart' %}
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas aria-label="{{ widget.title }} chart"></canvas>
+                            </div>
+                            <script>
+                                // Initialize chart when Chart.js is ready
+                                (function() {
+                                    const container = document.currentScript.parentElement;
+                                    const canvas = container.querySelector('canvas');
+                                    const widgetConfig = {{ widget.payload.configuration|safe }};
+                                    const userChartStyle = "{{ widget.payload.chart_type }}";
+                                    
+                                    function initChart() {
+                                        if (typeof Chart !== 'undefined' && window.SITADC?.Charts?.createChart) {
+                                            canvas.chartInstance = window.SITADC.Charts.createChart(
+                                                canvas.getContext('2d'),
+                                                widgetConfig,
+                                                widgetConfig.defaultStyle,
+                                                userChartStyle
+                                            );
+                                        } else {
+                                            setTimeout(initChart, 100);
+                                        }
+                                    }
+                                    initChart();
+                                })();
+                            </script>
                         {% endif %}
                     </div>
                 </div>
@@ -424,4 +453,9 @@
         {% endif %}
     {% endfor %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/dashboard-charts.js' %}"></script>
 {% endblock %}

@@ -19,6 +19,7 @@ env/
 db.sqlite3
 db.sqlite3-journal
 test_db.sqlite3
+test_db.sqlite3-journal
 *.log
 staticfiles/
 media/*

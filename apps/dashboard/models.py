@@ -73,10 +73,11 @@ class UserDashboardPreference(models.Model):
     theme = models.CharField(
         max_length=20,
         choices=[
+            ("system", "System Default"),
             ("light", "Light"),
             ("dark", "Dark"),
         ],
-        default="light",
+        default="system",
     )
     default_reporting_period = models.CharField(
         max_length=20,

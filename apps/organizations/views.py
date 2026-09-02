@@ -13,6 +13,7 @@ import logging
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
@@ -20,7 +21,7 @@ from django.views.decorators.http import require_http_methods
 from apps.rbac.decorators import permission_required
 
 from . import selectors
-from .constants import OrganizationAuditAction, UnitType
+from .constants import OrganizationAuditAction, PositionStatus, UnitStatus, UnitType
 from .forms import (
     ActingAppointmentForm,
     OrganizationLevelForm,
@@ -767,3 +768,199 @@ def classification_create_view(request):
         "organizations/classification_form.html",
         {"form": form, "mode": "create"},
     )
+
+
+# =============================================================================
+# JSON API ENDPOINTS FOR DYNAMIC & CASCADING DROPDOWNS
+# =============================================================================
+
+def api_units_view(request):
+    """Return active organizational units as JSON, optionally filtered."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    qs = OrganizationUnit.objects.filter(status=UnitStatus.ACTIVE)
+    unit_type = request.GET.get("unit_type")
+    if unit_type:
+        qs = qs.filter(unit_type=unit_type)
+    parent_id = request.GET.get("parent_id")
+    if parent_id:
+        qs = qs.filter(parent_id=parent_id)
+
+    data = [
+        {
+            "id": str(u.id),
+            "name": u.name,
+            "identifier": u.identifier,
+            "short_name": u.short_name,
+            "unit_type": u.unit_type,
+            "parent_id": str(u.parent_id) if u.parent_id else None,
+        }
+        for u in qs.order_by("name")
+    ]
+    return JsonResponse(data, safe=False)
+
+
+def api_directorates_view(request):
+    """Return the 17 approved SITADC Directorates as JSON."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    qs = OrganizationUnit.objects.filter(
+        unit_type=UnitType.DIRECTORATE, status=UnitStatus.ACTIVE
+    ).order_by("name")
+    data = [
+        {
+            "id": str(u.id),
+            "name": u.name,
+            "identifier": u.identifier,
+            "short_name": u.short_name,
+        }
+        for u in qs
+    ]
+    return JsonResponse(data, safe=False)
+
+
+def api_departments_view(request):
+    """Return approved operational departments, filtered by directorate where supplied."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    from .seed_data import DIRECTORATE_TO_DEPARTMENT_MAP
+
+    qs = OrganizationUnit.objects.filter(
+        unit_type=UnitType.DEPARTMENT, status=UnitStatus.ACTIVE
+    )
+    directorate_id = request.GET.get("directorate_id") or request.GET.get("parent_id")
+    if directorate_id:
+        try:
+            directorate = OrganizationUnit.objects.get(
+                pk=directorate_id, unit_type=UnitType.DIRECTORATE
+            )
+            dept_identifiers = DIRECTORATE_TO_DEPARTMENT_MAP.get(directorate.identifier)
+            if dept_identifiers:
+                qs = qs.filter(
+                    Q(parent_id=directorate.pk) | Q(identifier__in=dept_identifiers)
+                )
+            else:
+                qs = qs.filter(parent_id=directorate.pk)
+        except (OrganizationUnit.DoesNotExist, ValidationError, ValueError):
+            qs = qs.filter(parent_id=directorate_id)
+
+    data = [
+        {
+            "id": str(u.id),
+            "name": u.name,
+            "identifier": u.identifier,
+            "short_name": u.short_name,
+            "parent_id": str(u.parent_id) if u.parent_id else None,
+        }
+        for u in qs.order_by("name")
+    ]
+    return JsonResponse(data, safe=False)
+
+
+def api_program_technical_view(request):
+    """Return program and technical management units, filtered by department/directorate."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    from .seed_data import DEPARTMENT_TO_PTM_MAP, DIRECTORATE_TO_PTM_MAP
+
+    qs = OrganizationUnit.objects.filter(
+        unit_type=UnitType.PROGRAM_TECHNICAL_MANAGEMENT, status=UnitStatus.ACTIVE
+    )
+    department_id = request.GET.get("department_id")
+    directorate_id = request.GET.get("directorate_id")
+
+    if department_id:
+        try:
+            dept = OrganizationUnit.objects.get(
+                pk=department_id, unit_type=UnitType.DEPARTMENT
+            )
+            ptm_identifiers = DEPARTMENT_TO_PTM_MAP.get(dept.identifier)
+            if ptm_identifiers:
+                qs = qs.filter(
+                    Q(parent_id=dept.pk) | Q(identifier__in=ptm_identifiers)
+                )
+            else:
+                qs = qs.filter(parent_id=dept.pk)
+        except (OrganizationUnit.DoesNotExist, ValidationError, ValueError):
+            qs = qs.filter(parent_id=department_id)
+    elif directorate_id:
+        try:
+            dir_obj = OrganizationUnit.objects.get(
+                pk=directorate_id, unit_type=UnitType.DIRECTORATE
+            )
+            ptm_identifiers = DIRECTORATE_TO_PTM_MAP.get(dir_obj.identifier)
+            if ptm_identifiers:
+                qs = qs.filter(
+                    Q(parent__parent_id=dir_obj.pk)
+                    | Q(identifier__in=ptm_identifiers)
+                )
+        except (OrganizationUnit.DoesNotExist, ValidationError, ValueError):
+            pass
+
+    data = [
+        {
+            "id": str(u.id),
+            "name": u.name,
+            "identifier": u.identifier,
+            "short_name": u.short_name,
+        }
+        for u in qs.order_by("name")
+    ]
+    return JsonResponse(data, safe=False)
+
+
+def api_teams_view(request):
+    """Return active teams scoped by parent unit (community, district, department, etc.)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    qs = OrganizationUnit.objects.filter(
+        unit_type=UnitType.TEAM, status=UnitStatus.ACTIVE
+    )
+    parent_id = request.GET.get("parent_id")
+    if parent_id:
+        qs = qs.filter(parent_id=parent_id)
+
+    data = [
+        {
+            "id": str(u.id),
+            "name": u.name,
+            "identifier": u.identifier,
+            "short_name": u.short_name,
+            "parent_id": str(u.parent_id) if u.parent_id else None,
+        }
+        for u in qs.order_by("name")
+    ]
+    return JsonResponse(data, safe=False)
+
+
+def api_positions_view(request):
+    """Return active positions optionally filtered by unit or classification."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    qs = Position.objects.filter(status=PositionStatus.ACTIVE)
+    unit_id = request.GET.get("unit_id")
+    if unit_id:
+        qs = qs.filter(organizational_unit_id=unit_id)
+    classification_code = request.GET.get("classification")
+    if classification_code:
+        qs = qs.filter(classification__code=classification_code)
+
+    data = [
+        {
+            "id": str(p.id),
+            "title": p.title,
+            "slug": p.slug,
+            "unit_id": (
+                str(p.organizational_unit_id) if p.organizational_unit_id else None
+            ),
+        }
+        for p in qs.order_by("title")
+    ]
+    return JsonResponse(data, safe=False)
+

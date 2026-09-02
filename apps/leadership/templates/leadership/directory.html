@@ -186,6 +186,32 @@
                         </select>
                     </div>
                     
+                    <!-- Department -->
+                    <div class="col-md-2">
+                        <label for="department" class="form-label">Department</label>
+                        <select name="department" id="department" class="form-select">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.pk }}" {% if current_department == dept.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Program and Technical Management -->
+                    <div class="col-md-2">
+                        <label for="program_technical_management" class="form-label">Program & Technical Mgmt</label>
+                        <select name="program_technical_management" id="program_technical_management" class="form-select">
+                            <option value="">All</option>
+                            {% for ptm in program_technical_management %}
+                                <option value="{{ ptm.pk }}" {% if current_program_technical == ptm.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ ptm.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
                     <!-- Region -->
                     <div class="col-md-2">
                         <label for="region" class="form-label">Region</label>
@@ -220,6 +246,19 @@
                             {% for comm in communities %}
                                 <option value="{{ comm.pk }}" {% if current_community == comm.pk|stringformat:"s" %}selected{% endif %}>
                                     {{ comm.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Team -->
+                    <div class="col-md-2">
+                        <label for="team" class="form-label">Team</label>
+                        <select name="team" id="team" class="form-select">
+                            <option value="">All Teams</option>
+                            {% for t in teams %}
+                                <option value="{{ t.pk }}" {% if current_team == t.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ t.name }}
                                 </option>
                             {% endfor %}
                         </select>
@@ -387,12 +426,15 @@
                                     <th>Reference</th>
                                     <th>Position</th>
                                     <th>Level</th>
-                                    <th>Directorate</th>
-                                    <th>Region</th>
-                                    <th>District</th>
-                                    <th>Community</th>
-                                    <th>Status</th>
-                                    <th class="text-end">Actions</th>
+<th>Directorate</th>
+                                     <th>Department</th>
+                                     <th>Program & Tech Mgmt</th>
+                                     <th>Region</th>
+                                     <th>District</th>
+                                     <th>Community</th>
+                                     <th>Team</th>
+                                     <th>Status</th>
+                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -427,10 +469,13 @@
                                             {{ profile.get_leadership_level_display }}
                                         </span>
                                     </td>
-                                    <td>{{ profile.directorate.name|default:"—" }}</td>
-                                    <td>{{ profile.region.name|default:"—" }}</td>
-                                    <td>{{ profile.district.name|default:"—" }}</td>
-                                    <td>{{ profile.community.name|default:"—" }}</td>
+<td>{{ profile.directorate.name|default:"—" }}</td>
+                                     <td>{{ profile.department.name|default:"—" }}</td>
+                                     <td>{{ profile.program_technical_management.name|default:"—" }}</td>
+                                     <td>{{ profile.region.name|default:"—" }}</td>
+                                     <td>{{ profile.district.name|default:"—" }}</td>
+                                     <td>{{ profile.community.name|default:"—" }}</td>
+                                     <td>{{ profile.team.name|default:"—" }}</td>
                                     <td>
                                         <span class="badge bg-{% if profile.status == "ACTIVE" %}success{% elif profile.status == "APPOINTED" %}primary{% elif profile.status == "ACTING" %}info{% elif profile.status == "PROBATION" %}warning{% else %}secondary{% endif %}">
                                             {{ profile.get_status_display }}

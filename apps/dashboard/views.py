@@ -45,6 +45,7 @@ from .services import (
     get_reports_due,
     get_upcoming_events,
     get_welcome_context,
+    period_start,
     resolve_statistic_card,
     resolve_widget_payload,
     set_widget_state,
@@ -110,6 +111,7 @@ class DashboardHomeView(LoginRequiredMixin, TemplateView):
         user_pref, _created = UserDashboardPreference.objects.get_or_create(user=user)
         current_period = _resolve_period(self.request, user)
         user_pref.default_reporting_period = current_period
+        period_start_date = period_start(current_period)
         dashboard_config = get_default_configuration()
         configs = get_personalized_widgets(
             user, visible_widget_configs(dashboard_config)
@@ -121,7 +123,7 @@ class DashboardHomeView(LoginRequiredMixin, TemplateView):
             widget = widget_config.widget
 
             if widget.widget_type == "statistic":
-                card = resolve_statistic_card(widget_config, user)
+                card = resolve_statistic_card(widget_config, user, period_start_date)
                 if card is not None:
                     stat_cards.append(card)
 
@@ -137,7 +139,7 @@ class DashboardHomeView(LoginRequiredMixin, TemplateView):
                         "span_class": SPAN_CLASSES.get(
                             widget_config.column_span, "col-12"
                         ),
-                        "payload": resolve_widget_payload(widget_config, user),
+                        "payload": resolve_widget_payload(widget_config, user, period_start_date),
                     }
                 )
 
@@ -300,7 +302,12 @@ def dashboard_widget_data(request, widget_id: int):
     except DashboardWidgetConfiguration.DoesNotExist:
         return JsonResponse({"error": "Widget not found"}, status=404)
 
-    payload = resolve_widget_payload(widget_config, cast(User, request.user))
+    user = cast(User, request.user)
+    user_pref, _ = UserDashboardPreference.objects.get_or_create(user=user)
+    current_period = user_pref.default_reporting_period
+    period_start_date = period_start(current_period)
+    
+    payload = resolve_widget_payload(widget_config, user, period_start_date)
     if not payload:
         return JsonResponse({"error": "No data available for this widget"}, status=404)
     return JsonResponse(payload)
@@ -339,6 +346,29 @@ def dashboard_widget_config(request, config_type: str):
         )
 
     return JsonResponse({"widgets": widgets})
+
+
+@login_required
+def dashboard_preferences_ajax(request):
+    """AJAX endpoint for updating dashboard preferences."""
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
+
+    user = cast(User, request.user)
+    pref, _created = UserDashboardPreference.objects.get_or_create(user=user)
+    form = DashboardPreferencesForm(request.POST, instance=pref)
+    
+    if form.is_valid():
+        form.save()
+        return JsonResponse({
+            "success": True, 
+            "message": "Preferences saved successfully.",
+            "theme": pref.theme,
+            "chart_style": pref.preferred_chart_style,
+            "reporting_period": pref.default_reporting_period,
+        })
+    
+    return JsonResponse({"success": False, "errors": form.errors}, status=400)
 
 
 class StaffAdminMixin(UserPassesTestMixin):

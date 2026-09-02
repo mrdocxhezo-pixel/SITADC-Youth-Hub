@@ -130,7 +130,7 @@ class ExportConfiguration(UUIDModel, TimeStampedModel, CreatedByModel, UpdatedBy
         verbose_name_plural = _("Export Configuration")
         constraints: ClassVar[list] = [
             models.CheckConstraint(
-                condition=models.Q(singleton_key=CONFIGURATION_SINGLETON_KEY),
+                check=models.Q(singleton_key=CONFIGURATION_SINGLETON_KEY),
                 name="export_configuration_singleton",
             )
         ]

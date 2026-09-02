@@ -19,6 +19,11 @@ urlpatterns = [
         name="widget_config",
     ),
     path(
+        "preferences/ajax/",
+        views.dashboard_preferences_ajax,
+        name="preferences_ajax",
+    ),
+    path(
         "configuration/",
         views.DashboardConfigurationView.as_view(),
         name="configuration",

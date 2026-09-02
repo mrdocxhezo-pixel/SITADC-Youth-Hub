@@ -16,7 +16,7 @@
                     <div class="row g-3 mt-2">
                         <div class="col-12">
                             <h6 class="text-muted text-uppercase small mb-3">Geographic Information</h6>
-                            {% include "locations/partials/geographic_dropdowns.html" with show_country=False prefix="vol_profile" show_province=True show_district=True show_constituency=True show_ward=True province_field="province_location" district_field="district_location" constituency_field="constituency_location" ward_field="ward_location" initial_province=form.province_location.value|default:"" initial_district=form.district_location.value|default:"" initial_constituency=form.constituency_location.value|default:"" initial_ward=form.ward_location.value|default:"" %}
+                            {% include "locations/partials/geographic_dropdowns.html" with show_country=False prefix="vol_profile" show_province=True show_district=True show_constituency=True show_ward=True province_field="province_location" district_field="district_location" constituency_field="constituency_location" ward_field="ward_location" initial_province=form.province_location.value|default:"" initial_district=form.district_location.value|default:"" initial_constituency=form.constituency_location.value|default:"" initial_ward=form.ward_location.value|default:"" initial_province_name=form.instance.province_location.name|default:"" initial_district_name=form.instance.district_location.name|default:"" initial_constituency_name=form.instance.constituency_location.name|default:"" initial_ward_name=form.instance.ward_location.name|default:"" %}
                         </div>
                     </div>
                     <div class="mt-4 text-end">

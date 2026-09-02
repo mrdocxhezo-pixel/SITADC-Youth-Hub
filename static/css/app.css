@@ -113,3 +113,221 @@ body {
     outline: 2px solid #0d6efd;
     outline-offset: 2px;
 }
+
+/* ============================================
+   Quick Actions Card
+   ============================================ */
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.quick-action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-normal);
+    color: var(--color-text-primary);
+    text-decoration: none;
+    min-height: 100px;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--sitadc-primary);
+    color: var(--color-text-primary);
+    text-decoration: none;
+}
+
+.quick-action-card:focus-visible {
+    outline: 2px solid var(--sitadc-primary);
+    outline-offset: 2px;
+    z-index: 10;
+}
+
+.quick-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--border-radius-md);
+    font-size: 1.25rem;
+    color: white;
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+.quick-action-card:hover .quick-action-icon {
+    transform: scale(1.05);
+}
+
+/* Color variants for quick action icons */
+.quick-action-icon-primary {
+    background-color: var(--sitadc-primary);
+}
+
+.quick-action-icon-secondary {
+    background-color: #6c757d;
+}
+
+.quick-action-icon-success {
+    background-color: var(--sitadc-success);
+}
+
+.quick-action-icon-danger {
+    background-color: var(--sitadc-error);
+}
+
+.quick-action-icon-warning {
+    background-color: var(--sitadc-warning);
+    color: #212529;
+}
+
+.quick-action-icon-info {
+    background-color: var(--sitadc-accent-cyan);
+}
+
+.quick-action-icon-purple {
+    background-color: var(--sitadc-accent-purple);
+}
+
+.quick-action-icon-indigo {
+    background-color: var(--sitadc-accent-indigo);
+}
+
+.quick-action-icon-teal {
+    background-color: #14a58c;
+}
+
+.quick-action-icon-amber {
+    background-color: #f0a500;
+    color: #212529;
+}
+
+.quick-action-icon-cyan {
+    background-color: var(--sitadc-accent-cyan);
+}
+
+.quick-action-content {
+    flex-grow: 1;
+    width: 100%;
+}
+
+.quick-action-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+    color: var(--color-text-primary);
+    line-height: 1.3;
+}
+
+.quick-action-description {
+    font-size: 0.75rem;
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.quick-action-empty {
+    grid-column: 1 / -1;
+    padding: 2rem 1rem;
+    background-color: var(--color-card-bg);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--border-radius-lg);
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 575.98px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .quick-action-card {
+        padding: 0.75rem;
+        min-height: 90px;
+    }
+    
+    .quick-action-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.125rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .quick-action-title {
+        font-size: 0.8125rem;
+    }
+    
+    .quick-action-description {
+        font-size: 0.6875rem;
+        -webkit-line-clamp: 1;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+/* Dark mode adjustments for warning/amber icons */
+[data-theme="dark"] .quick-action-icon-warning,
+[data-theme="dark"] .quick-action-icon-amber {
+    color: #212529;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .quick-action-icon-warning,
+    :root:not([data-theme="light"]) .quick-action-icon-amber {
+        color: #212529;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .quick-action-card,
+    .quick-action-icon {
+        transition: none !important;
+    }
+    
+    .quick-action-card:hover {
+        transform: none;
+    }
+    
+    .quick-action-card:hover .quick-action-icon {
+        transform: none;
+    }
+}

@@ -56,13 +56,23 @@ class VolunteerType(models.TextChoices):
 
 
 class VolunteerLevel(models.TextChoices):
-    """Organizational tier of volunteer deployment."""
+    """Organizational tier of volunteer deployment.
+
+    Aligned with the official SITADC Youth Organization structure:
+    - National Level
+    - Regional Level (Regional Coordinators)
+    - District Level (District Coordinators)
+    - Community Level (Community Coordinators)
+    - Team Level (Team Leaders)
+    - Volunteer/Member Level (Volunteers / Members)
+    """
 
     NATIONAL = "NATIONAL", _("National Level")
     REGIONAL = "REGIONAL", _("Regional Level")
     DISTRICT = "DISTRICT", _("District Level")
     COMMUNITY = "COMMUNITY", _("Community Level")
     TEAM = "TEAM", _("Team Level")
+    VOLUNTEER_MEMBER = "VOLUNTEER_MEMBER", _("Volunteer / Member Level")
 
 
 class AvailabilityType(models.TextChoices):

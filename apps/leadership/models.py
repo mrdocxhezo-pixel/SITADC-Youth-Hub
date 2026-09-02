@@ -107,7 +107,14 @@ class LeadershipProfile(
     national_id = models.CharField(
         _("National ID or identification number"), max_length=60, blank=True
     )
-    gender = models.CharField(_("Gender"), max_length=20, blank=True)
+    full_name = models.CharField(_("Full Names"), max_length=150, blank=True)
+    gender = models.CharField(_("Gender"), max_length=20, blank=True, choices=[
+        ('MALE', _('Male')),
+        ('FEMALE', _('Female')),
+        ('NON_BINARY', _('Non-Binary')),
+        ('PREFER_NOT_TO_SAY', _('Prefer Not to Say')),
+        ('OTHER', _('Other')),
+    ])
     date_of_birth = models.DateField(_("Date of birth"), null=True, blank=True)
     phone_number = models.CharField(_("Phone number"), max_length=30, blank=True)
     email = models.EmailField(_("Email address"), blank=True)
@@ -150,6 +157,24 @@ class LeadershipProfile(
         verbose_name=_("Directorate"),
         help_text=_("The directorate the leader reports into, where applicable."),
     )
+    department = models.ForeignKey(
+        OrganizationUnit,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="leadership_profiles_in_department",
+        verbose_name=_("Department"),
+        help_text=_("The department the leader reports into, where applicable."),
+    )
+    program_technical_management = models.ForeignKey(
+        OrganizationUnit,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="leadership_profiles_in_program_technical",
+        verbose_name=_("Program and Technical Management"),
+        help_text=_("The program/technical management unit the leader belongs to, where applicable."),
+    )
     region = models.ForeignKey(
         OrganizationUnit,
         on_delete=models.SET_NULL,
@@ -177,6 +202,15 @@ class LeadershipProfile(
         verbose_name=_("Community"),
         help_text=_("The community the leader is assigned to, where applicable."),
     )
+    team = models.ForeignKey(
+        OrganizationUnit,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="leadership_profiles_in_team",
+        verbose_name=_("Team"),
+        help_text=_("The team the leader is assigned to, where applicable."),
+    )
     supervisor = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
@@ -199,10 +233,10 @@ class LeadershipProfile(
     appointment_date = models.DateField(_("Appointment date"), null=True, blank=True)
     term_expiry_date = models.DateField(_("Term expiry date"), null=True, blank=True)
     terms_completed = models.PositiveSmallIntegerField(
-        _("Number of completed terms"), default=0
+        _("Number of completed terms"), default=0, blank=True
     )
     max_terms = models.PositiveSmallIntegerField(
-        _("Maximum permitted terms"), default=2
+        _("Maximum permitted terms"), default=2, blank=True
     )
     term_status = models.CharField(
         _("Term status"),
@@ -217,6 +251,7 @@ class LeadershipProfile(
         max_length=20,
         choices=RenewalStatus.choices,
         default=RenewalStatus.NOT_ELIGIBLE,
+        blank=True,
     )
 
     qualifications = models.TextField(_("Qualifications"), blank=True)
@@ -243,7 +278,7 @@ class LeadershipProfile(
         ]
 
     def __str__(self) -> str:
-        return f"{self.user.full_name} ({self.reference_number})"
+        return f"{self.full_name} ({self.reference_number})"
 
     def clean(self) -> None:
         super().clean()

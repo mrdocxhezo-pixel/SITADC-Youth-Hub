@@ -70,23 +70,28 @@ MEETINGS_VIEW_PERMS = ["meetings.view", "calendars.view", "meetings.manage"]
 DOCUMENTS_VIEW_PERMS = ["documents.view", "documents.manage"]
 
 
-def _active_members_count() -> int:
+def _active_members_count(period_start_date=None) -> int:
     from apps.memberships.models import MemberProfile
+    
+    queryset = MemberProfile.objects.filter(status__code="ACTIVE")
+    if period_start_date:
+        queryset = queryset.filter(created_at__gte=period_start_date)
+    return queryset.count()
 
-    return MemberProfile.objects.filter(status__code="ACTIVE").count()
 
-
-def _active_volunteers_count(user: User) -> int:
+def _active_volunteers_count(user: User, period_start_date=None) -> int:
     from apps.volunteers.selectors import visible_volunteer_profiles
 
-    return (
+    queryset = (
         visible_volunteer_profiles(user)
         .filter(status__in=[VolunteerStatus.ACTIVE, VolunteerStatus.ASSIGNED])
-        .count()
     )
+    if period_start_date:
+        queryset = queryset.filter(created_at__gte=period_start_date)
+    return queryset.count()
 
 
-def _stat_definitions() -> list[dict[str, Any]]:
+def _stat_definitions(period_start_date=None) -> list[dict[str, Any]]:
     """Ordered stat-card definitions shared by seeding and rendering."""
     return [
         {
@@ -95,7 +100,7 @@ def _stat_definitions() -> list[dict[str, Any]]:
             "icon": "bi-person-badge",
             "url_name": "memberships:dashboard",
             "permissions": [],
-            "resolver": lambda user: _active_members_count(),
+            "resolver": lambda user: _active_members_count(period_start_date),
         },
         {
             "key": "active_volunteers",
@@ -103,7 +108,7 @@ def _stat_definitions() -> list[dict[str, Any]]:
             "icon": "bi-heart",
             "url_name": "volunteers:dashboard",
             "permissions": [],
-            "resolver": lambda user: _active_volunteers_count(user),
+            "resolver": lambda user: _active_volunteers_count(user, period_start_date),
         },
         {
             "key": "active_programs",
@@ -112,6 +117,9 @@ def _stat_definitions() -> list[dict[str, Any]]:
             "url_name": "programs:dashboard",
             "permissions": PROGRAMMES_VIEW_PERMS,
             "resolver": lambda user: Program.objects.filter(
+                status=ProgramStatus.ACTIVE,
+                created_at__gte=period_start_date
+            ).count() if period_start_date else Program.objects.filter(
                 status=ProgramStatus.ACTIVE
             ).count(),
         },
@@ -126,6 +134,13 @@ def _stat_definitions() -> list[dict[str, Any]]:
                     ProjectStatus.INITIATION,
                     ProjectStatus.EXECUTION,
                     ProjectStatus.MONITORING,
+                ],
+                created_at__gte=period_start_date
+            ).count() if period_start_date else Project.objects.filter(
+                status__in=[
+                    ProjectStatus.INITIATION,
+                    ProjectStatus.EXECUTION,
+                    ProjectStatus.MONITORING,
                 ]
             ).count(),
         },
@@ -136,6 +151,9 @@ def _stat_definitions() -> list[dict[str, Any]]:
             "url_name": "beneficiaries:dashboard",
             "permissions": BENEFICIARIES_VIEW_PERMS,
             "resolver": lambda user: Beneficiary.objects.filter(
+                status=BeneficiaryStatus.ACTIVE,
+                created_at__gte=period_start_date
+            ).count() if period_start_date else Beneficiary.objects.filter(
                 status=BeneficiaryStatus.ACTIVE
             ).count(),
         },
@@ -146,6 +164,9 @@ def _stat_definitions() -> list[dict[str, Any]]:
             "url_name": "stakeholders:dashboard",
             "permissions": PARTNERS_VIEW_PERMS,
             "resolver": lambda user: Stakeholder.objects.filter(
+                status=StakeholderStatus.ACTIVE,
+                created_at__gte=period_start_date
+            ).count() if period_start_date else Stakeholder.objects.filter(
                 status=StakeholderStatus.ACTIVE
             ).count(),
         },
@@ -180,7 +201,9 @@ def _stat_definitions() -> list[dict[str, Any]]:
             "icon": "bi-folder2-open",
             "url_name": "documents:dashboard",
             "permissions": DOCUMENTS_VIEW_PERMS,
-            "resolver": lambda user: Document.objects.count(),
+            "resolver": lambda user: Document.objects.filter(
+                created_at__gte=period_start_date
+            ).count() if period_start_date else Document.objects.count(),
         },
     ]
 
@@ -197,10 +220,10 @@ def upcoming_meetings(days: int = 7) -> QuerySet[Meeting]:
     )
 
 
-def get_stat_cards(user: User) -> list[dict[str, Any]]:
+def get_stat_cards(user: User, period_start_date=None) -> list[dict[str, Any]]:
     """Permission-filtered statistic cards for the stats row."""
     cards: list[dict[str, Any]] = []
-    for definition in _stat_definitions():
+    for definition in _stat_definitions(period_start_date):
         permissions = definition["permissions"]
         if permissions and not user_has_any_permission(user, permissions):
             continue
@@ -285,34 +308,100 @@ def get_welcome_profile(user: User) -> dict[str, Any]:
 
 _QUICK_ACTIONS: list[dict[str, Any]] = [
     {
-        "label": "New Report",
+        "label": "Create Report",
+        "description": "Start a new report from template",
         "icon": "bi-file-earmark-plus",
         "url_name": "report_instances:create",
         "permissions": ["report_templates.view", "report_templates.manage"],
+        "color": "primary",
     },
     {
-        "label": "Upload Document",
-        "icon": "bi-cloud-arrow-up",
-        "url_name": "documents:upload",
-        "permissions": DOCUMENTS_VIEW_PERMS,
+        "label": "Browse Templates",
+        "description": "View available report templates",
+        "icon": "bi-grid",
+        "url_name": "reports:category_browse",
+        "permissions": ["report_templates.view", "report_templates.manage"],
+        "color": "purple",
+    },
+    {
+        "label": "My Reports",
+        "description": "View and manage your reports",
+        "icon": "bi-file-earmark-text",
+        "url_name": "report_instances:list",
+        "permissions": ["report_templates.view", "report_templates.manage"],
+        "color": "cyan",
+    },
+    {
+        "label": "Add Member",
+        "description": "Register a new member",
+        "icon": "bi-person-plus",
+        "url_name": "memberships:member_create",
+        "permissions": ["memberships.manage", "memberships.view"],
+        "color": "success",
+    },
+    {
+        "label": "Add Volunteer",
+        "description": "Register a new volunteer",
+        "icon": "bi-people",
+        "url_name": "volunteers:create",
+        "permissions": ["volunteers.manage", "volunteers.view"],
+        "color": "warning",
+    },
+    {
+        "label": "Add Leader",
+        "description": "Create a leadership profile",
+        "icon": "bi-person-badge",
+        "url_name": "leadership:profile_create",
+        "permissions": ["leadership.manage", "leadership.view"],
+        "color": "indigo",
     },
     {
         "label": "Add Beneficiary",
-        "icon": "bi-person-plus",
+        "description": "Register a new beneficiary",
+        "icon": "bi-person-heart",
         "url_name": "beneficiaries:create",
         "permissions": BENEFICIARIES_VIEW_PERMS,
+        "color": "danger",
     },
     {
-        "label": "Register Stakeholder",
-        "icon": "bi-building-add",
-        "url_name": "stakeholders:create",
-        "permissions": PARTNERS_VIEW_PERMS,
+        "label": "Upload Document",
+        "description": "Upload a new document",
+        "icon": "bi-cloud-arrow-up",
+        "url_name": "documents:upload",
+        "permissions": DOCUMENTS_VIEW_PERMS,
+        "color": "teal",
     },
     {
-        "label": "Open Registers",
-        "icon": "bi-journal-bookmark",
-        "url_name": "registers:dashboard",
-        "permissions": ["registers.view", "registers.manage"],
+        "label": "Schedule Meeting",
+        "description": "Create a new meeting or event",
+        "icon": "bi-calendar-plus",
+        "url_name": "meetings:meeting_create",
+        "permissions": MEETINGS_VIEW_PERMS,
+        "color": "amber",
+    },
+    {
+        "label": "View Notifications",
+        "description": "Check your notifications",
+        "icon": "bi-bell",
+        "url_name": "notifications:inbox",
+        "permissions": [],
+        "color": "danger",
+    },
+    {
+        "label": "View Approvals",
+        "description": "Review pending approvals",
+        "icon": "bi-check2-square",
+        "url_name": "reviews:dashboard",
+        "permissions": REVIEWS_VIEW_PERMS,
+        "color": "success",
+    },
+    {
+        "label": "Search",
+        "description": "Search across the platform",
+        "icon": "bi-search",
+        "url_name": "search:home",
+        "permissions": [],
+        "color": "secondary",
     },
 ]
 
@@ -321,12 +410,16 @@ def get_quick_actions(user: User) -> list[dict[str, str]]:
     """Permission-gated shortcuts used across the workspace."""
     actions: list[dict[str, str]] = []
     for action in _QUICK_ACTIONS:
-        if user_has_any_permission(user, action["permissions"]):
+        permissions = action["permissions"]
+        # Empty permissions list means no permission required (available to all authenticated users)
+        if not permissions or user_has_any_permission(user, permissions):
             actions.append(
                 {
                     "label": action["label"],
+                    "description": action["description"],
                     "icon": action["icon"],
                     "url_name": action["url_name"],
+                    "color": action["color"],
                 }
             )
     return actions
@@ -445,7 +538,7 @@ def get_default_configuration() -> DashboardConfiguration:
 
 
 def resolve_statistic_card(
-    widget_config: DashboardWidgetConfiguration, user: User
+    widget_config: DashboardWidgetConfiguration, user: User, period_start_date=None
 ) -> dict[str, Any] | None:
     """Resolve one statistic widget to a renderable card.
 
@@ -455,7 +548,7 @@ def resolve_statistic_card(
     configuration = widget_config.widget.configuration or {}
     stat_key = configuration.get("stat_key")
 
-    for definition in _stat_definitions():
+    for definition in _stat_definitions(period_start_date):
         if definition["key"] != stat_key:
             continue
         permissions = definition["permissions"]
@@ -474,7 +567,7 @@ def resolve_statistic_card(
 
 
 def resolve_widget_payload(
-    widget_config: DashboardWidgetConfiguration, user: User
+    widget_config: DashboardWidgetConfiguration, user: User, period_start_date=None
 ) -> dict[str, Any]:
     """Resolve renderable data for one configured widget.
 
@@ -484,7 +577,7 @@ def resolve_widget_payload(
     widget = widget_config.widget
 
     if widget.widget_type == "statistic":
-        card = resolve_statistic_card(widget_config, user)
+        card = resolve_statistic_card(widget_config, user, period_start_date)
         if card is None:
             return {"key": (widget.configuration or {}).get("stat_key"), "value": "--"}
         return card
@@ -500,6 +593,15 @@ def resolve_widget_payload(
             "entries": get_recent_activity(
                 user, limit=DASHBOARD_ACTIVITY_PREVIEW_LIMIT
             )
+        }
+
+    if widget.widget_type == "chart":
+        # Return chart configuration with user's preferred chart style
+        pref = getattr(user, "dashboard_preference", None)
+        chart_style = getattr(pref, "preferred_chart_style", "bar")
+        return {
+            "chart_type": chart_style,
+            "configuration": widget.configuration,
         }
 
     # Hero-type widgets are rendered by the view via get_welcome_profile().
@@ -551,15 +653,16 @@ def period_start(period: str):
     return mapping.get(period, mapping["this_month"])
 
 
-def _cached_stat_values(user: User) -> dict[str, Any]:
+def _cached_stat_values(user: User, period_start_date=None) -> dict[str, Any]:
     """Compute (and briefly cache) raw stat values for a user."""
-    cache_key = f"dashboard:stats:{user.id}:{int(user.is_superuser)}"
+    cache_suffix = f":{period_start_date.isoformat()}" if period_start_date else ""
+    cache_key = f"dashboard:stats:{user.id}:{int(user.is_superuser)}{cache_suffix}"
     values = cache.get(cache_key)
     if values is not None:
         return values
 
     values = {}
-    for definition in _stat_definitions():
+    for definition in _stat_definitions(period_start_date):
         try:
             values[definition["key"]] = definition["resolver"](user)
         except Exception:

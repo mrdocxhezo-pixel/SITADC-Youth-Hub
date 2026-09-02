@@ -85,10 +85,50 @@ class DashboardView(
             .order_by("-count")[:10]
         )
 
+        # By department
+        leaders_by_department = (
+            LeadershipProfile.objects.filter(department__isnull=False)
+            .values("department__name")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:10]
+        )
+
+        # By program/technical management
+        leaders_by_program_technical = (
+            LeadershipProfile.objects.filter(program_technical_management__isnull=False)
+            .values("program_technical_management__name")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:10]
+        )
+
         # By region
         leaders_by_region = (
             LeadershipProfile.objects.filter(region__isnull=False)
             .values("region__name")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:10]
+        )
+
+        # By district
+        leaders_by_district = (
+            LeadershipProfile.objects.filter(district__isnull=False)
+            .values("district__name")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:10]
+        )
+
+        # By community
+        leaders_by_community = (
+            LeadershipProfile.objects.filter(community__isnull=False)
+            .values("community__name")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:10]
+        )
+
+        # By team
+        leaders_by_team = (
+            LeadershipProfile.objects.filter(team__isnull=False)
+            .values("team__name")
             .annotate(count=Count("id"))
             .order_by("-count")[:10]
         )
@@ -98,9 +138,49 @@ class DashboardView(
             status__in=["PENDING_REVIEW", "PENDING_APPROVAL", "APPROVED"]
         ).count()
 
+        # General Assembly
+        general_assembly_count = LeadershipProfile.objects.filter(
+            leadership_level="GENERAL_ASSEMBLY", status__in=["ACTIVE", "APPOINTED", "ACTING"]
+        ).count()
+
+        # Board of Directors / Board of Trustees
+        board_count = LeadershipProfile.objects.filter(
+            leadership_level="BOARD_OF_DIRECTORS_TRUSTEES", status__in=["ACTIVE", "APPOINTED", "ACTING"]
+        ).count()
+
+        # National Executive Committee
+        nec_count = LeadershipProfile.objects.filter(
+            leadership_level="NATIONAL_EXECUTIVE_COMMITTEE", status__in=["ACTIVE", "APPOINTED", "ACTING"]
+        ).count()
+
+        # Executive Management
+        executive_management_count = LeadershipProfile.objects.filter(
+            leadership_level="EXECUTIVE_MANAGEMENT", status__in=["ACTIVE", "APPOINTED", "ACTING"]
+        ).count()
+
+        # Executive Director
+        executive_director_count = LeadershipProfile.objects.filter(
+            leadership_level="EXECUTIVE_DIRECTOR", status__in=["ACTIVE", "APPOINTED", "ACTING"]
+        ).count()
+
+        # Executive Office
+        executive_office_count = LeadershipProfile.objects.filter(
+            leadership_level="EXECUTIVE_OFFICE", status__in=["ACTIVE", "APPOINTED", "ACTING"]
+        ).count()
+
         # Directors (DIRECTORATE level)
         directors_count = LeadershipProfile.objects.filter(
             leadership_level="DIRECTORATE", status__in=["ACTIVE", "APPOINTED", "ACTING"]
+        ).count()
+
+        # Departments
+        departments_count = LeadershipProfile.objects.filter(
+            leadership_level="DEPARTMENT", status__in=["ACTIVE", "APPOINTED", "ACTING"]
+        ).count()
+
+        # Program and Technical Management
+        program_technical_count = LeadershipProfile.objects.filter(
+            leadership_level="PROGRAM_TECHNICAL_MANAGEMENT", status__in=["ACTIVE", "APPOINTED", "ACTING"]
         ).count()
 
         # Coordinators (REGIONAL, DISTRICT, COMMUNITY)
@@ -123,6 +203,11 @@ class DashboardView(
         report_authors_count = LeadershipProfile.objects.filter(
             leadership_level="REPORT_AUTHOR",
             status__in=["ACTIVE", "APPOINTED", "ACTING"],
+        ).count()
+
+        # Volunteers / Members
+        volunteer_member_count = LeadershipProfile.objects.filter(
+            leadership_level="VOLUNTEER_MEMBER", status__in=["ACTIVE", "APPOINTED", "ACTING"]
         ).count()
 
         # Vacant positions (positions without active appointments)
@@ -172,14 +257,31 @@ class DashboardView(
         ).count()
         
         # Staff count (those with leadership levels below executive/directorate level)
-        staff_levels = ["TEAM_LEADER", "REPORT_AUTHOR", "COMMUNITY_COORDINATOR", "DISTRICT_COORDINATOR", "REGIONAL_COORDINATOR"]
+        staff_levels = [
+            "PROGRAM_TECHNICAL_MANAGEMENT",
+            "REGIONAL_COORDINATOR",
+            "DISTRICT_COORDINATOR",
+            "COMMUNITY_COORDINATOR",
+            "TEAM_LEADER",
+            "REPORT_AUTHOR",
+            "VOLUNTEER_MEMBER",
+        ]
         staff_count = LeadershipProfile.objects.filter(
             leadership_level__in=staff_levels,
             status__in=["ACTIVE", "APPOINTED", "ACTING", "PROBATION"]
         ).count()
         
         # Leaders count (board, executive, directorate levels)
-        leader_levels = ["BOARD_OF_TRUSTEES", "NATIONAL_EXECUTIVE_COMMITTEE", "EXECUTIVE_DIRECTOR", "EXECUTIVE_MANAGEMENT", "DIRECTORATE"]
+        leader_levels = [
+            "GENERAL_ASSEMBLY",
+            "BOARD_OF_DIRECTORS_TRUSTEES",
+            "NATIONAL_EXECUTIVE_COMMITTEE",
+            "EXECUTIVE_DIRECTOR",
+            "EXECUTIVE_MANAGEMENT",
+            "EXECUTIVE_OFFICE",
+            "DIRECTORATE",
+            "DEPARTMENT",
+        ]
         leaders_count = LeadershipProfile.objects.filter(
             leadership_level__in=leader_levels,
             status__in=["ACTIVE", "APPOINTED", "ACTING", "PROBATION"]
@@ -193,12 +295,26 @@ class DashboardView(
                 "archived_leaders": archived_leaders,
                 "leaders_by_level": leaders_by_level,
                 "leaders_by_directorate": leaders_by_directorate,
+                "leaders_by_department": leaders_by_department,
+                "leaders_by_program_technical": leaders_by_program_technical,
                 "leaders_by_region": leaders_by_region,
+                "leaders_by_district": leaders_by_district,
+                "leaders_by_community": leaders_by_community,
+                "leaders_by_team": leaders_by_team,
                 "pending_appointments": pending_appointments,
+                "general_assembly_count": general_assembly_count,
+                "board_count": board_count,
+                "nec_count": nec_count,
+                "executive_management_count": executive_management_count,
+                "executive_director_count": executive_director_count,
+                "executive_office_count": executive_office_count,
                 "directors_count": directors_count,
+                "departments_count": departments_count,
+                "program_technical_count": program_technical_count,
                 "coordinators_count": coordinators_count,
                 "team_leaders_count": team_leaders_count,
                 "report_authors_count": report_authors_count,
+                "volunteer_member_count": volunteer_member_count,
                 "vacant_positions": vacant_positions,
                 "expiring_appointments": expiring_soon,
                 "recently_added": recently_added,
@@ -242,9 +358,12 @@ class DirectoryView(
                 "organizational_unit",
                 "position",
                 "directorate",
+                "department",
+                "program_technical_management",
                 "region",
                 "district",
                 "community",
+                "team",
                 "supervisor__user",
             )
             .order_by("user__last_name", "user__first_name")
@@ -270,9 +389,12 @@ class DirectoryView(
                 | Q(leadership_level__icontains=search_query)
                 | Q(organizational_unit__name__icontains=search_query)
                 | Q(directorate__name__icontains=search_query)
+                | Q(department__name__icontains=search_query)
+                | Q(program_technical_management__name__icontains=search_query)
                 | Q(region__name__icontains=search_query)
                 | Q(district__name__icontains=search_query)
                 | Q(community__name__icontains=search_query)
+                | Q(team__name__icontains=search_query)
             )
 
         # Filters
@@ -304,6 +426,18 @@ class DirectoryView(
         if community_id:
             queryset = queryset.filter(community_id=community_id)
 
+        team_id = self.request.GET.get("team")
+        if team_id:
+            queryset = queryset.filter(team_id=team_id)
+
+        department_id = self.request.GET.get("department")
+        if department_id:
+            queryset = queryset.filter(department_id=department_id)
+
+        program_technical_id = self.request.GET.get("program_technical_management")
+        if program_technical_id:
+            queryset = queryset.filter(program_technical_management_id=program_technical_id)
+
         appointment_status = self.request.GET.get("appointment_status")
         if appointment_status:
             queryset = queryset.filter(
@@ -328,9 +462,12 @@ class DirectoryView(
             "position__title",
             "organizational_unit__name",
             "directorate__name",
+            "department__name",
+            "program_technical_management__name",
             "region__name",
             "district__name",
             "community__name",
+            "team__name",
             "status",
             "appointment_date",
             "-user__last_name",
@@ -340,9 +477,12 @@ class DirectoryView(
             "-position__title",
             "-organizational_unit__name",
             "-directorate__name",
+            "-department__name",
+            "-program_technical_management__name",
             "-region__name",
             "-district__name",
             "-community__name",
+            "-team__name",
             "-status",
             "-appointment_date",
         ]
@@ -364,8 +504,25 @@ class DirectoryView(
             status__in=["ACTIVE", "APPOINTED", "ACTING", "PROBATION"]
         ).count()
         
-        leader_levels = ["BOARD_OF_TRUSTEES", "NATIONAL_EXECUTIVE_COMMITTEE", "EXECUTIVE_DIRECTOR", "EXECUTIVE_MANAGEMENT", "DIRECTORATE"]
-        staff_levels = ["TEAM_LEADER", "REPORT_AUTHOR", "COMMUNITY_COORDINATOR", "DISTRICT_COORDINATOR", "REGIONAL_COORDINATOR"]
+        leader_levels = [
+            "GENERAL_ASSEMBLY",
+            "BOARD_OF_DIRECTORS_TRUSTEES",
+            "NATIONAL_EXECUTIVE_COMMITTEE",
+            "EXECUTIVE_DIRECTOR",
+            "EXECUTIVE_MANAGEMENT",
+            "EXECUTIVE_OFFICE",
+            "DIRECTORATE",
+            "DEPARTMENT",
+        ]
+        staff_levels = [
+            "PROGRAM_TECHNICAL_MANAGEMENT",
+            "REGIONAL_COORDINATOR",
+            "DISTRICT_COORDINATOR",
+            "COMMUNITY_COORDINATOR",
+            "TEAM_LEADER",
+            "REPORT_AUTHOR",
+            "VOLUNTEER_MEMBER",
+        ]
         
         leaders_count = base_queryset.filter(
             leadership_level__in=leader_levels,
@@ -394,6 +551,14 @@ class DirectoryView(
             status="ACTIVE", unit_type="DIRECTORATE"
         ).order_by("name")
         context["directorates"] = directorates_qs
+        departments_qs = OrganizationUnit.objects.filter(
+            status="ACTIVE", unit_type="DEPARTMENT"
+        ).order_by("name")
+        context["departments"] = departments_qs
+        program_technical_qs = OrganizationUnit.objects.filter(
+            status="ACTIVE", unit_type="PROGRAM_TECHNICAL_MANAGEMENT"
+        ).order_by("name")
+        context["program_technical_management"] = program_technical_qs
         regions_qs = OrganizationUnit.objects.filter(
             status="ACTIVE", unit_type="REGION"
         ).order_by("name")
@@ -406,6 +571,10 @@ class DirectoryView(
             status="ACTIVE", unit_type="COMMUNITY"
         ).order_by("name")
         context["communities"] = communities_qs
+        teams_qs = OrganizationUnit.objects.filter(
+            status="ACTIVE", unit_type="TEAM"
+        ).order_by("name")
+        context["teams"] = teams_qs
         context["statuses"] = LeadershipStatus.choices
         context["appointment_statuses"] = AppointmentStatus.choices
 
@@ -416,9 +585,12 @@ class DirectoryView(
         context["current_position"] = get("position", "")
         context["current_org_unit"] = get("organizational_unit", "")
         context["current_directorate"] = get("directorate", "")
+        context["current_department"] = get("department", "")
+        context["current_program_technical"] = get("program_technical_management", "")
         context["current_region"] = get("region", "")
         context["current_district"] = get("district", "")
         context["current_community"] = get("community", "")
+        context["current_team"] = get("team", "")
         context["current_status"] = get("status", "")
         context["current_appointment_status"] = get("appointment_status", "")
         context["current_date_from"] = get("date_appointed_from", "")

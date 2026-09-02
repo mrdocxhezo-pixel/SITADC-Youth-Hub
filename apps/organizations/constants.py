@@ -17,23 +17,63 @@ class UnitStatus(models.TextChoices):
 
 
 class UnitType(models.TextChoices):
-    """Functional types of organizational units."""
+    """Functional types of organizational units.
 
-    NATIONAL_ORGANIZATION = "NATIONAL_ORGANIZATION", _("National Organization")
+    The hierarchy follows the official SITADC Youth Organization structure:
+    
+    GOVERNANCE LEVELS (Level 1-3):
+    - GENERAL_ASSEMBLY: Highest governance body
+    - BOARD_OF_DIRECTORS_TRUSTEES: Board of Directors / Board of Trustees
+    - NATIONAL_EXECUTIVE_COMMITTEE: National Executive Committee (NEC)
+    
+    EXECUTIVE LEVELS (Level 4-5):
+    - EXECUTIVE_MANAGEMENT: Executive Management
+    - EXECUTIVE_OFFICE: Executive Office
+    
+    FUNCTIONAL/TECHNICAL LEVELS (Level 6-7):
+    - DIRECTORATE: Strategic functional directorates (17 total)
+    - DEPARTMENT: Operational departments within directorates (10 total)
+    - PROGRAM_TECHNICAL_MANAGEMENT: Program and Technical Management positions
+    
+    GEOGRAPHICAL LEVELS (Level 8-12):
+    - REGION: Regional Coordinators
+    - DISTRICT: District Coordinators
+    - COMMUNITY: Community Coordinators
+    - TEAM: Team Leaders
+    - VOLUNTEER_MEMBER: Volunteers / Members
+    
+    OPERATIONAL UNITS:
+    - PROGRAM_UNIT: Program Unit
+    - PROJECT_UNIT: Project Unit
+    - COMMITTEE: Committee
+    - WORKING_GROUP: Working Group
+    """
+
+    # GOVERNANCE LEVELS
     GENERAL_ASSEMBLY = "GENERAL_ASSEMBLY", _("General Assembly")
-    BOARD_OF_TRUSTEES = "BOARD_OF_TRUSTEES", _("Board of Trustees")
+    BOARD_OF_DIRECTORS_TRUSTEES = "BOARD_OF_DIRECTORS_TRUSTEES", _("Board of Directors / Board of Trustees")
     NATIONAL_EXECUTIVE_COMMITTEE = (
         "NATIONAL_EXECUTIVE_COMMITTEE",
         _("National Executive Committee"),
     )
+
+    # EXECUTIVE LEVELS
     EXECUTIVE_MANAGEMENT = "EXECUTIVE_MANAGEMENT", _("Executive Management")
     EXECUTIVE_OFFICE = "EXECUTIVE_OFFICE", _("Executive Office")
+
+    # FUNCTIONAL/TECHNICAL LEVELS
     DIRECTORATE = "DIRECTORATE", _("Directorate")
     DEPARTMENT = "DEPARTMENT", _("Department")
+    PROGRAM_TECHNICAL_MANAGEMENT = "PROGRAM_TECHNICAL_MANAGEMENT", _("Program and Technical Management")
+
+    # GEOGRAPHICAL LEVELS
     REGION = "REGION", _("Region")
     DISTRICT = "DISTRICT", _("District")
     COMMUNITY = "COMMUNITY", _("Community")
     TEAM = "TEAM", _("Team")
+    VOLUNTEER_MEMBER = "VOLUNTEER_MEMBER", _("Volunteers / Members")
+
+    # OPERATIONAL UNITS
     PROGRAM_UNIT = "PROGRAM_UNIT", _("Program Unit")
     PROJECT_UNIT = "PROJECT_UNIT", _("Project Unit")
     COMMITTEE = "COMMITTEE", _("Committee")

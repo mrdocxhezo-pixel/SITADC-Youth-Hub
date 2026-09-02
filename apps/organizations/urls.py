@@ -99,4 +99,15 @@ urlpatterns = [
         views.classification_create_view,
         name="classification_create",
     ),
+    # Dynamic / Cascading JSON API endpoints
+    path("api/units/", views.api_units_view, name="api_units"),
+    path("api/directorates/", views.api_directorates_view, name="api_directorates"),
+    path("api/departments/", views.api_departments_view, name="api_departments"),
+    path(
+        "api/program-technical/",
+        views.api_program_technical_view,
+        name="api_program_technical",
+    ),
+    path("api/teams/", views.api_teams_view, name="api_teams"),
+    path("api/positions/", views.api_positions_view, name="api_positions"),
 ]

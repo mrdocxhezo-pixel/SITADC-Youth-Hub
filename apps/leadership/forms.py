@@ -1,7 +1,11 @@
 """Forms for the Leadership Management module."""
 
 from django import forms
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
+
+from apps.organizations.constants import UnitType, UnitStatus, PositionStatus
+from apps.organizations.models import OrganizationUnit, Position
 
 from .models import (
     CoachingRecord,
@@ -25,6 +29,7 @@ class LeadershipProfileForm(forms.ModelForm):
             "profile_photo",
             "national_id",
             "gender",
+            "full_name",
             "date_of_birth",
             "phone_number",
             "email",
@@ -35,9 +40,12 @@ class LeadershipProfileForm(forms.ModelForm):
             "position",
             "organizational_unit",
             "directorate",
+            "department",
+            "program_technical_management",
             "region",
             "district",
             "community",
+            "team",
             "supervisor",
             "biography",
             "qualifications",
@@ -69,7 +77,8 @@ class LeadershipProfileForm(forms.ModelForm):
             "phone_number": forms.TextInput(attrs={"class": "form-control"}),
             "email": forms.EmailInput(attrs={"class": "form-control"}),
             "national_id": forms.TextInput(attrs={"class": "form-control"}),
-            "gender": forms.TextInput(attrs={"class": "form-control"}),
+            "gender": forms.Select(attrs={"class": "form-select"}),
+            "full_name": forms.TextInput(attrs={"class": "form-control"}),
             "date_of_birth": forms.DateInput(
                 attrs={"type": "date", "class": "form-control"}
             ),
@@ -85,9 +94,12 @@ class LeadershipProfileForm(forms.ModelForm):
             "position": forms.Select(attrs={"class": "form-select"}),
             "organizational_unit": forms.Select(attrs={"class": "form-select"}),
             "directorate": forms.Select(attrs={"class": "form-select"}),
+            "department": forms.Select(attrs={"class": "form-select"}),
+            "program_technical_management": forms.Select(attrs={"class": "form-select"}),
             "region": forms.Select(attrs={"class": "form-select"}),
             "district": forms.Select(attrs={"class": "form-select"}),
             "community": forms.Select(attrs={"class": "form-select"}),
+            "team": forms.Select(attrs={"class": "form-select"}),
             "supervisor": forms.Select(attrs={"class": "form-select"}),
             "status": forms.Select(attrs={"class": "form-select"}),
             "term_status": forms.Select(attrs={"class": "form-select"}),
@@ -103,6 +115,7 @@ class LeadershipProfileForm(forms.ModelForm):
             "reference_number": _("Leadership Reference Number"),
             "profile_photo": _("Profile Photograph"),
             "national_id": _("National ID / Identification Number"),
+            "full_name": _("Full Names"),
             "gender": _("Gender"),
             "date_of_birth": _("Date of Birth"),
             "phone_number": _("Phone Number"),
@@ -111,12 +124,17 @@ class LeadershipProfileForm(forms.ModelForm):
             "emergency_contact_name": _("Emergency Contact Name"),
             "emergency_contact_phone": _("Emergency Contact Phone"),
             "leadership_level": _("Leadership Level"),
-            "position": _("Position"),
-            "organizational_unit": _("Organizational Unit"),
-            "directorate": _("Directorate"),
-            "region": _("Region"),
-            "district": _("District"),
-            "community": _("Community"),
+            "position": _("Position (Optional)"),
+            "organizational_unit": _("Organizational Unit (Optional)"),
+            "directorate": _("Directorate (Optional)"),
+            "department": _("Department (Optional)"),
+            "program_technical_management": _(
+                "Program and Technical Management (Optional)"
+            ),
+            "region": _("Region (Optional)"),
+            "district": _("District (Optional)"),
+            "community": _("Community (Optional)"),
+            "team": _("Team (Optional)"),
             "supervisor": _("Immediate Supervisor"),
             "biography": _("Biography"),
             "qualifications": _("Qualifications"),
@@ -142,6 +160,7 @@ class LeadershipProfileForm(forms.ModelForm):
             ),
             "national_id": _("National identification number or passport number."),
             "gender": _("Gender identification."),
+            "full_name": _("Full name of the leader. Updates the linked user's first and last name."),
             "date_of_birth": _("Date of birth for age verification."),
             "phone_number": _("Primary contact phone number."),
             "email": _("Contact email address."),
@@ -152,9 +171,12 @@ class LeadershipProfileForm(forms.ModelForm):
             "position": _("The specific position title."),
             "organizational_unit": _("The primary organizational unit."),
             "directorate": _("The directorate this leader belongs to."),
+            "department": _("The department this leader belongs to."),
+            "program_technical_management": _("The program/technical management unit this leader belongs to."),
             "region": _("The region this leader is assigned to."),
             "district": _("The district this leader is assigned to."),
             "community": _("The community this leader is assigned to."),
+            "team": _("The team this leader is assigned to."),
             "supervisor": _(
                 "The immediate supervisor (reporting line). "
                 "A leader cannot supervise themselves."
@@ -186,17 +208,192 @@ class LeadershipProfileForm(forms.ModelForm):
             self.fields["reference_number"].widget.attrs[
                 "class"
             ] = "form-control-plaintext"
-            # Make user field read-only for existing profiles (linked to user)
-            self.fields["user"].widget.attrs["disabled"] = True
-            self.fields["user"].widget.attrs["class"] = "form-control-plaintext"
-            # Set user field as not required since it's disabled
-            self.fields["user"].required = False
+# Make user field read-only for existing profiles (linked to user)
+        self.fields["user"].widget.attrs["disabled"] = True
+        self.fields["user"].widget.attrs["class"] = "form-control-plaintext"
+        # Set user field as not required since it's disabled
+        self.fields["user"].required = False
+
+        # Populate full_name field from related user when editing
+        if self.instance and self.instance.pk and self.instance.user:
+            self.fields["full_name"].initial = self.instance.user.get_full_name()
+
+        # Filter OrganizationUnit querysets by unit_type for geographic/organizational fields
+        self.fields["directorate"].queryset = OrganizationUnit.objects.filter(
+            unit_type=UnitType.DIRECTORATE, status=UnitStatus.ACTIVE
+        ).select_related("level")
+        self.fields["department"].queryset = OrganizationUnit.objects.filter(
+            unit_type=UnitType.DEPARTMENT, status=UnitStatus.ACTIVE
+        ).select_related("level")
+        self.fields["program_technical_management"].queryset = OrganizationUnit.objects.filter(
+            unit_type=UnitType.PROGRAM_TECHNICAL_MANAGEMENT, status=UnitStatus.ACTIVE
+        ).select_related("level")
+        self.fields["region"].queryset = OrganizationUnit.objects.filter(
+            unit_type=UnitType.REGION, status=UnitStatus.ACTIVE
+        ).select_related("level")
+        self.fields["district"].queryset = OrganizationUnit.objects.filter(
+            unit_type=UnitType.DISTRICT, status=UnitStatus.ACTIVE
+        ).select_related("level")
+        self.fields["community"].queryset = OrganizationUnit.objects.filter(
+            unit_type=UnitType.COMMUNITY, status=UnitStatus.ACTIVE
+        ).select_related("level")
+        self.fields["team"].queryset = OrganizationUnit.objects.filter(
+            unit_type=UnitType.TEAM, status=UnitStatus.ACTIVE
+        ).select_related("level")
+        self.fields["organizational_unit"].queryset = OrganizationUnit.objects.filter(
+            status=UnitStatus.ACTIVE
+        ).select_related("level")
+        # Filter Position queryset to active positions
+        self.fields["position"].queryset = Position.objects.filter(
+            status=PositionStatus.ACTIVE
+        ).select_related("organizational_unit", "classification")
+
+        # Explicit empty labels / placeholders
+        self.fields["position"].empty_label = _("Select Position")
+        self.fields["organizational_unit"].empty_label = _("Select Organizational Unit")
+        self.fields["directorate"].empty_label = _("Select Directorate")
+        self.fields["department"].empty_label = _("Select Department")
+        self.fields["program_technical_management"].empty_label = _(
+            "Select Program / Technical Management"
+        )
+        self.fields["team"].empty_label = _("Select Team")
+        self.fields["region"].empty_label = _("Select Region")
+        self.fields["district"].empty_label = _("Select District")
+        self.fields["community"].empty_label = _("Select Community")
+        self.fields["supervisor"].empty_label = _("Select Immediate Supervisor")
+
+    def save(self, commit=True):
+        """Save the form and update the related user's first and last name."""
+        # Save the leadership profile instance
+        instance = super().save(commit=False)
+        
+        # Update the related user's first and last name from full_name
+        if commit:
+            with transaction.atomic():
+                instance.save()
+                # Update the related user's name
+                full_name = self.cleaned_data.get("full_name", "").strip()
+                if full_name and instance.user:
+                    # Split full name into first and last name (simple split on first space)
+                    name_parts = full_name.split(" ", 1)
+                    if len(name_parts) == 2:
+                        first_name, last_name = name_parts
+                    else:
+                        # If only one part, treat as first name with empty last name
+                        first_name, last_name = name_parts[0], ""
+                    
+                    # Update user fields
+                    instance.user.first_name = first_name
+                    instance.user.last_name = last_name
+                    instance.user.save(update_fields=["first_name", "last_name"])
+        # When commit=False, don't save anything - just return the unsaved instance
+        return instance
 
     def clean_reference_number(self):
         """Reference numbers are immutable once issued."""
         if self.instance and self.instance.pk:
             return self.instance.reference_number
         return self.cleaned_data.get("reference_number")
+
+    def clean(self):
+        """Perform server-side relationship and hierarchy validation."""
+        cleaned_data = super().clean()
+        directorate = cleaned_data.get("directorate")
+        department = cleaned_data.get("department")
+        ptm = cleaned_data.get("program_technical_management")
+        region = cleaned_data.get("region")
+        district = cleaned_data.get("district")
+        community = cleaned_data.get("community")
+        team = cleaned_data.get("team")
+
+        from apps.organizations.seed_data import (
+            DEPARTMENT_TO_PTM_MAP,
+            DIRECTORATE_TO_DEPARTMENT_MAP,
+            DIRECTORATE_TO_PTM_MAP,
+        )
+
+        # 1. Directorate <-> Department validation
+        if directorate and department:
+            allowed_depts = DIRECTORATE_TO_DEPARTMENT_MAP.get(
+                directorate.identifier, ()
+            )
+            if (
+                allowed_depts
+                and department.identifier not in allowed_depts
+                and department.parent_id != directorate.id
+            ):
+                self.add_error(
+                    "department",
+                    _(
+                        "The selected Department '%(dept)s' does not report into '%(dir)s'."
+                    )
+                    % {"dept": department.name, "dir": directorate.name},
+                )
+
+        # 2. Department <-> Program & Technical Management validation
+        if department and ptm:
+            allowed_ptm = DEPARTMENT_TO_PTM_MAP.get(department.identifier, ())
+            if (
+                allowed_ptm
+                and ptm.identifier not in allowed_ptm
+                and ptm.parent_id != department.id
+            ):
+                self.add_error(
+                    "program_technical_management",
+                    _(
+                        "The selected Program / Technical role '%(ptm)s' is not valid for '%(dept)s'."
+                    )
+                    % {"ptm": ptm.name, "dept": department.name},
+                )
+        elif directorate and ptm and not department:
+            allowed_ptm = DIRECTORATE_TO_PTM_MAP.get(directorate.identifier, ())
+            if allowed_ptm and ptm.identifier not in allowed_ptm:
+                self.add_error(
+                    "program_technical_management",
+                    _(
+                        "The selected Program / Technical role '%(ptm)s' is not valid for '%(dir)s'."
+                    )
+                    % {"ptm": ptm.name, "dir": directorate.name},
+                )
+
+        # 3. Geographical Hierarchy validation
+        if district and region:
+            if district.parent_id and district.parent_id != region.id:
+                ancestor_ids = [a.id for a in district.get_ancestor_chain()]
+                if region.id not in ancestor_ids:
+                    self.add_error(
+                        "district",
+                        _(
+                            "The selected District '%(dist)s' does not belong to Region '%(reg)s'."
+                        )
+                        % {"dist": district.name, "reg": region.name},
+                    )
+
+        if community and district:
+            if community.parent_id and community.parent_id != district.id:
+                ancestor_ids = [a.id for a in community.get_ancestor_chain()]
+                if district.id not in ancestor_ids:
+                    self.add_error(
+                        "community",
+                        _(
+                            "The selected Community '%(comm)s' does not belong to District '%(dist)s'."
+                        )
+                        % {"comm": community.name, "dist": district.name},
+                    )
+
+        if team and community:
+            if team.parent_id and team.parent_id != community.id:
+                ancestor_ids = [a.id for a in team.get_ancestor_chain()]
+                if community.id not in ancestor_ids:
+                    self.add_error(
+                        "team",
+                        _(
+                            "The selected Team '%(team)s' does not belong to Community '%(comm)s'."
+                        )
+                        % {"team": team.name, "comm": community.name},
+                    )
+
+        return cleaned_data
 
 
 class LeadershipAppointmentForm(forms.ModelForm):
@@ -230,6 +427,17 @@ class LeadershipAppointmentForm(forms.ModelForm):
                 attrs={"type": "date"},
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["position"].queryset = Position.objects.filter(
+            status=PositionStatus.ACTIVE
+        ).order_by("title")
+        self.fields["organizational_unit"].queryset = OrganizationUnit.objects.filter(
+            status=UnitStatus.ACTIVE
+        ).order_by("name")
+        self.fields["position"].empty_label = _("Select Position")
+        self.fields["organizational_unit"].empty_label = _("Select Organizational Unit")
 
 
 class PerformanceReviewForm(forms.ModelForm):

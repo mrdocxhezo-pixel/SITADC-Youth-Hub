@@ -1,0 +1,24 @@
+{% load static %}
+<!-- Quick Action Component -->
+{% comment %}
+Usage:
+    {% include 'components/quick_action.html' with action=action %}
+    
+Required context:
+    action: dict with keys: label, description, icon, url_name, color
+{% endcomment %}
+
+<a href="{% url action.url_name %}" 
+   class="quick-action-card text-decoration-none"
+   role="button"
+   aria-label="{{ action.label }}: {{ action.description }}">
+    <div class="quick-action-icon quick-action-icon-{{ action.color }}">
+        <i class="bi {{ action.icon }}" aria-hidden="true"></i>
+    </div>
+    <div class="quick-action-content">
+        <h3 class="quick-action-title">{{ action.label }}</h3>
+        {% if action.description %}
+        <p class="quick-action-description">{{ action.description }}</p>
+        {% endif %}
+    </div>
+</a>
